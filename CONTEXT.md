@@ -15,6 +15,12 @@ _Avoid_: 旧库/新库、源数据/目标数据
 **must_stale**:
 金标中必须被判定为 stale 的主张,任何 harness 不得对其放行,用于锁住评测可复现性。
 
+**must_fresh**:
+金标中必须被判定为 fresh 的主张;含「看似已死其实 fresh」干扰项,防止全红假象。
+
+**must_unknown**:
+金标中 T1 无原文覆盖、必须判 unknown 的主张;锁住「无 `t1_evidence_ids` 不得 fresh」这条闸的评测。
+
 ## 复验主链
 
 **复验单 (Reverify Sheet)**:
