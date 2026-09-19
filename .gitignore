@@ -1,6 +1,6 @@
-# 个人配置，不进版本库
-.claude/settings.local.json
-CLAUDE.local.md
-.env
 __pycache__/
 *.pyc
+.env
+data/*.db
+!data/.gitkeep
+.pytest_cache/

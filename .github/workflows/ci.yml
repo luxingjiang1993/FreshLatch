@@ -1,0 +1,23 @@
+# CI:gate 1 + gate 2,零 LLM 依赖(ADR-0005)。
+# 两个绿灯语义分离:本流水线绿 = 代码不变量没破;模型表现绿 = 金标 runner 报告(手动/milestone 触发,不走 CI)。
+
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  pytest:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Run tests (zero LLM)
+        run: python -m pytest tests/ -q
+        env:
+          PYTHONIOENCODING: utf-8

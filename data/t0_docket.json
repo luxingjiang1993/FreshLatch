@@ -1,0 +1,65 @@
+{
+  "question": "是否应该在未来 12 个月进入东南亚中小企业 AI 客服市场?",
+  "claims": [
+    {
+      "claim_id": "c1",
+      "statement": "竞品 SeaDesk 在该市场的客单价仍显著高于我方拟定的 59 美元/月/店定价",
+      "t0_evidence_ids": ["t0-competitor-notes#p2"]
+    },
+    {
+      "claim_id": "c2",
+      "statement": "印尼与泰国监管暂无客服数据本地化强制要求",
+      "t0_evidence_ids": ["t0-regulatory-memo#p2"]
+    },
+    {
+      "claim_id": "c3",
+      "statement": "3 家意向渠道伙伴接受 30% 销售分成比例",
+      "t0_evidence_ids": ["t0-channel-interviews#p2"]
+    },
+    {
+      "claim_id": "c4",
+      "statement": "目标市场(六国具备基础数字化条件的中小企业)不少于 800 万家",
+      "t0_evidence_ids": ["t0-market-census#p2"]
+    },
+    {
+      "claim_id": "c5",
+      "statement": "我方单会话服务成本仍低于竞品",
+      "t0_evidence_ids": ["t0-cost-model#p2"]
+    },
+    {
+      "claim_id": "c6",
+      "statement": "竞品 SeaDesk 收缩东南亚免费版、聚焦付费商户,意味着市场窗口打开",
+      "t0_evidence_ids": ["t0-competitor-news#p2"]
+    },
+    {
+      "claim_id": "c7",
+      "statement": "行业媒体报道显示竞品客单价仍为 99 美元/月,我方价格优势仍在",
+      "t0_evidence_ids": ["t0-trade-press#p2"]
+    },
+    {
+      "claim_id": "c8",
+      "statement": "东南亚本地语言小模型生态不成熟,核心对话能力需自研",
+      "t0_evidence_ids": ["t0-tech-ecosystem#p2"]
+    },
+    {
+      "claim_id": "c9",
+      "statement": "目标市场 WhatsApp Business 渗透率不低于 70%",
+      "t0_evidence_ids": ["t0-messaging-survey#p2"]
+    },
+    {
+      "claim_id": "c10",
+      "statement": "雅加达双语客服专员综合用工成本约 450 美元/月",
+      "t0_evidence_ids": ["t0-talent-salary#p2"]
+    },
+    {
+      "claim_id": "c11",
+      "statement": "电子钱包已是目标市场第一大收款方式(占比约 58%)",
+      "t0_evidence_ids": ["t0-payment-landscape#p2"]
+    },
+    {
+      "claim_id": "c12",
+      "statement": "合作候选云服务商区域可用区年计划外故障不超过 2 次",
+      "t0_evidence_ids": ["t0-infra-reliability#p2"]
+    }
+  ]
+}
