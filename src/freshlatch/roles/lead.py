@@ -28,7 +28,11 @@ LEAD_PERSONA_W1 = """你是 Lead Reverifier,FreshLatch 的复验主官。你的�
 - 你没有联网工具,不要臆造 T1 之外的信息。
 - 每条主张只下一次判定。"""
 
-MAX_EVIDENCE_IN_CONTEXT = 3  # 最近检索块只装最近 3 条,不装全部语料
+def _valid_as_of(value) -> str | None:
+    """as_of 校验(调用边界硬校验,非法值整call拒绝并回列合法值,§3.4 惯例)。"""
+    if value in (None, "", "T0", "T1"):
+        return value or None
+    raise ValueError("as_of 只能是 T0|T1,收到: %r" % value)
 
 
 class LeadReverifier:
@@ -38,7 +42,6 @@ class LeadReverifier:
         self.llm = llm
         self.steps_used = 0
         self.decision = ClaimDecision(claim_id=claim.claim_id)
-        self._recent_blocks: list[str] = []
         self._finished = False
 
     def run(self) -> ClaimDecision:
@@ -71,8 +74,10 @@ class LeadReverifier:
 
     def _build_system(self) -> str:
         voided = sorted(self.ctx.invalidation_list)
+        quarantined = sorted(self.ctx.quarantine_list)
         void_line = f"作废名单(人工已作废,不得改回 fresh): {', '.join(voided) if voided else '(空)'}"
-        return f"{LEAD_PERSONA_W1}\n\n{void_line}"
+        quarantine_line = f"隔离名单: {', '.join(quarantined) if quarantined else '(空)'}"
+        return f"{LEAD_PERSONA_W1}\n\n{void_line}\n{quarantine_line}"
 
     def _build_task(self) -> str:
         ev = ", ".join(self.claim.t0_evidence_ids) or "(无)"
@@ -98,13 +103,14 @@ class LeadReverifier:
         return handler(args)
 
     def _t_retrieve(self, args: dict) -> dict:
-        as_of = args.get("as_of") or None
-        if as_of not in (None, "T0", "T1"):
-            return {"error": f"as_of 只能是 T0|T1,收到: {as_of}"}
+        try:
+            as_of = _valid_as_of(args.get("as_of"))
+        except ValueError as e:
+            return {"error": str(e)}
         hits = self.ctx.try_retrieve(
             args["query"],
             source_type=args.get("source_type") or None,
-            as_of=as_of,  # 已在上方校验 ∈ {None,"T0","T1"}
+            as_of=as_of,
             top_k=10,  # §8.5:top_k 放宽到 10 缓释同义改写漏召回
         )
         if isinstance(hits, dict):  # 预算已尽,fail-soft
@@ -114,13 +120,15 @@ class LeadReverifier:
              "source_type": c.source_type, "text": c.text}
             for c in hits
         ]
-        self._recent_blocks = [b["evidence_id"] for b in blocks[-MAX_EVIDENCE_IN_CONTEXT:]]
+        # 「最近检索块」= messages 里最近的 tool 结果(§2.8:messages 单角色内只增不减),
+        # 模型每轮基于最新观察决策,无需额外注入。
         return {"blocks": blocks, "retrieval_used": self.ctx.retrieval_used}
 
     def _t_read_source(self, args: dict) -> dict:
-        as_of = args.get("as_of", "T1")
-        if as_of not in ("T0", "T1"):
-            return {"error": f"as_of 只能是 T0|T1,收到: {as_of}"}
+        try:
+            as_of = _valid_as_of(args.get("as_of")) or "T1"
+        except ValueError as e:
+            return {"error": str(e)}
         text = self.ctx.store.read_source(args["doc_id"], as_of=as_of)
         if text is None:
             return {"error": f"未找到文档 {args['doc_id']} 的 {as_of} 快照"}

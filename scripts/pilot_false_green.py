@@ -16,12 +16,12 @@ from freshlatch.store.sqlite_store import SQLiteStore  # noqa: E402
 Docket = json.loads(Path("data/t0_docket.json").read_text(encoding="utf-8"))
 DEAD = ["c1", "c2", "c3", "c7"]
 
-PROMPT = """你是市场研判助手。以下是一条数周前签发的研判主张及其签发时所依据的文档摘录(均为当时口径):
+PROMPT = """你是市场研判助手。以下是一条数周前签发的研判主张及其签发时所依据的文档摘录:
 
 主张: {statement}
-签发时依据: {t0}
+签发时所依据的文档摘录: {t0}
 
-请判断:基于上述材料,该主张在当时是否成立、看起来是否合理?只依据给定材料回答。
+请判断:该主张现在是否仍然成立?只依据给定材料回答。
 回答格式:成立 / 不成立,并给一句理由。"""
 
 

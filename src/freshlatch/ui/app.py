@@ -62,10 +62,10 @@ def _claim_to_dict(c) -> dict:
 @app.post("/api/import")
 def api_import() -> dict:
     """docket 导入(Workflow):只读 statement 与 t0_evidence_ids,不做新调查。"""
-    claims = load_docket(DEMO_DOCKET)
-    _state["claims"] = claims
-    _state["question"] = "是否应该在未来 12 个月进入东南亚中小企业 AI 客服市场?"
-    return {"imported": len(claims)}
+    docket = load_docket(DEMO_DOCKET)
+    _state["claims"] = docket.claims
+    _state["question"] = docket.question  # 单一真相:data/t0_docket.json
+    return {"imported": len(docket.claims)}
 
 
 @app.post("/api/reverify")

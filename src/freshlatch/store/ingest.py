@@ -8,7 +8,6 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-from freshlatch.models import AsOf
 from freshlatch.store.base import Chunk, Document
 from freshlatch.store.pipeline import tokenize
 
@@ -35,14 +34,12 @@ def parse_document(path: Path) -> tuple[Document, list[Chunk]]:
     title = meta.get("title", doc_id)
     checksum = meta.get("checksum", "")  # 三处留位之一,本期为空
 
-    # 按二级标题切分,锚点 = 标题文本(p2 等)
+    # 按二级标题切分,锚点 = 标题文本(p2 等);引言(首个 ## 之前)不入块
     parts = CLAUSE_RE.split(body)
-    head = parts[0].strip()  # 元数据头之后、首个 ## 之前的引言(若有)
     chunks: list[Chunk] = []
-    idx = 1
-    while idx + 1 < len(parts) + 1 and idx < len(parts):
-        clause_id = parts[idx].strip()
-        chunk_text = parts[idx + 1].strip() if idx + 1 < len(parts) else ""
+    for i in range(1, len(parts) - 1, 2):
+        clause_id = parts[i].strip()
+        chunk_text = parts[i + 1].strip()
         full = f"## {clause_id}\n{chunk_text}"
         chunks.append(
             Chunk(
@@ -58,7 +55,6 @@ def parse_document(path: Path) -> tuple[Document, list[Chunk]]:
                 tokens=len(tokenize(full)),
             )
         )
-        idx += 2
 
     doc = Document(
         doc_id=doc_id, as_of=as_of, source_type=source_type, title=title,

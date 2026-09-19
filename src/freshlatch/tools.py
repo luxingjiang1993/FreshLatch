@@ -43,9 +43,9 @@ _TOOL_DEFS: dict[str, dict] = {
         "read_source", "按 doc_id 读原文全文(ground truth 是原文,不是 chunk)",
         {"doc_id": {"type": "string"}, "as_of": {"type": "string", "description": "T0|T1,默认 T1"}}, ["doc_id"]),
     "reverify_claim": _fn(
-        "reverify_claim", "对主张下判定并给出证据(判 fresh 的唯一写入口,进规则闸)",
+        "reverify_claim", "对主张下判定并给出证据(fresh 的唯一写入口,进规则闸;stale 必须走 mark_stale)",
         {"claim_id": {"type": "string"},
-         "status": {"type": "string", "description": "fresh|stale|unknown"},
+         "status": {"type": "string", "description": "fresh|unknown"},
          "evidence_ids": {"type": "array", "items": {"type": "string"}}},
         ["claim_id", "status"]),
     "mark_stale": _fn(
@@ -72,13 +72,9 @@ _TOOL_DEFS: dict[str, dict] = {
 }
 
 
-class UnknownToolError(Exception):
-    """fail-closed:未列入白名单的工具调用直接 raise(06 课 L117-118 模式)。"""
-
-    def __init__(self, name: str, allowed: list[str]) -> None:
-        self.name = name
-        self.allowed = allowed
-        super().__init__(f"未允许的工具: {name};本角色白名单: {sorted(allowed)}")
+# 架构插座:web_search 仅插座,不进任何角色白名单(§0.4.2/§4.6:评测期代码级禁联网)。
+# eval 模式运行时纯本地;本期未挂载 = 模型物理上不可见,联网破坏 must_stale 可复现性。
+WEB_SEARCH_SOCKET_NOTE = "web_search 为架构插座,W5–W8 再议;W1–W4 不在任何白名单"
 
 
 def tool_specs(names: list[str]) -> list[dict]:

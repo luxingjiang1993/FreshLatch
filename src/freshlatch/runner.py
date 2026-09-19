@@ -32,6 +32,7 @@ class RunContext:
     decoding: DecodingParams = field(default_factory=DecodingParams)
     mode: str = "online"  # online | eval
     gaps: list[str] = field(default_factory=list)
+    quarantine_list: set[str] = field(default_factory=set)  # 隔离名单(W9 记忆卫生;槽位本期为空)
 
     def try_retrieve(self, query: str, *, source_type: str | None = None,
                      as_of: AsOf | None = None, top_k: int = 10) -> list | dict:
@@ -68,14 +69,25 @@ class RunResult:
     decoding: DecodingParams
 
 
-def load_docket(path: str | Path) -> list[Claim]:
+@dataclass
+class Docket:
+    """T0 卷宗导入件(EvidenceOS 形状,§2.1):question + 主张列表,单一真相在 data/。"""
+
+    question: str
+    claims: list[Claim]
+
+
+def load_docket(path: str | Path) -> Docket:
     """导入是 Workflow:只读 statement 与 t0_evidence_ids,不做新调查(§2.1)。"""
     data = json.loads(Path(path).read_text(encoding="utf-8"))
-    return [
-        Claim(claim_id=c["claim_id"], statement=c["statement"],
-              t0_evidence_ids=list(c.get("t0_evidence_ids", [])))
-        for c in data["claims"]
-    ]
+    return Docket(
+        question=data["question"],
+        claims=[
+            Claim(claim_id=c["claim_id"], statement=c["statement"],
+                  t0_evidence_ids=list(c.get("t0_evidence_ids", [])))
+            for c in data["claims"]
+        ],
+    )
 
 
 class Runner:
