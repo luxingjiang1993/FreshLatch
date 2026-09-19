@@ -1,0 +1,7 @@
+# 评测 harness:CLI runner(src/freshlatch/eval/)+ 假绿 JSON 对照 + 双 gate 测试,弃评测页 UI 与 CI 全量 LLM 回归
+
+金标评测设施采用**路线 (a)——`src/freshlatch/eval/` 包内自研 CLI runner**:`runner.py` 端到端跑真实 Lead 复验主链(#6 裸 tools 循环 + Critic 派驻 + 规则闸)与 `data/eval/gold.json` 对账,`control.py` 做无工具假绿对照,`matrix.py` 混淆矩阵纯函数,`report.py` 出 console 摘要 + `reports/report-<date>.md`;命令 `python -m freshlatch.eval run --gold … [--runs N] | control | report`。不引入 LangSmith/deepeval/openevals 依赖(三案例均只有零件无整体,外部服务依赖代价大于收益),不做评测页 UI。
+
+**为什么**:七个判据全部指向自研轻 runner——①评测第一原则是测真身,runner 必须跑端到端主链而非 Auditor 替身,否则检索 miss 这个最大失败源被绕过、假绿对照因果链断裂;②假绿对照用 JSON mode 三档契约(`{"verdict": alive|dead|unknown}`)机械对账,prompt 红线是不得透露 T1 存在与金标——同模型(qwen-flash)无工具只读 T0 摘要,必须对 must_stale 判 alive 才算对照成立;③统计纪律落 `--runs N` 接口(成本 ≈¥0.12/轮 N=10 全量,可忽略),报告按 per-claim pass@k 设计、N=1 退化一列,N≥5 方差报告归 W5–W8;④混淆矩阵 3×3 报命中/漏判条数不报百分比(12 条小样本,工单 #8 登记册口径);⑤失败归因本期只存 trajectory 原料(jsonl 落盘),机械归因 harness 是 W5–W8;⑥CI 两个绿灯语义分离——GitHub Actions 每次提交只跑 `pytest tests/`(gates 纯函数 + gold.json 驱动闸单测,零 LLM 成本),LLM 金标 runner 手动 + milestone 触发、报告进 git;DashScope 抖动与 prompt 迭代期恒红会让 CI 全量 LLM 回归假红灯,违背「CI 红灯即回归」语义;⑦pytest 目录借鉴多 agent 案例双 gate:`tests/unit/`(纯函数)与 `tests/eval/`(金标驱动闸单测),conftest 只做 sys.path 注入。七决策的完整候选对比与手段登记册见 `docs/research/评测harness与假绿对照设计评估.md`。
+
+**后果**:`src/freshlatch/eval/` 成为产品一等功能模块(面试准备清单本期预留三件实装之一);ADR-0004 的轨迹落盘约定(messages JSONL + 步数/预算遥测)在此成为评测原料,前后呼应;W5–W8 的消融表、机械错误归因、N≥5 方差报告均在本 runner 接口上扩展(均已在登记册标【触发】,不推翻本决策);复验单 UI(#4)仍是判定的用户展示面,评测展示不进 UI。对应工单 [#9](https://github.com/luxingjiang1993/FreshLatch/issues/9)。
