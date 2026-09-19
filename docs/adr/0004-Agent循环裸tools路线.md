@@ -1,0 +1,7 @@
+# Agent 循环:裸 OpenAI 兼容 tools 自写循环,弃 LangGraph ToolNode / Agently
+
+Lead / Critic / Auditor 的 Agent 循环采用 **路线 (a):OpenAI 兼容 chat.completions + tools 自写循环**(~50 行,工程化种子取 OpenManus `app/agent/toolcall.py` 的 think/act 分离、`max_steps`、ToolCollection 骨架),不引 langchain / agently。LangGraph 按工单 [#7](https://github.com/luxingjiang1993/FreshLatch/issues/7) 决议仅保留在人审管道(`interrupt()` + `Command(resume)` + `SqliteSaver`),不进 Agent 层——立项切片「图不是 Agent」纪律逐字落地。
+
+**为什么**:选型的五个判据里 (b)(c) 均落败——(b) ToolNode 把循环做进图,正面违反纪律,且 `create_react_agent` 已被 LangGraph 1.0.x 弃用;(c) Agently 把循环藏进 workflow 黑盒,护栏与动态派驻要跟其状态机纠缠,而它唯一做的是替我们写那 50 行循环。路线 (a) 让步数护栏落在循环层 `while` 条件(一处改)、让 `spawn_critic/spawn_auditor` 成为 Lead 白名单里的普通工具(动态派驻最自然的形态)、让角色禁止事项由构造实例时的工具白名单 fail-closed 执行;最大运行风险(裸循环里 qwen 多轮工具调用稳定性)已被工单 #2 冒烟否掉。三项子决策随本 ADR 一并拍板:①步数预算(Lead 18 / Critic 8 / Auditor 6)在循环层软收尾强制,检索预算 24 为 Run 级共享计数;②动态派驻 = 同进程同步起新循环实例(新会话/人格/白名单/预算),深度恒 1,只传主张 + focus + evidence_ids 不传全量 transcript;③角色工具白名单四表定稿(Lead 全工具含 spawn;Critic 无 `reverify_claim` 只许判死;Auditor 仅 `verdict` 出口),三层分离原则「prompt 管任务、白名单管禁止、规则闸管放行」。拍板方式为纯纸面,不做 POC;W1 开工第一个任务 = 先把 Lead 裸循环骨架跑通(冒烟级,一条主张端到端)。三路线对比与 26 项循环工程手段登记册见 `docs/research/Agent循环实现选型评估.md`,供面试讲解与后续点菜。
+
+**后果**:`src/freshlatch/` 需新增 Agent 循环模块(种子 `toolcall.py`,按 ADR-0001 模块划分落位);轨迹(messages JSONL + 步数/预算遥测)成为评测一等公民,进 `tests/` 闸门单测位;W5–W8 的 MCP 暴露与 W9–W12 的记忆写入均在本循环接口上扩展,不推翻本决策。对应工单 [#6](https://github.com/luxingjiang1993/FreshLatch/issues/6)。
