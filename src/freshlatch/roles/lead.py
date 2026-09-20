@@ -32,7 +32,10 @@ LEAD_PERSONA = """你是 Lead Reverifier,FreshLatch 的复验主官。你的任�
 纪律:
 - 作废名单里的主张已被人工作废,不要试图把它改回 fresh,闸会打回。
 - 你没有联网工具,不要臆造 T1 之外的信息。
-- 每条主张只下一次判定。"""
+- 每条主张只下一次判定。
+- 引用反证后不得判 fresh:你在 reason 里把某段 T1 称为「反证/推翻/已过时/被取代」后,fresh 即被排除——那段就是 stale 的反证,走 mark_stale。
+- 合取主张(「A 与 B」式)按签发原文整体判定:T1 明确推翻任一前提 ⇒ 整体 stale;其余前提未推翻或未复测,不构成判 fresh 的理由。
+- fresh 的唯一含义是签发原文此刻仍成立;不得改验「主张的新版本」——被新事实取代或改写的主张是 stale,不是 fresh。"""
 
 
 class LeadReverifier:
@@ -44,6 +47,7 @@ class LeadReverifier:
         self.decision = ClaimDecision(claim_id=claim.claim_id)
         self._finished = False
         self._seen_evidence: set[str] = set()  # 本会话 retrieve 返回过的 evidence_id(#16 白名单)
+        self._critic_spawned = False  # 本会话是否已派驻过 Critic(§8.5 checkpoint 去重)
 
     def run(self) -> ClaimDecision:
         self.ctx.gaps = []  # 缺口按主张隔离,禁止跨主张渗漏
@@ -148,11 +152,13 @@ class LeadReverifier:
         if args.get("claim_id") != self.claim.claim_id:
             return {"error": f"claim_id 只能是 {self.claim.claim_id}"}
         evidence_ids: list[str] = []
+        checkpoint: dict | None = None
         if status == "fresh":
             ids, err = self._check_evidence_ids(args.get("evidence_ids"), require_t1=True)
             if err:
                 return {"error": f"判 fresh 必须给出锚 T1 的检索证据 id: {err}"}
             evidence_ids = ids or []
+            checkpoint = self._auto_critic_checkpoint()  # §8.5:绿灯前反对派必须有一次发言机会
         else:
             evidence_ids = [str(e) for e in args.get("evidence_ids") or []]
         if status == "stale":
@@ -161,9 +167,12 @@ class LeadReverifier:
         self.decision.evidence_ids = evidence_ids
         if status == "unknown" and self.ctx.gaps:
             self.decision.reason = "缺口: " + "; ".join(self.ctx.gaps)
-        return {"recorded": {"claim_id": self.claim.claim_id, "status": status,
-                             "evidence_ids": evidence_ids},
-                "note": "fresh 需经规则闸,闸打回将落 unknown"}
+        result = {"recorded": {"claim_id": self.claim.claim_id, "status": status,
+                               "evidence_ids": evidence_ids},
+                  "note": "fresh 需经规则闸,闸打回将落 unknown"}
+        if checkpoint:
+            result["critic_checkpoint"] = checkpoint
+        return result
 
     def _t_mark_stale(self, args: dict) -> dict:
         if args.get("claim_id") != self.claim.claim_id:
@@ -187,6 +196,19 @@ class LeadReverifier:
         self.ctx.gaps.append(desc)
         return {"recorded_gap": desc}
 
+    def _auto_critic_checkpoint(self) -> dict | None:
+        """fresh 落判定前的强制反对派 checkpoint(§8.5 架构级对冲咬合)。
+
+        事故背景:c2 三次运行 Lead 都逐字引用致死段落后自信地判 fresh,全程零 Critic 派驻——
+        派驻由 LLM 自主决定时,「自信地错」恰是派驻最不会触发的时刻。故改为结构性触发:
+        本会话未派驻过(人工或自动)则强制自动派驻一次;focus 不限方向——
+        主张→维度映射表会漏掉干扰项,全语料找反证最稳。
+        Critic 结论只作参考,判定仍由 Lead 下;此 checkpoint 保证反对派至少发言一次。
+        """
+        if self._critic_spawned:
+            return None
+        return self._spawn_critic(focus=None, auto=True)
+
     def _t_spawn_critic(self, args: dict) -> dict:
         """动态派驻(§6.3):同进程同步起全新循环实例;focus 调用边界硬校验,非法值回列词表。
 
@@ -199,14 +221,20 @@ class LeadReverifier:
         elif focus not in FOCUS_DIMENSIONS:
             return {"error": "focus 只能是 %s 之一,或省略(=不限方向);收到: %r"
                               % ("/".join(FOCUS_DIMENSIONS), focus)}
-        self.ctx.emit({"type": "critic_spawn", "claim_id": self.claim.claim_id, "focus": focus})
+        return self._spawn_critic(focus, auto=False)
+
+    def _spawn_critic(self, focus: str | None, *, auto: bool) -> dict:
+        """派驻执行体:人工(_t_spawn_critic)与自动 checkpoint 共用;事件带 auto 标记可区分来源。"""
+        self._critic_spawned = True
+        self.ctx.emit({"type": "critic_spawn", "claim_id": self.claim.claim_id,
+                       "focus": focus, "auto": auto})
         critic = Critic(self.ctx, self.claim, self.llm, focus=focus,
                         evidence_ids=sorted(self._seen_evidence))
         result = critic.run()
         self.ctx.emit({"type": "critic_result", "claim_id": self.claim.claim_id,
                        "focus": focus, "steps_used": result.steps_used,
                        "counter_evidence_ids": result.counter_evidence_ids})
-        return {"reported_by": "critic", "focus": focus,
+        return {"reported_by": "critic", "focus": focus, "auto": auto,
                 "finding": result.finding,
                 "counter_evidence_ids": result.counter_evidence_ids,
                 "stale_reason": result.stale_reason,
