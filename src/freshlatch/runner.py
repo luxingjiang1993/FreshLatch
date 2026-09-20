@@ -14,6 +14,7 @@ from pathlib import Path
 from freshlatch.guardrails import BUDGET_EXHAUSTED_MESSAGE, Guardrails
 from freshlatch.llm import DecodingParams, LLMClient
 from freshlatch.models import AsOf, Claim
+from freshlatch.skills_loader import load_skill_body
 from freshlatch.store.base import RetrievalStore
 
 RETRIEVAL_EXHAUSTED = {"budget_exhausted": True,
@@ -103,14 +104,26 @@ class Runner:
         )
         self.llm = llm or LLMClient()
         self._trajectory_path: Path | None = None
+        # 教义表接线(规格 T6 实装债,#21):skills/*.md 从盘到场,启动时加载一次,
+        # 逐会话注入角色系统提示;加载失败为 None,角色侧回退内联人格并落 skill_fallback 事件。
+        self._doctrine: dict[str, str | None] = {
+            "reverify": load_skill_body("reverify"),
+            "devil_advocate": load_skill_body("devil_advocate"),
+        }
 
-    def run(self, claims: list[Claim], *, trajectory_dir: str | Path = "reports/trajectories") -> RunResult:
+    def _spawn_lead(self, claim: Claim):
+        """构造 Lead 会话:教义表(reverify 为本会话主提示,devil_advocate 沿派驻链给 Critic)。"""
         from freshlatch.roles.lead import LeadReverifier  # 延迟导入避免环
 
+        return LeadReverifier(self.ctx, claim, self.llm,
+                              doctrine=self._doctrine.get("reverify"),
+                              critic_doctrine=self._doctrine.get("devil_advocate"))
+
+    def run(self, claims: list[Claim], *, trajectory_dir: str | Path = "reports/trajectories") -> RunResult:
         decisions: dict[str, ClaimDecision] = {}
         steps_by_claim: dict[str, int] = {}
         for claim in claims:
-            lead = LeadReverifier(self.ctx, claim, self.llm)
+            lead = self._spawn_lead(claim)
             decision = lead.run()
             decisions[claim.claim_id] = decision
             steps_by_claim[claim.claim_id] = lead.steps_used

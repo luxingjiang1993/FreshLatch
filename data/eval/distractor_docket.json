@@ -1,0 +1,15 @@
+{
+  "question": "是否应该在未来 12 个月进入东南亚中小企业 AI 客服市场?",
+  "claims": [
+    {
+      "claim_id": "c13",
+      "statement": "竞品 SeaDesk 付费商户毛利率约 62%,高于东南亚 SaaS 同业平均水平",
+      "t0_evidence_ids": ["t0-competitor-economics#p2"]
+    },
+    {
+      "claim_id": "c14",
+      "statement": "目标市场头部三家分销商合计铺货覆盖率约 55%",
+      "t0_evidence_ids": ["t0-channel-coverage#p2"]
+    }
+  ]
+}

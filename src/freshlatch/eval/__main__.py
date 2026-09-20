@@ -18,7 +18,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
 from freshlatch.eval.control import run_control  # noqa: E402
 from freshlatch.eval.report import console_summary, render_report, write_outputs  # noqa: E402
-from freshlatch.eval.runner import run_gold  # noqa: E402
+from freshlatch.eval.runner import DEFAULT_DISTRACTOR_DOCKET, run_gold  # noqa: E402
 from freshlatch.llm import DecodingParams  # noqa: E402
 from freshlatch.store.sqlite_store import SQLiteStore  # noqa: E402
 
@@ -47,6 +47,7 @@ def main() -> None:
 
     p_ctrl = sub.add_parser("control", help="无工具假绿对照")
     common(p_ctrl)
+    p_ctrl.add_argument("--distractor-docket", default=DEFAULT_DISTRACTOR_DOCKET)
 
     p_rep = sub.add_parser("report", help="从 raw JSON 重渲染 markdown")
     p_rep.add_argument("raw_json")
@@ -66,7 +67,8 @@ def main() -> None:
                        trajectory_dir=args.trajectory_dir)
     else:  # control
         raw = run_control(store, None, gold_path=args.gold, docket_path=args.docket,
-                          decoding=_decoding(args))
+                          decoding=_decoding(args),
+                          distractor_docket_path=args.distractor_docket)
     print(console_summary(raw))
     md_path, json_path = write_outputs(raw, args.out)
     print(f"报告: {md_path}\n原始 JSON: {json_path}")

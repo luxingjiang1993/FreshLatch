@@ -51,6 +51,8 @@ def _render_gold(raw: dict) -> str:
         f"- 运行遍数 N = {raw['runs']}(per-claim 命中次数/N 见 pass@k 表;N=1 退化为单列)",
         "- 评测对象:端到端真主链(Lead 循环 + Critic 派驻 + 规则闸),非替身(ADR-0005 决策一)",
         f"- eval 模式开关:{' ; '.join(raw['eval_mode_switches'])}",
+        "- 层间归因诚实框定(#19 §4.6):本报告是 bundle 层行为读数;接线/注入/人格各层生效性"
+        "由结构单测断言(tests/unit/test_c5c6_wiring.py),bundle 绿 ≠ 逐层行为生效。",
         "",
     ]
     lines += _decoding_block(raw)
@@ -110,6 +112,39 @@ def _render_gold(raw: dict) -> str:
         lines.append(f"- {cid}: {ok}({'/'.join('过' if g else '违' for g in guards)})")
     lines.append("")
 
+    # 乙-ii:维度疑似混淆自动标注(must_fresh 判 stale 且锚未对齐;归 #19 评估文档,不进 CONTEXT.md)
+    flags = raw.get("dimension_confusion_flags") or {}
+    lines += ["## 维度疑似混淆标注(乙-ii:must_fresh 判 stale 且金标锚未对齐;机器疑似,定性归人查)",
+              ""]
+    flagged = False
+    for cid, run_flags in sorted(flags.items(), key=lambda kv: int(kv[0][1:])):
+        bad_runs = [str(i + 1) for i, f in enumerate(run_flags) if f]
+        if bad_runs:
+            flagged = True
+            lines.append(f"- ⚠️ {cid}: 第 {'/'.join(bad_runs)} 遍 stale 且未落在金标锚"
+                         f"——疑似以他维度证据推翻本维度主张(如定价≠成本、客单价≠毛利、覆盖率≠渗透率),人查定性")
+    if not flagged:
+        lines.append("- 无。")
+    lines.append("")
+
+    # 乙-i:干扰项敏感度附表(不进判分矩阵,不计通过线;#21)
+    lines += ["## 干扰项敏感度附表(乙-i:must_fresh 方向未见混淆类型;不进判分矩阵,不计通过线)", ""]
+    sens = raw.get("distractor_sensitivity") or {}
+    if not sens:
+        lines.append("- 本运行未含干扰项桶(gold.json 无 must_fresh_distractor 或未提供 distractor docket)。")
+    else:
+        lines += ["| claim_id | 期望 | 逐遍判定 | fresh 命中/N | 金标锚命中/N | 轨迹 |",
+                  "|---|---|---|---|---|---|"]
+        for cid, s in sorted(sens.items(), key=lambda kv: int(kv[0][1:])):
+            lines.append(f"| {cid} | fresh | {'/'.join(s['statuses']) or '(未跑)'} "
+                         f"| {s['fresh_hits']}/{raw['runs']} | {s['anchor_hits']}/{raw['runs']} "
+                         f"| {s['trajectory']} |")
+        lines += ["",
+                  "> 口径:干扰项测修复对未见混淆类型(客单价≠毛利、覆盖率≠渗透率)的泛化,"
+                  "判分矩阵仍为 12 条(W4↔W12 同尺),本表不计通过线;判定 stale 且锚未对齐时"
+                  "按上一节「维度疑似混淆」标注人查。"]
+    lines.append("")
+
     # 失败条目轨迹指针
     lines += ["## 失败条目轨迹指针(归因人工定性;机械归因 harness 归 W5–W8)", ""]
     last_detail = raw["per_run"][-1]["detail"]
@@ -144,6 +179,13 @@ def _render_control(raw: dict) -> str:
         f"- **对照成立: {'✅' if raw['control_pass'] else '❌'}**",
         "",
     ]
+    baseline = raw.get("distractor_baseline") or {}
+    if baseline:
+        lines += ["## 干扰项基线读数(#21 乙-i 假绿对照记录:期望 alive)", "",
+                  "| claim_id | 基线判定 |", "|---|---|"]
+        for cid, v in sorted(baseline.items(), key=lambda kv: int(kv[0][1:])):
+            lines.append(f"| {cid} | {v} {'(期望 alive)' if v != 'alive' else '✅'} |")
+        lines += ["", f"> {raw.get('distractor_baseline_note', '')}", ""]
     return "\n".join(lines)
 
 

@@ -1,7 +1,10 @@
 """Lead Reverifier:真 Agent,裸 ReAct 循环,逐轮自主决定下一步。
 
 上下文只装:主张 + 最近检索块 + 作废名单(§2.8);不装全部语料,不做上下文压缩。
-W1 人格为内联最小版;skills/reverify/SKILL.md(T6)落盘后由 Runner 注入替换。
+人格双轨(#21 接线后):系统提示主份 = skills/reverify/SKILL.md 教义表(Runner 注入,
+规格 T6 实装债补齐);内联 LEAD_PERSONA 为加载失败兜底 + 一句指向教义表(不复制铁律
+全文,防双拷贝漂移)。教义表缺失时的回退落 skill_fallback 事件,不静默降级——
+「在盘不在场」正是 c5/c6 事故根因(#19 评估文档事实 1)。
 W3 起白名单含 spawn_critic:动态派驻 Critic 专找反证(§6.3),Critic 结论只作参考,判定仍由 Lead 下。
 """
 
@@ -37,14 +40,27 @@ LEAD_PERSONA = """你是 Lead Reverifier,FreshLatch 的复验主官。你的任�
 - 引用反证后不得判 fresh:你在 reason 里把某段 T1 称为「反证/推翻/已过时/被取代」后,fresh 即被排除——那段就是 stale 的反证,走 mark_stale。
 - 合取主张(「A 与 B」式)按签发原文整体判定:T1 明确推翻任一前提 ⇒ 整体 stale;其余前提未推翻或未复测,不构成判 fresh 的理由。
 - fresh 的唯一含义是签发原文此刻仍成立;不得改验「主张的新版本」——被新事实取代或改写的主张是 stale,不是 fresh。
-- 采纳 Critic 反证前必须独立核对其锚定的前提/度量维度与主张签发原文是否一致:主张讲成本,竞品定价/月费不是成本的反证(定价≠成本,属「无因果关系并列」式干扰);维度不符不得据此改判 stale,更不得未核对即镜像 Critic 框架下判定。"""
+- 采纳 Critic 反证前必须独立核对其锚定的前提/度量维度与主张签发原文是否一致:主张讲成本,竞品定价/月费不是成本的反证(定价≠成本,属「无因果关系并列」式干扰);维度不符不得据此改判 stale,更不得未核对即镜像 Critic 框架下判定。
+- 完整教义(「约束与纠正」对照表)单一真相在 skills/reverify/SKILL.md,正常由 Runner 整份注入本提示;若你未见该对照表,说明注入失败,仍须按本内联纪律执行。"""
+
+# mark_stale 受理回执确定性携带的维度核对指令(#19 子决策 3):
+# 事故路径(Lead 自主 mark_stale)三重硬校验无一与维度有关,本指令保证「核对在场」——
+# 指令在场 ≠ 机器判维度(闸③不重开);词表随乙-i 干扰项同步扩充(客单价≠毛利、覆盖率≠渗透率)。
+MARK_STALE_DIMENSION_NOTE = (
+    "mark_stale 受理自查(每条必显,不依赖自觉):该反证锚定的前提/度量维度与主张签发原文是否一致?"
+    "定价≠成本、客单价≠毛利、覆盖率≠渗透率等「无因果关系并列」不构成推翻;"
+    "维度不符不得据此判 stale,应放弃本次判定并回到 T1 原文找同维度证据,或走 mark_gap + unknown。"
+)
 
 
 class LeadReverifier:
-    def __init__(self, ctx: RunContext, claim: Claim, llm) -> None:
+    def __init__(self, ctx: RunContext, claim: Claim, llm, *,
+                 doctrine: str | None = None, critic_doctrine: str | None = None) -> None:
         self.ctx = ctx
         self.claim = claim
         self.llm = llm
+        self._doctrine = doctrine  # reverify SKILL.md 正文(Runner 接线,#21);None=回退内联人格
+        self._critic_doctrine = critic_doctrine  # 沿派驻链给 Critic(devil_advocate)
         self.steps_used = 0
         self.decision = ClaimDecision(claim_id=claim.claim_id)
         self._finished = False
@@ -84,7 +100,14 @@ class LeadReverifier:
         quarantined = sorted(self.ctx.quarantine_list)
         void_line = f"作废名单(人工已作废,不得改回 fresh): {', '.join(voided) if voided else '(空)'}"
         quarantine_line = f"隔离名单: {', '.join(quarantined) if quarantined else '(空)'}"
-        return f"{LEAD_PERSONA}\n\n{void_line}\n{quarantine_line}"
+        if self._doctrine:
+            base = self._doctrine  # 教义表在场为主份(单一真相在 skills/reverify/SKILL.md)
+        else:
+            # 兜底:教义表加载失败仍须能跑,但绝不静默——事件落轨迹,内联人格有指向句
+            self.ctx.emit({"type": "skill_fallback", "skill": "reverify",
+                           "claim_id": self.claim.claim_id})
+            base = LEAD_PERSONA
+        return f"{base}\n\n{void_line}\n{quarantine_line}"
 
     def _build_task(self) -> str:
         ev = ", ".join(self.claim.t0_evidence_ids) or "(无)"
@@ -191,7 +214,8 @@ class LeadReverifier:
         self.decision.reason = reason
         self.decision.evidence_ids = ids or []
         return {"recorded": {"claim_id": self.claim.claim_id, "status": "stale",
-                             "reason": reason, "evidence_ids": ids}}
+                             "reason": reason, "evidence_ids": ids},
+                "note": MARK_STALE_DIMENSION_NOTE}
 
     def _t_mark_gap(self, args: dict) -> dict:
         desc = args.get("description", "").strip()
@@ -233,7 +257,8 @@ class LeadReverifier:
         self.ctx.emit({"type": "critic_spawn", "claim_id": self.claim.claim_id,
                        "focus": focus, "auto": auto})
         critic = Critic(self.ctx, self.claim, self.llm, focus=focus,
-                        evidence_ids=sorted(self._seen_evidence))
+                        evidence_ids=sorted(self._seen_evidence),
+                        doctrine=self._critic_doctrine)
         result = critic.run()
         self.ctx.emit({"type": "critic_result", "claim_id": self.claim.claim_id,
                        "focus": focus, "steps_used": result.steps_used,

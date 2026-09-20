@@ -4,7 +4,9 @@
 只收「主张原文 + focus + 相关 evidence_id 列表」,Lead 的思路与全过程 transcript 一律不过境。
 白名单 CRITIC_TOOLS:无 spawn(深度恒 1)、无 reverify_claim(只许判死,物理上无法放行)。
 与 Lead 共享 RunContext 的 Run 级检索预算:Lead 查多了 Critic 就剩得少(§6.1)。
-人格为内联最小版;skills/devil_advocate/SKILL.md(T6)落盘后由 Runner 注入替换。
+人格双轨(#21 接线后):系统提示主份 = skills/devil_advocate/SKILL.md 教义表(Runner 经
+Lead 派驻链注入);内联 CRITIC_PERSONA 为加载失败兜底。缺失时回退落 skill_fallback 事件,
+不静默降级(「在盘不在场」是 c5/c6 事故根因,#19 评估文档事实 1)。
 """
 
 from __future__ import annotations
@@ -54,12 +56,13 @@ class Critic:
     """一次派驻实例:全新循环(新会话/人格/白名单/预算),同步跑完回吐结论。"""
 
     def __init__(self, ctx, claim: Claim, llm, *, focus: str | None = None,
-                 evidence_ids: list[str] | None = None) -> None:
+                 evidence_ids: list[str] | None = None, doctrine: str | None = None) -> None:
         self.ctx = ctx
         self.claim = claim
         self.llm = llm
         self.focus = focus  # 封闭枚举 6 值之一,或 None=不限方向(Lead 侧已硬校验)
         self.evidence_ids = list(evidence_ids or [])
+        self._doctrine = doctrine  # devil_advocate SKILL.md 正文(#21 接线);None=回退内联人格
         self._seen_evidence: set[str] = set()  # 本会话 retrieve 白名单(#16 同款)
         self.result = CriticResult()
 
@@ -89,7 +92,13 @@ class Critic:
             focus_line = f"本次派驻方向(focus): {self.focus}({FOCUS_ZH.get(self.focus, self.focus)})"
         else:
             focus_line = "本次派驻方向: 不限(未指定 focus),全语料找反证"
-        return f"{CRITIC_PERSONA}\n\n{focus_line}"
+        if self._doctrine:
+            base = self._doctrine  # 教义表在场为主份(单一真相在 skills/devil_advocate/SKILL.md)
+        else:
+            self.ctx.emit({"type": "skill_fallback", "skill": "devil_advocate",
+                           "claim_id": self.claim.claim_id})
+            base = CRITIC_PERSONA
+        return f"{base}\n\n{focus_line}"
 
     def _build_task(self) -> str:
         ids = ", ".join(self.evidence_ids) or "(无)"

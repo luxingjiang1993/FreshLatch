@@ -22,10 +22,10 @@ def memory_store():
 
 
 def test_corpus_mirror_parity():
-    """双镜像一一对应:同 doc_id 在 t0/ 与 t1/ 各一篇。"""
+    """双镜像一一对应:同 doc_id 在 t0/ 与 t1/ 各一篇(#21 起 14 篇:12 主矩阵 + 2 干扰项)。"""
     t0 = {p.stem for p in (CORPUS / "t0").glob("*.md")}
     t1 = {p.stem for p in (CORPUS / "t1").glob("*.md")}
-    assert len(t0) == 12 and t0 == t1
+    assert len(t0) == 14 and t0 == t1
 
 
 def test_chunk_schema_13_columns():

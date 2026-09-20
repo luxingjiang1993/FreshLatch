@@ -18,6 +18,11 @@ from freshlatch.llm import DecodingParams, LLMClient
 from freshlatch.runner import Runner, load_docket
 from freshlatch.store.base import RetrievalStore
 
+# 乙-i 干扰项桶(#21):must_fresh 方向的未见混淆类型探针(客单价≠毛利、覆盖率≠渗透率)。
+# 不进 BUCKETS 判分矩阵(12 条口径一字未动,W4↔W12 同尺),单列敏感度附表,不计通过线。
+DISTRACTOR_BUCKET = "must_fresh_distractor"
+DEFAULT_DISTRACTOR_DOCKET = "data/eval/distractor_docket.json"
+
 EVAL_MODE_SWITCHES = (
     "跳过 HumanLatch:W1–W4 未挂载,runner 不 import langgraph,人审不进评测路径",
     "禁用联网:web_search 不在任何角色白名单,模型物理上不可见(§4.6)",
@@ -40,14 +45,27 @@ def gold_claims(gold: dict, docket_path: str | Path) -> list:
 def run_gold(store: RetrievalStore, llm: LLMClient | None, *, gold_path: str | Path,
              docket_path: str | Path, runs: int = 1,
              decoding: DecodingParams | None = None,
-             trajectory_dir: str | Path = "reports/trajectories") -> dict:
-    """跑 N 遍全量金标,返回原始结果 dict(报告与 raw JSON 的唯一原料)。"""
+             trajectory_dir: str | Path = "reports/trajectories",
+             distractor_docket_path: str | Path = DEFAULT_DISTRACTOR_DOCKET) -> dict:
+    """跑 N 遍全量金标,返回原始结果 dict(报告与 raw JSON 的唯一原料)。
+
+    主矩阵恒为 BUCKETS 三桶 12 条(判分口径不动);must_fresh_distractor 桶走同一真主链,
+    单列敏感度附表原料(乙-i),不计通过线。
+    """
     decoding = decoding or DecodingParams()
     llm = llm or LLMClient()
     gold = load_gold(gold_path)
     claims = gold_claims(gold, docket_path)
+    # 干扰项主张:独立 docket(不动生产卷宗),缺桶或缺文件则本段留空(向后兼容)
+    distractor_path = Path(distractor_docket_path)
+    distractor_claims: list = []
+    if gold.get(DISTRACTOR_BUCKET) and distractor_path.exists():
+        d_ids = set(gold[DISTRACTOR_BUCKET])
+        distractor_claims = [c for c in load_docket(distractor_path).claims
+                             if c.claim_id in d_ids]
 
     per_run: list[dict] = []
+    per_run_distractor: list[dict] = []
     for run_idx in range(1, runs + 1):
         # 逐运行 decoding 留档(§4.7):每遍独立 DecodingParams,recorded_at 区分运行
         run_decoding = replace(decoding, recorded_at=datetime.now(timezone.utc).isoformat())
@@ -69,6 +87,23 @@ def run_gold(store: RetrievalStore, llm: LLMClient | None, *, gold_path: str | P
         per_run.append({"run": run_idx, "decoding": run_decoding.__dict__,
                         "decisions": decisions,
                         "detail": detail, "matrix": matrix.to_dict()})
+        # 干扰项同链跑(同一 decoding、同一 Runner 入口),不进 matrix
+        if distractor_claims:
+            d_decisions: dict[str, str] = {}
+            d_detail: dict[str, dict] = {}
+            for claim in distractor_claims:
+                runner = Runner(store, llm, mode="eval", decoding=run_decoding)
+                result = runner.run([claim], trajectory_dir=trajectory_dir)
+                d_decisions[claim.claim_id] = claim.status
+                d_detail[claim.claim_id] = {
+                    "status": claim.status,
+                    "reason": claim.reason,
+                    "evidence_ids": list(claim.t1_evidence_ids),
+                    "trajectory": str(result.trajectory_path),
+                    "steps_used": result.steps_by_claim.get(claim.claim_id, 0),
+                }
+            per_run_distractor.append({"run": run_idx, "decisions": d_decisions,
+                                       "detail": d_detail})
 
     # per-claim 命中次数/N(报告按 N>1 设计的 pass@k 表)
     pass_at_k = {
@@ -119,6 +154,8 @@ def run_gold(store: RetrievalStore, llm: LLMClient | None, *, gold_path: str | P
         "point_back_j1": point_back,
         "counterevidence_j2": counterevidence,
         "fresh_guardrail_j2": fresh_guardrail,
+        "dimension_confusion_flags": dimension_confusion_flags(gold, per_run),
+        "distractor_sensitivity": distractor_sensitivity(gold, per_run_distractor),
         "trajectory_dir": str(trajectory_dir),
     }
 
@@ -128,3 +165,45 @@ def _expected(gold: dict, cid: str) -> str | None:
         if cid in gold[bucket]:
             return EXPECTED_VERDICT[bucket]
     return None
+
+
+# -- 乙-ii / 乙-i 汇总纯函数(可单测,层间归因靠它们不靠 bundle) -------------------
+
+
+def dimension_confusion_flags(gold: dict, per_run: list[dict]) -> dict[str, list[bool]]:
+    """乙-ii 标注原料:must_fresh 判 stale 且未落在金标锚 → 该遍记「维度疑似混淆」。
+
+    评测模式加严判据,归 #19 评估文档(纪律 #4,不进 CONTEXT.md);机器只给疑似标注,定性归人查。
+    """
+    flags: dict[str, list[bool]] = {}
+    for cid in gold["must_fresh"]:
+        expected = expected_evidence_id(gold, cid)
+        flags[cid] = [
+            per_run[i]["detail"][cid]["status"] == "stale"
+            and expected not in per_run[i]["detail"][cid]["evidence_ids"]
+            for i in range(len(per_run))
+        ]
+    return flags
+
+
+def distractor_sensitivity(gold: dict, per_run: list[dict]) -> dict[str, dict]:
+    """乙-i 附表原料:干扰项逐遍判定 + fresh 命中 + 金标锚命中(不进判分矩阵)。"""
+    sens: dict[str, dict] = {}
+    for cid in gold.get(DISTRACTOR_BUCKET, []):
+        expected = expected_evidence_id(gold, cid)
+        if not per_run:  # 桶在册但未配置 docket:留空位,不炸
+            sens[cid] = {"expected_anchor": expected, "statuses": [],
+                         "fresh_hits": 0, "anchor_hits": 0, "trajectory": None}
+            continue
+        statuses = [per_run[i]["decisions"][cid] for i in range(len(per_run))]
+        sens[cid] = {
+            "expected_anchor": expected,
+            "statuses": statuses,
+            "fresh_hits": sum(1 for s in statuses if s == "fresh"),
+            "anchor_hits": sum(
+                1 for i in range(len(per_run))
+                if expected in per_run[i]["detail"][cid]["evidence_ids"]
+            ),
+            "trajectory": per_run[-1]["detail"][cid]["trajectory"],
+        }
+    return sens
