@@ -48,8 +48,16 @@ Lead 派驻 Critic 时给的反证搜索方向。封闭枚举 6 值,与语料金
 _Avoid_: 聚焦、方向、视角
 
 **Auditor**:
-短循环 Agent,判定 `fresh` / `stale` / `unknown`;不得改主张正文,**不得拥有放行权**。
+短循环 Agent,判定 `fresh` / `stale` / `unknown`;不得改主张正文,**不得拥有放行权**。形态 = 单轮 structured-output 判定(无工具无循环,输入主张+证据包;W5–W8 实装,#20 拍板确认)。
 _Avoid_: 审核员、裁判
+
+**双判一致 (dual-verdict consensus)**:
+fresh 的唯一路径:Lead 与 Auditor 判定一致(全 fresh 才绿)。含 `stale` 落 stale、含 `unknown` 落 unknown 的落档真值表见 ADR-0009(单一真相,不复制)。Auditor 缺席不构成任何绿格。
+_Avoid_: 双人复核、双重确认
+
+**异议记录 (dissent)**:
+Auditor 对 Lead 的 stale/unknown 判定给出的反对意见(结构化:Auditor 判定 + 理由 + 证据 id),挂在复验单该主张卡片下,随红/黄卡进 HumanLatch,是人审续命的合法输入之一。自由文本异议不进复验单。
+_Avoid_: 异议备注、反对票
 
 **Forensic (记忆刑侦)**:
 真 Agent,只审本课题长期记忆:找死事实、互斥条目、无 `source_ref` 条目;不得改主张、不得放行、不得删除文件。
@@ -57,7 +65,7 @@ _Avoid_: 审核员、裁判
 ## 闸与人审
 
 **规则闸 (Gate)**:
-纯函数/Workflow 层,强制执行不变量:`stale` / `unknown` 不得绿灯、无 `t1_evidence_ids` 不得 `fresh`、checksum 对不上不得 fresh/续命、stale 必须携带可点回 T1 反证 id、stale 反证不得为纯元陈述。绿灯唯一出口。
+纯函数/Workflow 层,强制执行不变量:`stale` / `unknown` 不得绿灯、无 `t1_evidence_ids` 不得 `fresh`、checksum 对不上不得 fresh/续命、stale 必须携带可点回 T1 反证 id、stale 反证不得为纯元陈述、fresh 需双判一致(`auditor_verdict` 在场且非 dissent,ADR-0009)。绿灯唯一出口。
 _Avoid_: 校验器、检查器
 
 **元陈述 (meta-statement)**:
