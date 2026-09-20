@@ -1,9 +1,5 @@
-# 个人配置,不进版本库
-.claude/settings.local.json
-CLAUDE.local.md
-.env
-__pycache__/
-*.pyc
-data/*.db
-!data/.gitkeep
-.pytest_cache/
+# 运行产物(轨迹每次复验重新生成,非源码)
+reports/trajectories/*.jsonl
+
+# Claude Code 会话配置
+.claude/

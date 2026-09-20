@@ -1,0 +1,245 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "FreshLatch 已拍板结构",
+    "locale": "zh-CN",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/luxingjiang1993/FreshLatch.git",
+      "revision": "48fa644dadeb978a66c573f781527cbd8b3db0c5",
+      "provider": "github",
+      "link_mode": "web"
+    },
+    "views": [
+      {
+        "id": "main-path",
+        "label": "复验主链",
+        "focus": ["docket", "runner", "lead", "rulegate", "scribe", "latch", "sheet"],
+        "note": "导入 T0 主张后，经 Lead 与规则闸，再到人审和复验单。此图是规格，不是已运行的进程。"
+      },
+      {
+        "id": "retrieve",
+        "label": "检索与模型",
+        "focus": ["lead", "store", "dashscope"],
+        "note": "语料已在 data/corpus。SQLite 检索层与 Lead 循环仍只有规格，模型调用只验证过冒烟脚本。"
+      },
+      {
+        "id": "critic",
+        "label": "Critic 旁路",
+        "focus": ["lead", "critic"],
+        "note": "W3 起 Lead 才挂载 spawn_critic。Critic 只回吐反证，不能写绿灯。"
+      },
+      {
+        "id": "eval-bypass",
+        "label": "评测旁路",
+        "focus": ["runner", "evalharness", "latch"],
+        "note": "评测不进复验单。eval 模式按规格跳过 HumanLatch，并在代码级禁用联网。"
+      }
+    ]
+  },
+  "layout": {
+    "mode": "grid",
+    "origin": [48, 96],
+    "cols": 7,
+    "gapX": 20,
+    "gapY": 56,
+    "cellW": 168,
+    "cellH": 68
+  },
+  "components": [
+    {
+      "id": "docket",
+      "type": "external",
+      "label": "T0 卷宗",
+      "sublabel": "data/t0_docket.json",
+      "tag": "盘上已有",
+      "row": 1,
+      "col": 0,
+      "sources": [
+        { "path": "docs/spec/01-目录与模块.md", "line": 33, "end_line": 36, "label": "导入件路径" },
+        { "path": "docs/spec/00-架构总览.md", "line": 10, "end_line": 12, "label": "只导入不调查" }
+      ]
+    },
+    {
+      "id": "runner",
+      "type": "backend",
+      "label": "Runner",
+      "sublabel": "预算与名单注入",
+      "tag": "规格未编码",
+      "row": 1,
+      "col": 1,
+      "sources": [
+        { "path": "docs/spec/00-架构总览.md", "line": 13, "end_line": 16, "label": "Workflow" },
+        { "path": "docs/spec/01-目录与模块.md", "line": 11, "end_line": 12, "label": "runner.py" }
+      ]
+    },
+    {
+      "id": "evalharness",
+      "type": "backend",
+      "label": "评测 harness",
+      "sublabel": "不进复验单",
+      "tag": "规格未编码",
+      "row": 0,
+      "col": 1,
+      "sources": [
+        { "path": "docs/spec/00-架构总览.md", "line": 53, "end_line": 55, "label": "评测旁路" },
+        { "path": "docs/spec/01-目录与模块.md", "line": 27, "end_line": 27, "label": "eval/" }
+      ]
+    },
+    {
+      "id": "store",
+      "type": "database",
+      "label": "检索库",
+      "sublabel": "SQLite + BM25",
+      "tag": "语料在盘",
+      "row": 2,
+      "col": 2,
+      "sources": [
+        { "path": "docs/spec/01-目录与模块.md", "line": 22, "end_line": 26, "label": "store/" },
+        { "path": "docs/adr/0003-存储与检索-sqlite-bm25管线.md", "line": 1, "end_line": 5, "label": "ADR-0003" }
+      ]
+    },
+    {
+      "id": "lead",
+      "type": "backend",
+      "label": "Lead",
+      "sublabel": "裸 ReAct，最多 18 步",
+      "tag": "规格未编码",
+      "row": 1,
+      "col": 2,
+      "sources": [
+        { "path": "docs/spec/00-架构总览.md", "line": 18, "end_line": 22, "label": "真 Agent" },
+        { "path": "docs/spec/03-工具表与白名单.md", "line": 7, "end_line": 17, "label": "工具签名" }
+      ]
+    },
+    {
+      "id": "dashscope",
+      "type": "external",
+      "label": "DashScope",
+      "sublabel": "qwen-flash",
+      "tag": "仅冒烟脚本",
+      "row": 0,
+      "col": 2,
+      "sources": [
+        { "path": "scripts/smoke_dashscope_tool_loop.py", "line": 26, "end_line": 26, "label": "兼容端点" },
+        { "path": "docs/spec/00-架构总览.md", "line": 55, "end_line": 55, "label": "假绿对照模型" }
+      ]
+    },
+    {
+      "id": "critic",
+      "type": "backend",
+      "label": "Critic",
+      "sublabel": "只找已死反证",
+      "tag": "W3 才挂载",
+      "row": 2,
+      "col": 1,
+      "sources": [
+        { "path": "docs/spec/00-架构总览.md", "line": 25, "end_line": 31, "label": "深度恒 1" },
+        { "path": "docs/spec/03-工具表与白名单.md", "line": 14, "end_line": 14, "label": "spawn_critic" }
+      ]
+    },
+    {
+      "id": "rulegate",
+      "type": "security",
+      "label": "规则闸",
+      "sublabel": "绿灯唯一出口",
+      "tag": "规格未编码",
+      "row": 1,
+      "col": 3,
+      "sources": [
+        { "path": "docs/spec/00-架构总览.md", "line": 37, "end_line": 40, "label": "四条不变量" },
+        { "path": "docs/spec/01-目录与模块.md", "line": 70, "end_line": 78, "label": "rule_gate" }
+      ]
+    },
+    {
+      "id": "scribe",
+      "type": "backend",
+      "label": "Scribe",
+      "sublabel": "只排版",
+      "tag": "规格未编码",
+      "row": 1,
+      "col": 4,
+      "sources": [
+        { "path": "docs/spec/00-架构总览.md", "line": 42, "end_line": 42, "label": "Workflow" }
+      ]
+    },
+    {
+      "id": "latch",
+      "type": "backend",
+      "label": "HumanLatch",
+      "sublabel": "W3 起 interrupt",
+      "tag": "规格未编码",
+      "row": 1,
+      "col": 5,
+      "sources": [
+        { "path": "docs/spec/00-架构总览.md", "line": 44, "end_line": 47, "label": "LangGraph 管道" },
+        { "path": "docs/spec/05-UI与交互.md", "line": 32, "end_line": 35, "label": "审批端点" }
+      ]
+    },
+    {
+      "id": "sheet",
+      "type": "frontend",
+      "label": "复验单",
+      "sublabel": "FastAPI + HTML 双栏",
+      "tag": "规格未编码",
+      "row": 1,
+      "col": 6,
+      "sources": [
+        { "path": "docs/spec/05-UI与交互.md", "line": 7, "end_line": 9, "label": "不是聊天框" },
+        { "path": "docs/adr/0002-复验单UI技术形态.md", "line": 1, "end_line": 5, "label": "ADR-0002" }
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "本机进程（规格；src/freshlatch 尚未建立）",
+      "wraps": ["runner", "evalharness", "store", "lead", "critic", "rulegate", "scribe", "latch", "sheet"]
+    },
+    {
+      "kind": "security-group",
+      "label": "绿灯唯一出口",
+      "wraps": ["rulegate"]
+    }
+  ],
+  "connections": [
+    { "id": "import-docket", "from": "docket", "to": "runner", "label": "导入主张", "variant": "emphasis" },
+    { "id": "inject-context", "from": "runner", "to": "lead", "label": "注入预算与名单", "variant": "emphasis", "labelDy": -28 },
+    { "id": "eval-skips-latch", "from": "runner", "to": "evalharness", "label": "eval 跳过人审", "variant": "dashed" },
+    { "id": "retrieve", "from": "lead", "to": "store", "label": "retrieve / read_source", "labelDy": 24 },
+    { "id": "model-call", "from": "lead", "to": "dashscope", "label": "chat.completions" },
+    { "id": "spawn-critic", "from": "lead", "to": "critic", "label": "spawn_critic", "labelDx": -56 },
+    { "id": "report-finding", "from": "critic", "to": "lead", "label": "report_finding", "labelDx": 44 },
+    { "id": "write-verdict", "from": "lead", "to": "rulegate", "label": "写入判定", "variant": "security" },
+    { "id": "green-only", "from": "rulegate", "to": "scribe", "label": "仅绿灯通过", "variant": "emphasis" },
+    { "id": "to-review", "from": "scribe", "to": "latch", "label": "排版后进人审", "variant": "emphasis" },
+    { "id": "show-sheet", "from": "latch", "to": "sheet", "label": "作废或续命", "variant": "emphasis" }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "盘上已有",
+      "items": [
+        "T0 卷宗、12+12 篇语料、gold.json 已在 data/",
+        "DashScope 只验证过 scripts/smoke_dashscope_tool_loop.py"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "已拍板、未改口",
+      "items": [
+        "三层强制：步数护栏、工具白名单、规则闸",
+        "LangGraph 只做人审 interrupt，不是 Agent"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "代码尚未建立",
+      "items": [
+        "没有 src/freshlatch、skills/、tests/",
+        "Auditor 与 Forensic 不在 W1–W4 挂载范围内"
+      ]
+    }
+  ]
+}
