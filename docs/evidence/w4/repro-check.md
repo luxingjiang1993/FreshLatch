@@ -47,6 +47,7 @@
 - J2 机器判据 `check_counterevidence` 缺「判定方向必须 stale」前置条件,导致:must_stale 判 fresh 却引用致死段落(c2)被误计「有效反证」;must_fresh 正确 fresh 判定必然命中支持锚,反向护栏恒假(基准 4/4「违例」实为假阳性)。
 - 处置:修复对齐 CONTEXT.md「有效反证=Critic 产出的反证」定义;回归单测 test_counterevidence_fresh_direction_not_counterevidence;J2 数字离线重算(零 LLM):seed 11 = 3/4、seed 22/33 = 4/4,停止条件机器层仍 ✅,反向护栏修正后 ✅。重算留档 machine-results.md。
 
-容差判定人:______(待判定人签认;AFK 复现记录与开发者人查处置在上,签认即接受或驳回处置) 日期:______
+容差判定人:luxingjiang1993(开发者本人) 日期:2026-09-20
+**签认:接受上述处置**——背离一(c9)记背离不升级、must_unknown 按 3/4 登记;背离二(c2)定谳违例级,§7.5 工程失败处置与 2 周修复窗口生效;harness 缺陷修复为工程修复、非判据修订。判据未动一字。
 
 > qwen-flash 是活托管端点,跨会话复现只能近似,此限制为留档声明(§4.7)。

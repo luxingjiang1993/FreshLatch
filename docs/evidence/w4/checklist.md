@@ -13,9 +13,9 @@
 
 | 项                           | 值                                                                                                         |
 | --------------------------- | --------------------------------------------------------------------------------------------------------- |
-| 模型版本                        | (填,如 qwen-flash 具体快照日期)                                                                                   |
-| 运行日期                        | (填)                                                                                                       |
-| decoding:temperature / seed | (填;采样场景必须显式非零温度,temp=0 时 seed 是摆设)                                                                        |
+| 模型版本                        | qwen-flash(活托管端点,无快照日期可填)                                                                                   |
+| 运行日期                        | 2026-09-20(P2/J1 12:34Z;J2 三 seed;J4 复现 12:54Z/12:57Z;control 同日编排器)                                                      |
+| decoding:temperature / seed | J1/P2/J4 复现:0.0 / None;J2:0.7 / seed 11、22、33(显式非零温度);control 依编排器登记(见 reports/ 各份留档)                             |
 | 语料 checksum                 | 三处留位本期为空(§2.4),填「未启用」                                                                                     |
 | 金标 runner 命令                | `PYTHONPATH=src python -m freshlatch.eval run --gold data/eval/gold.json`(报告+raw JSON 落 `reports/`,进 git) |
 | 假绿对照命令                      | `PYTHONPATH=src python -m freshlatch.eval control`                                                        |
@@ -85,11 +85,11 @@
 
 ## J4 复现抽查(冒烟层)
 
-- [ ] AFK 会话冷启动重跑金标 runner:闸层(must_* 零违例)**逐位复现**;
-- [ ] 判定层(矩阵条数)按**文档化容差**比对;
-- [ ] 违例级背离(must_stale 被判 fresh 等)触发人查——本次抽查有无违例级背离:______;
-- [ ] 模型版本 + 日期 + decoding 参数入档(见头部「执行环境登记」);
-- [ ] 抽查记录落 `docs/evidence/w4/repro-check.md`(AFK 会话对照数字 + 容差判定)。
+- [x] AFK 会话冷启动重跑金标 runner:闸层(must_* 零违例)**逐位复现**(复现1 逐位一致;复现2 c9 单条翻转,已记背离并人查);
+- [x] 判定层(矩阵条数)按**文档化容差**比对(复现1 一致;复现2 must_unknown 3/4 容差外,按最差一次登记);
+- [x] 违例级背离(must_stale 被判 fresh 等)触发人查——本次抽查有无违例级背离:**有——c2**(must_stale 判 fresh,基准+两次复现 3/3 确定性;定谳与处置见 repro-check.md 背离二,§7.5 工程失败类,2 周修复窗口已触发);c9 记背离不升级;
+- [x] 模型版本 + 日期 + decoding 参数入档(见头部「执行环境登记」与 repro-check.md 执行环境表);
+- [x] 抽查记录落 `docs/evidence/w4/repro-check.md`(AFK 会话对照数字 + 容差判定;末尾容差判定人已签认,2026-09-20)。
 
 
 
