@@ -51,3 +51,20 @@ def test_served_html_js_escapes_intact():
     for handler in ("pickClaim(&quot;", "showSource(&quot;"):
         assert handler in html, f"服务出去的 HTML 缺合法 {handler} 处理器"
 
+
+def test_clause_click_to_highlight():
+    """文档小节头可点击标黄(2026-09-20 验收反馈:p1/p3 只能干瞪眼)。
+
+    证据锚点高亮仍是主路径(点证据 id → 定位+标黄);小节头点击是补充交互,
+    纯前端,不碰主按钮/主界面红线(§5.6)。
+    """
+    assert "function pickClause(" in HTML_PAGE
+    assert 'onclick="pickClause(&quot;' in HTML_PAGE
+
+
+def test_tab_switch_keeps_manual_clause_selection():
+    """T0/T1 页签跟随用户手动选中的小节,不跳回证据锚点(验收反馈二)。"""
+    assert "let CURRENT_ANCHOR" in HTML_PAGE
+    assert "CURRENT_ANCHOR,&quot;T0&quot;" in HTML_PAGE
+    assert "CURRENT_ANCHOR,&quot;T1&quot;" in HTML_PAGE
+

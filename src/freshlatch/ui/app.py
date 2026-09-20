@@ -131,7 +131,8 @@ HTML_PAGE = """<!DOCTYPE html>
  button.big:disabled{background:#9e9e9e;cursor:wait}
  .latch button{margin-right:8px;padding:6px 14px;border-radius:6px;border:1px solid #d0d7de;cursor:pointer}
  .doc{background:#fff;border:1px solid #d0d7de;border-radius:6px;padding:10px 14px;margin-bottom:10px}
- .doc .clause{margin:8px 0;padding:6px 8px;border-radius:4px}
+ .doc .clause{margin:8px 0;padding:6px 8px;border-radius:4px;cursor:pointer}
+ .doc .clause:hover{background:#f6f8fa}
  .doc .clause.hit{background:#fff8c5;outline:2px solid #d4a72c}
  mark{background:#fff8c5;padding:1px 3px;border-radius:3px}
  .asof{font-size:11px;color:#fff;background:#57606a;border-radius:4px;padding:1px 6px;margin-right:6px}
@@ -156,6 +157,7 @@ HTML_PAGE = """<!DOCTYPE html>
 </main>
 <script>
 let STATE = {claims: [], question: ""};
+let CURRENT_ANCHOR = null;  // 用户在右栏当前选中的小节(手动选择优先于证据锚点)
 function esc(s){return s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}
 const BADGE = {fresh:["绿 · 仍成立","#1a7f37"],stale:["红 · 已失效","#cf222e"],
                unknown:["灰 · 证据不足","#6e7781"],void:["void · 已作废","#8250df"]};
@@ -190,20 +192,26 @@ function pickClaim(cid){
   document.querySelectorAll('.claim').forEach(e=>e.classList.remove('sel'));
   document.getElementById('c-'+cid)?.classList.add('sel');
 }
+function pickClause(anchor){
+  document.querySelectorAll('#pane .clause').forEach(e=>e.classList.remove('hit'));
+  document.getElementById('anchor-'+anchor)?.classList.add('hit');
+  CURRENT_ANCHOR = anchor;
+}
 async function showSource(docId, anchor, asOf){
   const j = await (await fetch('/api/source/'+encodeURIComponent(docId)+'?as_of='+(asOf||'T1'))).json();
   if(j.error){ document.getElementById('pane').innerHTML = '<p>'+esc(j.error)+'</p>'; return; }
   let h = '<h3>'+esc(j.title)+' <span class="asof">'+j.as_of+'</span> <span class="asof">'+esc(j.source_type)+'</span></h3>';
   h += '<div class="tabs" style="margin-bottom:8px">'
-     + '<button class="'+((asOf||'T1')==='T0'?'on':'')+'" onclick="showSource(&quot;'+docId+'&quot;,&quot;'+anchor+'&quot;,&quot;T0&quot;)">T0 签发时</button>'
-     + '<button class="'+((asOf||'T1')==='T1'?'on':'')+'" onclick="showSource(&quot;'+docId+'&quot;,&quot;'+anchor+'&quot;,&quot;T1&quot;)">T1 复验时刻</button></div>';
+     + '<button class="'+((asOf||'T1')==='T0'?'on':'')+'" onclick="showSource(&quot;'+docId+'&quot;,CURRENT_ANCHOR,&quot;T0&quot;)">T0 签发时</button>'
+     + '<button class="'+((asOf||'T1')==='T1'?'on':'')+'" onclick="showSource(&quot;'+docId+'&quot;,CURRENT_ANCHOR,&quot;T1&quot;)">T1 复验时刻</button></div>';
   h += '<div class="doc">';
   for(const s of j.sections){
     const hit = s.anchor === anchor;
-    h += '<div class="clause'+(hit?' hit':'')+'" id="anchor-'+s.anchor+'">'
+    h += '<div class="clause'+(hit?' hit':'')+'" id="anchor-'+s.anchor+'" onclick="pickClause(&quot;'+s.anchor+'&quot;)">'
        + '<code>## '+esc(s.anchor)+'</code>' + esc(s.text.replace('## '+s.anchor,'')) + '</div>';
   }
   h += '</div>';
+  CURRENT_ANCHOR = anchor;
   document.getElementById('pane').innerHTML = h;
   const target = document.getElementById('anchor-'+anchor);
   if(target) target.scrollIntoView({behavior:'smooth', block:'center'});
