@@ -76,12 +76,12 @@ class _Msg:
 
 
 class _ScriptLLM:
-    """FIFO 脚本回吐;Lead/Critic 共享同一脚本按调用顺序消费。"""
+    """FIFO 脚本回吐;Lead/Critic/Auditor 共享同一脚本按调用顺序消费。"""
 
     def __init__(self, script):
         self._script = list(script)
 
-    def chat(self, messages, *, tools=None, decoding=None):
+    def chat(self, messages, *, tools=None, decoding=None, response_format=None):
         item = self._script.pop(0)
         return item(messages, tools) if callable(item) else item
 
@@ -92,7 +92,7 @@ class _FinishLLM:
     def __init__(self):
         self._n = 0
 
-    def chat(self, messages, *, tools=None, decoding=None):
+    def chat(self, messages, *, tools=None, decoding=None, response_format=None):
         self._n += 1
         if self._n % 2 == 1:
             return _Msg(tool_calls=[_tc("finish_reverify", {})])
@@ -197,9 +197,17 @@ def test_persona_points_to_wired_doctrine_exactly_once():
 
 
 def test_mark_stale_observation_carries_dimension_note():
-    """事故路径(Lead 自主 mark_stale)受理回执必须带维度核对指令(结构在场,不依赖模型自觉)。"""
+    """事故路径(Lead 自主 mark_stale)受理回执必须带维度核对指令(结构在场,不依赖模型自觉)。
+
+    #22/ADR-0010 后:回执同时携带 Auditor checkpoint(受理自动触发);MARK_STALE_DIMENSION_NOTE
+    保留为教义表兜底(ADR-0010 子决策 4),断言不动。
+    """
     ctx = _ctx(_store())
-    lead = LeadReverifier(ctx, _claim(), _ScriptLLM([]))
+    llm = _ScriptLLM([
+        _Msg(content=json.dumps({"status": "stale", "reason": "反证成立",
+                                 "dimension_match": True}, ensure_ascii=False)),
+    ])
+    lead = LeadReverifier(ctx, _claim(), llm)
     lead._t_retrieve({"query": "单会话成本 复测", "as_of": "T1"})
     cost_id = "t0-cost-model#p2@T1"
     res = lead._t_mark_stale({
@@ -209,6 +217,8 @@ def test_mark_stale_observation_carries_dimension_note():
         "evidence_ids": [cost_id],
     })
     assert res.get("recorded"), "受理回执结构不变"
+    assert res.get("auditor_checkpoint", {}).get("verdict") == "stale", \
+        "mark_stale 受理自动触发 Auditor(#22/ADR-0010)"
     note = res.get("note", "")
     assert "维度" in note, "受理回执必须携带维度核对指令"
     assert "客单价≠毛利" in note and "覆盖率≠渗透率" in note, \
@@ -388,5 +398,10 @@ def test_run_gold_includes_distractor_appendix_zero_llm(tmp_path):
         assert sens[cid]["fresh_hits"] == 0
     assert raw["dimension_confusion_flags"] == {"c4": [False], "c5": [False],
                                                 "c6": [False], "c8": [False]}
+    # #22 双判 visit 留档:raw 带证据包 schema 版本(#20 §4.6 随报告登记)与 S1/S2 分歧率
+    assert raw["evidence_packet_schema"] == "1"
+    div = raw["divergence_s1_s2"]
+    assert div["total"] == 12 and div["s2"] == 0, "收尾脚本零语义:无 Auditor fresh 异议"
     text = render_report(raw)
     assert "干扰项敏感度" in text
+    assert "证据包 schema 版本" in text

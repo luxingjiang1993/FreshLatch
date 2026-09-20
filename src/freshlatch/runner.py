@@ -14,6 +14,7 @@ from pathlib import Path
 from freshlatch.guardrails import BUDGET_EXHAUSTED_MESSAGE, Guardrails
 from freshlatch.llm import DecodingParams, LLMClient
 from freshlatch.models import AsOf, Claim
+from freshlatch.roles.auditor import EVIDENCE_PACKET_SCHEMA_VERSION
 from freshlatch.skills_loader import load_skill_body
 from freshlatch.store.base import RetrievalStore
 
@@ -55,9 +56,12 @@ class RunContext:
 @dataclass
 class ClaimDecision:
     claim_id: str
-    status: str = "unknown"
+    status: str = "unknown"  # Lead 的判定(fresh/stale/unknown);落档仲裁后最终态在 claim.status
     reason: str = ""
     evidence_ids: list[str] = field(default_factory=list)
+    auditor_verdict: str | None = None  # Auditor 单轮判定在场(ADR-0009/0010;None = 未触发/缺席)
+    auditor_reason: str = ""
+    auditor_dimension_match: bool | None = None  # ADR-0010:False = 维度异议
 
 
 @dataclass
@@ -109,15 +113,18 @@ class Runner:
         self._doctrine: dict[str, str | None] = {
             "reverify": load_skill_body("reverify"),
             "devil_advocate": load_skill_body("devil_advocate"),
+            "freshness_audit": load_skill_body("freshness_audit"),  # Auditor(#20/ADR-0009,#22 接线)
         }
 
     def _spawn_lead(self, claim: Claim):
-        """构造 Lead 会话:教义表(reverify 为本会话主提示,devil_advocate 沿派驻链给 Critic)。"""
+        """构造 Lead 会话:教义表(reverify 为本会话主提示,devil_advocate 沿派驻链给 Critic,
+        freshness_audit 沿自动触发链给 Auditor)。"""
         from freshlatch.roles.lead import LeadReverifier  # 延迟导入避免环
 
         return LeadReverifier(self.ctx, claim, self.llm,
                               doctrine=self._doctrine.get("reverify"),
-                              critic_doctrine=self._doctrine.get("devil_advocate"))
+                              critic_doctrine=self._doctrine.get("devil_advocate"),
+                              auditor_doctrine=self._doctrine.get("freshness_audit"))
 
     def run(self, claims: list[Claim], *, trajectory_dir: str | Path = "reports/trajectories") -> RunResult:
         decisions: dict[str, ClaimDecision] = {}
@@ -141,31 +148,81 @@ class Runner:
                          decoding=self.ctx.decoding)
 
     def _finalize(self, claim: Claim, decision: ClaimDecision) -> None:
-        """判定落档:Agent 不得拥有放行权——fresh/stale 必须过规则闸,闸打回落 unknown。"""
-        from freshlatch.gates.rule_gate import GateContext, GateDecision, rule_gate
+        """判定落档:Agent 不得拥有放行权——fresh/stale 必须过规则闸,闸打回落 unknown。
+
+        双判一致仲裁(ADR-0009 fresh 请求行 / ADR-0010 mark_stale 路径表,单一真相在
+        gates/rule_gate.py 的 arbitrate_* 纯函数):fresh × Auditor stale → stale 落档;
+        fresh × unknown/缺席 → unknown;mark_stale × 维度异议 → unknown + 异议记录;
+        mark_stale × Auditor fresh → stale + 异议记录。Auditor 无任何路径把状态改绿。
+        """
+        from freshlatch.gates.rule_gate import (
+            GateContext,
+            GateDecision,
+            arbitrate_fresh,
+            arbitrate_stale_mark,
+            rule_gate,
+        )
         claim.reason = decision.reason
         claim.t1_evidence_ids = decision.evidence_ids
         gate_ctx = GateContext(invalidation_list=self.ctx.invalidation_list,
                                checksum_fn=self._checksum_fn, eval_mode=(self.ctx.mode == "eval"))
+
+        def _gate_decision(status: str, *, stale_reason: str = "") -> GateDecision:
+            # auditor 三字段随判定包一次搬运(双判一致的闸输入,ADR-0009/0010)
+            return GateDecision(status=status, t1_evidence_ids=decision.evidence_ids,
+                                stale_reason=stale_reason,
+                                auditor_verdict=decision.auditor_verdict,
+                                auditor_dimension_match=decision.auditor_dimension_match)
+
+        def _gate_back(reason_text: str) -> None:
+            claim.status = "unknown"
+            claim.reason = (f"[闸打回:{gate.error_code}] {gate.reason}; "
+                            f"原理由: {reason_text}")
+
         if decision.status == "fresh":
-            gate = rule_gate(claim, GateDecision(status="fresh", t1_evidence_ids=decision.evidence_ids), gate_ctx)
-            if gate.green:
-                claim.status = "fresh"
+            routed = arbitrate_fresh(decision.auditor_verdict)
+            if routed == "fresh":
+                gate = rule_gate(claim, _gate_decision("fresh"), gate_ctx)
+                if gate.green:
+                    claim.status = "fresh"
+                else:
+                    _gate_back(decision.reason)
+            elif routed == "stale":
+                # Auditor 推翻 Lead 的 fresh:按 stale 落档链过闸(Auditor 理由作 stale_reason);
+                # 不变量 7 优先:dimension_match=False 时 DIMENSION_MISMATCH 打回 unknown
+                gate = rule_gate(claim, _gate_decision("stale", stale_reason=decision.auditor_reason),
+                                 gate_ctx)
+                if gate.allowed:
+                    claim.status = "stale"
+                    claim.reason = f"[Auditor 双判推翻 Lead fresh] {decision.auditor_reason}"
+                else:
+                    _gate_back(decision.reason)
             else:
                 claim.status = "unknown"
-                claim.reason = f"[闸打回:{gate.error_code}] {gate.reason}; 原理由: {decision.reason}"
+                basis = (f"Auditor 判 {decision.auditor_verdict}" if decision.auditor_verdict
+                         else "Auditor 缺席(fail-closed)")
+                claim.reason = (f"[双判未一致] Lead fresh × {basis}: "
+                                f"{decision.auditor_reason or decision.reason}")
         elif decision.status == "stale":
-            gate = rule_gate(claim, GateDecision(status="stale", t1_evidence_ids=decision.evidence_ids,
-                                                 stale_reason=decision.reason), gate_ctx)
+            gate = rule_gate(claim, _gate_decision("stale", stale_reason=decision.reason), gate_ctx)
             if gate.allowed:
                 claim.status = "stale"
             else:
-                claim.status = "unknown"
-                claim.reason = f"[闸打回:{gate.error_code}] {gate.reason}; 原理由: {decision.reason}"
+                _gate_back(decision.reason)
+            # 异议记录(ADR-0009 §3 / ADR-0010):Auditor 反对 Lead 的 stale 时结构化挂卡。
+            # 闸因无关原因(如元陈述)打回时异议照挂:status 已落 unknown,异议是给人审的
+            # 合法输入(「机器拒了这条 stale,且 Auditor 认为主张仍成立」),两 ADR 均未禁止。
+            _, dissent = arbitrate_stale_mark(decision.auditor_verdict,
+                                              decision.auditor_dimension_match)
+            if dissent:
+                claim.dissent = {"auditor_verdict": decision.auditor_verdict,
+                                 "reason": decision.auditor_reason,
+                                 "evidence_ids": list(decision.evidence_ids)}
         else:
             claim.status = "unknown"
         self.ctx.emit({"type": "claim_result", "claim_id": claim.claim_id,
-                       "status": claim.status, "reason": claim.reason})
+                       "status": claim.status, "reason": claim.reason,
+                       "auditor_verdict": decision.auditor_verdict})
 
     def _checksum_fn(self, doc_id: str, as_of: AsOf) -> str | None:
         """checksum 三处留位本期为空:documents 表 checksum 列默认 '',视为未启用。"""
@@ -186,5 +243,8 @@ class Runner:
                 d = decisions[c.claim_id]
                 f.write(json.dumps({"type": "claim_final", "claim_id": c.claim_id,
                                     "statement": c.statement, "status": c.status,
-                                    "reason": d.reason, "evidence_ids": d.evidence_ids},
+                                    "reason": d.reason, "evidence_ids": d.evidence_ids,
+                                    "auditor_verdict": d.auditor_verdict,
+                                    "dissent": c.dissent,
+                                    "schema_version": EVIDENCE_PACKET_SCHEMA_VERSION},
                                    ensure_ascii=False) + "\n")

@@ -39,11 +39,16 @@ def test_c9_repro2_shape_routes_to_unknown():
 
 
 def test_legit_stale_still_lands_stale():
-    """对照:合法 stale(数值锚)落档不受新不变量影响,仍判 stale。"""
+    """对照:合法 stale(数值锚 + Auditor uphold)落档不受新不变量影响,仍判 stale。
+
+    #22/ADR-0010 后 stale 落档需 Auditor 在场且维度相符——本测同时钉该链路的正例。
+    """
     from tests.unit.test_meta_gate import C7_LEGIT
     claim = Claim(claim_id="c7", statement="SeaDesk 客单价 99 美元/月",
                   t0_evidence_ids=["t0-competitor-notes#p2"])
     decision = ClaimDecision(claim_id="c7", status="stale", reason=C7_LEGIT,
-                             evidence_ids=["t0-competitor-notes#p2@T1"])
+                             evidence_ids=["t0-competitor-notes#p2@T1"],
+                             auditor_verdict="stale", auditor_reason="反证成立,维度相符",
+                             auditor_dimension_match=True)
     Runner(_StubStore())._finalize(claim, decision)  # noqa: SLF001
     assert claim.status == "stale"

@@ -27,6 +27,9 @@ def _decoding_block(raw: dict) -> list[str]:
     ]
     if raw.get("runs", 1) > 1:
         lines.append(f"- 逐遍记录: `per_run[i].decoding`(每遍独立 DecodingParams,recorded_at 区分)")
+    if raw.get("evidence_packet_schema"):
+        lines.append(f"- Auditor 证据包 schema 版本: `{raw['evidence_packet_schema']}`"
+                     "(#20 §4.6:版本随报告登记)")
     lines += [
         "",
         "> 复现条款:闸层(must_* 零违例)给定解码参数下逐位复现;判定层按文档化容差;"
@@ -143,6 +146,16 @@ def _render_gold(raw: dict) -> str:
                   "> 口径:干扰项测修复对未见混淆类型(客单价≠毛利、覆盖率≠渗透率)的泛化,"
                   "判分矩阵仍为 12 条(W4↔W12 同尺),本表不计通过线;判定 stale 且锚未对齐时"
                   "按上一节「维度疑似混淆」标注人查。"]
+    lines.append("")
+
+    # S1/S2 分歧率(双判一致仲裁读数;只落档不报成败,#20 评估 §4.6)
+    div = raw.get("divergence_s1_s2")
+    lines += ["## S1/S2 分歧率(双判一致仲裁读数;只落档不报成败,#20 评估 §4.6)", ""]
+    if div and div.get("total"):
+        lines.append(f"- S1(其余主张×遍): {div['s1']};S2(Lead stale/unknown × Auditor fresh): {div['s2']}"
+                     f";S2 占比: {div['s2_rate']:.1%}")
+    else:
+        lines.append("- 本运行无读数(raw 缺 divergence_s1_s2 或零主张×遍)。")
     lines.append("")
 
     # 失败条目轨迹指针

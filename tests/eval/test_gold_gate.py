@@ -21,7 +21,11 @@ def test_must_stale_never_green(cid):
     claim = Claim(claim_id=cid, statement="x", t0_evidence_ids=[])
     no_ev = rule_gate(claim, GateDecision(status="fresh", t1_evidence_ids=[]), ctx())
     assert not no_ev.green and no_ev.error_code == "NO_T1_EVIDENCE"
-    with_ev = rule_gate(claim, GateDecision(status="fresh", t1_evidence_ids=["t0-x#p2"]), ctx())
+    # ADR-0009 双判一致:Auditor 缺席不构成任何绿格(fail-closed)
+    no_aud = rule_gate(claim, GateDecision(status="fresh", t1_evidence_ids=["t0-x#p2"]), ctx())
+    assert not no_aud.green and no_aud.error_code == "AUDITOR_ABSENT"
+    with_ev = rule_gate(claim, GateDecision(status="fresh", t1_evidence_ids=["t0-x#p2"],
+                                            auditor_verdict="fresh"), ctx())
     # 机械闸只查不变量、不查语义:伪造 T1 证据在闸层无法识别(纯函数零 I/O)。
     # 「must_stale 必须被判 stale」是语义层判据,由金标 runner(T10)判定,不在闸内。
     assert with_ev.green
@@ -37,9 +41,10 @@ def test_must_unknown_never_green_without_t1(cid):
 
 @pytest.mark.parametrize("cid", GOLD["must_fresh"])
 def test_must_fresh_green_path_ok(cid):
-    """must_fresh:携带 T1 证据的 fresh 请求机械过闸(语义由 runner 判)。"""
+    """must_fresh:携带 T1 证据 + Auditor 双判一致的 fresh 请求机械过闸(语义由 runner 判)。"""
     claim = Claim(claim_id=cid, statement="x", t0_evidence_ids=[])
-    r = rule_gate(claim, GateDecision(status="fresh", t1_evidence_ids=["t0-x#p2"]), ctx())
+    r = rule_gate(claim, GateDecision(status="fresh", t1_evidence_ids=["t0-x#p2"],
+                                      auditor_verdict="fresh"), ctx())
     assert r.green
 
 

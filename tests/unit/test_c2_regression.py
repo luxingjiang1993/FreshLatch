@@ -76,14 +76,19 @@ class _Msg:
 
 
 class _ScriptLLM:
-    """按 FIFO 脚本回吐消息;Lead 与 Critic 共享同一脚本(FIFO 按调用顺序消费)。"""
+    """按 FIFO 脚本回吐消息;Lead/Critic/Auditor 共享同一脚本(FIFO 按调用顺序消费)。"""
 
     def __init__(self, script):
         self._script = list(script)
 
-    def chat(self, messages, *, tools=None, decoding=None):
+    def chat(self, messages, *, tools=None, decoding=None, response_format=None):
         item = self._script.pop(0)
         return item(messages, tools) if callable(item) else item
+
+
+def _aud(payload):
+    """Auditor structured-output 响应(#22:fresh/mark_stale 钩子内自动触发,脚本须备位)。"""
+    return _Msg(content=json.dumps(payload, ensure_ascii=False))
 
 
 def _mk_chunk(doc_id: str, text: str, clause_id: str = "p2"):
@@ -162,9 +167,13 @@ def test_fresh_auto_spawns_critic_checkpoint_and_lead_can_revise():
         _Msg(tool_calls=[_tc("mark_stale", {"reason": STALE_REASON, "evidence_ids": [MEMO_ID]})]),
         _Msg(tool_calls=[_tc("report_finding", {"finding": FINDING_TEXT})]),
         _Msg(content="报告完毕"),
+        # —— Auditor 单轮判定(fresh 钩子内自动触发,#22/ADR-0009)——
+        _aud({"status": "fresh", "reason": "证据包内未见推翻性表述"}),
         # —— Lead 看到 checkpoint 观察后改判 ——
         _Msg(tool_calls=[_tc("mark_stale", {"claim_id": "c2", "reason": STALE_REASON,
                                              "evidence_ids": [MEMO_ID]})]),
+        # —— Auditor 单轮判定(mark_stale 钩子内自动触发,#22/ADR-0010)——
+        _aud({"status": "stale", "reason": "反证成立,维度相符", "dimension_match": True}),
         _Msg(tool_calls=[_tc("finish_reverify", {})]),
         _Msg(content="复验结束"),
     ])
@@ -199,6 +208,7 @@ def test_no_auto_spawn_when_critic_already_spawned():
         _Msg(content="报告完毕"),
         _Msg(tool_calls=[_tc("reverify_claim", {"claim_id": "c2", "status": "fresh",
                                                  "evidence_ids": [MEMO_ID]})]),
+        _aud({"status": "fresh", "reason": "证据包内未见推翻性表述"}),
         _Msg(tool_calls=[_tc("finish_reverify", {})]),
         _Msg(content="复验结束"),
     ])

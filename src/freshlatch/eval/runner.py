@@ -15,6 +15,7 @@ from pathlib import Path
 from freshlatch.eval.checks import check_counterevidence, expected_evidence_id
 from freshlatch.eval.matrix import BUCKETS, EXPECTED_VERDICT, confusion_matrix
 from freshlatch.llm import DecodingParams, LLMClient
+from freshlatch.roles.auditor import EVIDENCE_PACKET_SCHEMA_VERSION
 from freshlatch.runner import Runner, load_docket
 from freshlatch.store.base import RetrievalStore
 
@@ -40,6 +41,22 @@ def gold_claims(gold: dict, docket_path: str | Path) -> list:
     docket = load_docket(docket_path)
     ids = {cid for bucket in BUCKETS for cid in gold[bucket]}
     return [c for c in docket.claims if c.claim_id in ids]
+
+
+def _detail(result, claim) -> dict:
+    """单主张运行明细(主矩阵与干扰项附表共用;#22 起带双判留档字段)。"""
+    dec = result.decisions[claim.claim_id]
+    return {
+        "status": claim.status,
+        "reason": claim.reason,
+        "evidence_ids": list(claim.t1_evidence_ids),
+        "trajectory": str(result.trajectory_path),
+        "steps_used": result.steps_by_claim.get(claim.claim_id, 0),
+        # 双判留档(#20/ADR-0009):Lead 原始判定 + Auditor 判定,S1/S2 分歧率原料
+        "lead_status": dec.status,
+        "auditor_verdict": dec.auditor_verdict,
+        "dissent": claim.dissent,
+    }
 
 
 def run_gold(store: RetrievalStore, llm: LLMClient | None, *, gold_path: str | Path,
@@ -76,13 +93,7 @@ def run_gold(store: RetrievalStore, llm: LLMClient | None, *, gold_path: str | P
             result = runner.run([claim], trajectory_dir=trajectory_dir)
             final = claim.status
             decisions[claim.claim_id] = final
-            detail[claim.claim_id] = {
-                "status": final,
-                "reason": claim.reason,
-                "evidence_ids": list(claim.t1_evidence_ids),
-                "trajectory": str(result.trajectory_path),
-                "steps_used": result.steps_by_claim.get(claim.claim_id, 0),
-            }
+            detail[claim.claim_id] = _detail(result, claim)
         matrix = confusion_matrix(gold, decisions)
         per_run.append({"run": run_idx, "decoding": run_decoding.__dict__,
                         "decisions": decisions,
@@ -95,13 +106,7 @@ def run_gold(store: RetrievalStore, llm: LLMClient | None, *, gold_path: str | P
                 runner = Runner(store, llm, mode="eval", decoding=run_decoding)
                 result = runner.run([claim], trajectory_dir=trajectory_dir)
                 d_decisions[claim.claim_id] = claim.status
-                d_detail[claim.claim_id] = {
-                    "status": claim.status,
-                    "reason": claim.reason,
-                    "evidence_ids": list(claim.t1_evidence_ids),
-                    "trajectory": str(result.trajectory_path),
-                    "steps_used": result.steps_by_claim.get(claim.claim_id, 0),
-                }
+                d_detail[claim.claim_id] = _detail(result, claim)
             per_run_distractor.append({"run": run_idx, "decisions": d_decisions,
                                        "detail": d_detail})
 
@@ -156,6 +161,8 @@ def run_gold(store: RetrievalStore, llm: LLMClient | None, *, gold_path: str | P
         "fresh_guardrail_j2": fresh_guardrail,
         "dimension_confusion_flags": dimension_confusion_flags(gold, per_run),
         "distractor_sensitivity": distractor_sensitivity(gold, per_run_distractor),
+        "divergence_s1_s2": divergence_counts(per_run),
+        "evidence_packet_schema": EVIDENCE_PACKET_SCHEMA_VERSION,  # #20 §4.6:版本随报告登记
         "trajectory_dir": str(trajectory_dir),
     }
 
@@ -168,6 +175,22 @@ def _expected(gold: dict, cid: str) -> str | None:
 
 
 # -- 乙-ii / 乙-i 汇总纯函数(可单测,层间归因靠它们不靠 bundle) -------------------
+
+
+def divergence_counts(per_run: list[dict]) -> dict:
+    """S1/S2 分歧率落档(#20 评估 §4.6):每主张每跑 Lead stale/unknown × Auditor fresh 计 S2,
+    反之为 S1。只落档不报成败(W9–W12 调优信号);原始判定对取 per_run[i].detail 的
+    lead_status/auditor_verdict 字段(#22 双判留档)。"""
+    s1 = s2 = 0
+    for r in per_run:
+        for d in (r.get("detail") or {}).values():
+            if d.get("lead_status") in ("stale", "unknown") and d.get("auditor_verdict") == "fresh":
+                s2 += 1
+            else:
+                s1 += 1
+    total = s1 + s2
+    return {"s1": s1, "s2": s2, "total": total,
+            "s2_rate": (s2 / total) if total else 0.0}
 
 
 def dimension_confusion_flags(gold: dict, per_run: list[dict]) -> dict[str, list[bool]]:

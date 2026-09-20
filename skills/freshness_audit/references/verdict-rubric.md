@@ -31,3 +31,5 @@
 ## 理由格式
 
 `[证据id] 原文表述 ↔ 主张前提 → 结论`。每条理由至少挂一个可点回的证据 id;写不出这个结构 = 证据不够,降档 unknown。
+
+stale 判定的输出除 reason 外必须附带 `dimension_match`(bool):反证锚定维度与主张前提/度量维度是否一致(#22/ADR-0010)。维度不符(定价≠成本、客单价≠毛利、覆盖率≠渗透率)→ `dimension_match: false`,reason 点明错在哪个维度;闸不变量 7 会据该字段把 stale 打回 unknown + 异议记录。fresh/unknown 判定不附此字段(不适用)。

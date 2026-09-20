@@ -81,14 +81,19 @@ class _Msg:
 
 
 class _ScriptLLM:
-    """按 FIFO 脚本回吐消息;Lead 与 Critic 共享同一脚本(FIFO 按调用顺序消费)。"""
+    """按 FIFO 脚本回吐消息;Lead/Critic/Auditor 共享同一脚本(FIFO 按调用顺序消费)。"""
 
     def __init__(self, script):
         self._script = list(script)
 
-    def chat(self, messages, *, tools=None, decoding=None):
+    def chat(self, messages, *, tools=None, decoding=None, response_format=None):
         item = self._script.pop(0)
         return item(messages, tools) if callable(item) else item
+
+
+def _aud(payload):
+    """Auditor structured-output 响应(#22:fresh/mark_stale 钩子内自动触发,脚本须备位)。"""
+    return _Msg(content=json.dumps(payload, ensure_ascii=False))
 
 
 def _mk_chunk(doc_id: str, text: str, clause_id: str = "p2"):
@@ -187,6 +192,8 @@ def test_checkpoint_note_injects_dimension_check():
         _Msg(tool_calls=[_tc("report_finding",
                              {"finding": f"找到反证:竞品定价高于我方,见 {COMPETITOR_ID}"})]),
         _Msg(content="报告完毕"),
+        # —— Auditor 单轮判定(fresh 钩子内自动触发,#22/ADR-0009)——
+        _aud({"status": "fresh", "reason": "T1 成本复测支持主张"}),
         # —— Lead 看到 checkpoint 观察(含维度核对指令)后不采纳,维持 fresh ——
         _Msg(tool_calls=[_tc("finish_reverify", {})]),
         _Msg(content="复验结束"),

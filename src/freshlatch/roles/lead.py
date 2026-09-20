@@ -13,6 +13,7 @@ from __future__ import annotations
 from freshlatch.evidence import check_evidence_ids, valid_as_of
 from freshlatch.gates.meta_gate import META_ONLY_MESSAGE, is_meta_only_disproof
 from freshlatch.models import Claim
+from freshlatch.roles.auditor import Auditor
 from freshlatch.roles.critic import Critic
 from freshlatch.roles.loop import LoopResult, run_loop
 from freshlatch.runner import ClaimDecision, RunContext
@@ -55,16 +56,19 @@ MARK_STALE_DIMENSION_NOTE = (
 
 class LeadReverifier:
     def __init__(self, ctx: RunContext, claim: Claim, llm, *,
-                 doctrine: str | None = None, critic_doctrine: str | None = None) -> None:
+                 doctrine: str | None = None, critic_doctrine: str | None = None,
+                 auditor_doctrine: str | None = None) -> None:
         self.ctx = ctx
         self.claim = claim
         self.llm = llm
         self._doctrine = doctrine  # reverify SKILL.md 正文(Runner 接线,#21);None=回退内联人格
         self._critic_doctrine = critic_doctrine  # 沿派驻链给 Critic(devil_advocate)
+        self._auditor_doctrine = auditor_doctrine  # 沿自动触发链给 Auditor(freshness_audit,#22)
         self.steps_used = 0
         self.decision = ClaimDecision(claim_id=claim.claim_id)
         self._finished = False
         self._seen_evidence: set[str] = set()  # 本会话 retrieve 返回过的 evidence_id(#16 白名单)
+        self._seen_blocks: dict[str, str] = {}  # evidence_id → 块文本(Auditor 证据包原料,#22)
         self._critic_spawned = False  # 本会话是否已派驻过 Critic(§8.5 checkpoint 去重)
 
     def run(self) -> ClaimDecision:
@@ -152,6 +156,7 @@ class LeadReverifier:
             for c in hits
         ]
         self._seen_evidence.update(b["evidence_id"] for b in blocks)
+        self._seen_blocks.update({b["evidence_id"]: b["text"] for b in blocks})
         # 「最近检索块」= messages 里最近的 tool 结果(§2.8:messages 单角色内只增不减),
         # 模型每轮基于最新观察决策,无需额外注入。
         return {"blocks": blocks, "retrieval_used": self.ctx.retrieval_used}
@@ -178,12 +183,15 @@ class LeadReverifier:
             return {"error": f"claim_id 只能是 {self.claim.claim_id}"}
         evidence_ids: list[str] = []
         checkpoint: dict | None = None
+        audit: dict | None = None
         if status == "fresh":
             ids, err = self._check_evidence_ids(args.get("evidence_ids"), require_t1=True)
             if err:
                 return {"error": f"判 fresh 必须给出锚 T1 的检索证据 id: {err}"}
             evidence_ids = ids or []
             checkpoint = self._auto_critic_checkpoint()  # §8.5:绿灯前反对派必须有一次发言机会
+            audit = self._auto_auditor_checkpoint(path="fresh", reason="",
+                                                  evidence_ids=evidence_ids)  # ADR-0009 双判
         else:
             evidence_ids = [str(e) for e in args.get("evidence_ids") or []]
         if status == "stale":
@@ -194,9 +202,11 @@ class LeadReverifier:
             self.decision.reason = "缺口: " + "; ".join(self.ctx.gaps)
         result = {"recorded": {"claim_id": self.claim.claim_id, "status": status,
                                "evidence_ids": evidence_ids},
-                  "note": "fresh 需经规则闸,闸打回将落 unknown"}
+                  "note": "fresh 需经规则闸(双判一致),闸打回将落 unknown"}
         if checkpoint:
             result["critic_checkpoint"] = checkpoint
+        if audit:
+            result["auditor_checkpoint"] = audit
         return result
 
     def _t_mark_stale(self, args: dict) -> dict:
@@ -210,12 +220,19 @@ class LeadReverifier:
         ids, err = self._check_evidence_ids(args.get("evidence_ids"), require_t1=True)
         if err:
             return {"error": f"stale 必须给出可点回的 T1 反证 id(有效反证=可点回): {err}"}
+        # ADR-0010:受理(三重硬校验通过、落档之前)自动触发 Auditor 单轮判定——
+        # 强制性住在触发器(c2 同构:自信地错恰是自愿派驻最不会触发的时刻)。
+        audit = self._auto_auditor_checkpoint(path="stale", reason=reason,
+                                              evidence_ids=ids or [])
         self.decision.status = "stale"
         self.decision.reason = reason
         self.decision.evidence_ids = ids or []
-        return {"recorded": {"claim_id": self.claim.claim_id, "status": "stale",
-                             "reason": reason, "evidence_ids": ids},
-                "note": MARK_STALE_DIMENSION_NOTE}
+        result = {"recorded": {"claim_id": self.claim.claim_id, "status": "stale",
+                               "reason": reason, "evidence_ids": ids},
+                  "note": MARK_STALE_DIMENSION_NOTE}
+        if audit:
+            result["auditor_checkpoint"] = audit
+        return result
 
     def _t_mark_gap(self, args: dict) -> dict:
         desc = args.get("description", "").strip()
@@ -236,6 +253,42 @@ class LeadReverifier:
         if self._critic_spawned:
             return None
         return self._spawn_critic(focus=None, auto=True)
+
+    def _auto_auditor_checkpoint(self, *, path: str, reason: str,
+                                 evidence_ids: list[str]) -> dict | None:
+        """Auditor 结构性在场:fresh 路径(ADR-0009)与 mark_stale 路径(ADR-0010,#25)落档前
+        自动触发单轮判定,与 _auto_critic_checkpoint 同点同构。
+
+        触发器保证运行,规则闸保证不变量(fail-closed 兜底):Auditor 不可用/调用失败时
+        不阻断本工具,verdict 缺席由规则闸 AUDITOR_ABSENT 打回——Auditor 缺席不构成
+        任何绿格,也不构成任何 stale 落档。结论回吐工具观察,Lead 可见可改判。
+        """
+        if self.llm is None:
+            return None
+        self.ctx.emit({"type": "auditor_spawn", "claim_id": self.claim.claim_id,
+                       "path": path, "auto": True})
+        auditor = Auditor(self.llm, doctrine=self._auditor_doctrine)
+        if auditor.using_fallback:  # 在盘不在场 = c5/c6 事故根因,不静默降级
+            self.ctx.emit({"type": "skill_fallback", "skill": "freshness_audit",
+                           "claim_id": self.claim.claim_id, "path": path})
+        packet = auditor.build_packet(self.claim, lead_status=path, lead_reason=reason,
+                                      lead_evidence_ids=evidence_ids,
+                                      evidence_texts=self._seen_blocks)
+        try:
+            verdict = auditor.judge(packet, decoding=self.ctx.decoding)
+        except Exception as e:  # 端点故障不炸主循环;缺席由闸 fail-closed
+            self.ctx.emit({"type": "auditor_error", "claim_id": self.claim.claim_id,
+                           "path": path, "error": f"{type(e).__name__}: {e}"})
+            return None
+        self.decision.auditor_verdict = verdict.status
+        self.decision.auditor_reason = verdict.reason
+        self.decision.auditor_dimension_match = verdict.dimension_match
+        self.ctx.emit({"type": "auditor_verdict", "claim_id": self.claim.claim_id,
+                       "path": path, "verdict": verdict.status,
+                       "dimension_match": verdict.dimension_match})
+        return {"verdict": verdict.status, "reason": verdict.reason,
+                "dimension_match": verdict.dimension_match,
+                "schema_version": verdict.schema_version}
 
     def _t_spawn_critic(self, args: dict) -> dict:
         """动态派驻(§6.3):同进程同步起全新循环实例;focus 调用边界硬校验,非法值回列词表。
