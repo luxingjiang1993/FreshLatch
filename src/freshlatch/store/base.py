@@ -65,6 +65,10 @@ class RetrievalStore(ABC):
         """作废名单(claim_id)。内存假实现默认空。"""
         return []
 
+    def list_reruns(self, claim_id: str) -> list[dict]:
+        """重跑时间线。内存假实现默认空(T9 起 SQLite 实装)。"""
+        return []
+
 
 class InMemoryStore(RetrievalStore):
     """内存假实现:测试用,零磁盘零 LLM。"""

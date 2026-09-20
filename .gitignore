@@ -1,6 +1,9 @@
 # 运行产物(轨迹每次复验重新生成,非源码)
 reports/trajectories/*.jsonl
 
+# 本地数据库(运行期生成)
+data/*.db
+
 # Claude Code 会话配置
 .claude/
 

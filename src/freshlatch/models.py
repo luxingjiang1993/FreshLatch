@@ -21,3 +21,5 @@ class Claim:
     reason: str = ""
     last_confirmed_at: str | None = None
     validity_basis: dict | None = None  # {doc_id, checksum},W5 起续命写入
+    voided: bool = False  # 人的决定(ADR-0006 §3);与 status 的机器判定并存不互斥
+    voided_at: str | None = None

@@ -1,6 +1,7 @@
 """SQLite 实装(ADR-0003):as_of / source_type / doc_id 全是列,过滤 = WHERE 子句。
 
-四表(§2.5):chunks(13 列)/ documents / invalidation_list / latch_log。
+四表(§2.5)+ rerun_log(T9 追加):chunks(13 列)/ documents / invalidation_list / latch_log /
+rerun_log(重跑时间线取数,复验单卡片「重跑后仍红(第 N 次)」从这取)。
 作废名单单一真相在 invalidation_list 表,Lead 上下文与规则闸都查它。
 """
 
@@ -54,6 +55,15 @@ CREATE TABLE IF NOT EXISTS latch_log (
     evidence_id TEXT,
     actor TEXT NOT NULL DEFAULT 'human'
 );
+CREATE TABLE IF NOT EXISTS rerun_log (
+    ts TEXT NOT NULL,
+    claim_id TEXT NOT NULL,
+    thread_id TEXT NOT NULL,
+    verdict TEXT NOT NULL,
+    nth INTEGER NOT NULL,
+    note TEXT NOT NULL DEFAULT ''
+);
+CREATE INDEX IF NOT EXISTS idx_rerun_log_claim ON rerun_log (claim_id);
 """
 
 
@@ -104,6 +114,14 @@ class SQLiteStore(RetrievalStore):
                 (ts, claim_id, action, evidence_id, actor),
             )
 
+    def log_rerun(self, ts: str, claim_id: str, thread_id: str, verdict: str, nth: int, note: str = "") -> None:
+        """重跑时间线条目(§5.3):结果挂主张卡片时间线「重跑后仍红(第 N 次)」。"""
+        with self._conn() as conn:
+            conn.execute(
+                "INSERT INTO rerun_log VALUES (?,?,?,?,?,?)",
+                (ts, claim_id, thread_id, verdict, nth, note),
+            )
+
     # -- 读取 -----------------------------------------------------------------
 
     def retrieve(
@@ -146,6 +164,14 @@ class SQLiteStore(RetrievalStore):
         with self._conn() as conn:
             rows = conn.execute("SELECT claim_id FROM invalidation_list").fetchall()
         return [r["claim_id"] for r in rows]
+
+    def list_reruns(self, claim_id: str) -> list[dict]:
+        with self._conn() as conn:
+            rows = conn.execute(
+                "SELECT * FROM rerun_log WHERE claim_id = ? ORDER BY ts, rowid",
+                (claim_id,),
+            ).fetchall()
+        return [dict(r) for r in rows]
 
     @staticmethod
     def _row_to_chunk(r: sqlite3.Row) -> Chunk:

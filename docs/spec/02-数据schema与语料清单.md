@@ -82,6 +82,7 @@ checksum:            # 本期留空,三处留位之一
 | `documents` | `doc_id, as_of, source_type, doc_version, checksum(留位)` | 文档级元数据 + checksum 列(三处留位之二) |
 | `invalidation_list` | `claim_id, voided_at, actor, reason?` | **作废名单 = 单一真相**,随课题持久;Lead 上下文与规则闸都查这张表;W9 记忆模块读它,不复制 |
 | `latch_log` | `ts, claim_id, action, evidence_id?, actor="human"` | 人审审计迹 + 用户作废率(在线指标)取数口 |
+| `rerun_log`(T9 追加) | `ts, claim_id, thread_id, verdict, nth, note` | 重跑时间线取数(§5.3「结果挂该主张卡片时间线」);latch_log 装不下 verdict/nth/thread,单列展示层取数表,人审写路径唯一出口不变 |
 
 - checkpointer 单独文件 `data/checkpoints.db`(SqliteSaver,W3 起);同一主张只保留最近 5 个 thread 的 checkpoint,业务侧定期删行。
 
