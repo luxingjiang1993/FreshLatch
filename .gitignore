@@ -10,3 +10,7 @@ data/*.db
 # Python 字节码
 __pycache__/
 *.pyc
+
+# 密钥与运行日志
+.env
+data/*.log
