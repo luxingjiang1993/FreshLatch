@@ -324,6 +324,7 @@ function renderClaims(){
       }
       h += '</div>';
     }
+    h += '</div>';  // 闭合 .claim 卡片(T9 加时间线时丢了这行,卡片互相嵌套堆积)
   }
   el.innerHTML = h;
   renderBanner();
