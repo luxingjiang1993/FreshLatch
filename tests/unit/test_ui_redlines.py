@@ -68,3 +68,27 @@ def test_tab_switch_keeps_manual_clause_selection():
     assert "CURRENT_ANCHOR,&quot;T0&quot;" in HTML_PAGE
     assert "CURRENT_ANCHOR,&quot;T1&quot;" in HTML_PAGE
 
+
+def test_div_tag_balance():
+    """UI 模板 <div> 标签配平(源码级,防 T9 类回归:丢闭合标签卡片互相嵌套堆积)。
+
+    回归:2026-09-20 左栏主张卡片全部堆进第一张 .claim——T9(44cf018)给
+    renderClaims 加时间线块时把循环末尾 '</div></div>' 改成 '</div>',
+    卡片闭合标签丢失,浏览器自动纠错把后续卡片解析进前一张。分两层查:
+    1. 整个 HTML_PAGE 计数(循环体在源码里只出现一次,不平衡必然显形);
+    2. renderClaims 循环体单独计数,把回归现场钉在最小范围。
+    注意:这是必要不充分检查(防丢标签/手滑),不证明页面渲染正确。
+    """
+    import re
+
+    opens = len(re.findall(r"<div\b", HTML_PAGE))
+    closes = len(re.findall(r"</div>", HTML_PAGE))
+    assert opens == closes, f"HTML_PAGE <div> 不配平:开 {opens} / 闭 {closes}"
+
+    loop = HTML_PAGE.split("for(const c of STATE.claims)")[1].split("el.innerHTML = h;")[0]
+    loop_opens = len(re.findall(r"<div\b", loop))
+    loop_closes = len(re.findall(r"</div>", loop))
+    assert loop_opens == loop_closes, (
+        f"renderClaims 循环体内 <div> 不配平:开 {loop_opens} / 闭 {loop_closes}——单张卡片会缺闭合标签"
+    )
+
