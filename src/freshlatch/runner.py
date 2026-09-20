@@ -128,24 +128,28 @@ class Runner:
                          decoding=self.ctx.decoding)
 
     def _finalize(self, claim: Claim, decision: ClaimDecision) -> None:
-        """判定落档:Agent 不得拥有放行权——fresh 必须过规则闸,闸打回不得绿。"""
+        """判定落档:Agent 不得拥有放行权——fresh/stale 必须过规则闸,闸打回落 unknown。"""
+        from freshlatch.gates.rule_gate import GateContext, GateDecision, rule_gate
         claim.reason = decision.reason
         claim.t1_evidence_ids = decision.evidence_ids
+        gate_ctx = GateContext(invalidation_list=self.ctx.invalidation_list,
+                               checksum_fn=self._checksum_fn, eval_mode=(self.ctx.mode == "eval"))
         if decision.status == "fresh":
-            from freshlatch.gates.rule_gate import GateContext, GateDecision, rule_gate
-            gate = rule_gate(
-                claim,
-                GateDecision(status="fresh", t1_evidence_ids=decision.evidence_ids),
-                GateContext(invalidation_list=self.ctx.invalidation_list,
-                            checksum_fn=self._checksum_fn, eval_mode=(self.ctx.mode == "eval")),
-            )
+            gate = rule_gate(claim, GateDecision(status="fresh", t1_evidence_ids=decision.evidence_ids), gate_ctx)
             if gate.green:
                 claim.status = "fresh"
             else:
                 claim.status = "unknown"
                 claim.reason = f"[闸打回:{gate.error_code}] {gate.reason}; 原理由: {decision.reason}"
-        elif decision.status in ("stale", "unknown"):
-            claim.status = decision.status
+        elif decision.status == "stale":
+            gate = rule_gate(claim, GateDecision(status="stale", t1_evidence_ids=decision.evidence_ids), gate_ctx)
+            if gate.allowed:
+                claim.status = "stale"
+            else:
+                claim.status = "unknown"
+                claim.reason = f"[闸打回:{gate.error_code}] {gate.reason}; 原理由: {decision.reason}"
+        else:
+            claim.status = "unknown"
         self.ctx.emit({"type": "claim_result", "claim_id": claim.claim_id,
                        "status": claim.status, "reason": claim.reason})
 

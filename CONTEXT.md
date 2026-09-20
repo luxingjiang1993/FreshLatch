@@ -27,6 +27,10 @@ _Avoid_: 旧库/新库、源数据/目标数据
 一次复验的主界面与产出物:每条主张的原文点回、判定、理由、人审动作。不是聊天框。
 _Avoid_: 报告、看板
 
+**evidence_id 时点格式**:
+检索层返回的证据标识,格式 `doc_id#anchor@as_of`(如 `t0-competitor-notes#p2@T1`)。`@` 后缀标明快照时点;判 fresh/stale 引用的证据必须锚 T1。Lead 引用 evidence_id 必须逐字来自本会话 retrieve 返回(白名单校验),不得编造。
+_Avoid_: 证据链接、出处编号
+
 **Lead Reverifier (Lead)**:
 真 Agent,自主规划复验:改写查询、按 `as_of=T0|T1` 换源、读原文、调 `reverify_claim` / `mark_stale` / `mark_gap`,并决定是否派驻 Critic / Auditor / Forensic。
 _Avoid_: 主 agent、调查员

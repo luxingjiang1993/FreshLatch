@@ -46,7 +46,13 @@ def rule_gate(claim: Claim, decision: GateDecision, ctx: GateContext) -> GateRes
       2. 无 t1_evidence_ids 不得 fresh
       3. checksum 对不上不得 fresh / 续命(checksum 三处留位本期为空,注入即生效)
       4. claim_id ∈ invalidation_list 不得 fresh(重跑打回)
+      5. stale 必须携带可点回的 t1 反证(无反证 id 打回;#15 有效反证=可点回)
     """
+    # 5. stale 无反证打回(独立于非绿放行:stale 落档也要带可点回反证)
+    if decision.status == "stale" and not decision.t1_evidence_ids:
+        return GateResult(allowed=False, green=False, error_code="NO_STALE_EVIDENCE",
+                          reason="stale 必须给出 t1 反证 evidence_ids(有效反证=可点回)")
+
     if decision.status not in GREEN_STATUSES:
         return GateResult(allowed=True, green=False,
                           reason=f"非绿请求({decision.status})落档,规则闸不发绿")

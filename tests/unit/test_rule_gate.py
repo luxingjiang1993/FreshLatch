@@ -18,8 +18,23 @@ def make_ctx(**kw) -> GateContext:
 def test_stale_not_green():
     """不变量 1:stale/unknown 不得绿灯(可落档,但 green 恒 False)。"""
     for status in ("stale", "unknown"):
-        r = rule_gate(make_claim(), GateDecision(status=status), make_ctx())
+        d = GateDecision(status=status,
+                         t1_evidence_ids=["t0-x#p2@T1"] if status == "stale" else [])
+        r = rule_gate(make_claim(), d, make_ctx())
         assert r.allowed and not r.green
+
+
+def test_stale_without_evidence_blocked():
+    """不变量 5(#15):stale 必须携带可点回的 t1 反证,无反证打回落 unknown。"""
+    r = rule_gate(make_claim(), GateDecision(status="stale", t1_evidence_ids=[]), make_ctx())
+    assert not r.allowed and not r.green and r.error_code == "NO_STALE_EVIDENCE"
+
+
+def test_stale_with_evidence_passes_not_green():
+    """不变量 5 正例:带反证的 stale 落档放行,但恒不绿灯。"""
+    d = GateDecision(status="stale", t1_evidence_ids=["t0-x#p2@T1"])
+    r = rule_gate(make_claim(), d, make_ctx())
+    assert r.allowed and not r.green
 
 
 def test_no_t1_evidence_not_fresh():

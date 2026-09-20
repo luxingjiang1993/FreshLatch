@@ -17,8 +17,8 @@ LEAD_PERSONA_W1 = """你是 Lead Reverifier,FreshLatch 的复验主官。你的�
 1. 先用 retrieve 在 T1(复验时刻快照)检索与主张相关的证据块;必要时 read_source 读原文全文兜底。
 2. 如需对照签发时口径,可再查 T0,但判定 ground truth 永远是 T1 原文。
 3. T1 的复测/核实内容直接支持主张的每个前提 → reverify_claim(claim_id, "fresh", [t1 evidence_id...])。
-   注意:判 fresh 必须给出 T1 证据 id,否则会被规则闸打回。
-4. T1 原文明确推翻主张 → mark_stale(claim_id, reason),reason 必须含显式因果句:指出 T1 原文哪一句推翻了主张的哪个前提,不得只写「与最新文档不符」。
+   注意:判 fresh 必须给出 T1 证据 id(形如 doc#p2@T1),从 retrieve 结果里逐字引用,否则会被规则闸打回。
+4. T1 原文明确推翻主张 → mark_stale(claim_id, reason, [t1 evidence_id...]),reason 必须含显式因果句:指出 T1 原文哪一句推翻了主张的哪个前提,不得只写「与最新文档不符」;反证 id 必须逐字引用 retrieve 返回的 T1 证据 id,不得编造。
    注意:只有 T1 出现明确的推翻性内容时才判 stale;T1 只说「未复测/无新数据/待发布/未入账」是证据缺口,不是推翻——走 mark_gap + unknown,不得判 stale。
 5. T1 无原文覆盖或证据不足 → mark_gap(description) 后 reverify_claim(claim_id, "unknown", [])。
 6. 完成或无路可走 → finish_reverify()。
@@ -43,6 +43,7 @@ class LeadReverifier:
         self.steps_used = 0
         self.decision = ClaimDecision(claim_id=claim.claim_id)
         self._finished = False
+        self._seen_evidence: set[str] = set()  # 本会话 retrieve 返回过的 evidence_id(#16 白名单)
 
     def run(self) -> ClaimDecision:
         self.ctx.gaps = []  # 缺口按主张隔离,禁止跨主张渗漏
@@ -116,10 +117,11 @@ class LeadReverifier:
         if isinstance(hits, dict):  # 预算已尽,fail-soft
             return hits
         blocks = [
-            {"evidence_id": f"{c.doc_id}#{c.clause_id}", "as_of": c.as_of,
+            {"evidence_id": f"{c.doc_id}#{c.clause_id}@{c.as_of}", "as_of": c.as_of,
              "source_type": c.source_type, "text": c.text}
             for c in hits
         ]
+        self._seen_evidence.update(b["evidence_id"] for b in blocks)
         # 「最近检索块」= messages 里最近的 tool 结果(§2.8:messages 单角色内只增不减),
         # 模型每轮基于最新观察决策,无需额外注入。
         return {"blocks": blocks, "retrieval_used": self.ctx.retrieval_used}
@@ -134,15 +136,34 @@ class LeadReverifier:
             return {"error": f"未找到文档 {args['doc_id']} 的 {as_of} 快照"}
         return {"doc_id": args["doc_id"], "as_of": as_of, "full_text": text}
 
+    def _check_evidence_ids(self, raw: object, *, require_t1: bool) -> tuple[list[str] | None, str | None]:
+        """白名单校验(#16):id 必须逐字来自本会话 retrieve 返回;fresh/stale 引用的必须是锚 T1 的证据。"""
+        ids = [str(e).strip() for e in (raw or []) if str(e).strip()]
+        if not ids:
+            return None, "evidence_ids 不能为空(必须引用 retrieve 返回的证据块)"
+        unknown = [e for e in ids if e not in self._seen_evidence]
+        if unknown:
+            return None, f"evidence_ids 必须逐字来自本会话 retrieve 返回的 evidence_id,未检索到: {unknown}"
+        if require_t1:
+            not_t1 = [e for e in ids if not e.endswith("@T1")]
+            if not_t1:
+                return None, f"引用的证据必须锚 T1 快照(id 以 @T1 结尾),收到: {not_t1}"
+        return ids, None
+
     def _t_reverify_claim(self, args: dict) -> dict:
         status = args.get("status")
         if status not in ("fresh", "stale", "unknown"):
             return {"error": f"status 只能是 fresh|stale|unknown,收到: {status}"}
         if args.get("claim_id") != self.claim.claim_id:
             return {"error": f"claim_id 只能是 {self.claim.claim_id}"}
-        evidence_ids = [str(e) for e in args.get("evidence_ids") or []]
-        if status == "fresh" and not evidence_ids:
-            return {"error": "判 fresh 必须给出 t1 evidence_ids(规则闸强制)"}
+        evidence_ids: list[str] = []
+        if status == "fresh":
+            ids, err = self._check_evidence_ids(args.get("evidence_ids"), require_t1=True)
+            if err:
+                return {"error": f"判 fresh 必须给出锚 T1 的检索证据 id: {err}"}
+            evidence_ids = ids or []
+        else:
+            evidence_ids = [str(e) for e in args.get("evidence_ids") or []]
         if status == "stale":
             return {"error": "stale 请用 mark_stale(必须含显式因果句)"}
         self.decision.status = status
@@ -159,9 +180,14 @@ class LeadReverifier:
         reason = args.get("reason", "").strip()
         if len(reason) < 20:
             return {"error": "reason 必须含显式因果句(指出 T1 原文哪一句推翻了哪个前提),不能少于 20 字"}
+        ids, err = self._check_evidence_ids(args.get("evidence_ids"), require_t1=True)
+        if err:
+            return {"error": f"stale 必须给出可点回的 T1 反证 id(有效反证=可点回): {err}"}
         self.decision.status = "stale"
         self.decision.reason = reason
-        return {"recorded": {"claim_id": self.claim.claim_id, "status": "stale", "reason": reason}}
+        self.decision.evidence_ids = ids or []
+        return {"recorded": {"claim_id": self.claim.claim_id, "status": "stale",
+                             "reason": reason, "evidence_ids": ids}}
 
     def _t_mark_gap(self, args: dict) -> dict:
         desc = args.get("description", "").strip()

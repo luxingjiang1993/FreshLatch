@@ -179,8 +179,14 @@ function renderClaims(){
        + '<div>'+esc(c.statement)+'</div>';
     if(c.reason) h += '<div class="reason">'+esc(c.reason)+'</div>';
     h += '<div class="ev">';
-    for(const e of c.t0_evidence_ids||[]) h += '<a onclick="event.stopPropagation();showSource(&quot;'+e.split('#')[0]+'&quot;,&quot;'+e.split('#')[1]+'&quot;,&quot;T0&quot;)">'+esc(e)+'</a>';
-    for(const e of c.t1_evidence_ids||[]) h += '<a onclick="event.stopPropagation();showSource(&quot;'+e.split('#')[0]+'&quot;,&quot;'+e.split('#')[1]+'&quot;,&quot;T1&quot;)">'+esc(e)+'</a>';
+    for(const e of c.t0_evidence_ids||[]) {
+      const bare=(e.split('@')[0]||'').split('#'); const asOf=e.split('@')[1]||'T0';
+      h += '<a onclick="event.stopPropagation();showSource(&quot;'+bare[0]+'&quot;,&quot;'+bare[1]+'&quot;,&quot;'+asOf+'&quot;)">'+esc(e)+'</a>';
+    }
+    for(const e of c.t1_evidence_ids||[]) {
+      const bare=(e.split('@')[0]||'').split('#'); const asOf=e.split('@')[1]||'T1';
+      h += '<a onclick="event.stopPropagation();showSource(&quot;'+bare[0]+'&quot;,&quot;'+bare[1]+'&quot;,&quot;'+asOf+'&quot;)">'+esc(e)+'</a>';
+    }
     h += '</div>';
     h += '<div class="latch" style="margin-top:6px">'
        + '<button disabled title="W5 开放:续命必须带 T1 原文证据">续命(W5 开放)</button>'
