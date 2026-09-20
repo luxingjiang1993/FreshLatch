@@ -183,11 +183,19 @@ def test_prune_keeps_recent_five_threads(tmp_path):
 
 def test_restart_recovery_two_subprocesses():
     """#11 §5.10 进程级验证:phase1 进程退出(锁释放)→ phase2 新进程 resume 恢复并落档。"""
+    import os
     import subprocess
     import sys
     from pathlib import Path
 
     script = Path(__file__).resolve().parent.parent.parent / "scripts" / "verify_latch_poc.py"
-    proc = subprocess.run([sys.executable, str(script)], capture_output=True, text=True)
+    # 显式编码(Anthropic 纪律 #3):text=True 默认用 locale 编解码(Windows 中文版 = GBK),
+    # 子进程输出 UTF-8 时父进程解码崩 → proc.stdout=None → 下游 TypeError(CI 700b27c 红因)。
+    # 子进程 stdout 编码由 PYTHONIOENCODING 钉死,不依赖调用方环境。
+    proc = subprocess.run(
+        [sys.executable, str(script)], capture_output=True, text=True,
+        encoding="utf-8", errors="replace",
+        env={**os.environ, "PYTHONIOENCODING": "utf-8"},
+    )
     assert proc.returncode == 0, proc.stderr
     assert "LATCH-POC PASS" in proc.stdout
