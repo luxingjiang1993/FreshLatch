@@ -3,3 +3,7 @@ reports/trajectories/*.jsonl
 
 # Claude Code 会话配置
 .claude/
+
+# Python 字节码
+__pycache__/
+*.pyc

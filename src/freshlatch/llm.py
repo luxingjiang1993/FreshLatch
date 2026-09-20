@@ -37,7 +37,8 @@ class LLMClient:
         self.decoding_log: list[DecodingParams] = []
 
     def chat(self, messages: list, *, tools: list | None = None,
-             decoding: DecodingParams | None = None) -> object:
+             decoding: DecodingParams | None = None,
+             response_format: dict | None = None) -> object:
         d = decoding or DecodingParams()
         self.decoding_log.append(d)
         kwargs: dict = {"model": d.model, "messages": messages, "temperature": d.temperature}
@@ -45,5 +46,7 @@ class LLMClient:
             kwargs["seed"] = d.seed
         if tools is not None:
             kwargs["tools"] = tools
+        if response_format is not None:
+            kwargs["response_format"] = response_format
         resp = self.client.chat.completions.create(**kwargs)
         return resp.choices[0].message
