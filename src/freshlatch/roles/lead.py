@@ -2,16 +2,19 @@
 
 上下文只装:主张 + 最近检索块 + 作废名单(§2.8);不装全部语料,不做上下文压缩。
 W1 人格为内联最小版;skills/reverify/SKILL.md(T6)落盘后由 Runner 注入替换。
+W3 起白名单含 spawn_critic:动态派驻 Critic 专找反证(§6.3),Critic 结论只作参考,判定仍由 Lead 下。
 """
 
 from __future__ import annotations
 
+from freshlatch.evidence import check_evidence_ids, valid_as_of
 from freshlatch.models import Claim
+from freshlatch.roles.critic import Critic
 from freshlatch.roles.loop import LoopResult, run_loop
 from freshlatch.runner import ClaimDecision, RunContext
-from freshlatch.tools import LEAD_TOOLS_W1, tool_specs
+from freshlatch.tools import FOCUS_DIMENSIONS, LEAD_TOOLS_W3, tool_specs
 
-LEAD_PERSONA_W1 = """你是 Lead Reverifier,FreshLatch 的复验主官。你的任务是把一条已签发主张从「曾经为真」改成「现在仍可复验」。
+LEAD_PERSONA = """你是 Lead Reverifier,FreshLatch 的复验主官。你的任务是把一条已签发主张从「曾经为真」改成「现在仍可复验」。
 
 工作方式(裸 ReAct,逐轮决策,无全程计划):
 1. 先用 retrieve 在 T1(复验时刻快照)检索与主张相关的证据块;必要时 read_source 读原文全文兜底。
@@ -21,18 +24,15 @@ LEAD_PERSONA_W1 = """你是 Lead Reverifier,FreshLatch 的复验主官。你的�
 4. T1 原文明确推翻主张 → mark_stale(claim_id, reason, [t1 evidence_id...]),reason 必须含显式因果句:指出 T1 原文哪一句推翻了主张的哪个前提,不得只写「与最新文档不符」;反证 id 必须逐字引用 retrieve 返回的 T1 证据 id,不得编造。
    注意:只有 T1 出现明确的推翻性内容时才判 stale;T1 只说「未复测/无新数据/待发布/未入账」是证据缺口,不是推翻——走 mark_gap + unknown,不得判 stale。
 5. T1 无原文覆盖或证据不足 → mark_gap(description) 后 reverify_claim(claim_id, "unknown", [])。
-6. 完成或无路可走 → finish_reverify()。
+6. 想对主张加压、专找「已死」反证 → spawn_critic(focus?):focus 可省略(=不限方向),只能填 6 个枚举值
+   (competitor_pricing/regulatory_stance/interview_reversal/cost_model/market_structure/tech_ecosystem),
+   填错整个调用被拒并回列词表,重试消耗你的步数预算。Critic 结论只是参考输入,判定与证据引用仍由你负责。
+7. 完成或无路可走 → finish_reverify()。
 
 纪律:
 - 作废名单里的主张已被人工作废,不要试图把它改回 fresh,闸会打回。
 - 你没有联网工具,不要臆造 T1 之外的信息。
 - 每条主张只下一次判定。"""
-
-def _valid_as_of(value) -> str | None:
-    """as_of 校验(调用边界硬校验,非法值整call拒绝并回列合法值,§3.4 惯例)。"""
-    if value in (None, "", "T0", "T1"):
-        return value or None
-    raise ValueError("as_of 只能是 T0|T1,收到: %r" % value)
 
 
 class LeadReverifier:
@@ -49,7 +49,7 @@ class LeadReverifier:
         self.ctx.gaps = []  # 缺口按主张隔离,禁止跨主张渗漏
         system = self._build_system()
         task = self._build_task()
-        tools = tool_specs(list(LEAD_TOOLS_W1))
+        tools = tool_specs(list(LEAD_TOOLS_W3))
         loop: LoopResult = run_loop(
             system=system, task=task, tools=tools,
             execute=self._execute,
@@ -78,7 +78,7 @@ class LeadReverifier:
         quarantined = sorted(self.ctx.quarantine_list)
         void_line = f"作废名单(人工已作废,不得改回 fresh): {', '.join(voided) if voided else '(空)'}"
         quarantine_line = f"隔离名单: {', '.join(quarantined) if quarantined else '(空)'}"
-        return f"{LEAD_PERSONA_W1}\n\n{void_line}\n{quarantine_line}"
+        return f"{LEAD_PERSONA}\n\n{void_line}\n{quarantine_line}"
 
     def _build_task(self) -> str:
         ev = ", ".join(self.claim.t0_evidence_ids) or "(无)"
@@ -97,6 +97,7 @@ class LeadReverifier:
             "reverify_claim": self._t_reverify_claim,
             "mark_stale": self._t_mark_stale,
             "mark_gap": self._t_mark_gap,
+            "spawn_critic": self._t_spawn_critic,
             "finish_reverify": self._t_finish,
         }.get(name)
         if handler is None:  # fail-closed,理论上 tool_specs 已拦截
@@ -105,7 +106,7 @@ class LeadReverifier:
 
     def _t_retrieve(self, args: dict) -> dict:
         try:
-            as_of = _valid_as_of(args.get("as_of"))
+            as_of = valid_as_of(args.get("as_of"))
         except ValueError as e:
             return {"error": str(e)}
         hits = self.ctx.try_retrieve(
@@ -128,7 +129,7 @@ class LeadReverifier:
 
     def _t_read_source(self, args: dict) -> dict:
         try:
-            as_of = _valid_as_of(args.get("as_of")) or "T1"
+            as_of = valid_as_of(args.get("as_of")) or "T1"
         except ValueError as e:
             return {"error": str(e)}
         text = self.ctx.store.read_source(args["doc_id"], as_of=as_of)
@@ -138,17 +139,7 @@ class LeadReverifier:
 
     def _check_evidence_ids(self, raw: object, *, require_t1: bool) -> tuple[list[str] | None, str | None]:
         """白名单校验(#16):id 必须逐字来自本会话 retrieve 返回;fresh/stale 引用的必须是锚 T1 的证据。"""
-        ids = [str(e).strip() for e in (raw or []) if str(e).strip()]
-        if not ids:
-            return None, "evidence_ids 不能为空(必须引用 retrieve 返回的证据块)"
-        unknown = [e for e in ids if e not in self._seen_evidence]
-        if unknown:
-            return None, f"evidence_ids 必须逐字来自本会话 retrieve 返回的 evidence_id,未检索到: {unknown}"
-        if require_t1:
-            not_t1 = [e for e in ids if not e.endswith("@T1")]
-            if not_t1:
-                return None, f"引用的证据必须锚 T1 快照(id 以 @T1 结尾),收到: {not_t1}"
-        return ids, None
+        return check_evidence_ids(raw, self._seen_evidence, require_t1=require_t1)
 
     def _t_reverify_claim(self, args: dict) -> dict:
         status = args.get("status")
@@ -195,6 +186,31 @@ class LeadReverifier:
             return {"error": "description 不能为空"}
         self.ctx.gaps.append(desc)
         return {"recorded_gap": desc}
+
+    def _t_spawn_critic(self, args: dict) -> dict:
+        """动态派驻(§6.3):同进程同步起全新循环实例;focus 调用边界硬校验,非法值回列词表。
+
+        只传「主张原文 + focus + 相关 evidence_id 列表」——激励隔离 + 省 token + 评测可复现;
+        每次重试消耗 Lead 步数预算(循环每轮计一步,#14)。Critic 结论回吐为工具观察,由 Lead 自行决定是否采纳。
+        """
+        focus = args.get("focus")
+        if focus in (None, ""):
+            focus = None  # 省略 = 不限方向(§3.4:不设占位枚举值)
+        elif focus not in FOCUS_DIMENSIONS:
+            return {"error": "focus 只能是 %s 之一,或省略(=不限方向);收到: %r"
+                              % ("/".join(FOCUS_DIMENSIONS), focus)}
+        self.ctx.emit({"type": "critic_spawn", "claim_id": self.claim.claim_id, "focus": focus})
+        critic = Critic(self.ctx, self.claim, self.llm, focus=focus,
+                        evidence_ids=sorted(self._seen_evidence))
+        result = critic.run()
+        self.ctx.emit({"type": "critic_result", "claim_id": self.claim.claim_id,
+                       "focus": focus, "steps_used": result.steps_used,
+                       "counter_evidence_ids": result.counter_evidence_ids})
+        return {"reported_by": "critic", "focus": focus,
+                "finding": result.finding,
+                "counter_evidence_ids": result.counter_evidence_ids,
+                "stale_reason": result.stale_reason,
+                "note": "Critic 只找反证、不得放行;是否采纳由你基于本会话证据自行判定"}
 
     def _t_finish(self, args: dict) -> dict:
         self._finished = True
