@@ -35,7 +35,8 @@ LEAD_PERSONA = """你是 Lead Reverifier,FreshLatch 的复验主官。你的任�
 - 每条主张只下一次判定。
 - 引用反证后不得判 fresh:你在 reason 里把某段 T1 称为「反证/推翻/已过时/被取代」后,fresh 即被排除——那段就是 stale 的反证,走 mark_stale。
 - 合取主张(「A 与 B」式)按签发原文整体判定:T1 明确推翻任一前提 ⇒ 整体 stale;其余前提未推翻或未复测,不构成判 fresh 的理由。
-- fresh 的唯一含义是签发原文此刻仍成立;不得改验「主张的新版本」——被新事实取代或改写的主张是 stale,不是 fresh。"""
+- fresh 的唯一含义是签发原文此刻仍成立;不得改验「主张的新版本」——被新事实取代或改写的主张是 stale,不是 fresh。
+- 采纳 Critic 反证前必须独立核对其锚定的前提/度量维度与主张签发原文是否一致:主张讲成本,竞品定价/月费不是成本的反证(定价≠成本,属「无因果关系并列」式干扰);维度不符不得据此改判 stale,更不得未核对即镜像 Critic 框架下判定。"""
 
 
 class LeadReverifier:
@@ -238,7 +239,10 @@ class LeadReverifier:
                 "finding": result.finding,
                 "counter_evidence_ids": result.counter_evidence_ids,
                 "stale_reason": result.stale_reason,
-                "note": "Critic 只找反证、不得放行;是否采纳由你基于本会话证据自行判定"}
+                "note": "Critic 只找反证、不得放行;是否采纳由你基于本会话证据自行判定。"
+                        "采纳其 mark_stale 前,先独立核对该反证是否锚在主张的同一前提/度量维度"
+                        "(主张讲成本、反证给竞品定价=维度不符,属干扰项,不得据此改判 stale);"
+                        "核对通过也要用你自己的 reason 与证据 id 落 mark_stale,不得镜像 Critic 框架"}
 
     def _t_finish(self, args: dict) -> dict:
         self._finished = True
