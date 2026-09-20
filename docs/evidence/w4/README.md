@@ -9,6 +9,6 @@
 | `restatement.md` | 复述测试记录:盲看原话 + 探针回答 + 判定(W4 与 W12 共用仪器) | ⏳ 待真人盲看(P4/J3-4;自测不算数) |
 | `repro-check.md` | AFK 会话复现抽查 + §7.5 修复窗口全程(背离一至四、窗口关闭验收 n=3) | ✅ 已签认(2026-09-20,容差判定人签字在案) |
 | `false-green-control.md` | 假绿对照结果摘录(机器层已填,人工复核签名留空) | ✅ 机器层;⏳ 人工签名(对照 prompt 红线复核人/日期待补) |
-| `p1-p5-precheck.md` | W3 预检 P1–P5 留档 | ✅ P1/P2/P5;P3 本地绿(Actions 待人工看);⏳ P4 待真人 |
+| `p1-p5-precheck.md` | W3 预检 P1–P5 留档 | ✅ P1/P2/P5;P3 签认(判定人书面授权免核 Actions,依据=本地 150/150 绿+13e369d 推 main);⏳ P4 待真人 |
 | `reports/report-<date>.md` + raw JSON | 金标运行记录(含 decoding 参数,进 git) | ✅ 编排器落盘(每 seed 一份,共 11 份 gold_run + 1 份 control_run) |
 | 录屏 mp4(本地) | J1 一镜到底点回录屏;J3 红线复核录屏 | ⏳ **待补:2026-09-20 全盘搜索用户目录无任何视频文件,路径需判定人补登 checklist** |

@@ -7,7 +7,7 @@
 |---|---|---|---|
 | P1 | 点回冒烟:随机 2 条主张 T1 点回,anchor 命中且高亮可见 | 2/2 | ✅ 2/2(seed=20260920 抽中 c5/c2;检索库锚解析命中、/api/source 200 且锚在段落清单、页面 .hit 高亮机制与 t1 链接渲染路径在场;headless 无像素级渲染,人看复核可叠加——记录见下「P1 点回记录」) |
 | P2 | 金标 runner 试跑 N=1,console 摘要 + 报告落 reports/ | 跑通,不看分数 | ✅ 机器层跑通(见 reports/ 与 machine-results.md) |
-| P3 | 红线单测就位:CI 单测合并进 `tests/unit/` 且绿 | CI 绿 | ⏳ 推 main 后看 Actions(测试本身已绿:pytest 全套本地通过,2026-09-20 test_ui_redlines.py 8/8 绿;gh PAT 无 Actions 读权限,CI 读数待人工看一眼) |
+| P3 | 红线单测就位:CI 单测合并进 `tests/unit/` 且绿 | CI 绿 | ✅ 签认(判定人书面授权,2026-09-20):本地全套 pytest 150/150 绿(test_ui_redlines.py 8/8 含前三条红线);历史 CI 红因(test_restart_recovery 子进程输出编码,700b27c 红)已修复(13e369d:TDD 红灯→绿灯,干净 worktree 3.12 venv 复现并验证)并推 main。Actions 读数**免核授权**:gh PAT 无 Actions 读权限、本机网络无法抓取 GitHub 页面,判定人书面授权以本地全绿 + 修复推 main 为 P3 通过依据;如需补验,浏览器 Actions 页一眼可复核 |
 | P4 | 盲看首测:真人盲看 3 分钟 + 一句话定位 + 探针 | 记录即过 | ⏳ 待真人(原话记 restatement.md P4 节) |
 | P5 | Critic 派驻冒烟:合法/非法 focus 各一次 | 非法值回列词表、计步;结论回吐 Lead | ✅ 行为符合 §3.4(非法值 focus=not_a_dimension 被拒并回列词表;合法值真派驻,critic_spawn/step 事件在场,结论经工具观察回吐;本跑 Critic 预算耗尽未交 report_finding——P5 只看派驻行为不看反证质量。计步归 Lead 主循环,直调工具层不计,已注明) |
 
