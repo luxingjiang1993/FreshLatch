@@ -4,11 +4,11 @@
 
 | 文件 | 内容 | 状态 |
 |---|---|---|
-| `checklist.md` | 锁定判据检查表(§7.4 底稿,头部锁定语) | ✅ 已落(W4 验收前锁定);逐项签字待终审 |
-| `machine-results.md` | 机器层执行结果(P2/J1 表/J2 三 seed/对照/护栏,自动生成) | ✅ 已生成(以 checklist 签字为准) |
-| `restatement.md` | 复述测试记录:盲看原话 + 探针回答 + 判定(W4 与 W12 共用仪器) | ⏳ 待真人盲看(P4/J3) |
-| `repro-check.md` | AFK 会话复现抽查:基准列已写入,待冷启动会话填复现列 | ⏳ 待抽查(J4) |
-| `false-green-control.md` | 假绿对照结果摘录(机器层已填,人工复核签名留空) | ✅ 机器层;⏳ 人工签名 |
-| `p1-p5-precheck.md` | W3 预检 P1–P5 留档(P2 机器层✅;P1/P4/P5 待人工) | ⏳ 待人工补录 |
-| `reports/report-<date>.md` + raw JSON | 金标运行记录(含 decoding 参数,进 git) | ✅ 编排器落盘(每 seed 一份) |
-| 录屏 mp4(本地) | J1 一镜到底点回录屏;J3 红线复核录屏 | ⏳ 待录制,路径登记进 checklist |
+| `checklist.md` | 锁定判据检查表(§7.4 底稿,头部锁定语) | ✅ 已落;2026-09-20 逐项补录(J1/J2/J5/P1/P2/P5/P3 本地绿已签;J3 红线人看录屏、J3-4/P4 复述原话、录屏路径待补) |
+| `machine-results.md` | 机器层执行结果(P2/J1 表/J2 三 seed/对照/护栏,自动生成) | ✅ 已生成(harness 方向前置修复后离线重算,见 repro-check.md 附带发现) |
+| `restatement.md` | 复述测试记录:盲看原话 + 探针回答 + 判定(W4 与 W12 共用仪器) | ⏳ 待真人盲看(P4/J3-4;自测不算数) |
+| `repro-check.md` | AFK 会话复现抽查 + §7.5 修复窗口全程(背离一至四、窗口关闭验收 n=3) | ✅ 已签认(2026-09-20,容差判定人签字在案) |
+| `false-green-control.md` | 假绿对照结果摘录(机器层已填,人工复核签名留空) | ✅ 机器层;⏳ 人工签名(对照 prompt 红线复核人/日期待补) |
+| `p1-p5-precheck.md` | W3 预检 P1–P5 留档 | ✅ P1/P2/P5;P3 本地绿(Actions 待人工看);⏳ P4 待真人 |
+| `reports/report-<date>.md` + raw JSON | 金标运行记录(含 decoding 参数,进 git) | ✅ 编排器落盘(每 seed 一份,共 11 份 gold_run + 1 份 control_run) |
+| 录屏 mp4(本地) | J1 一镜到底点回录屏;J3 红线复核录屏 | ⏳ **待补:2026-09-20 全盘搜索用户目录无任何视频文件,路径需判定人补登 checklist** |
