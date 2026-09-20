@@ -1,6 +1,8 @@
 # ADR-0009: 双判一致与 Auditor 在场不变量
 
-- **状态**: Accepted(2026-09-21,工单 #20 拍板)
+- **状态**: Accepted(2026-09-21,工单 #20 拍板)。**stale 路径在场条款(子决策 2 末段)
+  经 ADR-0010(2026-09-21,工单 #24)修订**:fake-stale 方向改 Auditor 强制在场 + 维度异议
+  闸打回(依据 = #21 行为验收 0/6 击穿本子决策的层数前提);本 ADR 其余条款不动,继续有效。
 - **相关**: 工单 #20 评估见 `docs/research/Auditor形态设计评估.md`;形态确认 spec 03 §3.2;
   c2 派驻失灵定性 `docs/evidence/w4/repro-check.md` 背离二;#19 `docs/research/c5c6工程债处置设计评估.md`;
   不变量先例 ADR-0008
