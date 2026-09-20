@@ -8,11 +8,12 @@ W4 的 3 遍 × 3 seed 验收冒烟按 §4.4 不走本 runner(独立拍板,显�
 from __future__ import annotations
 
 import json
+from dataclasses import replace
 from datetime import datetime, timezone
 from pathlib import Path
 
 from freshlatch.eval.checks import check_counterevidence, expected_evidence_id
-from freshlatch.eval.matrix import BUCKETS, confusion_matrix
+from freshlatch.eval.matrix import BUCKETS, EXPECTED_VERDICT, confusion_matrix
 from freshlatch.llm import DecodingParams, LLMClient
 from freshlatch.runner import Runner, load_docket
 from freshlatch.store.base import RetrievalStore
@@ -48,10 +49,12 @@ def run_gold(store: RetrievalStore, llm: LLMClient | None, *, gold_path: str | P
 
     per_run: list[dict] = []
     for run_idx in range(1, runs + 1):
+        # 逐运行 decoding 留档(§4.7):每遍独立 DecodingParams,recorded_at 区分运行
+        run_decoding = replace(decoding, recorded_at=datetime.now(timezone.utc).isoformat())
         decisions: dict[str, str] = {}
         detail: dict[str, dict] = {}
         for claim in claims:
-            runner = Runner(store, llm, mode="eval", decoding=decoding)
+            runner = Runner(store, llm, mode="eval", decoding=run_decoding)
             result = runner.run([claim], trajectory_dir=trajectory_dir)
             final = claim.status
             decisions[claim.claim_id] = final
@@ -63,7 +66,8 @@ def run_gold(store: RetrievalStore, llm: LLMClient | None, *, gold_path: str | P
                 "steps_used": result.steps_by_claim.get(claim.claim_id, 0),
             }
         matrix = confusion_matrix(gold, decisions)
-        per_run.append({"run": run_idx, "decisions": decisions,
+        per_run.append({"run": run_idx, "decoding": run_decoding.__dict__,
+                        "decisions": decisions,
                         "detail": detail, "matrix": matrix.to_dict()})
 
     # per-claim 命中次数/N(报告按 N>1 设计的 pass@k 表)
@@ -118,7 +122,6 @@ def run_gold(store: RetrievalStore, llm: LLMClient | None, *, gold_path: str | P
 
 
 def _expected(gold: dict, cid: str) -> str | None:
-    from freshlatch.eval.matrix import EXPECTED_VERDICT
     for bucket in BUCKETS:
         if cid in gold[bucket]:
             return EXPECTED_VERDICT[bucket]

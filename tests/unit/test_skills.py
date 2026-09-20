@@ -75,7 +75,8 @@ def test_frontmatter_rules(slug):
     assert not XML_TAG.search(desc), "description 不得含 XML 标签"
 
     assert "metadata" in fm, "metadata 字段在位"
-    assert len(fm["metadata"].split()) <= 200
+    # 「~100 词」对中文按字符计(分词器不在依赖内;split() 对无空格中文恒真,形同虚设)
+    assert 0 < len(fm["metadata"]) <= 200, "metadata ~100 词 ≈ 200 字符以内"
 
     body = text.split("---", 2)[2]
     assert not XML_TAG.search(body), "正文不得含 XML 标签(prompt 注入面)"

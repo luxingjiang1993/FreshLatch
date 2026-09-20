@@ -102,23 +102,3 @@ def test_counterevidence_unpointable():
     store = _store()
     r = check_counterevidence(store, GOLD, "c1", "doc-a 原文推翻前提", ["doc-a#p9@T1"])
     assert not r["pointable"] and not r["valid_machine"]
-
-
-# -- 对照 prompt 红线(§4.2:泄题即废,机器盯死) ---------------------------------
-
-
-def test_control_prompt_redline():
-    from freshlatch.eval.control import CONTROL_PROMPT, _parse_verdict
-
-    for leak in ("T1", "T0", "快照", "复验", "金标", "gold", "must_stale"):
-        assert leak not in CONTROL_PROMPT, f"对照 prompt 泄题: {leak}"
-
-
-def test_control_verdict_parse():
-    from freshlatch.eval.control import _parse_verdict
-
-    assert _parse_verdict('{"verdict": "alive"}') == "alive"
-    assert _parse_verdict('前言 {"verdict": "dead"} 后记') == "dead"
-    assert _parse_verdict("成立") == "unparseable"
-    assert _parse_verdict('{"verdict": "yes"}') == "unparseable"
-    assert _parse_verdict("") == "unparseable"

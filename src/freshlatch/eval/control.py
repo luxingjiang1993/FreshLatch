@@ -13,6 +13,7 @@ import re
 from datetime import datetime, timezone
 from pathlib import Path
 
+from freshlatch.eval.matrix import BUCKETS
 from freshlatch.eval.runner import EVAL_MODE_SWITCHES, REPRO_NOTE, load_gold
 from freshlatch.llm import DecodingParams, LLMClient
 from freshlatch.runner import load_docket
@@ -51,15 +52,19 @@ def run_control(store: RetrievalStore, llm: LLMClient | None, *, gold_path: str 
     llm = llm or LLMClient()
     gold = load_gold(gold_path)
     docket = load_docket(docket_path)
+    gold_ids = {cid for bucket in BUCKETS for cid in gold[bucket]}
 
     results: dict[str, dict] = {}
     for claim in docket.claims:
-        t0_excerpt = ""
-        if claim.t0_evidence_ids:
-            doc_id, _, anchor = claim.t0_evidence_ids[0].partition("#")
+        if claim.claim_id not in gold_ids:
+            continue  # 只跑金标 12 条(§4.2 对账口径),docket 外主张不进对照
+        excerpt_parts = []
+        for eid in claim.t0_evidence_ids:
+            doc_id, _, anchor = eid.partition("#")
             chunk = store.get_chunk(doc_id, anchor, as_of="T0") if anchor else None
             if chunk is not None:
-                t0_excerpt = chunk.text
+                excerpt_parts.append(chunk.text)
+        t0_excerpt = "\n\n".join(excerpt_parts)
         msg = llm.chat(
             [{"role": "user", "content": CONTROL_PROMPT.format(
                 statement=claim.statement, t0_excerpt=t0_excerpt)}],
@@ -82,5 +87,6 @@ def run_control(store: RetrievalStore, llm: LLMClient | None, *, gold_path: str 
         "results": results,
         "false_green_must_stale": false_green_dead,
         "blind_green_must_unknown": blind_green,
+        "must_stale_total": len(gold["must_stale"]),
         "control_pass": len(false_green_dead) == len(gold["must_stale"]),
     }

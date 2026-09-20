@@ -17,18 +17,23 @@ BUCKET_ZH = {"must_stale": "必须判死", "must_fresh": "必须判活", "must_u
 
 def _decoding_block(raw: dict) -> list[str]:
     d = raw["decoding"]
-    return [
+    lines = [
         "## 运行档案(decoding 逐运行入档,§4.7)",
         "",
         f"- 模型版本: `{d['model']}`",
         f"- temperature: `{d['temperature']}`",
         f"- seed: `{d['seed']}`",
         f"- 记录时间(UTC): {raw['recorded_at']}",
+    ]
+    if raw.get("runs", 1) > 1:
+        lines.append(f"- 逐遍记录: `per_run[i].decoding`(每遍独立 DecodingParams,recorded_at 区分)")
+    lines += [
         "",
         "> 复现条款:闸层(must_* 零违例)给定解码参数下逐位复现;判定层按文档化容差;"
         "违例级背离触发人查。qwen-flash 是活托管端点,跨会话复现只能近似,此限制为留档声明。",
         "",
     ]
+    return lines
 
 
 def render_report(raw: dict) -> str:
@@ -88,8 +93,18 @@ def _render_gold(raw: dict) -> str:
                          f"| {'✅' if c['anchor_aligned'] else '❌'} "
                          f"| {'✅' if c['causal_sentence_proxy'] else '❌'} "
                          f"| {'✅' if c['valid_machine'] else '❌'} |")
-    lines += ["", f"> {raw['counterevidence_j2'][next(iter(raw['counterevidence_j2']))][0]['causal_sentence_note']}",
-              "", "## J2 反向护栏(must_fresh 不得出现机器层有效反证)", ""]
+    if raw["counterevidence_j2"]:
+        first_cid = next(iter(raw["counterevidence_j2"]))
+        lines += ["", f"> {raw['counterevidence_j2'][first_cid][0]['causal_sentence_note']}"]
+    # 决策七:全量通过率 + 波动区间(N>1 时有意义;N=1 退化为单遍读数)
+    run_totals = [sum(r["matrix"]["hits"].values()) for r in raw["per_run"]]
+    full_pass = sum(1 for r in raw["per_run"] if r["matrix"]["all_hit"])
+    lines += [
+        "",
+        f"- 全量通过遍数: {full_pass}/{raw['runs']}(单遍 12 条全命中为全量通过)",
+        f"- 单遍命中条数波动区间: [{min(run_totals)}, {max(run_totals)}] / 12",
+        "",
+        "## J2 反向护栏(must_fresh 不得出现机器层有效反证)", ""]
     for cid, guards in sorted(raw["fresh_guardrail_j2"].items(), key=lambda kv: int(kv[0][1:])):
         ok = "✅" if all(guards) else "❌"
         lines.append(f"- {cid}: {ok}({'/'.join('过' if g else '违' for g in guards)})")
@@ -124,7 +139,7 @@ def _render_control(raw: dict) -> str:
         lines.append(f"| {cid} | {r['verdict']} |")
     lines += [
         "",
-        f"- must_stale 假绿条数: {len(raw['false_green_must_stale'])}/4 ({', '.join(raw['false_green_must_stale']) or '无'})",
+        f"- must_stale 假绿条数: {len(raw['false_green_must_stale'])}/{raw['must_stale_total']} ({', '.join(raw['false_green_must_stale']) or '无'})",
         f"- must_unknown 盲判绿条数: {len(raw['blind_green_must_unknown'])} ({', '.join(raw['blind_green_must_unknown']) or '无'})",
         f"- **对照成立: {'✅' if raw['control_pass'] else '❌'}**",
         "",
@@ -145,7 +160,7 @@ def console_summary(raw: dict) -> str:
         return "\n".join(parts)
     if raw["kind"] == "control_run":
         return (f"[control] model={raw['decoding']['model']} "
-                f"must_stale 假绿 {len(raw['false_green_must_stale'])}/4; "
+                f"must_stale 假绿 {len(raw['false_green_must_stale'])}/{raw['must_stale_total']}; "
                 f"对照成立: {raw['control_pass']}")
     raise ValueError(f"未知的 raw 结果类型: {raw['kind']}")
 
