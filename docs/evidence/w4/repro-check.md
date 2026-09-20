@@ -73,3 +73,85 @@
 - **方向**:must_fresh→stale,**非违例级**(预登记违例定义=must_stale 被判 fresh);must_fresh 按最差一次 3/4 如实登记。
 - **处置**:记背离,不改判据;**不立即二修**——一次只改一个变量,窗口关闭验收须对 c2 修复干净归因。二修候选方向登记:① Critic 反证门槛加「反证必须锚在主张同一度量维度」;② Lead 采纳 Critic 前强制独立核对该反证与主张的前提对应(不镜像 Critic 框架)。归 §7.5 窗口评审统一拍板。
 - **与 c9 的区别**:c9 是端点漂移(证据逐位一致、判定自发抖动);c5 是修复引入的结构副作用(无 checkpoint 不触发),归因明确,不混入「近似复现」留档。
+
+### 背离三补:二修拍板(2026-09-20,决议四件套落齐)
+
+**拍板:做,①为主 + ②为配套,同一提交分层落地(d91a41e),走 c2 同款三层 TDD 结构(13 用例先行,全量 135 绿)。**
+① Critic 人格/rubric 生产侧维度锚定(反证必须锚主张同一前提/度量维度,定价≠成本不得 mark_stale);
+② Lead 人格/SKILL 消费侧独立核对 + checkpoint note 确定性注入核对指令。
+评估文档:`docs/research/c5二修方向设计评估.md`(候选①②③机器闸④不做逐路线评估,被否项写透;
+含 Anthropic 清单自评——初稿原推荐「只做②」被清单 #2/#5/#7 挑战后撤销)。
+ADR 三条件不齐(易反转/非反直觉)不记;词表已同步(CONTEXT.md 有效反证 + Critic 条目);
+tracker 无对应工单,决议评论以本文件 + 评估文档 + git 提交为留档载体。判据一字未动。
+
+---
+
+## 窗口关闭验收(n=3 temp=0 正式复验,2026-09-20,§7.5 窗口内,只此一次)
+
+> 同一份检查表(checklist.md 判据锁定版)、同一批判据,只换新证据;判据事后修改 = 验收作废(HARKing)。
+> 预登记通过线(验收运行前锁定,不得事后修订):① c2 3/3 stale;② 12 条中零 must_stale→fresh;
+> ③ c9/c5 按已签口径记背离不升级。再不过 = 按签认口径立项失败(止损线)。
+
+### 执行环境
+
+| 项 | run 1 | run 2 | run 3 |
+|---|---|---|---|
+| 运行时间(UTC) | 2026-09-20T14:56:26Z | 2026-09-20T14:57:56Z | 2026-09-20T15:00:05Z |
+| 模型版本 | qwen-flash | qwen-flash | qwen-flash |
+| temperature / seed | 0.0 / None | 0.0 / None | 0.0 / None |
+| 报告 | report-20260920-225754.json | report-20260920-230003.json | report-20260920-230156.json |
+| 运行时代码状态 | d91a41e(c5 二修已落) | 同左 | 同左 |
+
+命令:`PYTHONPATH=src python -m freshlatch.eval run --gold data/eval/gold.json --temperature 0.0`,连续 3 遍。
+
+### 判定矩阵(12 条 × 3 跑)
+
+| 主张 | 桶 | run 1 | run 2 | run 3 | 判定 |
+|---|---|---|---|---|---|
+| c1 | must_stale | stale | stale | stale | ✅ |
+| **c2** | must_stale | **stale** | **stale** | **stale** | ✅ **3/3(通过线①达成)** |
+| c3 | must_stale | stale | stale | stale | ✅ |
+| c4 | must_fresh | fresh | fresh | fresh | ✅ |
+| c5 | must_fresh | **stale** | **stale** | **stale** | ❌ 背离三未愈,见下 |
+| c6 | must_fresh | **stale** | **stale** | **stale** | ❌ 背离四(新),见下 |
+| c7 | must_stale | stale | stale | stale | ✅ |
+| c8 | must_fresh | fresh | fresh | fresh | ✅ |
+| c9 | must_unknown | unknown | **stale** | unknown | ❌ 已知形状,记背离不升级 |
+| c10 | must_unknown | unknown | unknown | unknown | ✅ |
+| c11 | must_unknown | unknown | unknown | unknown | ✅ |
+| c12 | must_unknown | unknown | unknown | unknown | ✅ |
+
+**通过线判定:① c2 3/3 stale ✅(三跑均 Lead 自主 mark_stale,因果句正确,checkpoint 未带偏);
+② 12 条零 must_stale→fresh ✅(c1/c2/c3/c7 全部 3/3 stale);③ c9/c5 按已签口径记背离不升级 ✅(见下)。
+预登记硬判据全部达成,违例级背离零。** c6 为预登记行之外的新背离,按已签违例定义(must_stale 被判 fresh)
+**非违例级**,记背离待人查归因。n=3 诚实框定为冒烟层,不报方差;temp=0 于活托管端点仍是近似复现(§4.7)。
+
+### 背离登记(验收窗口内)
+
+**c5(must_fresh,stale 3/3,背离三未愈)**:二修后行为层未达预期,如实登记。归因更新——三跑中仅 run 3
+为 checkpoint 介导(auto spawn,Critic 找回竞品 notes 反证,Lead 采纳);**run 1/run 2 Lead 未依赖 Critic
+(auto spawn False,人工派驻的 Critic 空手而归),自行以竞品定价语汇(Lite 版 39 美元/月/店 vs 我方拟定
+59 美元/月/店)推翻成本维度主张**。维度混淆从「Critic 产出」扩散到「Lead 自主推理」,二修的口径层约束
+(Critic 生产侧 + Lead 采纳侧)未覆盖 Lead 独立判 stale 的路径。结构断言 13 用例全绿 ≠ 行为生效
+(Anthropic 纪律 #1)。方向 must_fresh→stale,非违例级;must_fresh 桶按最差登记 2/4。
+
+**c6(must_fresh,stale 3/3,背离四,新)**:此前 4/4 fresh(基准+复现1+复现2+修复后冒烟),本窗口 3/3 翻
+stale,反转向翻转。轨迹归因:Lead 以竞品 Lite 定价 notes 推翻『收缩免费版⇒市场窗口打开』的**推论前提**
+——与 c5 同类的定价语汇杀结构维度主张,但作用于 Lead 自主推理(2/3 跑人工 spawn Critic 空手后自行判
+stale)。时间上与 d91a41e(c5 二修)相邻:不能排除提示词状态介导,也不能排除端点漂移(§4.7);3/3 确定性
++反转向更支持前者,但无对照实验可钉死(窗口只此一次,不得续杯,无法再跑)。按已签违例定义非违例级;
+must_fresh 桶按最差登记 2/4;归 W12 前工程债,建议方向:Lead 自主 mark_stale 路径补同维度自查
+(人格/rubric),或评测层加 must_fresh 方向护栏。
+
+**c9(must_unknown,run 2 stale,已知形状)**:轨迹 reason『本轮未复测……该指标不再列入跟踪项,因此主张失效』
+——再次把「未复测」当推翻,违反人格显式规则(lead.py/critic.py「未复测=证据缺口,走 unknown」),与复现2
+同形。定性维持「判定逻辑边界案例 + 端点漂移组合」(背离一),不改判据、不升级;must_unknown 按最差 3/4。
+
+### 验收结论(待容差判定人签认)
+
+预登记通过线三条全部达成(c2 3/3 ✅、零 must_stale→fresh ✅、c9/c5 按签认口径记背离 ✅),违例级背离零。
+按 checklist「未过处置」表与 §7.5 止损线口径,**本次窗口关闭验收达成**;c5/c6/c9 三条非违例级背离如上登记,
+其中 c5(二修未愈)、c6(新翻转,归因待查)如实暴露——**结构修复 ≠ 行为生效,n=3 冒烟层证据不能报成统计结论**。
+
+容差判定人:__________ 日期:__________
+**签认:____________**(签认选项:接受上述处置,验收达成,背离登记生效 / 不接受,理由:____)
