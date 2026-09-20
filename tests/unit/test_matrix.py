@@ -86,19 +86,26 @@ def test_expected_id_from_causal_chain():
 
 def test_counterevidence_machine_valid():
     store = _store()
-    r = check_counterevidence(store, GOLD, "c1", "doc-a 原文:竞品已降价,推翻价格优势前提",
+    r = check_counterevidence(store, GOLD, "c1", "stale", "doc-a 原文:竞品已降价,推翻价格优势前提",
                               ["doc-a#p2@T1"])
     assert r["pointable"] and r["anchor_aligned"] and r["valid_machine"]
     assert r["causal_sentence_proxy"]  # reason 提及 t1_doc(代理判据)
 
 
+def test_counterevidence_fresh_direction_not_counterevidence():
+    """J4 人查缺陷回归:fresh 判定引用支持性锚不构成反证(缺此条件反向护栏恒假)。"""
+    store = _store()
+    r = check_counterevidence(store, GOLD, "c1", "fresh", "doc-a 原文支持主张", ["doc-a#p2@T1"])
+    assert r["pointable"] and r["anchor_aligned"] and not r["valid_machine"]
+
+
 def test_counterevidence_wrong_anchor_not_aligned():
     store = _store()
-    r = check_counterevidence(store, GOLD, "c1", "doc-a 原文推翻前提", ["doc-b#p3@T1"])
+    r = check_counterevidence(store, GOLD, "c1", "stale", "doc-a 原文推翻前提", ["doc-b#p3@T1"])
     assert r["pointable"] and not r["anchor_aligned"] and not r["valid_machine"]
 
 
 def test_counterevidence_unpointable():
     store = _store()
-    r = check_counterevidence(store, GOLD, "c1", "doc-a 原文推翻前提", ["doc-a#p9@T1"])
+    r = check_counterevidence(store, GOLD, "c1", "stale", "doc-a 原文推翻前提", ["doc-a#p9@T1"])
     assert not r["pointable"] and not r["valid_machine"]

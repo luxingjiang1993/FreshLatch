@@ -86,10 +86,10 @@ def _render_gold(raw: dict) -> str:
 
     # J2 有效反证(机器层)+ 反向护栏
     lines += ["## J2 有效反证(机器可查三硬:①可点回 ③span 对齐;②语义判据为机器代理,硬判定归人工)",
-              "", "| claim_id | 遍 | ①可点回 | ③锚对齐 | ②代理(reason 提及 t1_doc) | 机器层有效 |", "|---|---|---|---|---|---|"]
+              "", "| claim_id | 判定 | ①可点回 | ③锚对齐 | ②代理(reason 提及 t1_doc) | 机器层有效 |", "|---|---|---|---|---|---|"]
     for cid, checks in sorted(raw["counterevidence_j2"].items(), key=lambda kv: int(kv[0][1:])):
         for i, c in enumerate(checks, 1):
-            lines.append(f"| {cid} | {i} | {'✅' if c['pointable'] else '❌'} "
+            lines.append(f"| {cid} | {c['status']} | {'✅' if c['pointable'] else '❌'} "
                          f"| {'✅' if c['anchor_aligned'] else '❌'} "
                          f"| {'✅' if c['causal_sentence_proxy'] else '❌'} "
                          f"| {'✅' if c['valid_machine'] else '❌'} |")

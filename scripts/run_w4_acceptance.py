@@ -78,13 +78,14 @@ def j1_machine_summary(raw: dict) -> tuple[bool, list[str]]:
 
 
 def j2_machine_summary(raw: dict) -> tuple[int, list[str]]:
-    """按主张计机器层有效反证条数(①可点回 + ③锚对齐;②代理另列,终判归人工)。"""
+    """按主张计机器层有效反证条数(判定方向必须 stale + ①可点回 + ③锚对齐;②代理另列,终判归人工)。"""
     checks = raw["counterevidence_j2"]
     valid = [cid for cid in MUST_STALE if checks[cid] and checks[cid][0]["valid_machine"]]
     rows = []
     for cid in MUST_STALE:
         c = checks[cid][0]
-        rows.append(f"| {cid} | {'✅' if c['pointable'] else '❌'} | {'✅' if c['anchor_aligned'] else '❌'} "
+        rows.append(f"| {cid} | {c['status']} | {'✅' if c['pointable'] else '❌'} "
+                    f"| {'✅' if c['anchor_aligned'] else '❌'} "
                     f"| {'✅' if c['causal_sentence_proxy'] else '❌'} | {'✅' if c['valid_machine'] else '❌'} |")
     return len(valid), rows
 
@@ -138,7 +139,7 @@ def assemble(args: argparse.Namespace, *, gold_raw: dict, j2_raws: list[dict],
     for seed, r in zip(args.seeds, j2_raws):
         _, rows = j2_machine_summary(r)
         machine_md += ["", f"seed={seed}:", "",
-                       "| claim_id | ①可点回 | ③锚对齐 | ②代理 | 机器层有效 |", "|---|---|---|---|---|",
+                       "| claim_id | 判定 | ①可点回 | ③锚对齐 | ②代理 | 机器层有效 |", "|---|---|---|---|---|---|",
                        *rows]
     if control_raw is not None:
         machine_md += [

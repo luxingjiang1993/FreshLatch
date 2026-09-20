@@ -46,21 +46,31 @@ def check_point_back(store: RetrievalStore, evidence_ids: list[str]) -> dict[str
 
 
 def check_counterevidence(store: RetrievalStore, gold: dict, claim_id: str,
-                          reason: str, evidence_ids: list[str]) -> dict:
-    """有效反证三硬判据的机器层(§7.4 J2)。返回结构化结果,语义层判据如实标注为代理。"""
+                          status: str, reason: str, evidence_ids: list[str]) -> dict:
+    """有效反证三硬判据的机器层(§7.4 J2)。
+
+    前置条件(J4 人查查出的实现缺陷,2026-09-20 修复):判定方向必须是 stale——
+    fresh 判定引用的永远是支持性证据,不构成反证;不过此条件,
+    must_fresh 的正确 fresh 判定必然命中金标锚,反向护栏恒假;
+    must_stale 判 fresh 却引用致死段落(如 c2)会被误计为「有效反证」。
+    """
     expected = expected_evidence_id(gold, claim_id)
     resolvable = check_point_back(store, evidence_ids)
     aligned = expected is not None and expected in evidence_ids
     t1_doc = (gold.get("causal_chain", {}).get(claim_id) or {}).get("t1_doc", "")
+    stale_direction = status == "stale"
     return {
         "claim_id": claim_id,
+        "status": status,
         "expected_anchor": expected,
         "evidence_ids": evidence_ids,
+        "stale_direction": stale_direction,
         "pointable": all(resolvable.values()) if resolvable else False,
         "resolvable_detail": resolvable,
         "anchor_aligned": aligned,
         # 代理判据:reason 提及致死段落所在文档。语义复核(是否真为显式因果句)归人工。
         "causal_sentence_proxy": bool(t1_doc) and t1_doc in reason,
         "causal_sentence_note": "② 显式因果句为语义判据,机器仅查 reason 提及 t1_doc(代理),硬判定归人工复核",
-        "valid_machine": bool(evidence_ids) and all(resolvable.values()) and aligned,
+        "valid_machine": stale_direction and bool(evidence_ids)
+        and all(resolvable.values()) and aligned,
     }

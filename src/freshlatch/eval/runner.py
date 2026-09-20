@@ -92,13 +92,15 @@ def run_gold(store: RetrievalStore, llm: LLMClient | None, *, gold_path: str | P
         if cid in gold["must_stale"]:
             counterevidence[cid] = [
                 check_counterevidence(store, gold, cid,
+                                      per_run[i]["detail"][cid]["status"],
                                       per_run[i]["detail"][cid]["reason"],
                                       per_run[i]["detail"][cid]["evidence_ids"])
                 for i in range(runs)
             ]
-    # 反向护栏:must_fresh 不得出现有效反证(机器层)
+    # 反向护栏:must_fresh 不得出现有效反证(机器层;fresh 方向不构成反证,见 checks 前置条件)
     fresh_guardrail = {
         cid: [not check_counterevidence(store, gold, cid,
+                                        per_run[i]["detail"][cid]["status"],
                                         per_run[i]["detail"][cid]["reason"],
                                         per_run[i]["detail"][cid]["evidence_ids"])["valid_machine"]
               for i in range(runs)]
