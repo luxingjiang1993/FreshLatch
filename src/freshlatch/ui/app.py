@@ -172,13 +172,13 @@ function renderClaims(){
   for(const c of STATE.claims){
     const [label,color] = BADGE[c.status] || BADGE.unknown;
     h += '<div class="claim" id="c-'+c.claim_id+'" style="border-left-color:'+color+'" '
-       + 'onclick="pickClaim(\''+c.claim_id+'\')">'
+       + 'onclick="pickClaim(&quot;'+c.claim_id+'&quot;)">'
        + '<b>'+c.claim_id+'</b><span class="badge" style="color:'+color+'">'+label+'</span>'
        + '<div>'+esc(c.statement)+'</div>';
     if(c.reason) h += '<div class="reason">'+esc(c.reason)+'</div>';
     h += '<div class="ev">';
-    for(const e of c.t0_evidence_ids||[]) h += '<a onclick="event.stopPropagation();showSource(\''+e.split('#')[0]+'\',\''+e.split('#')[1]+'\',\'T0\')">'+esc(e)+'</a>';
-    for(const e of c.t1_evidence_ids||[]) h += '<a onclick="event.stopPropagation();showSource(\''+e.split('#')[0]+'\',\''+e.split('#')[1]+'\',\'T1\')">'+esc(e)+'</a>';
+    for(const e of c.t0_evidence_ids||[]) h += '<a onclick="event.stopPropagation();showSource(&quot;'+e.split('#')[0]+'&quot;,&quot;'+e.split('#')[1]+'&quot;,&quot;T0&quot;)">'+esc(e)+'</a>';
+    for(const e of c.t1_evidence_ids||[]) h += '<a onclick="event.stopPropagation();showSource(&quot;'+e.split('#')[0]+'&quot;,&quot;'+e.split('#')[1]+'&quot;,&quot;T1&quot;)">'+esc(e)+'</a>';
     h += '</div>';
     h += '<div class="latch" style="margin-top:6px">'
        + '<button disabled title="W5 开放:续命必须带 T1 原文证据">续命(W5 开放)</button>'
@@ -195,8 +195,8 @@ async function showSource(docId, anchor, asOf){
   if(j.error){ document.getElementById('pane').innerHTML = '<p>'+esc(j.error)+'</p>'; return; }
   let h = '<h3>'+esc(j.title)+' <span class="asof">'+j.as_of+'</span> <span class="asof">'+esc(j.source_type)+'</span></h3>';
   h += '<div class="tabs" style="margin-bottom:8px">'
-     + '<button class="'+((asOf||'T1')==='T0'?'on':'')+'" onclick="showSource(\''+docId+'\',\''+anchor+'\',\'T0\')">T0 签发时</button>'
-     + '<button class="'+((asOf||'T1')==='T1'?'on':'')+'" onclick="showSource(\''+docId+'\',\''+anchor+'\',\'T1\')">T1 复验时刻</button></div>';
+     + '<button class="'+((asOf||'T1')==='T0'?'on':'')+'" onclick="showSource(&quot;'+docId+'&quot;,&quot;'+anchor+'&quot;,&quot;T0&quot;)">T0 签发时</button>'
+     + '<button class="'+((asOf||'T1')==='T1'?'on':'')+'" onclick="showSource(&quot;'+docId+'&quot;,&quot;'+anchor+'&quot;,&quot;T1&quot;)">T1 复验时刻</button></div>';
   h += '<div class="doc">';
   for(const s of j.sections){
     const hit = s.anchor === anchor;

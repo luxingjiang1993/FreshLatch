@@ -34,3 +34,20 @@ def test_forbidden_phrase_scan():
 def test_synthetic_badge_present():
     """界面标注 SYNTHETIC(合成红线,§0.4.5)。"""
     assert "SYNTHETIC" in HTML_PAGE
+
+
+def test_served_html_js_escapes_intact():
+    """服务出去的 HTML 必须含合法 JS 事件处理器。
+
+    回归:Python 字符串里写 \\' 会被当转义符消耗,服务出去变成 onclick="f(''+x+'')",
+    整个 <script> 语法错误、页面空白(2026-09-20 验收现场抓到)。现统一用 &quot;。
+    """
+    from fastapi.testclient import TestClient
+
+    from freshlatch.ui.app import app
+
+    html = TestClient(app).get("/").text
+    assert "(''+" not in html, "onclick 处理器反斜杠转义被 Python 字符串消耗"
+    for handler in ("pickClaim(&quot;", "showSource(&quot;"):
+        assert handler in html, f"服务出去的 HTML 缺合法 {handler} 处理器"
+
