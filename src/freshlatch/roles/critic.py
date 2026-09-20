@@ -12,6 +12,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from freshlatch.evidence import check_evidence_ids, valid_as_of
+from freshlatch.gates.meta_gate import is_meta_only_disproof
 from freshlatch.models import Claim
 from freshlatch.roles.loop import run_loop
 from freshlatch.tools import CRITIC_TOOLS, FOCUS_DIMENSIONS, tool_specs
@@ -149,6 +150,12 @@ class Critic:
         reason = args.get("reason", "").strip()
         if len(reason) < 20:
             return {"error": "reason 必须含显式因果句(指出 T1 原文哪一句推翻了哪个前提),不能少于 20 字"}
+        if is_meta_only_disproof(reason):
+            # Critic 无 mark_gap/reverify_claim 白名单,引导语按本角色出口适配:
+            # 如实报告该方向未见同维度推翻证据(人格规则 3 同款口径)
+            return {"error": "mark_stale 打回: 未复测/不再列入跟踪/无新数据等是证据缺口,"
+                             "不是推翻;请在 report_finding 中如实说明按 focus 方向"
+                             "检索后未见同维度推翻性 T1 证据"}
         ids, err = check_evidence_ids(args.get("evidence_ids"), self._seen_evidence, require_t1=True)
         if err:
             return {"error": f"mark_stale 必须给出可点回的 T1 反证 id(有效反证=可点回): {err}"}

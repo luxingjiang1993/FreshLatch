@@ -142,7 +142,8 @@ class Runner:
                 claim.status = "unknown"
                 claim.reason = f"[闸打回:{gate.error_code}] {gate.reason}; 原理由: {decision.reason}"
         elif decision.status == "stale":
-            gate = rule_gate(claim, GateDecision(status="stale", t1_evidence_ids=decision.evidence_ids), gate_ctx)
+            gate = rule_gate(claim, GateDecision(status="stale", t1_evidence_ids=decision.evidence_ids,
+                                                 stale_reason=decision.reason), gate_ctx)
             if gate.allowed:
                 claim.status = "stale"
             else:

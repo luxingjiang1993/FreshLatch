@@ -71,6 +71,31 @@ def test_invalidation_list_blocks_fresh():
     assert r2.green
 
 
+def test_stale_meta_only_disproof_blocked():
+    """不变量 6(#17):stale 反证不得为纯元陈述——打回 META_ONLY_DISPROOF,经 runner 落 unknown。"""
+    from tests.unit.test_meta_gate import C9_RUN2_REASON
+    d = GateDecision(status="stale", t1_evidence_ids=["t0-messaging-survey#p3@T1"],
+                     stale_reason=C9_RUN2_REASON)
+    r = rule_gate(make_claim("c9"), d, make_ctx())
+    assert not r.allowed and not r.green and r.error_code == "META_ONLY_DISPROOF"
+
+
+def test_stale_legit_reason_passes():
+    """不变量 6 正例:含数值锚的实质反证照常放行(不误伤合法 stale)。"""
+    from tests.unit.test_meta_gate import C7_LEGIT
+    d = GateDecision(status="stale", t1_evidence_ids=["t0-competitor-notes#p2@T1"],
+                     stale_reason=C7_LEGIT)
+    r = rule_gate(make_claim("c7"), d, make_ctx())
+    assert r.allowed and not r.green
+
+
+def test_stale_empty_reason_not_meta_blocked():
+    """不变量 6 向后兼容:stale_reason 缺省(空)不做元陈述校验,老调用点行为不变。"""
+    d = GateDecision(status="stale", t1_evidence_ids=["t0-x#p2@T1"])
+    r = rule_gate(make_claim(), d, make_ctx())
+    assert r.allowed and not r.green
+
+
 def test_renew_path_also_gated():
     """续命(renew)同样过闸:名单与 checksum 都管。"""
     ctx = make_ctx(invalidation_list={"c1"})

@@ -8,6 +8,7 @@ W3 起白名单含 spawn_critic:动态派驻 Critic 专找反证(§6.3),Critic �
 from __future__ import annotations
 
 from freshlatch.evidence import check_evidence_ids, valid_as_of
+from freshlatch.gates.meta_gate import META_ONLY_MESSAGE, is_meta_only_disproof
 from freshlatch.models import Claim
 from freshlatch.roles.critic import Critic
 from freshlatch.roles.loop import LoopResult, run_loop
@@ -181,6 +182,8 @@ class LeadReverifier:
         reason = args.get("reason", "").strip()
         if len(reason) < 20:
             return {"error": "reason 必须含显式因果句(指出 T1 原文哪一句推翻了哪个前提),不能少于 20 字"}
+        if is_meta_only_disproof(reason):
+            return {"error": f"mark_stale 打回: {META_ONLY_MESSAGE}"}
         ids, err = self._check_evidence_ids(args.get("evidence_ids"), require_t1=True)
         if err:
             return {"error": f"stale 必须给出可点回的 T1 反证 id(有效反证=可点回): {err}"}

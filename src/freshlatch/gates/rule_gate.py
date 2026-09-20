@@ -9,6 +9,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Callable
 
+from freshlatch.gates.meta_gate import META_ONLY_MESSAGE, is_meta_only_disproof
 from freshlatch.models import AsOf, Claim
 
 GREEN_STATUSES = ("fresh", "renew")
@@ -21,6 +22,7 @@ class GateDecision:
     status: str  # fresh | stale | unknown | renew
     t1_evidence_ids: list[str] = field(default_factory=list)
     validity_basis: dict | None = None  # {doc_id, checksum},续命/点绿时携带(W5 起)
+    stale_reason: str = ""  # stale 的理由文本(#17 不变量 6 校验用;空 = 跳过元陈述校验)
 
 
 @dataclass
@@ -47,11 +49,18 @@ def rule_gate(claim: Claim, decision: GateDecision, ctx: GateContext) -> GateRes
       3. checksum 对不上不得 fresh / 续命(checksum 三处留位本期为空,注入即生效)
       4. claim_id ∈ invalidation_list 不得 fresh(重跑打回)
       5. stale 必须携带可点回的 t1 反证(无反证 id 打回;#15 有效反证=可点回)
+      6. stale 反证不得为纯元陈述(#17:未复测/不再列入跟踪是证据缺口不是推翻,
+         打回 META_ONLY_DISPROOF,经 stale 打回落 unknown 路由 unknown)
     """
     # 5. stale 无反证打回(独立于非绿放行:stale 落档也要带可点回反证)
     if decision.status == "stale" and not decision.t1_evidence_ids:
         return GateResult(allowed=False, green=False, error_code="NO_STALE_EVIDENCE",
                           reason="stale 必须给出 t1 反证 evidence_ids(有效反证=可点回)")
+
+    # 6. stale 纯元陈述打回(#17;判定引擎单一真相在 gates/meta_gate.py)
+    if decision.status == "stale" and is_meta_only_disproof(decision.stale_reason):
+        return GateResult(allowed=False, green=False, error_code="META_ONLY_DISPROOF",
+                          reason=META_ONLY_MESSAGE)
 
     if decision.status not in GREEN_STATUSES:
         return GateResult(allowed=True, green=False,
