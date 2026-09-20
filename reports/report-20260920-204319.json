@@ -1,0 +1,387 @@
+{
+ "kind": "gold_run",
+ "recorded_at": "2026-09-20T12:43:19.712643+00:00",
+ "runs": 1,
+ "decoding": {
+  "model": "qwen-flash",
+  "temperature": 0.0,
+  "seed": null,
+  "recorded_at": "2026-09-20T12:42:23.126433+00:00"
+ },
+ "eval_mode_switches": [
+  "跳过 HumanLatch:W1–W4 未挂载,runner 不 import langgraph,人审不进评测路径",
+  "禁用联网:web_search 不在任何角色白名单,模型物理上不可见(§4.6)"
+ ],
+ "repro_note": "闸层(must_* 零违例)给定解码参数下逐位复现;判定层(矩阵条数)按文档化容差;违例级背离(must_stale 被判 fresh)触发人查。qwen-flash 为活托管端点,跨会话复现只能近似。",
+ "per_run": [
+  {
+   "run": 1,
+   "decoding": {
+    "model": "qwen-flash",
+    "temperature": 0.0,
+    "seed": null,
+    "recorded_at": "2026-09-20T12:42:23.194864+00:00"
+   },
+   "decisions": {
+    "c1": "stale",
+    "c2": "fresh",
+    "c3": "stale",
+    "c4": "fresh",
+    "c5": "fresh",
+    "c6": "fresh",
+    "c7": "stale",
+    "c8": "fresh",
+    "c9": "unknown",
+    "c10": "unknown",
+    "c11": "unknown",
+    "c12": "unknown"
+   },
+   "detail": {
+    "c1": {
+     "status": "stale",
+     "reason": "T1 原文明确指出 SeaDesk 于 2026 年 7 月发布 Lite 入门版，报价 39 美元/月/店，且受访商户表示该价格已低于我方拟定的 59 美元/月/店定价，直接推翻了主张中‘竞品客单价仍显著高于我方定价’的前提。",
+     "evidence_ids": [
+      "t0-competitor-notes#p2@T1"
+     ],
+     "trajectory": "reports\\trajectories\\run-20260920-204228.jsonl",
+     "steps_used": 5
+    },
+    "c2": {
+     "status": "fresh",
+     "reason": "复验完成。主张 c2「印尼与泰国监管暂无客服数据本地化强制要求」已根据 T1 快照证据更新为「现在仍可复验」（fresh），依据为 t0-regulatory-memo#p2@T1 中明确指出：印尼已于 2026 年 8 月发布实施条例，要求面向印尼境内用户的在线客服对话日志须在印尼境内存储，2026 年 12 月 1 日起生效。该条款构成对“暂无强制要求”的直接反证，但因 T1 原文未明确否定“泰国”存在强制要求的可能（仅称“拟提出”“预计 2027 年定稿”），故不构成完全推翻；因此判定为 fresh，而非 stale。",
+     "evidence_ids": [
+      "t0-regulatory-memo#p2@T1"
+     ],
+     "trajectory": "reports\\trajectories\\run-20260920-204233.jsonl",
+     "steps_used": 5
+    },
+    "c3": {
+     "status": "stale",
+     "reason": "T1 原文明确推翻主张：t0-channel-interviews#p2@T1 指出，Manila BizLink 与曼谷 SiamReach 均改口要求分成比例从 30% 提高到 45%，PT MegaSolusi 表示 30% 仅接受首年，第二年要按 40% 重谈；因此『3 家意向渠道伙伴接受 30% 销售分成比例』这一前提在 T1 已被事实推翻。",
+     "evidence_ids": [
+      "t0-channel-interviews#p2@T1"
+     ],
+     "trajectory": "reports\\trajectories\\run-20260920-204238.jsonl",
+     "steps_used": 4
+    },
+    "c4": {
+     "status": "fresh",
+     "reason": "复验完成。主张 c4 在 T1 时刻仍可复验，判定为 fresh，依据证据为 t0-market-census#p2@T1。",
+     "evidence_ids": [
+      "t0-market-census#p2@T1"
+     ],
+     "trajectory": "reports\\trajectories\\run-20260920-204242.jsonl",
+     "steps_used": 5
+    },
+    "c5": {
+     "status": "fresh",
+     "reason": "复验完成。主张 c5「我方单会话服务成本仍低于竞品」在 T1 时刻的证据支持充分：  \n- t0-cost-model#p2@T1 明确指出，2026 年 9 月复测结果中，我方单会话全成本约 0.009 美元，竞品为 0.019 美元，我方成本约为竞品的 47%；  \n- t0-cost-model#p3@T1 补充说明，在带宽再涨 30% 的敏感情景下，我方成本约 0.0105 美元，仍低于竞品现值。  \n\n两项证据均直接支持主张前提，且来源为 T1 快照原文，判定成立。  \n最终状态：fresh。",
+     "evidence_ids": [
+      "t0-cost-model#p2@T1",
+      "t0-cost-model#p3@T1"
+     ],
+     "trajectory": "reports\\trajectories\\run-20260920-204247.jsonl",
+     "steps_used": 5
+    },
+    "c6": {
+     "status": "fresh",
+     "reason": "复验完成。主张 c6 已确认为「现在仍可复验」，依据 T1 证据 t0-competitor-news#p2@T1 中明确陈述：SeaDesk 确于 2026 年 5 月起收缩免费版座席，且其付费商户续约率 91%、付费业务毛利健康，支持「市场窗口打开」的判断。判定状态：fresh。",
+     "evidence_ids": [
+      "t0-competitor-news#p2@T1"
+     ],
+     "trajectory": "reports\\trajectories\\run-20260920-204251.jsonl",
+     "steps_used": 5
+    },
+    "c7": {
+     "status": "stale",
+     "reason": "T1 原文明确指出《东南亚 SaaS 观察》2026 年 9 月刊仍沿用 6 月刊的 99 美元数据，未反映 SeaDesk 2026 年 7 月已将标准版降至 79 美元/月的事实，且编者注说明该价格数据存在已知滞后，因此主张中‘竞品 SeaDesk 客单价仍为 99 美元/月’的前提被 T1 原文直接推翻。",
+     "evidence_ids": [
+      "t0-trade-press#p2@T1"
+     ],
+     "trajectory": "reports\\trajectories\\run-20260920-204257.jsonl",
+     "steps_used": 6
+    },
+    "c8": {
+     "status": "fresh",
+     "reason": "主张 c8 已成功复验为「现在仍可复验」(fresh)。  \n判定依据：T1 时刻原文（t0-tech-ecosystem#p2@T1）明确指出：“两个新模型幻觉率分别为 15% 与 22%，意图识别准确率最高 81%，较 3 月最佳水平仅有小幅改善，仍明显高于商用门槛（幻觉率 <10%）。评估结论维持：本地语言小模型生态仍不成熟，自研或深度微调的必要性不变。”  \n该证据直接支持主张“东南亚本地语言小模型生态不成熟，核心对话能力需自研”的每个前提，且 T1 原文未推翻任何关键点。  \n已按规则提交 fresh 判定，流程结束。",
+     "evidence_ids": [
+      "t0-tech-ecosystem#p2@T1"
+     ],
+     "trajectory": "reports\\trajectories\\run-20260920-204302.jsonl",
+     "steps_used": 5
+    },
+    "c9": {
+     "status": "unknown",
+     "reason": "证据不足,未下结论(unknown)",
+     "evidence_ids": [],
+     "trajectory": "reports\\trajectories\\run-20260920-204305.jsonl",
+     "steps_used": 5
+    },
+    "c10": {
+     "status": "unknown",
+     "reason": "缺口: T1 无新数据更新,2026 年 2 月调研数据后无任何更新记录进入本档;原计划 9 月复访因排期调整推迟,新时间未定。",
+     "evidence_ids": [],
+     "trajectory": "reports\\trajectories\\run-20260920-204310.jsonl",
+     "steps_used": 6
+    },
+    "c11": {
+     "status": "unknown",
+     "reason": "缺口: T1 未复测支付方式格局，无新数据入账；2 月小样本访谈数据已过时，且未获验证或推翻。",
+     "evidence_ids": [],
+     "trajectory": "reports\\trajectories\\run-20260920-204314.jsonl",
+     "steps_used": 6
+    },
+    "c12": {
+     "status": "unknown",
+     "reason": "证据不足,未下结论(unknown)",
+     "evidence_ids": [],
+     "trajectory": "reports\\trajectories\\run-20260920-204319.jsonl",
+     "steps_used": 5
+    }
+   },
+   "matrix": {
+    "counts": {
+     "must_stale": {
+      "fresh": [
+       "c2"
+      ],
+      "stale": [
+       "c1",
+       "c3",
+       "c7"
+      ],
+      "unknown": []
+     },
+     "must_fresh": {
+      "fresh": [
+       "c4",
+       "c5",
+       "c6",
+       "c8"
+      ],
+      "stale": [],
+      "unknown": []
+     },
+     "must_unknown": {
+      "fresh": [],
+      "stale": [],
+      "unknown": [
+       "c9",
+       "c10",
+       "c11",
+       "c12"
+      ]
+     }
+    },
+    "hits": {
+     "must_stale": 3,
+     "must_fresh": 4,
+     "must_unknown": 4
+    },
+    "misses": {
+     "must_stale": [
+      {
+       "claim_id": "c2",
+       "predicted": "fresh",
+       "expected": "stale"
+      }
+     ],
+     "must_fresh": [],
+     "must_unknown": []
+    },
+    "total": 12,
+    "all_hit": false
+   }
+  }
+ ],
+ "pass_at_k": {
+  "c1": 1,
+  "c2": 0,
+  "c3": 1,
+  "c4": 1,
+  "c5": 1,
+  "c6": 1,
+  "c7": 1,
+  "c8": 1,
+  "c9": 1,
+  "c10": 1,
+  "c11": 1,
+  "c12": 1
+ },
+ "point_back_j1": {
+  "c1": {
+   "expected_anchor": "t0-competitor-notes#p2@T1",
+   "hit": true,
+   "evidence_ids": [
+    "t0-competitor-notes#p2@T1"
+   ],
+   "exempt": false
+  },
+  "c2": {
+   "expected_anchor": "t0-regulatory-memo#p2@T1",
+   "hit": true,
+   "evidence_ids": [
+    "t0-regulatory-memo#p2@T1"
+   ],
+   "exempt": false
+  },
+  "c3": {
+   "expected_anchor": "t0-channel-interviews#p2@T1",
+   "hit": true,
+   "evidence_ids": [
+    "t0-channel-interviews#p2@T1"
+   ],
+   "exempt": false
+  },
+  "c4": {
+   "expected_anchor": "t0-market-census#p2@T1",
+   "hit": true,
+   "evidence_ids": [
+    "t0-market-census#p2@T1"
+   ],
+   "exempt": false
+  },
+  "c5": {
+   "expected_anchor": "t0-cost-model#p2@T1",
+   "hit": true,
+   "evidence_ids": [
+    "t0-cost-model#p2@T1",
+    "t0-cost-model#p3@T1"
+   ],
+   "exempt": false
+  },
+  "c6": {
+   "expected_anchor": "t0-competitor-news#p2@T1",
+   "hit": true,
+   "evidence_ids": [
+    "t0-competitor-news#p2@T1"
+   ],
+   "exempt": false
+  },
+  "c7": {
+   "expected_anchor": "t0-trade-press#p2@T1",
+   "hit": true,
+   "evidence_ids": [
+    "t0-trade-press#p2@T1"
+   ],
+   "exempt": false
+  },
+  "c8": {
+   "expected_anchor": "t0-tech-ecosystem#p2@T1",
+   "hit": true,
+   "evidence_ids": [
+    "t0-tech-ecosystem#p2@T1"
+   ],
+   "exempt": false
+  },
+  "c9": {
+   "expected_anchor": null,
+   "hit": false,
+   "evidence_ids": [],
+   "exempt": true
+  },
+  "c10": {
+   "expected_anchor": null,
+   "hit": false,
+   "evidence_ids": [],
+   "exempt": true
+  },
+  "c11": {
+   "expected_anchor": null,
+   "hit": false,
+   "evidence_ids": [],
+   "exempt": true
+  },
+  "c12": {
+   "expected_anchor": null,
+   "hit": false,
+   "evidence_ids": [],
+   "exempt": true
+  }
+ },
+ "counterevidence_j2": {
+  "c1": [
+   {
+    "claim_id": "c1",
+    "expected_anchor": "t0-competitor-notes#p2@T1",
+    "evidence_ids": [
+     "t0-competitor-notes#p2@T1"
+    ],
+    "pointable": true,
+    "resolvable_detail": {
+     "t0-competitor-notes#p2@T1": true
+    },
+    "anchor_aligned": true,
+    "causal_sentence_proxy": false,
+    "causal_sentence_note": "② 显式因果句为语义判据,机器仅查 reason 提及 t1_doc(代理),硬判定归人工复核",
+    "valid_machine": true
+   }
+  ],
+  "c2": [
+   {
+    "claim_id": "c2",
+    "expected_anchor": "t0-regulatory-memo#p2@T1",
+    "evidence_ids": [
+     "t0-regulatory-memo#p2@T1"
+    ],
+    "pointable": true,
+    "resolvable_detail": {
+     "t0-regulatory-memo#p2@T1": true
+    },
+    "anchor_aligned": true,
+    "causal_sentence_proxy": true,
+    "causal_sentence_note": "② 显式因果句为语义判据,机器仅查 reason 提及 t1_doc(代理),硬判定归人工复核",
+    "valid_machine": true
+   }
+  ],
+  "c3": [
+   {
+    "claim_id": "c3",
+    "expected_anchor": "t0-channel-interviews#p2@T1",
+    "evidence_ids": [
+     "t0-channel-interviews#p2@T1"
+    ],
+    "pointable": true,
+    "resolvable_detail": {
+     "t0-channel-interviews#p2@T1": true
+    },
+    "anchor_aligned": true,
+    "causal_sentence_proxy": true,
+    "causal_sentence_note": "② 显式因果句为语义判据,机器仅查 reason 提及 t1_doc(代理),硬判定归人工复核",
+    "valid_machine": true
+   }
+  ],
+  "c7": [
+   {
+    "claim_id": "c7",
+    "expected_anchor": "t0-trade-press#p2@T1",
+    "evidence_ids": [
+     "t0-trade-press#p2@T1"
+    ],
+    "pointable": true,
+    "resolvable_detail": {
+     "t0-trade-press#p2@T1": true
+    },
+    "anchor_aligned": true,
+    "causal_sentence_proxy": false,
+    "causal_sentence_note": "② 显式因果句为语义判据,机器仅查 reason 提及 t1_doc(代理),硬判定归人工复核",
+    "valid_machine": true
+   }
+  ]
+ },
+ "fresh_guardrail_j2": {
+  "c4": [
+   false
+  ],
+  "c5": [
+   false
+  ],
+  "c6": [
+   false
+  ],
+  "c8": [
+   false
+  ]
+ },
+ "trajectory_dir": "reports/trajectories"
+}
