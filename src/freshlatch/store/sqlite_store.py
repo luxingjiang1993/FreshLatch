@@ -173,6 +173,16 @@ class SQLiteStore(RetrievalStore):
             ).fetchall()
         return [dict(r) for r in rows]
 
+    def list_latch_events(self, claim_id: str) -> list[dict]:
+        """人审动作时间线(latch_log 单一真相:谁、何时、什么决定、凭什么证据)。"""
+        with self._conn() as conn:
+            rows = conn.execute(
+                "SELECT ts, action, evidence_id, actor FROM latch_log "
+                "WHERE claim_id = ? ORDER BY ts, rowid",
+                (claim_id,),
+            ).fetchall()
+        return [dict(r) for r in rows]
+
     @staticmethod
     def _row_to_chunk(r: sqlite3.Row) -> Chunk:
         return Chunk(

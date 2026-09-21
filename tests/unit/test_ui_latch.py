@@ -12,6 +12,7 @@ from fastapi.testclient import TestClient
 import freshlatch.ui.app as appmod
 from freshlatch.latch import HumanLatch
 from freshlatch.models import Claim
+from freshlatch.store.base import Chunk, Document
 
 
 @pytest.fixture()
@@ -49,9 +50,20 @@ def test_rerun_button_and_banner_present():
     assert "提交人审决定" in appmod.HTML_PAGE
 
 
-def test_renew_button_still_disabled():
-    """§5.4:续命渲染但 disabled,红线以禁用态可见(不因 T9 误开)。"""
-    assert 'disabled title="W5 开放:续命必须带 T1 原文证据"' in appmod.HTML_PAGE
+def test_renew_form_present_and_w5_gate_removed():
+    """§5.4 实装后(#23):续命表单(下拉选 T1 证据 + 点回核对)在位,W5 禁用态已退役。"""
+    assert 'id="renew-modal"' in appmod.HTML_PAGE
+    assert 'id="renew-evidence"' in appmod.HTML_PAGE
+    for fn in ("openRenew", "closeRenew", "confirmRenew", "previewRenewEvidence"):
+        assert fn in appmod.HTML_PAGE
+    assert "本轮已检索的 T1 块" in appmod.HTML_PAGE  # ADR-0006 §4:下拉非自由文本
+    assert "续命(W5 开放)" not in appmod.HTML_PAGE   # 禁用态 tooltip 随实装移除
+
+
+def test_renew_button_disabled_without_t1_evidence():
+    """ADR-0006 §6 交互层:无 evidence_id 续命不可用(前端拦截,后端闸兜底)。"""
+    assert 'title="本轮无已检索 T1 原文块,续命不可用"' in appmod.HTML_PAGE
+    assert "e.endsWith('@T1')" in appmod.HTML_PAGE  # 下拉只收锚 T1 的块
 
 
 def test_voided_card_gray_and_dual_badge():
@@ -87,16 +99,61 @@ def test_decide_discard_happy_path(client):
     assert "c1" in appmod._store().list_invalidation()
 
 
-def test_decide_renew_fail_closed(client):
-    claims = _seed_claims()
+DOC = "t0-competitor-notes"
+RENEW_EID = f"{DOC}#p2@T1"
+
+
+def _seed_t1_chunk(store):
+    store.add_document(
+        Document(doc_id=DOC, as_of="T1", source_type="competitor", title="竞品笔记",
+                 doc_version="v2", checksum="", full_text="T1:竞品客单价仍显著高于我们。"),
+        [Chunk(doc_id=DOC, chunk_id=f"{DOC}-p2", clause_id="p2", title="竞品笔记",
+               text="T1:竞品客单价仍显著高于我们。", source_type="competitor",
+               as_of="T1", doc_version="v2", checksum="", tokens=20)],
+    )
+
+
+def test_decide_renew_turns_card_green_with_timeline(client):
+    """#23 用户旅程:红灯主张 → 续命(带 T1 证据)→ 闸过 → 卡片转绿 + 时间线条目。"""
+    _seed_t1_chunk(appmod._store())
+    claims = [Claim(claim_id="c1", statement="竞品客单价仍显著高于我们",
+                    status="stale", reason="T1 竞品降价", t1_evidence_ids=[RENEW_EID])]
+    appmod._state["claims"] = claims
     rnd = appmod._latch().enter_round(claims)
     appmod._state["latch"] = {"thread_id": rnd.thread_id, "pending": rnd.pending}
+
     r = client.post("/api/latch/decide",
                     json={"thread_id": rnd.thread_id,
                           "decisions": [{"claim_id": "c1", "action": "renew",
-                                         "evidence_id": "t0-competitor-notes#p2@T1"}]})
+                                         "evidence_id": RENEW_EID}]})
     assert r.status_code == 200
-    assert r.json()["results"][0]["error_code"] == "RENEW_NOT_OPEN"
+    assert r.json()["results"][0]["ok"] is True
+    c1 = next(c for c in r.json()["claims"] if c["claim_id"] == "c1")
+    assert c1["status"] == "fresh"                       # 卡片转绿
+    assert c1["last_confirmed_at"]                       # 续命时间戳
+    assert c1["validity_basis"]["doc_id"] == DOC         # 新有效性依据
+    assert [t["label"] for t in c1["timeline"]] == ["人审续命"]   # 时间线条目
+    assert c1["timeline"][0]["evidence_id"] == RENEW_EID          # 依据可点回
+    assert "c1" not in appmod._store().list_invalidation()        # 续命不进作废名单
+
+
+def test_decide_renew_gate_rejection_surfaces_error_code(client):
+    """闸打回 = 该条零写,error_code 透传到端点(前端如实上屏,不静默吞)。"""
+    claims = [Claim(claim_id="c1", statement="竞品客单价仍显著高于我们",
+                    status="stale", reason="T1 竞品降价", t1_evidence_ids=[RENEW_EID])]
+    appmod._state["claims"] = claims
+    rnd = appmod._latch().enter_round(claims)  # store 无 chunk → 点回校验打回
+    appmod._state["latch"] = {"thread_id": rnd.thread_id, "pending": rnd.pending}
+
+    r = client.post("/api/latch/decide",
+                    json={"thread_id": rnd.thread_id,
+                          "decisions": [{"claim_id": "c1", "action": "renew",
+                                         "evidence_id": RENEW_EID}]})
+    assert r.status_code == 200
+    res = r.json()["results"][0]
+    assert res["ok"] is False and res["error_code"] == "RENEW_EVIDENCE_UNRESOLVED"
+    c1 = next(c for c in r.json()["claims"] if c["claim_id"] == "c1")
+    assert c1["status"] == "stale" and c1["last_confirmed_at"] is None
 
 
 def test_rerun_unknown_claim_404(client):

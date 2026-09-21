@@ -101,8 +101,8 @@ def test_stale_empty_reason_not_meta_blocked():
 
 
 def test_renew_path_also_gated():
-    """续命(renew)同样过闸:名单与 checksum 都管。"""
+    """续命(renew)同样过闸:名单与 checksum 都管(#23 起另管证据锚 T1)。"""
     ctx = make_ctx(invalidation_list={"c1"})
-    d = GateDecision(status="renew", t1_evidence_ids=["t0-x#p2"])
+    d = GateDecision(status="renew", t1_evidence_ids=["t0-x#p2@T1"])
     assert not rule_gate(make_claim("c1"), d, ctx).green
     assert rule_gate(make_claim("c2"), d, make_ctx()).green

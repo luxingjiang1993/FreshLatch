@@ -110,12 +110,15 @@ class HumanLatch:
 
     def __init__(self, store, checkpoint_path: str | Path, *, mode: str = "online",
                  reverify_fn: Callable[[Claim], tuple[str, str]] | None = None,
-                 now: Callable[[], datetime] | None = None) -> None:
+                 now: Callable[[], datetime] | None = None,
+                 checksum_fn: Callable[[str, str], str | None] | None = None) -> None:
         self.store = store
         self.checkpoint_path = Path(checkpoint_path)
         self.mode = mode  # online | eval(eval 代码级跳过,ADR-0006 §7)
         self._reverify_fn = reverify_fn  # 测试可注入;默认 Runner 真主链迷你复验
         self._now = now or datetime.now
+        # 续命链 checksum 注入点(#23;留位:None = checksum 未启用,闸不拦,同 runner._checksum_fn)
+        self._checksum_fn = checksum_fn
         self._claims_by_id: dict[str, Claim] = {}  # enter_round/decide 时绑定的本轮主张表
         self._pending_ids: set[str] = set()  # 本轮待审 id(重跑恢复时从 checkpoint 回填)
 
@@ -254,7 +257,7 @@ class HumanLatch:
     def _apply(self, decisions: list[dict]) -> list[dict]:
         """写路径唯一:execute 节点的落档函数(由 gates/human_latch 执行)。"""
         return apply_decisions(self.store, self._claims_by_id, decisions,
-                               pending_ids=self._pending_ids)
+                               pending_ids=self._pending_ids, checksum_fn=self._checksum_fn)
 
     @contextmanager
     def _saver(self):

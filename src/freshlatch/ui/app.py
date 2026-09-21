@@ -34,6 +34,8 @@ BADGE = {
 }
 MAIN_BUTTON_TEXT = "开始复验"  # 文案白名单(红线 2):主按钮唯一合法文案
 EMPTY_LATCH = {"thread_id": None, "pending": []}  # 人审轮状态收口(不各处字面造 dict)
+# 人审动作时间线文案(后端唯一生成,前端不复制分支);重跑文案走 HumanLatch.timeline_label
+LATCH_EVENT_LABELS = {"discard": "人审作废", "renew": "人审续命"}
 
 app = FastAPI(title="FreshLatch 复验单")
 _state: dict = {"claims": [], "question": "", "trajectory": None, "running": False,
@@ -49,6 +51,16 @@ def _latch() -> HumanLatch:
 
 
 def _claim_to_dict(store: SQLiteStore, c) -> dict:
+    # 时间线 = 重跑(rerun_log)+ 人审动作(latch_log 的作废/续命)两条审计迹按 ts 合并;
+    # rerun 同时写两表,只从 rerun_log 计一次,不重复。单一真相在库表。
+    events = [{**t, "kind": "rerun", "evidence_id": None,
+               "label": HumanLatch.timeline_label(t["verdict"], t["nth"])}
+              for t in store.list_reruns(c.claim_id)]
+    events += [{"kind": e["action"], "ts": e["ts"], "thread_id": None, "note": "",
+                "evidence_id": e["evidence_id"],
+                "label": LATCH_EVENT_LABELS.get(e["action"], e["action"])}
+               for e in store.list_latch_events(c.claim_id) if e["action"] != "rerun"]
+    events.sort(key=lambda e: e["ts"])
     return {
         "claim_id": c.claim_id,
         "statement": c.statement,
@@ -58,9 +70,9 @@ def _claim_to_dict(store: SQLiteStore, c) -> dict:
         "reason": c.reason,
         "voided": c.voided,
         "voided_at": c.voided_at,
-        # 重跑时间线(§5.3);label 由后端 timeline_label 唯一生成(前端不复制文案分支)
-        "timeline": [{**t, "label": HumanLatch.timeline_label(t["verdict"], t["nth"])}
-                     for t in store.list_reruns(c.claim_id)],
+        "last_confirmed_at": c.last_confirmed_at,      # 续命时间戳(§5.4)
+        "validity_basis": c.validity_basis,            # 续命写的新有效性依据(§5.4)
+        "timeline": events,
     }
 
 
@@ -201,6 +213,9 @@ HTML_PAGE = """<!DOCTYPE html>
  .latch button{margin-right:8px;padding:6px 14px;border-radius:6px;border:1px solid #d0d7de;cursor:pointer}
  .latch button.void{background:#8250df;color:#fff;border-color:#8250df}
  .latch button.rerun{background:#fff;color:#8250df}
+ .latch button.renew{background:#1a7f37;color:#fff;border-color:#1a7f37}
+ /* 已选待提交态:与 .renew 同特异性且靠后,才能盖过按钮本色(卡片在 .latch 内) */
+ .latch button.picked,#banner button.picked{background:#fff8c5;border-color:#d4a72c;color:#8250df;cursor:default}
  #banner{background:#fff8c5;border:1px solid #d4a72c;border-radius:6px;padding:10px 12px;margin-bottom:10px}
  #banner .pend{border-top:1px dashed #d4a72c;margin-top:8px;padding-top:8px}
  #banner .pend .picked{color:#8250df;font-weight:600}
@@ -217,10 +232,13 @@ HTML_PAGE = """<!DOCTYPE html>
  code{background:#eff1f3;padding:1px 5px;border-radius:4px}
  .timeline{font-size:12px;color:#57606a;margin-top:6px;border-top:1px dashed #d0d7de;padding-top:4px}
  .timeline div{margin:2px 0}
- #modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:10}
- #modal .box{background:#fff;border-radius:8px;max-width:480px;margin:18vh auto;padding:18px 22px}
- #modal button{margin-right:10px;padding:8px 16px;border-radius:6px;border:1px solid #d0d7de;cursor:pointer}
- #modal .ok{background:#8250df;color:#fff;border-color:#8250df}
+ .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:10}
+ .modal .box{background:#fff;border-radius:8px;max-width:520px;margin:14vh auto;padding:18px 22px}
+ .modal button{margin-right:10px;padding:8px 16px;border-radius:6px;border:1px solid #d0d7de;cursor:pointer}
+ .modal .ok{background:#8250df;color:#fff;border-color:#8250df}          /* 作废确认 */
+ .modal .renew-ok{background:#1a7f37;color:#fff;border-color:#1a7f37}     /* 续命确认 */
+ .modal select{width:100%;margin-top:6px;padding:6px 8px;border-radius:6px;border:1px solid #d0d7de;
+               font-family:ui-monospace,monospace;font-size:12px}
 </style>
 </head>
 <body>
@@ -235,18 +253,31 @@ HTML_PAGE = """<!DOCTYPE html>
  <section id="claims"><p style="color:#57606a">加载中……</p></section>
  <section id="pane"><p style="color:#57606a">← 点击主张的证据 id,这里显示 T0/T1 原文并高亮锚点段落</p></section>
 </main>
-<div id="modal"><div class="box">
+<div id="modal" class="modal"><div class="box">
   <p><b>作废确认</b></p>
   <p id="modal-claim" style="color:#57606a"></p>
   <p>作废后重跑不得再绿,确认?</p>
   <button class="ok" onclick="confirmVoid()">确认作废</button>
   <button onclick="closeModal()">取消</button>
 </div></div>
+<div id="renew-modal" class="modal"><div class="box">
+  <p><b>续命确认</b></p>
+  <p id="renew-claim" style="color:#57606a"></p>
+  <p>续命 = 人主张「该主张在 T1 仍然成立」。必须锚 T1 原文证据(ADR-0006 §4),
+     证据从<b>本轮已检索的 T1 块</b>下拉选择,不接受自由填写:</p>
+  <select id="renew-evidence"></select>
+  <div style="margin-top:12px">
+    <button class="renew-ok" onclick="confirmRenew()">确认续命</button>
+    <button onclick="previewRenewEvidence()">点回原文核对</button>
+    <button onclick="closeRenew()">取消</button>
+  </div>
+</div></div>
 <script>
 let STATE = {claims: [], question: "", latch: {thread_id: null, pending: []}};
 let CURRENT_ANCHOR = null;  // 用户在右栏当前选中的小节(手动选择优先于证据锚点)
 let PENDING_DECISIONS = []; // 本轮已选的人审决定(批量提交)
 let MODAL_CLAIM = null;
+let RENEW_CLAIM = null;
 function esc(s){return s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}
 const BADGE = {fresh:["绿 · 仍成立","#1a7f37"],stale:["红 · 已失效","#cf222e"],
                unknown:["灰 · 证据不足","#6e7781"],void:["void · 已作废","#8250df"]};
@@ -259,6 +290,18 @@ async function boot(){
 function pickedAction(cid){
   const d = PENDING_DECISIONS.find(x=>x.claim_id===cid);
   return d ? d.action : null;
+}
+function renewOptions(cid){
+  // 续命证据来源 = 本轮已检索的 T1 块(ADR-0006 §4 下拉选择,非自由文本)
+  const c = STATE.claims.find(x=>x.claim_id===cid);
+  return ((c && c.t1_evidence_ids) || []).filter(e=>e.endsWith('@T1'));
+}
+function renewButton(cid){
+  // §5.4 + ADR-0006 §6 交互层:无 evidence_id 续命不可用(前端拦截,后端闸兜底)
+  if(pickedAction(cid)==='renew') return '<button class="renew picked" disabled>已选:续命(待提交)</button>';
+  if(!renewOptions(cid).length)
+    return '<button disabled title="本轮无已检索 T1 原文块,续命不可用">续命</button>';
+  return '<button class="renew" onclick="event.stopPropagation();openRenew(&quot;'+cid+'&quot;)">续命</button>';
 }
 function renderBanner(){
   const el = document.getElementById('banner-wrap');
@@ -277,7 +320,7 @@ function renderBanner(){
     } else {
       h += ' <button class="void" onclick="openVoidConfirm(&quot;'+p.claim_id+'&quot;)">作废</button>';
     }
-    h += ' <button disabled title="W5 开放:续命必须带 T1 原文证据">续命(W5 开放)</button></div>';
+    h += ' ' + renewButton(p.claim_id) + '</div>';
   }
   h += '<div style="margin-top:10px">'
      + '<button class="void" onclick="submitDecisions()">提交人审决定('
@@ -297,6 +340,8 @@ function renderClaims(){
        + '<b>'+c.claim_id+'</b><span class="badge" style="color:'+color+'">'+label+'</span>';
     if(c.voided) h += '<span class="badge" style="color:#8250df">'+BADGE.void[0]
                     + (c.voided_at?(' · '+esc(c.voided_at)):'') + '</span>';
+    if(c.last_confirmed_at) h += '<span class="badge" style="color:#1a7f37">续命 · '
+                    + esc(c.last_confirmed_at)+'</span>';
     h += '<div>'+esc(c.statement)+'</div>';
     if(c.reason) h += '<div class="reason">'+esc(c.reason)+'</div>';
     h += '<div class="ev">';
@@ -312,15 +357,17 @@ function renderClaims(){
     h += '<div class="latch" style="margin-top:6px">';
     if(c.voided){
       h += '<button class="rerun" onclick="event.stopPropagation();rerunClaim(&quot;'+c.claim_id+'&quot;)">重跑作废主张</button>';
-    } else {
-      h += '<button disabled title="W5 开放:续命必须带 T1 原文证据">续命(W5 开放)</button>';
+    } else if(c.status==='stale' || c.status==='unknown'){
+      h += renewButton(c.claim_id);  // 续命只对人审范围内的红/黄灯主张(fresh 无需续命)
     }
     h += '</div>';
     if(c.timeline && c.timeline.length){
       h += '<div class="timeline">';
       for(const t of c.timeline){
-        h += '<div>· '+esc(t.ts)+' '+esc(t.label)+(t.note?(' — '+esc(t.note)):'')
-           + ' <code>'+esc(t.thread_id)+'</code></div>';
+        h += '<div>· '+esc(t.ts)+' '+esc(t.label)
+           + (t.evidence_id?(' · 依据 <code>'+esc(t.evidence_id)+'</code>'):'')
+           + (t.note?(' — '+esc(t.note)):'')
+           + (t.thread_id?(' <code>'+esc(t.thread_id)+'</code>'):'')+'</div>';
       }
       h += '</div>';
     }
@@ -385,6 +432,30 @@ function confirmVoid(){  // 双重确认弹窗的第二重(§5.3:点作废 → �
   }
   closeModal(); renderBanner();
 }
+function openRenew(cid){
+  const opts = renewOptions(cid);
+  if(!opts.length) return;  // 前端拦截:无 T1 证据不开放(后端闸兜底,§5.4)
+  RENEW_CLAIM = cid;
+  const c = STATE.claims.find(x=>x.claim_id===cid);
+  document.getElementById('renew-claim').textContent = cid + ': ' + (c?c.statement:'');
+  document.getElementById('renew-evidence').innerHTML =
+    opts.map(e=>'<option value="'+esc(e)+'">'+esc(e)+'</option>').join('');
+  document.getElementById('renew-modal').style.display = 'block';
+}
+function closeRenew(){ document.getElementById('renew-modal').style.display='none'; RENEW_CLAIM=null; }
+function previewRenewEvidence(){  // 续命证据 id 必须可点回(#23 红线:不得凭印象续命)
+  const eid = document.getElementById('renew-evidence').value;
+  const bare = (eid.split('@')[0]||'').split('#');
+  showSource(bare[0], bare[1], eid.split('@')[1]||'T1');
+}
+function confirmRenew(){
+  if(RENEW_CLAIM){
+    PENDING_DECISIONS = PENDING_DECISIONS.filter(x=>x.claim_id!==RENEW_CLAIM);
+    PENDING_DECISIONS.push({claim_id: RENEW_CLAIM, action:'renew',
+                            evidence_id: document.getElementById('renew-evidence').value});
+  }
+  closeRenew(); renderClaims();
+}
 async function submitDecisions(settleAll){
   const decisions = settleAll ? [] : PENDING_DECISIONS;
   const j = await (await fetch('/api/latch/decide',{
@@ -393,7 +464,11 @@ async function submitDecisions(settleAll){
   if(j.error){ document.getElementById('status').textContent = j.error; return; }
   STATE.claims = j.claims; STATE.latch = j.latch; PENDING_DECISIONS = [];
   renderClaims();
-  document.getElementById('status').textContent = '人审决定已落档(写路径唯一:invalidation_list + latch_log)';
+  // 单条被闸打回不拖垮其余(apply_decisions 语义);打回项带 error_code 如实上屏
+  const bad = (j.results||[]).filter(r=>!r.ok);
+  document.getElementById('status').textContent = bad.length
+    ? '部分人审决定被规则闸打回(该条零写): '+bad.map(r=>r.claim_id+' → '+r.error_code).join('; ')
+    : '人审决定已落档(写路径唯一:invalidation_list + latch_log)';
 }
 async function rerunClaim(cid){
   document.getElementById('status').textContent = '重跑中(新 thread 单主张迷你复验:'+cid +')……';

@@ -99,6 +99,9 @@ def rule_gate(claim: Claim, decision: GateDecision, ctx: GateContext) -> GateRes
          路由 unknown + 机械比对异议;两维任一缺失跳过,回落不变量 7)
       9. fresh 需双判一致:auditor_verdict 在场且 == fresh(ADR-0009;Auditor 缺席
          不构成任何绿格;renew 是 L0 人审出口,不受此款约束)
+     10. renew 专用机械校验路径(#23 / ADR-0006 §4):必须带 ≥1 个锚 T1 的
+         evidence_id;checksum 对不上不得续命;作废名单内不得续命
+         (与 fresh 共用不变量 4)。违例打回附结构化原因,零写。
     """
     # 5. stale 无反证打回(独立于非绿放行:stale 落档也要带可点回反证)
     if decision.status == "stale" and not decision.t1_evidence_ids:
@@ -136,13 +139,23 @@ def rule_gate(claim: Claim, decision: GateDecision, ctx: GateContext) -> GateRes
         return GateResult(allowed=True, green=False,
                           reason=f"非绿请求({decision.status})落档,规则闸不发绿")
 
-    # 4. 作废名单打回
+    # 4. 作废名单打回(fresh 与 renew 共用:作废名单内不得 fresh/续命,§1.3)
     if claim.claim_id in ctx.invalidation_list:
         return GateResult(allowed=False, green=False, error_code="INVALIDATED",
-                          reason="该主张已在作废名单(人工作废),重跑不得再绿")
+                          reason=f"该主张已在作废名单(人工作废),"
+                                 f"{'续命' if decision.status == 'renew' else '重跑'}不得再绿")
 
+    # 10. renew 专用机械校验路径(#23 / ADR-0006 §4)
+    if decision.status == "renew":
+        if not decision.t1_evidence_ids:
+            return GateResult(allowed=False, green=False, error_code="RENEW_NO_EVIDENCE",
+                              reason="续命必须带 T1 原文证据(evidence_id 至少 1 个,ADR-0006 §4)")
+        not_t1 = [e for e in decision.t1_evidence_ids if not e.endswith("@T1")]
+        if not_t1:
+            return GateResult(allowed=False, green=False, error_code="RENEW_EVIDENCE_NOT_T1",
+                              reason=f"续命证据必须锚 T1 快照(id 以 @T1 结尾),收到: {not_t1}")
     # 2. 无 T1 不得 fresh
-    if not decision.t1_evidence_ids:
+    elif not decision.t1_evidence_ids:
         return GateResult(allowed=False, green=False, error_code="NO_T1_EVIDENCE",
                           reason="无 t1_evidence_ids 不得 fresh")
 

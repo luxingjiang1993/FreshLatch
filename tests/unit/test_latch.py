@@ -11,7 +11,11 @@ import sqlite3
 
 import pytest
 
-from freshlatch.gates.human_latch import INVALID_ACTION, RENEW_NOT_OPEN, UNKNOWN_CLAIM
+from freshlatch.gates.human_latch import (
+    INVALID_ACTION,
+    RENEW_EVIDENCE_UNRESOLVED,
+    UNKNOWN_CLAIM,
+)
 from freshlatch.latch import HumanLatch, HumanLatchError
 from freshlatch.models import Claim
 from freshlatch.store.sqlite_store import SQLiteStore
@@ -63,14 +67,16 @@ def test_decide_discard_voids_and_logs(tmp_path):
     assert [(r["action"], r["actor"]) for r in rows] == [("discard", "human")]
 
 
-def test_decide_renew_fail_closed_until_w5(tmp_path):
+def test_decide_renew_chain_is_live(tmp_path):
+    """#23:续命链已实装(不再 fail-closed)。本用例 store 无 chunk,故链走到点回校验即打回;
+    带 T1 chunk 的正例与全部负例见 test_renew.py。"""
     store = make_store(tmp_path)
     latch = make_latch(store, tmp_path)
     rnd = latch.enter_round(make_claims())
     results = latch.decide(rnd.thread_id, [{"claim_id": "c1", "action": "renew",
                                             "evidence_id": "t0-competitor-notes#p2@T1"}])
     assert results[0]["ok"] is False
-    assert results[0]["error_code"] == RENEW_NOT_OPEN
+    assert results[0]["error_code"] == RENEW_EVIDENCE_UNRESOLVED  # 链活着,证据点不回
     assert store.list_invalidation() == []  # 未落任何写
 
 

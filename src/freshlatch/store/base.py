@@ -69,6 +69,10 @@ class RetrievalStore(ABC):
         """重跑时间线。内存假实现默认空(T9 起 SQLite 实装)。"""
         return []
 
+    def list_latch_events(self, claim_id: str) -> list[dict]:
+        """人审动作时间线(作废/续命/重跑)。内存假实现默认空(#23 起 SQLite 实装)。"""
+        return []
+
 
 class InMemoryStore(RetrievalStore):
     """内存假实现:测试用,零磁盘零 LLM。"""
