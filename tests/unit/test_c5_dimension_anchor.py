@@ -188,7 +188,8 @@ def test_checkpoint_note_injects_dimension_check():
         # —— 以下 4 条为自动派驻的 Critic 会话(FIFO 同步消费)——
         _Msg(tool_calls=[_tc("retrieve", {"query": "竞品 定价", "as_of": "T1"})]),
         _Msg(tool_calls=[_tc("mark_stale", {"reason": CONFUSED_REASON,
-                                             "evidence_ids": [COMPETITOR_ID]})]),
+                                             "evidence_ids": [COMPETITOR_ID],
+                                             "dimension": "competitor_pricing"})]),
         _Msg(tool_calls=[_tc("report_finding",
                              {"finding": f"找到反证:竞品定价高于我方,见 {COMPETITOR_ID}"})]),
         _Msg(content="报告完毕"),

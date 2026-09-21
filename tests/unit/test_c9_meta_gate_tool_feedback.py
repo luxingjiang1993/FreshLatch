@@ -39,7 +39,8 @@ def test_lead_mark_stale_legit_reason_recorded():
                                         t0_evidence_ids=[]), llm=None)
     lead._seen_evidence.add("t0-competitor-notes#p2@T1")
     r = lead._t_mark_stale({"claim_id": "c7", "reason": C7_LEGIT,
-                            "evidence_ids": ["t0-competitor-notes#p2@T1"]})
+                            "evidence_ids": ["t0-competitor-notes#p2@T1"],
+                            "dimension": "competitor_pricing"})
     assert "error" not in r
     assert lead.decision.status == "stale"
 

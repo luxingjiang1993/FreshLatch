@@ -28,6 +28,8 @@ class GateDecision:
     stale_reason: str = ""  # stale 的理由文本(#17 不变量 6 校验用;空 = 跳过元陈述校验)
     auditor_verdict: str | None = None  # fresh|stale|unknown(ADR-0009 在场不变量;None = 缺席)
     auditor_dimension_match: bool | None = None  # ADR-0010 不变量 7:False = Auditor 维度异议
+    registered_dimension: str | None = None  # ADR-0011 不变量 8:签发登记维度(claim.dimension)
+    stale_dimension: str | None = None  # ADR-0011 不变量 8:反证自标维度(mark_stale 必填字段)
 
 
 @dataclass
@@ -93,7 +95,9 @@ def rule_gate(claim: Claim, decision: GateDecision, ctx: GateContext) -> GateRes
       7. stale 经 Auditor 维度核对异议(dimension_match=False)打回(ADR-0010:
          路由 unknown + 异议记录;语义判断住 Auditor 角色层,闸只消费结构化 flag);
          同条款兜底:Auditor 缺席不构成任何 stale 落档(fail-closed)
-      8. fresh 需双判一致:auditor_verdict 在场且 == fresh(ADR-0009;Auditor 缺席
+      8. stale 登记维度 ≠ 反证自标维度机械打回(ADR-0011:纯字符串比对,
+         路由 unknown + 机械比对异议;两维任一缺失跳过,回落不变量 7)
+      9. fresh 需双判一致:auditor_verdict 在场且 == fresh(ADR-0009;Auditor 缺席
          不构成任何绿格;renew 是 L0 人审出口,不受此款约束)
     """
     # 5. stale 无反证打回(独立于非绿放行:stale 落档也要带可点回反证)
@@ -107,6 +111,16 @@ def rule_gate(claim: Claim, decision: GateDecision, ctx: GateContext) -> GateRes
                           reason=META_ONLY_MESSAGE)
 
     if decision.status == "stale":
+        # 8. 维度机械跨检(ADR-0011):登记维度 ≠ 反证自标维度 → 纯字符串比对打回,
+        # 路由 unknown + 机械比对异议记录(复用 arbitrate_stale_mark 形态,runner 侧挂卡);
+        # 两维任一缺失 → 跳过,回落不变量 7(fail-soft 回丙′,真 stale 不被未登记主张憋死)
+        if (decision.registered_dimension is not None
+                and decision.stale_dimension is not None
+                and decision.registered_dimension != decision.stale_dimension):
+            return GateResult(allowed=False, green=False, error_code="DIMENSION_CROSSCHECK_MISMATCH",
+                              reason=f"机械跨检:登记维度 {decision.registered_dimension} ≠ "
+                                     f"反证自标维度 {decision.stale_dimension}(ADR-0011 不变量 8,"
+                                     "纯字符串比对,零模型意见),路由 unknown + 机械比对异议记录")
         # 7(缺席兜底). Auditor 缺席不构成任何落档(ADR-0010:hook 保证在场,闸 fail-closed)
         if decision.auditor_verdict is None:
             return GateResult(allowed=False, green=False, error_code="AUDITOR_ABSENT",
@@ -132,7 +146,7 @@ def rule_gate(claim: Claim, decision: GateDecision, ctx: GateContext) -> GateRes
         return GateResult(allowed=False, green=False, error_code="NO_T1_EVIDENCE",
                           reason="无 t1_evidence_ids 不得 fresh")
 
-    # 8(fresh 侧). 双判一致:auditor_verdict 在场且 == fresh(ADR-0009;renew 不受约束)
+    # 9(fresh 侧). 双判一致:auditor_verdict 在场且 == fresh(ADR-0009;renew 不受约束)
     if decision.status == "fresh":
         if decision.auditor_verdict is None:
             return GateResult(allowed=False, green=False, error_code="AUDITOR_ABSENT",

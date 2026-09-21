@@ -214,7 +214,7 @@ def test_mark_stale_observation_carries_dimension_note():
         "claim_id": "c5",
         "reason": "T1 成本模型原文显示我方单会话成本 0.009 美元低于竞品折算 0.019 美元,"
                   "推翻成本优势消失的前提",
-        "evidence_ids": [cost_id],
+        "evidence_ids": [cost_id], "dimension": "cost_model",
     })
     assert res.get("recorded"), "受理回执结构不变"
     assert res.get("auditor_checkpoint", {}).get("verdict") == "stale", \

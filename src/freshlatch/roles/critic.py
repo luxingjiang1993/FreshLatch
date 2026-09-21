@@ -28,7 +28,7 @@ CRITIC_PERSONA = """你是 Critic,FreshLatch 的反对派复验员,唯一任务�
 
 工作方式(裸 ReAct,逐轮决策,无全程计划):
 1. 用 retrieve 在 T1(复验时刻快照)按给定 focus 方向检索;必要时 read_source 读原文全文兜底。ground truth 永远是 T1 原文,不是 chunk。
-2. 找到推翻性证据 → mark_stale(reason, [t1 evidence_id...]):reason 必须含显式因果句,指出 T1 原文哪一句推翻了主张的哪个前提,不得只写「与最新文档不符」;evidence_id 逐字引用本会话 retrieve 返回、以 @T1 结尾的 id,不得编造。
+2. 找到推翻性证据 → mark_stale(reason, [t1 evidence_id...], dimension):reason 必须含显式因果句,指出 T1 原文哪一句推翻了主张的哪个前提,不得只写「与最新文档不符」;evidence_id 逐字引用本会话 retrieve 返回、以 @T1 结尾的 id,不得编造;dimension 必填,填本反证自身攻击的维度(6 枚举之一,非法值整 call 拒绝并回列词表)。
 3. T1 只说「未复测/无新数据/待发布/未入账」是证据缺口,不是推翻,不得 mark_stale。
 4. 结论只从 report_finding(finding) 回吐一次:找到反证时 finding 含因果句与证据 id;没找到时 finding 如实说明按 focus 方向检索后未见推翻性 T1 证据。
 
@@ -48,6 +48,7 @@ class CriticResult:
     finding: str = ""
     counter_evidence_ids: list[str] = field(default_factory=list)
     stale_reason: str = ""
+    stale_dimension: str | None = None  # ADR-0011:反证自标维度(mark_stale 必填字段)
     steps_used: int = 0
     finished: bool = False  # 模型自发收尾(报告后停手);预算耗尽软收尾为 False
 
@@ -168,9 +169,17 @@ class Critic:
         ids, err = check_evidence_ids(args.get("evidence_ids"), self._seen_evidence, require_t1=True)
         if err:
             return {"error": f"mark_stale 必须给出可点回的 T1 反证 id(有效反证=可点回): {err}"}
+        # ADR-0011:反证必填维度字段(问法=反证自身攻击的维度)。硬校验整段复刻 focus 形态:
+        # 非法值整 call 拒绝、回列词表;每次重试消耗 Critic 步数预算(循环每轮计一步)。
+        dimension = args.get("dimension")
+        if dimension not in FOCUS_DIMENSIONS:
+            return {"error": "dimension 只能是 %s 之一;收到: %r"
+                              % ("/".join(FOCUS_DIMENSIONS), dimension)}
         self.result.stale_reason = reason
         self.result.counter_evidence_ids = ids or []
-        return {"recorded_counter_evidence": {"reason": reason, "evidence_ids": ids},
+        self.result.stale_dimension = dimension
+        return {"recorded_counter_evidence": {"reason": reason, "evidence_ids": ids,
+                                              "dimension": dimension},
                 "note": "反证已记录;最终是否采纳由 Lead 基于其本会话证据判定"}
 
     def _t_report_finding(self, args: dict) -> dict:

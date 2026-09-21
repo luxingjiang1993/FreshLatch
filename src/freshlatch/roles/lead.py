@@ -26,7 +26,7 @@ LEAD_PERSONA = """你是 Lead Reverifier,FreshLatch 的复验主官。你的任�
 2. 如需对照签发时口径,可再查 T0,但判定 ground truth 永远是 T1 原文。
 3. T1 的复测/核实内容直接支持主张的每个前提 → reverify_claim(claim_id, "fresh", [t1 evidence_id...])。
    注意:判 fresh 必须给出 T1 证据 id(形如 doc#p2@T1),从 retrieve 结果里逐字引用,否则会被规则闸打回。
-4. T1 原文明确推翻主张 → mark_stale(claim_id, reason, [t1 evidence_id...]),reason 必须含显式因果句:指出 T1 原文哪一句推翻了主张的哪个前提,不得只写「与最新文档不符」;反证 id 必须逐字引用 retrieve 返回的 T1 证据 id,不得编造。
+4. T1 原文明确推翻主张 → mark_stale(claim_id, reason, [t1 evidence_id...], dimension),reason 必须含显式因果句:指出 T1 原文哪一句推翻了主张的哪个前提,不得只写「与最新文档不符」;反证 id 必须逐字引用 retrieve 返回的 T1 证据 id,不得编造;dimension 必填,填本反证自身攻击的维度(6 枚举之一,非法值整 call 拒绝并回列词表)。
    注意:只有 T1 出现明确的推翻性内容时才判 stale;T1 只说「未复测/无新数据/待发布/未入账」是证据缺口,不是推翻——走 mark_gap + unknown,不得判 stale。
 5. T1 无原文覆盖或证据不足 → mark_gap(description) 后 reverify_claim(claim_id, "unknown", [])。
 6. 想对主张加压、专找「已死」反证 → spawn_critic(focus?):focus 可省略(=不限方向),只能填 6 个枚举值
@@ -220,6 +220,12 @@ class LeadReverifier:
         ids, err = self._check_evidence_ids(args.get("evidence_ids"), require_t1=True)
         if err:
             return {"error": f"stale 必须给出可点回的 T1 反证 id(有效反证=可点回): {err}"}
+        # ADR-0011:反证必填维度字段(问法=反证自身攻击的维度)。硬校验整段复刻 focus 形态:
+        # 非法值整 call 拒绝、回列词表;每次重试消耗 Lead 步数预算(循环每轮计一步)。
+        dimension = args.get("dimension")
+        if dimension not in FOCUS_DIMENSIONS:
+            return {"error": "dimension 只能是 %s 之一;收到: %r"
+                              % ("/".join(FOCUS_DIMENSIONS), dimension)}
         # ADR-0010:受理(三重硬校验通过、落档之前)自动触发 Auditor 单轮判定——
         # 强制性住在触发器(c2 同构:自信地错恰是自愿派驻最不会触发的时刻)。
         audit = self._auto_auditor_checkpoint(path="stale", reason=reason,
@@ -227,6 +233,7 @@ class LeadReverifier:
         self.decision.status = "stale"
         self.decision.reason = reason
         self.decision.evidence_ids = ids or []
+        self.decision.stale_dimension = dimension
         result = {"recorded": {"claim_id": self.claim.claim_id, "status": "stale",
                                "reason": reason, "evidence_ids": ids},
                   "note": MARK_STALE_DIMENSION_NOTE}
@@ -320,6 +327,7 @@ class LeadReverifier:
                 "finding": result.finding,
                 "counter_evidence_ids": result.counter_evidence_ids,
                 "stale_reason": result.stale_reason,
+                "stale_dimension": result.stale_dimension,
                 "note": "Critic 只找反证、不得放行;是否采纳由你基于本会话证据自行判定。"
                         "采纳其 mark_stale 前,先独立核对该反证是否锚在主张的同一前提/度量维度"
                         "(主张讲成本、反证给竞品定价=维度不符,属干扰项,不得据此改判 stale);"

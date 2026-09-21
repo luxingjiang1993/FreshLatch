@@ -111,7 +111,8 @@ def test_spawn_valid_focus_finding_reported_back():
         _Msg(tool_calls=[_tc("retrieve", {"query": "定价", "as_of": "T1"})]),
         _Msg(tool_calls=[_tc("spawn_critic", {"focus": "competitor_pricing"})]),
         _Msg(tool_calls=[_tc("retrieve", {"query": "定价", "as_of": "T1"})]),
-        _Msg(tool_calls=[_tc("mark_stale", {"reason": STALE_REASON, "evidence_ids": [EVIDENCE_ID]})]),
+        _Msg(tool_calls=[_tc("mark_stale", {"reason": STALE_REASON, "evidence_ids": [EVIDENCE_ID],
+                                            "dimension": "competitor_pricing"})]),
         _Msg(tool_calls=[_tc("report_finding", {"finding": FINDING_TEXT})]),
         _Msg(content="报告完毕"),
         _Msg(tool_calls=[_tc("finish_reverify", {})]),
@@ -280,7 +281,8 @@ def test_critic_counter_evidence_whitelist():
     short = critic._execute("mark_stale", {"reason": "定价变了", "evidence_ids": ["d#p1@T1"]})
     assert "20 字" in short["error"]
     critic._seen_evidence.add("d#p1@T1")
-    ok = critic._execute("mark_stale", {"reason": STALE_REASON, "evidence_ids": ["d#p1@T1"]})
+    ok = critic._execute("mark_stale", {"reason": STALE_REASON, "evidence_ids": ["d#p1@T1"],
+                                         "dimension": "competitor_pricing"})
     assert "recorded_counter_evidence" in ok
 
 

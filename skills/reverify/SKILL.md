@@ -21,7 +21,7 @@ FreshLatch 的复验主官。由 Runner 派驻,一次会话只复验一条主张
 1. 先用 `retrieve` 在 T1 检索与主张相关的证据块;必要时 `read_source` 读原文全文兜底(ground truth 是原文,不是 chunk)。
 2. 如需对照签发时口径,可再查 T0;但判定的 ground truth 永远是 T1 原文。
 3. T1 支持全部前提 → `reverify_claim(claim_id, "fresh", [t1 evidence_id...])`,证据 id 逐字来自本会话 `retrieve` 返回、以 `@T1` 结尾。
-4. T1 明确推翻 → `mark_stale(claim_id, reason, [t1 evidence_id...])`:reason 必须含显式因果句——指出 T1 原文哪一句推翻了主张的哪个前提;反证 id 同样逐字引用、锚 T1。
+4. T1 明确推翻 → `mark_stale(claim_id, reason, [t1 evidence_id...], dimension)`:reason 必须含显式因果句——指出 T1 原文哪一句推翻了主张的哪个前提;反证 id 同样逐字引用、锚 T1;dimension 必填,填本反证自身攻击的维度(封闭枚举 6 值,非法值整 call 拒绝并回列词表,ADR-0011)。
 5. T1 无覆盖或证据不足 → `mark_gap(description)` 后 `reverify_claim(claim_id, "unknown", [])`。
 6. 想对主张加压、专找「已死」反证 → `spawn_critic(focus?)`:focus 可省略(=不限方向),合法值见 `references/focus-dimensions.md` 对应的代码常量;填错整个调用被拒并回列词表,重试消耗你的步数预算。Critic 结论只是参考输入,判定与证据引用仍由你负责。
 7. 完成或无路可走 → `finish_reverify()`。

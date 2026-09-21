@@ -17,6 +17,7 @@ class Claim:
     statement: str
     t0_evidence_ids: list[str] = field(default_factory=list)
     t1_evidence_ids: list[str] = field(default_factory=list)
+    dimension: str | None = None  # 签发登记维度(ADR-0011;封闭枚举同 FOCUS_DIMENSIONS,load_docket 硬校验)
     status: Status = "unknown"
     reason: str = ""
     last_confirmed_at: str | None = None

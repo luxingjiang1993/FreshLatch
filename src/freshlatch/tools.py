@@ -50,11 +50,15 @@ _TOOL_DEFS: dict[str, dict] = {
         ["claim_id", "status"]),
     "mark_stale": _fn(
         "mark_stale", "判定主张已失效;reason 必须含显式因果句(指出 T1 原文哪一句推翻了主张哪个前提);"
-                      "evidence_ids 必填,逐字引用 retrieve 返回的 T1 证据 id(形如 doc#p2@T1),不得编造",
+                      "evidence_ids 必填,逐字引用 retrieve 返回的 T1 证据 id(形如 doc#p2@T1),不得编造;"
+                      "dimension 必填,填本反证自身攻击的维度(封闭枚举 6 值之一,非法值整 call 拒绝并回列词表)",
         {"claim_id": {"type": "string"},
          "reason": {"type": "string"},
          "evidence_ids": {"type": "array", "items": {"type": "string"},
-                          "description": "推翻性 T1 证据 id,retrieve 返回过什么才能引用什么"}}, ["claim_id", "reason", "evidence_ids"]),
+                          "description": "推翻性 T1 证据 id,retrieve 返回过什么才能引用什么"},
+         "dimension": {"type": "string",
+                       "description": f"本反证自身攻击的维度:{'/'.join(FOCUS_DIMENSIONS)}"}},
+        ["claim_id", "reason", "evidence_ids", "dimension"]),
     "mark_gap": _fn(
         "mark_gap", "记录证据缺口(T1 无覆盖、证据不足)",
         {"description": {"type": "string"}}, ["description"]),

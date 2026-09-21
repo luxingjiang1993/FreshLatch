@@ -240,7 +240,8 @@ def test_auditor_fallback_emits_skill_fallback_event():
     ctx = _ctx(_store())
     lead = LeadReverifier(ctx, _claim(), llm, auditor_doctrine=None)
     lead._t_retrieve({"query": "单会话成本 复测", "as_of": "T1"})
-    lead._t_mark_stale({"claim_id": CLAIM_ID, "reason": REASON, "evidence_ids": [EID]})
+    lead._t_mark_stale({"claim_id": CLAIM_ID, "reason": REASON, "evidence_ids": [EID],
+                                              "dimension": "cost_model"})
     assert any(e.get("type") == "skill_fallback" and e.get("skill") == "freshness_audit"
                for e in ctx.events)
 
@@ -350,7 +351,8 @@ def test_mark_stale_auto_triggers_auditor_before_recording():
     ctx = _ctx(_store())
     lead = _lead(llm, ctx)
     lead._t_retrieve({"query": "单会话成本 复测", "as_of": "T1"})
-    res = lead._t_mark_stale({"claim_id": CLAIM_ID, "reason": REASON, "evidence_ids": [EID]})
+    res = lead._t_mark_stale({"claim_id": CLAIM_ID, "reason": REASON, "evidence_ids": [EID],
+                                              "dimension": "cost_model"})
 
     assert trigger_state["status_at_trigger"] == "unknown", \
         "Auditor 触发必须在落档之前(ADR-0010 子决策 1)"
@@ -480,7 +482,7 @@ def test_run_dumps_auditor_and_dissent_to_trajectory(tmp_path):
     llm = _ScriptLLM([
         _Msg(tool_calls=[_tc("retrieve", {"query": "单会话成本 复测", "as_of": "T1"})]),
         _Msg(tool_calls=[_tc("mark_stale", {"claim_id": CLAIM_ID, "reason": REASON,
-                                             "evidence_ids": [EID]})]),
+                                             "evidence_ids": [EID], "dimension": "cost_model"})]),
         _aud({"status": "stale", "reason": DISSENT_REASON, "dimension_match": False}),
         _Msg(tool_calls=[_tc("finish_reverify", {})]),
         _Msg(content="复验结束"),

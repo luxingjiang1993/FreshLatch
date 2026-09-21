@@ -164,14 +164,15 @@ def test_fresh_auto_spawns_critic_checkpoint_and_lead_can_revise():
                                                  "evidence_ids": [MEMO_ID]})]),
         # —— 以下 4 条为自动派驻的 Critic 会话(FIFO 同步消费)——
         _Msg(tool_calls=[_tc("retrieve", {"query": "印尼 数据本地化", "as_of": "T1"})]),
-        _Msg(tool_calls=[_tc("mark_stale", {"reason": STALE_REASON, "evidence_ids": [MEMO_ID]})]),
+        _Msg(tool_calls=[_tc("mark_stale", {"reason": STALE_REASON, "evidence_ids": [MEMO_ID],
+                                             "dimension": "regulatory_stance"})]),
         _Msg(tool_calls=[_tc("report_finding", {"finding": FINDING_TEXT})]),
         _Msg(content="报告完毕"),
         # —— Auditor 单轮判定(fresh 钩子内自动触发,#22/ADR-0009)——
         _aud({"status": "fresh", "reason": "证据包内未见推翻性表述"}),
         # —— Lead 看到 checkpoint 观察后改判 ——
         _Msg(tool_calls=[_tc("mark_stale", {"claim_id": "c2", "reason": STALE_REASON,
-                                             "evidence_ids": [MEMO_ID]})]),
+                                             "evidence_ids": [MEMO_ID], "dimension": "regulatory_stance"})]),
         # —— Auditor 单轮判定(mark_stale 钩子内自动触发,#22/ADR-0010)——
         _aud({"status": "stale", "reason": "反证成立,维度相符", "dimension_match": True}),
         _Msg(tool_calls=[_tc("finish_reverify", {})]),

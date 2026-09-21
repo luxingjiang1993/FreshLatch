@@ -17,6 +17,7 @@ from freshlatch.models import AsOf, Claim
 from freshlatch.roles.auditor import EVIDENCE_PACKET_SCHEMA_VERSION
 from freshlatch.skills_loader import load_skill_body
 from freshlatch.store.base import RetrievalStore
+from freshlatch.tools import FOCUS_DIMENSIONS
 
 RETRIEVAL_EXHAUSTED = {"budget_exhausted": True,
                        "message": "检索预算已尽(24/Run)。请改用 read_source 直读原文,或基于现有证据下结论。"}
@@ -62,6 +63,7 @@ class ClaimDecision:
     auditor_verdict: str | None = None  # Auditor 单轮判定在场(ADR-0009/0010;None = 未触发/缺席)
     auditor_reason: str = ""
     auditor_dimension_match: bool | None = None  # ADR-0010:False = 维度异议
+    stale_dimension: str | None = None  # ADR-0011:反证自标维度(mark_stale 必填 dimension 字段)
 
 
 @dataclass
@@ -83,16 +85,23 @@ class Docket:
 
 
 def load_docket(path: str | Path) -> Docket:
-    """导入是 Workflow:只读 statement 与 t0_evidence_ids,不做新调查(§2.1)。"""
+    """导入是 Workflow:只读 statement 与 t0_evidence_ids,不做新调查(§2.1)。
+
+    dimension 签发即校验(ADR-0011):非法值硬拒绝,坏卷宗不进系统;缺失 = None,
+    stale 路径维度防线回落不变量 7(机械跨检无锚可比对,不拦未登记主张)。
+    """
     data = json.loads(Path(path).read_text(encoding="utf-8"))
-    return Docket(
-        question=data["question"],
-        claims=[
-            Claim(claim_id=c["claim_id"], statement=c["statement"],
-                  t0_evidence_ids=list(c.get("t0_evidence_ids", [])))
-            for c in data["claims"]
-        ],
-    )
+    claims = []
+    for c in data["claims"]:
+        dim = c.get("dimension")
+        if dim is not None and dim not in FOCUS_DIMENSIONS:
+            raise ValueError(
+                f"签发卷宗 {path} 主张 {c.get('claim_id')}:dimension 非法值 {dim!r}"
+                f"(封闭枚举:{'/'.join(FOCUS_DIMENSIONS)};ADR-0011 签发即校验,坏卷宗不进系统)")
+        claims.append(Claim(claim_id=c["claim_id"], statement=c["statement"],
+                            t0_evidence_ids=list(c.get("t0_evidence_ids", [])),
+                            dimension=dim))
+    return Docket(question=data["question"], claims=claims)
 
 
 class Runner:
@@ -168,11 +177,14 @@ class Runner:
                                checksum_fn=self._checksum_fn, eval_mode=(self.ctx.mode == "eval"))
 
         def _gate_decision(status: str, *, stale_reason: str = "") -> GateDecision:
-            # auditor 三字段随判定包一次搬运(双判一致的闸输入,ADR-0009/0010)
+            # auditor 三字段随判定包一次搬运(双判一致的闸输入,ADR-0009/0010);
+            # 维度两字段(ADR-0011):登记维度来自签发卷宗,反证维度来自 mark_stale 必填字段
             return GateDecision(status=status, t1_evidence_ids=decision.evidence_ids,
                                 stale_reason=stale_reason,
                                 auditor_verdict=decision.auditor_verdict,
-                                auditor_dimension_match=decision.auditor_dimension_match)
+                                auditor_dimension_match=decision.auditor_dimension_match,
+                                registered_dimension=claim.dimension,
+                                stale_dimension=decision.stale_dimension)
 
         def _gate_back(reason_text: str) -> None:
             claim.status = "unknown"
@@ -217,6 +229,14 @@ class Runner:
             if dissent:
                 claim.dissent = {"auditor_verdict": decision.auditor_verdict,
                                  "reason": decision.auditor_reason,
+                                 "evidence_ids": list(decision.evidence_ids)}
+            elif gate.error_code == "DIMENSION_CROSSCHECK_MISMATCH":
+                # ADR-0011 不变量 8:机械跨检打回,异议 = 纯结构比对事实(零模型意见),
+                # 复用 arbitrate_stale_mark 异议形态(随黄卡进 HumanLatch)
+                claim.dissent = {"auditor_verdict": decision.auditor_verdict,
+                                 "reason": (f"[机械跨检] 登记维度 {claim.dimension} ≠ "
+                                            f"反证自标维度 {decision.stale_dimension}"
+                                            "(纯字符串比对,零模型意见;ADR-0011 不变量 8)"),
                                  "evidence_ids": list(decision.evidence_ids)}
         else:
             claim.status = "unknown"
