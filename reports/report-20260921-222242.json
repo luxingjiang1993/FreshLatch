@@ -1,0 +1,87 @@
+{
+ "kind": "control_run",
+ "recorded_at": "2026-09-21T14:22:42.374205+00:00",
+ "decoding": {
+  "model": "qwen-flash",
+  "temperature": 0.0,
+  "seed": null,
+  "recorded_at": "2026-09-21T14:22:37.624250+00:00"
+ },
+ "redline_note": "prompt 红线:不提及 T1/快照/复验语料存在,不提及金标与期望判定(对照泄题即废)",
+ "eval_mode_switches": [
+  "跳过 HumanLatch:W1–W4 未挂载,runner 不 import langgraph,人审不进评测路径",
+  "禁用联网:web_search 不在任何角色白名单,模型物理上不可见(§4.6)"
+ ],
+ "repro_note": "闸层(must_* 零违例)给定解码参数下逐位复现;判定层(矩阵条数)按文档化容差;违例级背离(must_stale 被判 fresh)触发人查。qwen-flash 为活托管端点,跨会话复现只能近似。",
+ "results": {
+  "c1": {
+   "verdict": "unknown",
+   "raw": "{\"verdict\": \"unknown\"}"
+  },
+  "c2": {
+   "verdict": "alive",
+   "raw": "{\"verdict\": \"alive\"}"
+  },
+  "c3": {
+   "verdict": "unknown",
+   "raw": "{\"verdict\": \"unknown\"}"
+  },
+  "c4": {
+   "verdict": "unknown",
+   "raw": "{\"verdict\": \"unknown\"}"
+  },
+  "c5": {
+   "verdict": "unknown",
+   "raw": "{\"verdict\": \"unknown\"}"
+  },
+  "c6": {
+   "verdict": "unknown",
+   "raw": "{\"verdict\": \"unknown\"}"
+  },
+  "c7": {
+   "verdict": "unknown",
+   "raw": "{\"verdict\": \"unknown\"}"
+  },
+  "c8": {
+   "verdict": "unknown",
+   "raw": "{\"verdict\": \"unknown\"}"
+  },
+  "c9": {
+   "verdict": "alive",
+   "raw": "{\"verdict\": \"alive\"}"
+  },
+  "c10": {
+   "verdict": "unknown",
+   "raw": "{\"verdict\": \"unknown\"}"
+  },
+  "c11": {
+   "verdict": "unknown",
+   "raw": "{\"verdict\": \"unknown\"}"
+  },
+  "c12": {
+   "verdict": "unknown",
+   "raw": "{\"verdict\": \"unknown\"}"
+  },
+  "c13": {
+   "verdict": "unknown",
+   "raw": "{\"verdict\": \"unknown\"}"
+  },
+  "c14": {
+   "verdict": "unknown",
+   "raw": "{\"verdict\": \"unknown\"}"
+  }
+ },
+ "false_green_must_stale": [
+  "c2"
+ ],
+ "blind_green_must_unknown": [
+  "c9"
+ ],
+ "must_stale_total": 4,
+ "control_pass": false,
+ "distractor_baseline": {
+  "c13": "unknown",
+  "c14": "unknown"
+ },
+ "distractor_baseline_note": "must_fresh 干扰项:无工具基线只读 T0,应判 alive(成立);判 dead 说明干扰项在基线上即被识破,记录备查"
+}
