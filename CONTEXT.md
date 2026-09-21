@@ -26,6 +26,10 @@ _Avoid_: 旧库/新库、源数据/目标数据
 **must_unknown**:
 金标中 T1 无原文覆盖、必须判 unknown 的主张;锁住「无 `t1_evidence_ids` 不得 fresh」这条闸的评测。
 
+**must_quarantine**:
+金标中必须被提议移出下一轮记忆侧召回的 `memory_id`(死事实、互斥对、不可核)。人确认前磁盘条目不删除。构造规则与通过线在评估文档,不进本词表。
+_Avoid_: 记忆准确率、隔离率
+
 ## 复验主链
 
 **复验单 (Reverify Sheet)**:
@@ -69,7 +73,8 @@ _Avoid_: 异议备注、反对票
 _Avoid_: 二次复验、重判
 
 **Forensic (记忆刑侦)**:
-真 Agent,只审本课题长期记忆:找死事实、互斥条目、无 `source_ref` 条目;不得改主张、不得放行、不得删除文件。
+真 Agent(中期形态)或确定性闩(本期执行体),只审本课题长期记忆:找死事实、互斥条目、无 `source_ref`/出处不存在的条目;不得改主张、不得放行、不得删除文件。dead 必须点回 T1;无 T1 不得标 dead。
+_Avoid_: 记忆插件、Mem0、记忆体检产品
 
 ## 闸与人审
 
@@ -96,6 +101,10 @@ _Avoid_: 黑名单、封禁列表
 
 **隔离 (Quarantine)**:
 把腐烂记忆条目移出召回集的动作;人确认前不得移出,Agent 不得自动抹记忆。
+
+**死事实 / 互斥 / 不可核**(记忆层三标记):
+操作定义在 `skills/memory_forensics/references/memory-schema.md`。dead 与复验 stale 同构但作用于记忆;互斥要两条 id;不可核 ≠ 假。checksum 对不上的 dead 半边本期留位未启用。
+_Avoid_: 过时词匹配、记忆准确率
 
 ## 评测
 

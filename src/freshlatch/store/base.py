@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from typing import List, Optional
 
 from freshlatch.models import AsOf
 
@@ -73,6 +74,10 @@ class RetrievalStore(ABC):
         """人审动作时间线(作废/续命/重跑)。内存假实现默认空(#23 起 SQLite 实装)。"""
         return []
 
+    def list_memories(self) -> list[dict]:
+        """列出长期记忆条目。内存假实现默认空。"""
+        return []
+
 
 class InMemoryStore(RetrievalStore):
     """内存假实现:测试用,零磁盘零 LLM。"""
@@ -80,6 +85,7 @@ class InMemoryStore(RetrievalStore):
     def __init__(self) -> None:
         self._docs: dict[tuple[str, AsOf], Document] = {}
         self._chunks: list[Chunk] = []
+        self._memories: list[dict] = []
 
     def add_document(self, doc: Document, chunks: list[Chunk]) -> None:
         self._docs[(doc.doc_id, doc.as_of)] = doc
@@ -112,3 +118,7 @@ class InMemoryStore(RetrievalStore):
             if c.doc_id == doc_id and c.clause_id == clause_id and c.as_of == as_of:
                 return c
         return None
+
+    def list_memories(self) -> list[dict]:
+        """返回内存中的记忆条目列表"""
+        return self._memories.copy()

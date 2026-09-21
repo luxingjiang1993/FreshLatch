@@ -72,6 +72,9 @@ _TOOL_DEFS: dict[str, dict] = {
     "spawn_auditor": _fn(
         "spawn_auditor", "派驻 Auditor 做单轮判定(W5–W8 挂载)",
         {"claim_id": {"type": "string"}}, ["claim_id"]),
+    "spawn_forensic": _fn(
+        "spawn_forensic", "派驻 Forensic 审核长期记忆(只传记忆条目集,深度恒 1)",
+        {"focus": {"type": "string", "description": f"可选:{'/'.join(FOCUS_DIMENSIONS)},省略=全面审核"}}, []),
     "finish_reverify": _fn(
         "finish_reverify", "收尾宣布本轮复验结束", {}, []),
     "report_finding": _fn(
@@ -80,6 +83,32 @@ _TOOL_DEFS: dict[str, dict] = {
     "verdict": _fn(
         "verdict", "Auditor 判定唯一出口:fresh|stale|unknown + 理由(进规则闸,Auditor 不得拥有放行权)",
         {"status": {"type": "string"}, "reason": {"type": "string"}}, ["status"]),
+    # 记忆审核工具 (W9-W12)
+    "list_memories": _fn(
+        "list_memories", "获取本课题长期记忆条目召回集(记忆刑侦专用)",
+        {"as_of": {"type": "string", "description": "可选:T0|T1,默认返回可召回的记忆条目"}}, []),
+    "flag_contradiction": _fn(
+        "flag_contradiction", "标记两条记忆条目互斥(需说明互斥原因)",
+        {"memory_id_a": {"type": "string", "description": "第一条记忆ID"},
+         "memory_id_b": {"type": "string", "description": "第二条记忆ID"},
+         "reason": {"type": "string", "description": "两条记忆如何互斥的说明"}},
+        ["memory_id_a", "memory_id_b", "reason"]),
+    "flag_dead": _fn(
+        "flag_dead", "标记记忆条目已死(需提供T1证据证明其失效)",
+        {"memory_id": {"type": "string", "description": "记忆ID"},
+         "reason": {"type": "string", "description": "记忆为何失效的原因"},
+         "evidence_ids": {"type": "array", "items": {"type": "string"}, "description": "证明记忆已死的T1证据ID列表"}},
+        ["memory_id", "reason"]),
+    "flag_unverified": _fn(
+        "flag_unverified", "标记记忆条目未经证实(无source_ref或出处不可追溯)",
+        {"memory_id": {"type": "string", "description": "记忆ID"},
+         "reason": {"type": "string", "description": "为何认为该记忆未经证实的原因"}},
+        ["memory_id", "reason"]),
+    "propose_quarantine": _fn(
+        "propose_quarantine", "提议将记忆条目移出召回集(待人确认,不是直接删除)",
+        {"memory_ids": {"type": "array", "items": {"type": "string"}, "description": "提议隔离的记忆ID列表"},
+         "reason": {"type": "string", "description": "提议隔离的原因"}},
+        ["memory_ids"]),
 }
 
 
@@ -95,14 +124,22 @@ def tool_specs(names: list[str]) -> list[dict]:
 
 # -- 角色白名单(阶段挂载视图)----------------------------------------------------
 
-# W1–W2 Lead:无 spawn_critic(Critic W3 才启用)、无 spawn_auditor(W5–W8)
+# W1–W2 Lead:无 spawn_critic(Critic W3 才启用)、无 spawn_auditor(W5–W8)、无记忆卫生工具(W9-W12)
 LEAD_TOOLS_W1: tuple[str, ...] = (
     "retrieve", "read_source", "reverify_claim", "mark_stale", "mark_gap", "finish_reverify",
 )
 LEAD_TOOLS_W3: tuple[str, ...] = LEAD_TOOLS_W1 + ("spawn_critic",)
+LEAD_TOOLS_W9: tuple[str, ...] = LEAD_TOOLS_W3 + ("list_memories", "spawn_forensic")  # W9-W12: 添加记忆审核能力
 
 # Critic:只许判死不许判活、无放行、无 spawn(深度恒 1)
 CRITIC_TOOLS: tuple[str, ...] = ("retrieve", "read_source", "mark_stale", "report_finding")
 
 # Auditor(W5–W8):单轮判定 SOP,唯一出口 verdict,不得拥有放行权
 AUDITOR_TOOLS: tuple[str, ...] = ("verdict",)
+
+# Forensic(W9-W12):记忆审核专用，可访问记忆相关工具，不能改主张或放行
+FORENSIC_TOOLS: tuple[str, ...] = (
+    "list_memories", "retrieve", "read_source",  # 读取记忆和语料进行对比
+    "flag_dead", "flag_contradiction", "flag_unverified",  # 标记问题记忆
+    "propose_quarantine",  # 提议隔离
+)

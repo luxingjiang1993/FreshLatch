@@ -196,6 +196,8 @@ class LeadReverifier:
             "mark_stale": self._t_mark_stale,
             "mark_gap": self._t_mark_gap,
             "spawn_critic": self._t_spawn_critic,
+            "list_memories": self._t_list_memories,
+            "spawn_forensic": self._t_spawn_forensic,
             "finish_reverify": self._t_finish,
         }.get(name)
         if handler is None:  # fail-closed,理论上 tool_specs 已拦截
@@ -394,6 +396,89 @@ class LeadReverifier:
             return {"error": "focus 只能是 %s 之一,或省略(=不限方向);收到: %r"
                               % ("/".join(FOCUS_DIMENSIONS), focus)}
         return self._spawn_critic(focus, auto=False)
+
+    def _t_list_memories(self, args: dict) -> dict:
+        """列出本课题仍在召回集的长期记忆。W9 白名单挂载后可见;W3 评测路径不挂载。"""
+        memories = self.ctx.store.list_memories()
+        return {"memories": memories, "count": len(memories)}
+
+    def _t_spawn_forensic(self, args: dict) -> dict:
+        """派驻记忆刑侦。本期执行体是操作定义上的确定性闩,不是 LLM ReAct。
+
+        Lead 默认白名单仍是 LEAD_TOOLS_W3,本处理器为 W9 挂载预留;挂上之前模型不可见。
+        """
+        from freshlatch.roles.forensic import (
+            ForensicAgent,
+            collect_t1_index,
+            store_source_exists,
+        )
+
+        focus = args.get("focus")
+        if focus in (None, ""):
+            focus = None
+        elif focus not in FOCUS_DIMENSIONS:
+            return {"error": "focus 只能是 %s 之一,或省略(=全面审核);收到: %r"
+                              % ("/".join(FOCUS_DIMENSIONS), focus)}
+        memories = self.ctx.store.list_memories()
+        self.ctx.emit({"type": "forensic_spawn", "claim_id": self.claim.claim_id,
+                       "focus": focus, "memory_count": len(memories)})
+        agent = ForensicAgent(claim_id=self.claim.claim_id, focus=focus)
+        t1_index = collect_t1_index(self.ctx.store, memories)
+        findings = agent.inspect(
+            memories,
+            t1_by_memory_id=t1_index,
+            source_exists=lambda doc_id: store_source_exists(self.ctx.store, doc_id),
+        )
+        store = self.ctx.store
+        for item in findings["unverified"]:
+            store.flag_memory_item(
+                item["memory_id"], "unverified",
+                item.get("flag_reason") or "无 source_ref 或出处不可回溯",
+            )
+        for pair in findings["contradictory"]:
+            reason = (
+                f"与 {pair['item_b']['memory_id']} 互斥: "
+                f"{pair['item_a'].get('content', '')[:80]}"
+            )
+            store.flag_memory_item(pair["item_a"]["memory_id"], "contradiction", reason)
+            store.flag_memory_item(
+                pair["item_b"]["memory_id"], "contradiction",
+                f"与 {pair['item_a']['memory_id']} 互斥",
+            )
+        for item in findings["dead"]:
+            store.flag_memory_item(
+                item["memory_id"], "dead",
+                item.get("flag_reason") or "与 T1 原文冲突",
+                item.get("evidence_ids") or [],
+            )
+        proposal_id = None
+        if findings["quarantine_ids"]:
+            proposal_id = store.propose_quarantine(
+                findings["quarantine_ids"],
+                "Forensic:dead/contradictory/unverified 条目提议移出召回集",
+            )
+        self.ctx.emit({"type": "forensic_result", "claim_id": self.claim.claim_id,
+                       "dead": len(findings["dead"]),
+                       "contradictory": len(findings["contradictory"]),
+                       "unverified": len(findings["unverified"]),
+                       "proposal_id": proposal_id})
+        return {
+            "reported_by": "forensic",
+            "focus": focus,
+            "dead_ids": [item["memory_id"] for item in findings["dead"]],
+            "contradictory_pairs": [
+                {
+                    "a": pair["item_a"]["memory_id"],
+                    "b": pair["item_b"]["memory_id"],
+                }
+                for pair in findings["contradictory"]
+            ],
+            "unverified_ids": [item["memory_id"] for item in findings["unverified"]],
+            "quarantine_proposal_id": proposal_id,
+            "quarantine_ids": findings["quarantine_ids"],
+            "note": "Forensic 只标记与提议隔离;人确认前条目仍在召回集。"
+                    "是否采纳由人审确认,不得改主张、不得放行。",
+        }
 
     def _spawn_critic(self, focus: str | None, *, auto: bool) -> dict:
         """派驻执行体:人工(_t_spawn_critic)与自动 checkpoint 共用;事件带 auto 标记可区分来源。"""

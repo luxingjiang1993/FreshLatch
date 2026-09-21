@@ -11,28 +11,24 @@ from pathlib import Path
 
 import pytest
 
-from freshlatch.tools import CRITIC_TOOLS, FOCUS_DIMENSIONS, LEAD_TOOLS_W3, AUDITOR_TOOLS
+from freshlatch.tools import (
+    CRITIC_TOOLS, FOCUS_DIMENSIONS, LEAD_TOOLS_W3, AUDITOR_TOOLS, FORENSIC_TOOLS,
+)
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 SKILLS_DIR = REPO_ROOT / "skills"
-
-# W9–W12 记忆卫生工具名(W1–W4 未挂载,无代码常量;与 test_whitelist.py 同一份名单)
-FORENSIC_TOOLS = {
-    "list_memories", "flag_dead", "flag_contradiction",
-    "flag_unverified", "propose_quarantine",
-}
 
 ROLE_WHITELIST = {
     "reverify": set(LEAD_TOOLS_W3),
     "devil_advocate": set(CRITIC_TOOLS),
     "freshness_audit": set(AUDITOR_TOOLS),
-    "memory_forensics": FORENSIC_TOOLS,
+    "memory_forensics": set(FORENSIC_TOOLS),
 }
 
 # 全量工具词汇:任何 skill 文件里反引号提到的工具名都必须落在本角色白名单内
 TOOL_VOCABULARY = (
     set(LEAD_TOOLS_W3) | set(CRITIC_TOOLS) | set(AUDITOR_TOOLS)
-    | {"spawn_auditor"} | FORENSIC_TOOLS | {"spawn_forensic"}
+    | {"spawn_auditor"} | set(FORENSIC_TOOLS) | {"spawn_forensic"}
 )
 
 SLUGS = sorted(ROLE_WHITELIST)

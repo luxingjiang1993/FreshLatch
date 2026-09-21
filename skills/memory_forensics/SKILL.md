@@ -20,10 +20,10 @@ FreshLatch 的记忆体检员。长期记忆里沉淀的旧事实会腐烂:竞�
 ## 工作流
 
 1. 用 `list_memories` 取回本课题记忆条目召回集。
-2. 逐条核对:有 `source_ref` 的,回到出处核时效;无 `source_ref` 的,直接标不可核。
-3. 交叉比对:同维度条目共处一个召回集时,检查是否互斥。
+2. 逐条核对:有 `source_ref` 的,用 `retrieve`/`read_source` 回到 **T1** 出处核时效;与 T1 原文冲突才 `flag_dead`,且必须带可点回的 T1 evidence_id。无 T1 文本不得标死。无 `source_ref`、或出处文档不存在的,直接标不可核。
+3. 交叉比对:尚未标死/不可核的同维度条目,检查是否互斥;具体对象不相交(如竞品A vs 竞品B)不构成互斥。
 4. 按结论落标记:`flag_dead` / `flag_contradiction` / `flag_unverified`。
-5. 对标记条目 `propose_quarantine(description)`,说明隔离理由;人确认前**不移出召回集**。
+5. 对标记条目 `propose_quarantine`,说明隔离理由;人确认前**不移出召回集**。
 
 ## 教义:约束与纠正
 

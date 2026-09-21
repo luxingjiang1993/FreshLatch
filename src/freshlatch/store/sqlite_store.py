@@ -64,6 +64,43 @@ CREATE TABLE IF NOT EXISTS rerun_log (
     note TEXT NOT NULL DEFAULT ''
 );
 CREATE INDEX IF NOT EXISTS idx_rerun_log_claim ON rerun_log (claim_id);
+
+-- 长期记忆表（W9-W12新增）
+CREATE TABLE IF NOT EXISTS long_term_memory (
+    memory_id TEXT PRIMARY KEY,
+    content TEXT NOT NULL,
+    written_at TEXT NOT NULL,
+    last_confirmed_at TEXT,
+    source_ref TEXT,
+    checksum TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'active'
+);
+
+-- 记忆标记表（W9-W12新增）
+CREATE TABLE IF NOT EXISTS memory_flags (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    memory_id TEXT NOT NULL,
+    flag_type TEXT NOT NULL,  -- 'dead', 'contradiction', 'unverified'
+    reason TEXT NOT NULL,
+    flagged_at TEXT NOT NULL,
+    evidence_ids TEXT,  -- JSON array of evidence IDs
+    FOREIGN KEY(memory_id) REFERENCES long_term_memory(memory_id)
+);
+
+-- 隔离提议表（W9-W12新增）
+CREATE TABLE IF NOT EXISTS quarantine_proposals (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    memory_ids TEXT NOT NULL,  -- JSON array of memory IDs
+    reason TEXT NOT NULL,
+    proposed_at TEXT NOT NULL,
+    confirmed_at TEXT,
+    confirmed_by TEXT
+);
+
+-- 索引优化查询
+CREATE INDEX IF NOT EXISTS idx_memory_status ON long_term_memory (status);
+CREATE INDEX IF NOT EXISTS idx_memory_source ON long_term_memory (source_ref);
+CREATE INDEX IF NOT EXISTS idx_memory_flags_memory ON memory_flags (memory_id);
 """
 
 
@@ -182,6 +219,129 @@ class SQLiteStore(RetrievalStore):
                 (claim_id,),
             ).fetchall()
         return [dict(r) for r in rows]
+
+    def list_memories(self) -> list[dict]:
+        """列出长期记忆条目（W9-W12新增）"""
+        with self._conn() as conn:
+            rows = conn.execute(
+                "SELECT * FROM long_term_memory WHERE status = 'active' ORDER BY written_at DESC"
+            ).fetchall()
+
+        memories = []
+        for row in rows:
+            memories.append({
+                'memory_id': row['memory_id'],
+                'content': row['content'],
+                'written_at': row['written_at'],
+                'last_confirmed_at': row['last_confirmed_at'],
+                'source_ref': row['source_ref'],
+                'checksum': row['checksum'],
+                'status': row['status']
+            })
+        return memories
+
+    def add_memory_item(self, memory_id: str, content: str, written_at: str,
+                       source_ref: str = None, checksum: str = "",
+                       last_confirmed_at: str = None) -> None:
+        """添加记忆条目（W9-W12新增）"""
+        with self._conn() as conn:
+            conn.execute(
+                """
+                INSERT OR REPLACE INTO long_term_memory
+                (memory_id, content, written_at, last_confirmed_at, source_ref, checksum, status)
+                VALUES (?, ?, ?, ?, ?, ?, 'active')
+                """,
+                (memory_id, content, written_at, last_confirmed_at, source_ref, checksum)
+            )
+
+    def flag_memory_item(self, memory_id: str, flag_type: str, reason: str,
+                        evidence_ids: list[str] = None, flagged_at: str = None) -> None:
+        """标记记忆条目有问题（W9-W12新增）"""
+        import json
+        from datetime import datetime
+
+        if not flagged_at:
+            flagged_at = datetime.now().isoformat()
+
+        evidence_str = json.dumps(evidence_ids) if evidence_ids else "[]"
+
+        with self._conn() as conn:
+            conn.execute(
+                """
+                INSERT INTO memory_flags (memory_id, flag_type, reason, flagged_at, evidence_ids)
+                VALUES (?, ?, ?, ?, ?)
+                """,
+                (memory_id, flag_type, reason, flagged_at, evidence_str)
+            )
+
+    def propose_quarantine(self, memory_ids: list[str], reason: str,
+                          proposed_at: str = None) -> int:
+        """提议隔离某些记忆条目（W9-W12新增）"""
+        import json
+        from datetime import datetime
+
+        if not proposed_at:
+            proposed_at = datetime.now().isoformat()
+
+        memory_ids_str = json.dumps(memory_ids)
+
+        with self._conn() as conn:
+            conn.execute(
+                """
+                INSERT INTO quarantine_proposals (memory_ids, reason, proposed_at)
+                VALUES (?, ?, ?)
+                """,
+                (memory_ids_str, reason, proposed_at)
+            )
+            return conn.execute("SELECT last_insert_rowid()").fetchone()[0]
+
+    def confirm_quarantine(self, proposal_id: int, confirmed_by: str,
+                          confirmed_at: str = None) -> bool:
+        """确认隔离提议（W9-W12新增）"""
+        import json
+        from datetime import datetime
+
+        if not confirmed_at:
+            confirmed_at = datetime.now().isoformat()
+
+        with self._conn() as conn:
+            # 获取提议的ID列表
+            proposal_row = conn.execute(
+                "SELECT memory_ids FROM quarantine_proposals WHERE id = ?",
+                (proposal_id,)
+            ).fetchone()
+
+            if not proposal_row:
+                return False
+
+            memory_ids = json.loads(proposal_row["memory_ids"])
+
+            # 更新记忆条目的状态
+            placeholders = ','.join(['?' for _ in memory_ids])
+            conn.execute(
+                f"UPDATE long_term_memory SET status = 'quarantined' WHERE memory_id IN ({placeholders})",
+                memory_ids
+            )
+
+            # 更新提议状态
+            conn.execute(
+                """
+                UPDATE quarantine_proposals
+                SET confirmed_at = ?, confirmed_by = ?
+                WHERE id = ?
+                """,
+                (confirmed_at, confirmed_by, proposal_id)
+            )
+
+            return True
+
+    def list_quarantined_memory_ids(self) -> list[str]:
+        """已隔离、不再进入召回集的 memory_id。"""
+        with self._conn() as conn:
+            rows = conn.execute(
+                "SELECT memory_id FROM long_term_memory WHERE status = 'quarantined' ORDER BY memory_id"
+            ).fetchall()
+        return [r["memory_id"] for r in rows]
 
     @staticmethod
     def _row_to_chunk(r: sqlite3.Row) -> Chunk:
