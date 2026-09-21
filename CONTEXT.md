@@ -8,6 +8,10 @@ FreshLatch 的术语表。FreshLatch 把已签发主张从「曾经为真」改�
 一条已被签发过的陈述(如「专业版定价 299 元/席/月」),是复验的对象。
 _Avoid_: 结论、论点、statement
 
+**登记维度 (registered dimension)**:
+主张签发时由签发人登记的维度标签(封闭枚举同 focus 六值),住在签发卷宗结构里,不注入复验模型上下文;是规则闸维度跨检的比对锚(ADR-0011)。签发时未登记的主张,stale 路径维度防线回落 Auditor 语义核对(ADR-0010 不变量 7)。
+_Avoid_: 主张维度、维度标签
+
 **T0 / T1 语料**:
 T0 是主张签发时的原始文档快照;T1 是复验时刻的新文档快照。判定以 T1 原文为 ground truth。
 _Avoid_: 旧库/新库、源数据/目标数据
@@ -65,7 +69,7 @@ _Avoid_: 异议备注、反对票
 ## 闸与人审
 
 **规则闸 (Gate)**:
-纯函数/Workflow 层,强制执行不变量:`stale` / `unknown` 不得绿灯、无 `t1_evidence_ids` 不得 `fresh`、checksum 对不上不得 fresh/续命、stale 必须携带可点回 T1 反证 id、stale 反证不得为纯元陈述、fresh 需双判一致(`auditor_verdict` 在场且非 dissent,ADR-0009)、stale 反证经 Auditor 维度核对异议时打回落 unknown + 异议记录(ADR-0010)。绿灯唯一出口。
+纯函数/Workflow 层,强制执行不变量:`stale` / `unknown` 不得绿灯、无 `t1_evidence_ids` 不得 `fresh`、checksum 对不上不得 fresh/续命、stale 必须携带可点回 T1 反证 id、stale 反证不得为纯元陈述、fresh 需双判一致(`auditor_verdict` 在场且非 dissent,ADR-0009)、stale 反证经 Auditor 维度核对异议时打回落 unknown + 异议记录(ADR-0010)、登记维度 ≠ 反证自标维度时机械跨检打回 unknown + 机械比对异议(ADR-0011)。绿灯唯一出口。
 _Avoid_: 校验器、检查器
 
 **元陈述 (meta-statement)**:
