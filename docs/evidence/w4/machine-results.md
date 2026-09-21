@@ -64,5 +64,7 @@ seed=33:
 
 ## 假绿对照(control)
 
+> **作废 / 不可引用**:与 `false-green-control.md` 同一时刻(`2026-09-21T14:22:42Z`)写入的摘要,不得作为对照读数引用。备忘:`docs/evidence/w4/false-green-control-20260921-void.md`。
+
 - must_stale 假绿 1/4;对照成立: ❌
 - must_unknown 盲判绿: 1 条(c9)
