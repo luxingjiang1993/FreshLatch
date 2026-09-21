@@ -12,6 +12,8 @@ from __future__ import annotations
 
 from freshlatch.evidence import check_evidence_ids, valid_as_of
 from freshlatch.gates.meta_gate import META_ONLY_MESSAGE, is_meta_only_disproof
+from freshlatch.gates.rule_gate import (ERR_DIMENSION_CROSSCHECK_MISMATCH,
+                                        dimension_crosscheck_mismatch)
 from freshlatch.models import Claim
 from freshlatch.roles.auditor import Auditor
 from freshlatch.roles.critic import Critic
@@ -42,6 +44,7 @@ LEAD_PERSONA = """你是 Lead Reverifier,FreshLatch 的复验主官。你的任�
 - 合取主张(「A 与 B」式)按签发原文整体判定:T1 明确推翻任一前提 ⇒ 整体 stale;其余前提未推翻或未复测,不构成判 fresh 的理由。
 - fresh 的唯一含义是签发原文此刻仍成立;不得改验「主张的新版本」——被新事实取代或改写的主张是 stale,不是 fresh。
 - 采纳 Critic 反证前必须独立核对其锚定的前提/度量维度与主张签发原文是否一致:主张讲成本,竞品定价/月费不是成本的反证(定价≠成本,属「无因果关系并列」式干扰);维度不符不得据此改判 stale,更不得未核对即镜像 Critic 框架下判定。
+- mark_stale 被机械跨检打回(反证自标维度与签发登记维度不符,ADR-0012)后:不得直接 finish_reverify;回 T1 找与主张签发原文同维度的证据——有支持则 reverify_claim(fresh),无覆盖则 mark_gap + reverify_claim(unknown) 显式收口;登记维度值不会向你披露;本主张本次会话维度打回额度仅 1 次。
 - 完整教义(「约束与纠正」对照表)单一真相在 skills/reverify/SKILL.md,正常由 Runner 整份注入本提示;若你未见该对照表,说明注入失败,仍须按本内联纪律执行。"""
 
 # mark_stale 受理回执确定性携带的维度核对指令(#19 子决策 3):
@@ -51,6 +54,41 @@ MARK_STALE_DIMENSION_NOTE = (
     "mark_stale 受理自查(每条必显,不依赖自觉):该反证锚定的前提/度量维度与主张签发原文是否一致?"
     "定价≠成本、客单价≠毛利、覆盖率≠渗透率等「无因果关系并列」不构成推翻;"
     "维度不符不得据此判 stale,应放弃本次判定并回到 T1 原文找同维度证据,或走 mark_gap + unknown。"
+)
+
+# -- ADR-0012 受理层维度预检(#27 grilling 拍板,Anthropic 评审修订;以下三段文案逐字锁档) --
+# 恢复额度:每 Lead 会话每主张,mark_stale 被维度预检打回至多 1 次(#27/Q4)——
+# 封死「6 枚举当 Oracle 拟合登记维度」的探测通道(至多试 2 值,枚举空间 6,探测不完),
+# 同时防烧步数死循环;步数预算(lead_max_steps)仍是兜底,额度是显式边界。
+DIMENSION_RECOVERY_QUOTA = 1
+
+# 预检打回(首次,额度内):只回「不符」事实与 Lead 自标的 Y,登记维度 X 的值不披露
+# (ADR-0011 §2 红线:对复验模型不可见;知道「有锚且不符」无锚可照,照锚填字段不成立)。
+# {dim} 在调用处填反证自标维度。
+MARK_STALE_DIMENSION_PRECHECK = (
+    "mark_stale 打回[DIMENSION_CROSSCHECK_MISMATCH]: 反证自标维度 {dim} 与签发登记维度不符"
+    "(机械跨检预检,ADR-0012;登记维度值不向你披露)。本次反证未受理、未落档、未触发 Auditor。"
+    "正确动作:回到 T1 检索与主张签发原文度量维度一致的证据——"
+    "有同维度支持证据 → reverify_claim(claim_id, \"fresh\", [同维度 T1 证据 id]);"
+    "确实无同维度覆盖 → mark_gap(description) 后 reverify_claim(claim_id, \"unknown\", []) 显式收口。"
+    "异议未清时 finish_reverify 会被拒;本主张本次会话 mark_stale 维度打回额度仅 "
+    + str(DIMENSION_RECOVERY_QUOTA) + " 次。"
+)
+
+# 额度用尽后再判 mark_stale(且维度仍不符)→ 硬拒,强制显式收口。
+MARK_STALE_OBJECTION_QUOTA_REFUSAL = (
+    "mark_stale 拒绝: 本主张本次会话已因维度异议打回 "
+    + str(DIMENSION_RECOVERY_QUOTA) + " 次(恢复额度,ADR-0012),"
+    "不得再次 mark_stale。请 reverify_claim(fresh,[同维度 T1 证据])"
+    "或 reverify_claim(unknown) 显式收口。"
+)
+
+# 异议未清时 finish_reverify 机械拒绝(#27/Q3;flag 生命周期:打回置位,
+# reverify_claim/mark_stale 受理即清——0/6 教训:强制性不住提示词,住闸)。
+FINISH_OBJECTION_REFUSAL = (
+    "finish_reverify 拒绝: 存在未处理的维度异议(本次 mark_stale 被机械跨检预检打回,"
+    "ADR-0012)。必须以 reverify_claim 显式收口:T1 有同维度支持证据 → fresh;"
+    "无同维度覆盖 → unknown。异议在 reverify_claim 受理时清除。"
 )
 
 
@@ -70,6 +108,10 @@ class LeadReverifier:
         self._seen_evidence: set[str] = set()  # 本会话 retrieve 返回过的 evidence_id(#16 白名单)
         self._seen_blocks: dict[str, str] = {}  # evidence_id → 块文本(Auditor 证据包原料,#22)
         self._critic_spawned = False  # 本会话是否已派驻过 Critic(§8.5 checkpoint 去重)
+        # ADR-0012 维度异议状态:受理层预检打回时置位 {error_code, stale_dimension,
+        # evidence_ids};任何判定成功受理(reverify_claim / mark_stale)即清;
+        # 置位期间 finish_reverify 机械拒绝。存活至 run() 结束 → decision.dimension_objection。
+        self._objection: dict | None = None
 
     def run(self) -> ClaimDecision:
         self.ctx.gaps = []  # 缺口按主张隔离,禁止跨主张渗漏
@@ -85,6 +127,7 @@ class LeadReverifier:
             on_event=lambda ev: self.ctx.emit({"type": "lead_step", "claim_id": self.claim.claim_id, **ev}),
         )
         self.steps_used = loop.steps_used
+        self.decision.dimension_objection = self._objection  # ADR-0012:未清异议随判定移交闸侧挂卡
         self.ctx.emit({"type": "lead_loop_end", "claim_id": self.claim.claim_id,
                        "steps_used": loop.steps_used, "finished": loop.finished})
         if not self.decision.reason and self.decision.status == "unknown":
@@ -115,11 +158,26 @@ class LeadReverifier:
 
     def _build_task(self) -> str:
         ev = ", ".join(self.claim.t0_evidence_ids) or "(无)"
-        return (
+        task = (
             f"待复验主张 {self.claim.claim_id}: {self.claim.statement}\n"
             f"签发时(T0)证据: {ev}\n"
-            "请按工作方式逐轮复验,最终以工具落判定。"
         )
+        if self.claim.dissent:
+            # ADR-0012 跨轮异议输入(#27/Q5):上轮 unknown + 异议记录的主张,下轮复验时
+            # 注入异议摘要引导同维度再检索。**只注结构化 kind 的通用文案,不注原始
+            # reason**——闸层机械异议记录含登记维度值(ADR-0011 异议形态原文),原样
+            # 注入即红线泄漏;eval 每遍从卷宗现载 dissent=None,本注入对评测路径零行为变化。
+            kind_label = {
+                "mechanical_crosscheck": "机械跨检:反证自标维度与签发登记维度不符",
+                "mechanical_precheck": "机械跨检预检:反证自标维度与签发登记维度不符",
+                "auditor_semantic": "Auditor 语义异议:反证维度核对未通过",
+            }.get(self.claim.dissent.get("kind"), "维度异议")
+            task += (
+                f"上轮未决异议({kind_label}),主张曾落 unknown 并随黄卡进过人审。\n"
+                "本次复验要求:先回到 T1 检索与主张签发原文度量维度一致的证据再下判定;"
+                "若仍只有维度不符的反证,不得据此判 stale。\n"
+            )
+        return task + "请按工作方式逐轮复验,最终以工具落判定。"
 
     # -- 工具执行(fail-closed:只挂白名单内的可调用)----------------------------
 
@@ -196,6 +254,7 @@ class LeadReverifier:
             evidence_ids = [str(e) for e in args.get("evidence_ids") or []]
         if status == "stale":
             return {"error": "stale 请用 mark_stale(必须含显式因果句)"}
+        self._objection = None  # ADR-0012:判定受理即清维度异议(finish 闸放行)
         self.decision.status = status
         self.decision.evidence_ids = evidence_ids
         if status == "unknown" and self.ctx.gaps:
@@ -226,10 +285,28 @@ class LeadReverifier:
         if dimension not in FOCUS_DIMENSIONS:
             return {"error": "dimension 只能是 %s 之一;收到: %r"
                               % ("/".join(FOCUS_DIMENSIONS), dimension)}
+        # ADR-0012 受理层维度预检(#27):机械跨检先于 Auditor 触发,调闸层同一纯函数
+        # (单一真相不复制)。登记维度值不进错误文案(ADR-0011 红线);打回不落判定、
+        # 零 Auditor 调用——#26 的同错确认(dimension_match=true)不再喂给 Lead。
+        if dimension_crosscheck_mismatch(self.claim.dimension, dimension):
+            if self._objection is not None:
+                self.ctx.emit({"type": "dimension_precheck_quota_refusal",
+                               "claim_id": self.claim.claim_id,
+                               "stale_dimension": dimension})
+                return {"error": MARK_STALE_OBJECTION_QUOTA_REFUSAL}
+            self._objection = {"error_code": ERR_DIMENSION_CROSSCHECK_MISMATCH,
+                               "stale_dimension": dimension,
+                               "evidence_ids": list(ids or [])}
+            self.ctx.emit({"type": "dimension_precheck_block", "auto": True,
+                           "claim_id": self.claim.claim_id,
+                           "stale_dimension": dimension,
+                           "attempt": 1, "quota": DIMENSION_RECOVERY_QUOTA})
+            return {"error": MARK_STALE_DIMENSION_PRECHECK.format(dim=dimension)}
         # ADR-0010:受理(三重硬校验通过、落档之前)自动触发 Auditor 单轮判定——
         # 强制性住在触发器(c2 同构:自信地错恰是自愿派驻最不会触发的时刻)。
         audit = self._auto_auditor_checkpoint(path="stale", reason=reason,
                                               evidence_ids=ids or [])
+        self._objection = None  # ADR-0012:新反证过跨检受理即清旧异议
         self.decision.status = "stale"
         self.decision.reason = reason
         self.decision.evidence_ids = ids or []
@@ -334,5 +411,7 @@ class LeadReverifier:
                         "核对通过也要用你自己的 reason 与证据 id 落 mark_stale,不得镜像 Critic 框架"}
 
     def _t_finish(self, args: dict) -> dict:
+        if self._objection is not None:  # ADR-0012:异议未清,显式 reverify_claim 收口
+            return {"error": FINISH_OBJECTION_REFUSAL}
         self._finished = True
         return {"finished": True}

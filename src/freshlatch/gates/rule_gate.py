@@ -17,6 +17,19 @@ from freshlatch.models import AsOf, Claim
 
 GREEN_STATUSES = ("fresh", "renew")
 
+# ADR-0011 不变量 8 / ADR-0012 受理层预检共用的 error_code(单一真相,两处不得各写字面量)。
+ERR_DIMENSION_CROSSCHECK_MISMATCH = "DIMENSION_CROSSCHECK_MISMATCH"
+
+
+def dimension_crosscheck_mismatch(registered_dimension: str | None,
+                                  stale_dimension: str | None) -> bool:
+    """登记维度 ≠ 反证自标维度(ADR-0011 不变量 8;ADR-0012 受理层预检调本函数,
+    单一真相在此——受理层不得复制比对逻辑)。两维任一缺失 = 无锚可比对,不拦
+    (回落不变量 7,fail-soft 不憋死真 stale)。"""
+    return (registered_dimension is not None
+            and stale_dimension is not None
+            and registered_dimension != stale_dimension)
+
 
 @dataclass
 class GateDecision:
@@ -116,11 +129,13 @@ def rule_gate(claim: Claim, decision: GateDecision, ctx: GateContext) -> GateRes
     if decision.status == "stale":
         # 8. 维度机械跨检(ADR-0011):登记维度 ≠ 反证自标维度 → 纯字符串比对打回,
         # 路由 unknown + 机械比对异议记录(复用 arbitrate_stale_mark 形态,runner 侧挂卡);
-        # 两维任一缺失 → 跳过,回落不变量 7(fail-soft 回丙′,真 stale 不被未登记主张憋死)
-        if (decision.registered_dimension is not None
-                and decision.stale_dimension is not None
-                and decision.registered_dimension != decision.stale_dimension):
-            return GateResult(allowed=False, green=False, error_code="DIMENSION_CROSSCHECK_MISMATCH",
+        # 两维任一缺失 → 跳过,回落不变量 7(fail-soft 回丙′,真 stale 不被未登记主张憋死)。
+        # ADR-0012:Lead 主链已由 mark_stale 受理层预检(同一比对函数)先行拦截,
+        # 本层对 Lead 路径为兜底;预检绕过(非 Lead 入口)时本层仍是唯一拦截。
+        if dimension_crosscheck_mismatch(decision.registered_dimension,
+                                         decision.stale_dimension):
+            return GateResult(allowed=False, green=False,
+                              error_code=ERR_DIMENSION_CROSSCHECK_MISMATCH,
                               reason=f"机械跨检:登记维度 {decision.registered_dimension} ≠ "
                                      f"反证自标维度 {decision.stale_dimension}(ADR-0011 不变量 8,"
                                      "纯字符串比对,零模型意见),路由 unknown + 机械比对异议记录")

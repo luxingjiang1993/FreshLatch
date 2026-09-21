@@ -24,4 +24,5 @@ class Claim:
     validity_basis: dict | None = None  # {doc_id, checksum},W5 起续命写入
     voided: bool = False  # 人的决定(ADR-0006 §3);与 status 的机器判定并存不互斥
     voided_at: str | None = None
-    dissent: dict | None = None  # 异议记录(ADR-0009/0010):{auditor_verdict, reason, evidence_ids}
+    dissent: dict | None = None  # 异议记录(ADR-0009/0010/0012):{kind, auditor_verdict, reason, evidence_ids}
+    # kind:auditor_semantic(不变量7)/mechanical_crosscheck(不变量8)/mechanical_precheck(ADR-0012 受理层)

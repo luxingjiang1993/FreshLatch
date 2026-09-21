@@ -336,11 +336,13 @@ def test_invariant8_not_applicable_to_fresh():
 # -- 4. runner 端到端:机械比对异议挂卡 -----------------------------------------------------
 
 
-def test_runner_mechanical_dissent_on_crosscheck_reject(tmp_path):
-    """端到端:mark_stale 错配维度 → unknown + 机械比对异议(复用 arbitrate_stale_mark 形态)。
+def test_runner_precheck_blocks_mismatch_end_to_end(tmp_path):
+    """端到端(ADR-0012 后形态):mark_stale 错配维度 → 受理层预检打回,不再到闸。
 
-    Auditor 维度相符(dimension_match=True,不变量 7 不拦)——拦截只能来自不变量 8,
-    异议内容 = 纯结构比对事实,零模型意见。
+    Lead 主链上不变量 8 的闸层拦截已被受理层预检前置(同一比对函数/同一
+    error_code);模型被打回后若未显式收口(脚本直接收尾),落 unknown +
+    mechanical_precheck 异议。本测试即「闸层不变量 8 对 Lead 路径转兜底」
+    的登记锚:拦截点在受理层,归因看 dimension_precheck_block 事件。
     """
     from freshlatch.runner import Runner
 
@@ -349,9 +351,7 @@ def test_runner_mechanical_dissent_on_crosscheck_reject(tmp_path):
         _Msg(tool_calls=[_tc("mark_stale", {"claim_id": "c5", "reason": REASON,
                                              "evidence_ids": ["t0-x#p2@T1"],
                                              "dimension": "competitor_pricing"})]),
-        _aud({"status": "stale", "reason": "反证成立", "dimension_match": True}),
-        _Msg(tool_calls=[_tc("finish_reverify", {})]),
-        _Msg(content="复验结束"),
+        _Msg(content="复验结束"),  # 打回后模型直接文本收尾(finish 被拒前的脚本形态)
     ])
     runner = Runner(_store(), llm)
     claim = Claim(claim_id="c5", statement="s", t0_evidence_ids=[],
@@ -359,8 +359,31 @@ def test_runner_mechanical_dissent_on_crosscheck_reject(tmp_path):
     runner.run([claim], trajectory_dir=tmp_path)
 
     assert claim.status == "unknown"
+    assert claim.dissent is not None, "预检打回且未显式收口 → 挂机械预检异议(黄卡不断供)"
+    assert claim.dissent["kind"] == "mechanical_precheck"
+    assert "ADR-0012" in claim.dissent["reason"]
+    blocks = [e for e in runner.ctx.events if e["type"] == "dimension_precheck_block"]
+    assert len(blocks) == 1 and blocks[0]["stale_dimension"] == "competitor_pricing"
+    assert not any(e["type"] == "auditor_spawn" for e in runner.ctx.events), \
+        "预检先于 Auditor:打回零 Auditor 调用"
+
+
+def test_runner_gate_layer_crosscheck_dissent_backstop():
+    """闸层不变量 8 兜底仍有效:绕过受理层的 stale 判定(判定包直注错配维度)到 _finalize
+    → unknown + mechanical_crosscheck 异议(ADR-0011 形态不动;ADR-0012 登记为兜底)。"""
+    from freshlatch.runner import ClaimDecision, Runner
+
+    claim = Claim(claim_id="c5", statement="s", t0_evidence_ids=[],
+                  dimension="cost_model")
+    decision = ClaimDecision(claim_id="c5", status="stale", reason=REASON,
+                             evidence_ids=["t0-x#p2@T1"],
+                             auditor_verdict="stale", auditor_dimension_match=True,
+                             stale_dimension="competitor_pricing")
+    Runner(InMemoryStore(), mode="eval")._finalize(claim, decision)
+    assert claim.status == "unknown"
     assert "DIMENSION_CROSSCHECK_MISMATCH" in claim.reason
-    assert claim.dissent is not None, "机械跨检打回必须挂机械比对异议"
+    assert claim.dissent is not None
+    assert claim.dissent["kind"] == "mechanical_crosscheck"
     assert claim.dissent["reason"].startswith("[机械跨检]")
     assert "cost_model" in claim.dissent["reason"]
     assert "competitor_pricing" in claim.dissent["reason"]

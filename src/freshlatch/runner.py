@@ -64,6 +64,9 @@ class ClaimDecision:
     auditor_reason: str = ""
     auditor_dimension_match: bool | None = None  # ADR-0010:False = 维度异议
     stale_dimension: str | None = None  # ADR-0011:反证自标维度(mark_stale 必填 dimension 字段)
+    dimension_objection: dict | None = None  # ADR-0012:受理层维度预检打回记录
+    # {error_code, stale_dimension, evidence_ids};Lead 未显式收口(reverify_claim/mark_stale
+    # 受理即清)时由 _finalize 落机械比对异议(黄卡不断供)
 
 
 @dataclass
@@ -165,6 +168,7 @@ class Runner:
         mark_stale × Auditor fresh → stale + 异议记录。Auditor 无任何路径把状态改绿。
         """
         from freshlatch.gates.rule_gate import (
+            ERR_DIMENSION_CROSSCHECK_MISMATCH,
             GateContext,
             GateDecision,
             arbitrate_fresh,
@@ -227,19 +231,33 @@ class Runner:
             _, dissent = arbitrate_stale_mark(decision.auditor_verdict,
                                               decision.auditor_dimension_match)
             if dissent:
-                claim.dissent = {"auditor_verdict": decision.auditor_verdict,
+                claim.dissent = {"kind": "auditor_semantic",
+                                 "auditor_verdict": decision.auditor_verdict,
                                  "reason": decision.auditor_reason,
                                  "evidence_ids": list(decision.evidence_ids)}
-            elif gate.error_code == "DIMENSION_CROSSCHECK_MISMATCH":
+            elif gate.error_code == ERR_DIMENSION_CROSSCHECK_MISMATCH:
                 # ADR-0011 不变量 8:机械跨检打回,异议 = 纯结构比对事实(零模型意见),
                 # 复用 arbitrate_stale_mark 异议形态(随黄卡进 HumanLatch)
-                claim.dissent = {"auditor_verdict": decision.auditor_verdict,
+                claim.dissent = {"kind": "mechanical_crosscheck",
+                                 "auditor_verdict": decision.auditor_verdict,
                                  "reason": (f"[机械跨检] 登记维度 {claim.dimension} ≠ "
                                             f"反证自标维度 {decision.stale_dimension}"
                                             "(纯字符串比对,零模型意见;ADR-0011 不变量 8)"),
                                  "evidence_ids": list(decision.evidence_ids)}
         else:
             claim.status = "unknown"
+            if decision.dimension_objection and not claim.dissent:
+                # ADR-0012:受理层维度预检打回后 Lead 未显式收口(soft_close 兜底
+                # 或未过双判),机械比对异议照挂——异议记录是黄卡进 HumanLatch 的
+                # 合法输入,不因拦截点上移而断供(登记维度值仍不披露)。
+                obj = decision.dimension_objection
+                claim.dissent = {"kind": "mechanical_precheck",
+                                 "auditor_verdict": decision.auditor_verdict,
+                                 "reason": (f"[机械跨检预检 ADR-0012] 反证自标维度 "
+                                            f"{obj['stale_dimension']} ≠ 签发登记维度"
+                                            "(值不披露),mark_stale 未受理、零 Auditor 调用;"
+                                            "Lead 未显式收口,路由 unknown"),
+                                 "evidence_ids": list(obj.get("evidence_ids", []))}
         self.ctx.emit({"type": "claim_result", "claim_id": claim.claim_id,
                        "status": claim.status, "reason": claim.reason,
                        "auditor_verdict": decision.auditor_verdict})

@@ -400,8 +400,9 @@ def test_mark_stale_dimension_mismatch_routed_unknown_with_dissent():
                       auditor_dimension_match=False)
     assert claim.status == "unknown"
     assert "DIMENSION_MISMATCH" in claim.reason
-    assert claim.dissent == {"auditor_verdict": "stale", "reason": DISSENT_REASON,
-                             "evidence_ids": [EID]}, "异议记录必须结构化(Auditor 判定+理由+证据 id)"
+    assert claim.dissent == {"kind": "auditor_semantic", "auditor_verdict": "stale",
+                             "reason": DISSENT_REASON,
+                             "evidence_ids": [EID]}, "异议记录必须结构化(kind+Auditor 判定+理由+证据 id)"
 
 
 def test_mark_stale_auditor_fresh_keeps_stale_with_dissent():
