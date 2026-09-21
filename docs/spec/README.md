@@ -41,3 +41,4 @@ W4 开工前决策完备的实施规格:复验主链(W1–W2)、Critic 与评测
 | 模型冒烟(qwen-flash go) | #2 | 《dashscope模型冒烟验证.md》 |
 | 领域词表 | — | `CONTEXT.md` |
 | 立项依据(冲突以切片为准) | — | `docs/product/FreshLatch-立项切片.md` |
+| 双判一致;Auditor 在场 = 闸层不变量(废止 Lead `spawn_auditor`) | #20,#25,#48 | ADR-0009、ADR-0010;规格回填见 `03-工具表与白名单.md` §3.6 |
