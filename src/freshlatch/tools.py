@@ -7,12 +7,12 @@
 from __future__ import annotations
 
 FOCUS_DIMENSIONS: tuple[str, ...] = (
-    "competitor_pricing",   # 竞品价格
-    "regulatory_stance",    # 监管口径
-    "interview_reversal",   # 访谈改口
-    "cost_model",           # 成本模型
-    "market_structure",     # 市场结构
-    "tech_ecosystem",       # 技术生态
+    "competitor_pricing",   # 竞品价格:主张前提建立在竞品定价/价格对标数据上;
+    "regulatory_stance",    # 监管口径:主张前提建立在监管政策/官方口径上;
+    "interview_reversal",   # 访谈改口:主张前提建立在访谈/纪要/口头口径上(机制维度);
+    "cost_model",           # 成本模型:主张前提建立在成本/费用结构测算上;
+    "market_structure",     # 市场结构:主张前提建立在市场规模/格局/份额判断上;
+    "tech_ecosystem",       # 技术生态:主张前提建立在技术栈/生态位判断上;
 )
 
 # -- 复验工具 OpenAI schema(§3.1)------------------------------------------------
@@ -57,7 +57,10 @@ _TOOL_DEFS: dict[str, dict] = {
          "evidence_ids": {"type": "array", "items": {"type": "string"},
                           "description": "推翻性 T1 证据 id,retrieve 返回过什么才能引用什么"},
          "dimension": {"type": "string",
-                       "description": f"本反证自身攻击的维度:{'/'.join(FOCUS_DIMENSIONS)}"}},
+                       "description": f"本反证自身攻击的维度(前提出处语义):{'/'.join(FOCUS_DIMENSIONS)}. "
+                                    "维度 = 本反证所攻击之主张前提的证据出处类型,不是反证内容的主题词。"
+                                    "判法:问『原主张凭什么为真?』——答所依赖的证据类型即维度。"
+                                    "interview_reversal 是机制维度:凡证据出自访谈/纪要/口头口径,无论其内容谈的是定价、成本还是监管,一律填 interview_reversal。"}},
         ["claim_id", "reason", "evidence_ids", "dimension"]),
     "mark_gap": _fn(
         "mark_gap", "记录证据缺口(T1 无覆盖、证据不足)",
