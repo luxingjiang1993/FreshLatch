@@ -61,8 +61,12 @@ fresh 的唯一路径:Lead 与 Auditor 判定一致(全 fresh 才绿)。含 `sta
 _Avoid_: 双人复核、双重确认
 
 **异议记录 (dissent)**:
-Auditor 对 Lead 的 stale/unknown 判定给出的反对意见(结构化:Auditor 判定 + 理由 + 证据 id),挂在复验单该主张卡片下,随红/黄卡进 HumanLatch,是人审续命的合法输入之一。自由文本异议不进复验单。
+对 Lead 的 stale 判定给出的反对意见(结构化:kind + Auditor 判定/机械事实 + 理由 + 证据 id),挂在复验单该主张卡片下,随红/黄卡进 HumanLatch,是人审续命的合法输入之一。kind 三分:auditor_semantic(Auditor 语义异议,ADR-0010 不变量 7)/ mechanical_crosscheck(闸层机械跨检,ADR-0011 不变量 8)/ mechanical_precheck(mark_stale 受理层预检,ADR-0012)。自由文本异议不进复验单;跨轮注入复验上下文只注 kind 通用文案,机械异议原文含登记维度值不得原样注入(ADR-0012)。
 _Avoid_: 异议备注、反对票
+
+**同维度复验 (same-dimension reverify)**:
+被维度异议打回后的恢复路径:Lead 回到 T1 检索与主张签发原文度量维度一致的证据,再走 reverify_claim(fresh) 过双判一致;无同维度覆盖则显式 unknown 收口。每 Lead 会话每主张 mark_stale 维度打回额度 1 次(封死枚举探测),异议未清时 finish_reverify 机械拒绝(ADR-0012)。fresh 仍唯一经双判一致,本路径不引入任何放行或降门槛。
+_Avoid_: 二次复验、重判
 
 **Forensic (记忆刑侦)**:
 真 Agent,只审本课题长期记忆:找死事实、互斥条目、无 `source_ref` 条目;不得改主张、不得放行、不得删除文件。
@@ -70,7 +74,7 @@ _Avoid_: 异议备注、反对票
 ## 闸与人审
 
 **规则闸 (Gate)**:
-纯函数/Workflow 层,强制执行不变量:`stale` / `unknown` 不得绿灯、无 `t1_evidence_ids` 不得 `fresh`、checksum 对不上不得 fresh/续命(本期**留位未启用**:语料 checksum 全空、store 无读口、fresh 路径不构造 `validity_basis` 故该半边结构性空转;激活契约与「checksum_fn 不得读同一个库列」的套套逻辑陷阱见 docs/research/checksum链激活契约.md)、stale 必须携带可点回 T1 反证 id、stale 反证不得为纯元陈述、fresh 需双判一致(`auditor_verdict` 在场且非 dissent,ADR-0009)、stale 反证经 Auditor 维度核对异议时打回落 unknown + 异议记录(ADR-0010)、登记维度 ≠ 反证自标维度时机械跨检打回 unknown + 机械比对异议(`DIMENSION_CROSSCHECK_MISMATCH`,ADR-0011;两维任一缺失回落 Auditor 语义核对)、续命(renew)必须带 ≥1 个锚 T1 的 evidence_id(ADR-0006 §4;renew 是人审 L0 出口,不受双判一致约束)。绿灯唯一出口。
+纯函数/Workflow 层,强制执行不变量:`stale` / `unknown` 不得绿灯、无 `t1_evidence_ids` 不得 `fresh`、checksum 对不上不得 fresh/续命(本期**留位未启用**:语料 checksum 全空、store 无读口、fresh 路径不构造 `validity_basis` 故该半边结构性空转;激活契约与「checksum_fn 不得读同一个库列」的套套逻辑陷阱见 docs/research/checksum链激活契约.md)、stale 必须携带可点回 T1 反证 id、stale 反证不得为纯元陈述、fresh 需双判一致(`auditor_verdict` 在场且非 dissent,ADR-0009)、stale 反证经 Auditor 维度核对异议时打回落 unknown + 异议记录(ADR-0010)、登记维度 ≠ 反证自标维度时机械跨检打回 unknown + 机械比对异议(`DIMENSION_CROSSCHECK_MISMATCH`,ADR-0011;两维任一缺失回落 Auditor 语义核对;**受理层预检先行、闸层转兜底**,ADR-0012)、续命(renew)必须带 ≥1 个锚 T1 的 evidence_id(ADR-0006 §4;renew 是人审 L0 出口,不受双判一致约束)。绿灯唯一出口。
 _Avoid_: 校验器、检查器
 
 **元陈述 (meta-statement)**:
