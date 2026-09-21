@@ -10,6 +10,7 @@ _Avoid_: 结论、论点、statement
 
 **登记维度 (registered dimension)**:
 主张签发时由签发人登记的维度标签(封闭枚举同 focus 六值),住在签发卷宗结构里,不注入复验模型上下文;是规则闸维度跨检的比对锚(ADR-0011)。签发时未登记的主张,stale 路径维度防线回落 Auditor 语义核对(ADR-0010 不变量 7)。
+六枚举的统一语义 = 主张前提的证据出处类型,不是主题词:competitor_pricing 竞品定价数据 / regulatory_stance 监管口径 / interview_reversal 访谈·纪要·口头口径(机制维度,无论内容谈的是定价、成本还是监管) / cost_model 成本测算 / market_structure 市场格局 / tech_ecosystem 技术生态。判法:问「原主张凭什么为真?」——答所依赖的证据类型即维度(#31)。
 _Avoid_: 主张维度、维度标签
 
 **T0 / T1 语料**:
