@@ -18,8 +18,13 @@ def test_main_button_whitelist():
 
 
 def test_no_chat_main_box():
-    """红线 1:无聊天主框(无输入框/发送按钮类聊天形态)。"""
-    assert "<textarea" not in HTML_PAGE
+    """红线 1:无聊天主框(无输入框/发送按钮类聊天形态)。
+
+    #88 主张导入稿允许唯一粘贴面 textarea#claim-import-draft(复验单导入入口,不是聊天);
+    仍禁止聊天态 marker。
+    """
+    assert HTML_PAGE.count("<textarea") == 1
+    assert 'id="claim-import-draft"' in HTML_PAGE
     for marker in ("placeholder=\"输入", "发送", "chat-input", "message-input"):
         assert marker not in HTML_PAGE
 

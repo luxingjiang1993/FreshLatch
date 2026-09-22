@@ -36,6 +36,10 @@ _Avoid_: 记忆准确率、隔离率
 一次复验的主界面与产出物:每条主张的原文点回、判定、理由、人审动作。不是聊天框。
 _Avoid_: 报告、看板
 
+**主张导入稿 (Claim Import Draft)**:
+职人用 Markdown/粘贴进入的主张清单约定格式:每条以 `## claim_id` 起头、其后正文一段;缺 id 时系统分配 `c-import-N`。只读已签发主张,不做新调查。JSON docket 为高级入口。
+_Avoid_: 自由散文抽主张、一键 LLM 切分(首版不做)
+
 **evidence_id 时点格式**:
 检索层返回的证据标识,格式 `doc_id#anchor@as_of`(如 `t0-competitor-notes#p2@T1`)。`@` 后缀标明快照时点;判 fresh/stale 引用的证据必须锚 T1。Lead 引用 evidence_id 必须逐字来自本会话 retrieve 返回(白名单校验),不得编造。
 _Avoid_: 证据链接、出处编号
