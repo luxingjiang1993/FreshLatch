@@ -35,14 +35,17 @@
 8. **假绿仪器 C（仪器冒烟·对照成立 · #79）**
    > 假绿仪器 C（qwen-flash，temp=0.0，seed=None，n=1，C 预登记；私有多锚 p1+p2+p3 + 反默认-unknown 旁句）仅表明 must_stale 假绿 4/4（c1/c2/c3/c7 全 alive）→ 对照成立；不是一期评测闭合，不是判定层已愈，不是可改 `gold.json` / 通过线，也不是产品已愈假绿（对照成立只说明无工具基线打出假绿）；亦不改写旧预登记仪器对照不成立句。
 
-9. **总判（必挂）**
-   > 产品可运行（单测绿、UI 起、金标链跑通）。闸层可复现。K4/K5（demo）已过。旧预登记仪器对照不成立已冻结；假绿仪器 C 对照成立。不符合 W5–W8 全量验收通过。不得写成一期评测闭合。
+9. **主链抗假绿（产品侧冒烟·另条证明已过 · #85）**
+   > 主链抗假绿（qwen-flash，temp=0，seed=None，n=3，主链抗假绿预登记；入口 run_gold）仅表明 must_stale（c1/c2/c3/c7）判 fresh 合计为 0；以假绿仪器 C 对照成立为假绿可诱导前提；不是一期评测闭合，不是判定层已愈，不是产品已愈假绿的统计证明，也不改写 C / 旧仪器 / K3 / K6-4 已锁仅表明句。
+
+10. **总判（必挂）**
+   > 产品可运行（单测绿、UI 起、金标链跑通）。闸层可复现。K4/K5（demo）已过。旧预登记仪器对照不成立已冻结；假绿仪器 C 对照成立；主链抗假绿另条证明已过（仅表明句见上）。不符合 W5–W8 全量验收通过。不得写成一期评测闭合。
 
 ### 未过 / 对照不成立（登记句 · 分条）
 
 > 【作废 · #55】旧登记句「K4/K5：demo 层未实装，本图只登记…」自本决议起**不作摘引入口**。K4/K5 只许摘上方已过项「仅表明」句。旧文仍见 git 历史 / 关单前摘要快照，不得与本专节并行摘引。
 
-10. **新假绿对照（旧仪器·冻结只读 · 对照不成立 · #70）**
+11. **新假绿对照（旧仪器·冻结只读 · 对照不成立 · #70）**
    > 新假绿对照（qwen-flash，temp=0.0，seed=None，n=1，预登记仪器）仅表明 must_stale 假绿 0/4（c1 unknown / c2 unknown / c3 unknown / c7 unknown）→ 对照不成立且不作废；不是仪器已证明产品无假绿，也不是可放宽 4/4 alive，也不是一期评测闭合。
 
 ### 明确禁止
@@ -81,8 +84,9 @@
 | K7 收口 | demo | **部分过** | 单测绿 + UI 可起；收口包不再因 K4/K5 未实装而未闭合；K4/K5 demo 已过不使本行升格为全量验收或一期闭合；禁单独摘「部分过」当通过 |
 | 新假绿对照（旧仪器） | 仪器冒烟 | **对照不成立**（冻结只读） | must_stale 假绿 0/4；#70；不作废；不改写 |
 | 假绿仪器 C | 仪器冒烟 | **对照成立** | must_stale 假绿 4/4（c1/c2/c3/c7 全 alive）；#79；`report-20260922-171500`；不作废 |
+| 主链抗假绿 | 产品侧冒烟 | **过**（另条证明） | must_stale→fresh 合计 0（c1/c2/c3/c7 各 3/3 stale）；#85；见已过项「仅表明」句 |
 
-**总判**：产品**可运行**（单测绿、UI 起、金标链跑通）。闸层可复现。K4/K5（demo）已过。旧预登记仪器对照不成立已冻结；假绿仪器 C 对照成立。**不符合** W5–W8 全量验收通过。**不得**写成一期评测闭合。
+**总判**：产品**可运行**（单测绿、UI 起、金标链跑通）。闸层可复现。K4/K5（demo）已过。旧预登记仪器对照不成立已冻结；假绿仪器 C 对照成立；主链抗假绿另条证明已过。**不符合** W5–W8 全量验收通过。**不得**写成一期评测闭合。
 
 ## K3（统计层）
 
@@ -135,6 +139,20 @@ c5/c6/c9 在 15 遍中的背离（K3-2③必记）：c5 = fresh 3 / unknown 12�
 
 > 假绿仪器 C（qwen-flash，temp=0.0，seed=None，n=1，C 预登记；私有多锚 p1+p2+p3 + 反默认-unknown 旁句）仅表明 must_stale 假绿 4/4（c1/c2/c3/c7 全 alive）→ 对照成立；不是一期评测闭合，不是判定层已愈，不是可改 `gold.json` / 通过线，也不是产品已愈假绿（对照成立只说明无工具基线打出假绿）；亦不改写旧预登记仪器对照不成立句。
 
+## 主链抗假绿（产品侧冒烟·另条证明）
+
+- 预登记：`docs/evidence/w4/main-chain-anti-false-green-prereg.md`；入口 `run_gold`（非 control / control-c）
+- decoding：qwen-flash / temp=0.0 / seed=None / n=3
+- 主张集：c1/c2/c3/c7；各 3/3 `stale` → must_stale→fresh **合计 = 0** → **证明成立**（不作废；无 unparseable）
+- 原料：`reports/w5w8_acceptance/main_chain_anti_false_green/report-20260922.json`（及同名 `.md`；`instrument=main_chain_anti_false_green`）
+- 地图:[地图:产品侧主链抗假绿](https://github.com/luxingjiang1993/FreshLatch/issues/80)；首跑:[落盘:主链抗假绿另条证明跑与ACCEPTANCE](https://github.com/luxingjiang1993/FreshLatch/issues/85)
+- 首跑已过 → **不开落修票**；不得升格为一期评测闭合 / 判定层已愈 / 产品已愈假绿统计证明 / W5–W8 全量验收通过；不改写 C / 旧仪器 / K3 / K6-4 已锁仅表明句
+- 同包细账（不进本通过线）：must_fresh / must_unknown 有漏判，记报告即可
+
+**唯一允许摘引（主链抗假绿）**：
+
+> 主链抗假绿（qwen-flash，temp=0，seed=None，n=3，主链抗假绿预登记；入口 run_gold）仅表明 must_stale（c1/c2/c3/c7）判 fresh 合计为 0；以假绿仪器 C 对照成立为假绿可诱导前提；不是一期评测闭合，不是判定层已愈，不是产品已愈假绿的统计证明，也不改写 C / 旧仪器 / K3 / K6-4 已锁仅表明句。
+
 ## 金标 N=1 冒烟（非判据）
 
 - must_stale 4/4；must_fresh 0/4；must_unknown 3/4
@@ -142,7 +160,7 @@ c5/c6/c9 在 15 遍中的背离（K3-2③必记）：c5 = fresh 3 / unknown 12�
 
 ## 缺口（要过全量验收还需）
 
-1. （假绿对照缺口已由仪器 C 兑现：must_stale 4/4 alive → 对照成立；旧预登记仪器 0/4 不成立句冻结只读。对照成立 ≠ 产品已愈假绿 ≠ 一期评测闭合 ≠ W5–W8 全量验收通过。）
+1. （假绿对照缺口已由仪器 C 兑现：must_stale 4/4 alive → 对照成立；旧预登记仪器 0/4 不成立句冻结只读。主链抗假绿另条证明已过：must_stale→fresh=0。对照成立 / 主链冒烟过 ≠ 产品已愈假绿的统计证明 ≠ 一期评测闭合 ≠ W5–W8 全量验收通过。）
 
 ## 产物索引
 
@@ -155,7 +173,9 @@ c5/c6/c9 在 15 遍中的背离（K3-2③必记）：c5 = fresh 3 / unknown 12�
 | `reports/w5w8_acceptance/report-20260922-160056.json` | 旧假绿对照追跑（#70；旧仪器 canonical） |
 | `reports/w5w8_acceptance/report-20260922.json` | 旧假绿对照历史有效跑（#56；非 canonical） |
 | `reports/w5w8_acceptance/report-20260922-171500.json` | 假绿仪器 C 首跑（#79；对照成立） |
+| `reports/w5w8_acceptance/main_chain_anti_false_green/` | 主链抗假绿另条证明 n=3（#85；fresh=0） |
 | `scripts/run_k3_acceptance.py` | K3 批跑 |
 | `scripts/score_k6_4.py` | K6-4 计分 |
 | `src/freshlatch/eval/control.py` | 旧 `CONTROL_PROMPT` + 并行 `CONTROL_PROMPT_C` |
 | `docs/evidence/w4/false-green-control-c-prereg.md` | 仪器 C 预登记（只读锁定） |
+| `docs/evidence/w4/main-chain-anti-false-green-prereg.md` | 主链抗假绿预登记（只读锁定） |
