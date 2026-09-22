@@ -1,0 +1,41 @@
+{
+  "question": "DEM-7 观测课题:导出路径是否可走通?",
+  "store": "C:\\Users\\lj946\\AppData\\Local\\Temp\\dem7-0uq5b30_\\dem7.db",
+  "synthetic": true,
+  "claims": [
+    {
+      "claim_id": "c-fresh",
+      "statement": "仍成立主张",
+      "t0_evidence_ids": [],
+      "t1_evidence_ids": [
+        "t0-doc#p1@T1"
+      ],
+      "status": "fresh",
+      "reason": "T1 同口径仍成立",
+      "voided": false,
+      "voided_at": null
+    },
+    {
+      "claim_id": "c-void",
+      "statement": "已作废主张",
+      "t0_evidence_ids": [],
+      "t1_evidence_ids": [
+        "t0-doc#p2@T1"
+      ],
+      "status": "stale",
+      "reason": "T1 推翻原前提",
+      "voided": true,
+      "voided_at": "20260922-100000"
+    },
+    {
+      "claim_id": "c-gap",
+      "statement": "缺口主张",
+      "t0_evidence_ids": [],
+      "t1_evidence_ids": [],
+      "status": "unknown",
+      "reason": "",
+      "voided": false,
+      "voided_at": null
+    }
+  ]
+}
