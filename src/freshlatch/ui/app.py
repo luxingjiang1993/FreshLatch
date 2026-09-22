@@ -10,7 +10,7 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-from fastapi import FastAPI, Query
+from fastapi import FastAPI, File, Query, UploadFile
 from fastapi.responses import HTMLResponse, JSONResponse
 from pydantic import BaseModel
 
@@ -21,6 +21,7 @@ from freshlatch.runner import Runner, load_docket  # noqa: E402
 from freshlatch.sheet import project_claim  # noqa: E402
 from freshlatch.store.ingest import parse_document  # noqa: E402
 from freshlatch.store.sqlite_store import SQLiteStore  # noqa: E402
+from freshlatch.t1_source import T1SourceSession  # noqa: E402
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent.parent
 CORPUS = REPO_ROOT / "data" / "corpus"
@@ -39,10 +40,26 @@ EMPTY_LATCH = {"thread_id": None, "pending": []}  # 人审轮状态收口(不各
 app = FastAPI(title="FreshLatch 复验单")
 _state: dict = {"claims": [], "question": "", "trajectory": None, "running": False,
                 "latch": dict(EMPTY_LATCH)}
+_t1: T1SourceSession | None = None
 
 
 def _store() -> SQLiteStore:
     return SQLiteStore(REPO_ROOT / "data" / "freshlatch.db")
+
+
+def _t1_session() -> T1SourceSession:
+    """进程内 T1 来源三卡会话;测试可通过 _reset_t1_source 换店。"""
+    global _t1
+    if _t1 is None:
+        _t1 = T1SourceSession(_store(), corpus_root=CORPUS)
+    return _t1
+
+
+def _reset_t1_source(store: SQLiteStore | None = None) -> T1SourceSession:
+    """测试/重启入口:清空三卡状态并绑到给定 store。"""
+    global _t1
+    _t1 = T1SourceSession(store or _store(), corpus_root=CORPUS)
+    return _t1
 
 
 def _latch() -> HumanLatch:
@@ -75,6 +92,56 @@ def api_import() -> dict:
     return {"imported": len(docket.claims)}
 
 
+class PasteDraftRequest(BaseModel):
+    text: str
+
+
+@app.get("/api/t1-source")
+def api_t1_source() -> dict:
+    """T1 来源三卡状态投影(ADR-0016 / DEM-2)。"""
+    return _t1_session().snapshot()
+
+
+@app.post("/api/t1-source/paste")
+def api_t1_paste(req: PasteDraftRequest) -> JSONResponse:
+    """粘贴变更要点 → 仅草稿,未确认不得 retrieve / 续命。"""
+    result = _t1_session().save_paste_draft(req.text)
+    if not result.ok:
+        return JSONResponse({"error": result.error}, status_code=400)
+    return JSONResponse(_t1_session().snapshot())
+
+
+@app.post("/api/t1-source/confirm")
+def api_t1_confirm() -> JSONResponse:
+    """人点「确认入库」后才 ingest。"""
+    result = _t1_session().confirm_paste()
+    if not result.ok:
+        return JSONResponse({"error": result.error}, status_code=400)
+    return JSONResponse(_t1_session().snapshot())
+
+
+@app.post("/api/t1-source/synthetic")
+def api_t1_synthetic() -> JSONResponse:
+    """选用内置合成评测包(界面标明 synthetic)。"""
+    result = _t1_session().select_synthetic(CORPUS)
+    if not result.ok:
+        return JSONResponse({"error": result.error}, status_code=400)
+    return JSONResponse(_t1_session().snapshot())
+
+
+@app.post("/api/t1-source/upload")
+async def api_t1_upload(files: list[UploadFile] = File(...)) -> JSONResponse:
+    """上传 T1 语料包 → ingest 后可检索。"""
+    payload: list[tuple[str, str]] = []
+    for f in files:
+        raw = await f.read()
+        payload.append((f.filename or "upload.md", raw.decode("utf-8")))
+    result = _t1_session().ingest_upload_texts(payload)
+    if not result.ok:
+        return JSONResponse({"error": result.error}, status_code=400)
+    return JSONResponse(_t1_session().snapshot())
+
+
 @app.post("/api/reverify")
 def api_reverify() -> JSONResponse:
     """主按钮「开始复验」:端到端真主链(Lead 裸循环 + 规则闸),轨迹落盘。
@@ -84,6 +151,11 @@ def api_reverify() -> JSONResponse:
     """
     if _state["running"]:
         return JSONResponse({"error": "已有复验在进行中"}, status_code=409)
+    if not _t1_session().state.ready:
+        return JSONResponse(
+            {"error": "未选定合法 T1 来源,不得假装已有最新事实(请先完成 T1 来源三卡)"},
+            status_code=400,
+        )
     if not _state["claims"]:
         api_import()
     _state["running"] = True
@@ -217,6 +289,20 @@ HTML_PAGE = """<!DOCTYPE html>
  .modal .renew-ok{background:#1a7f37;color:#fff;border-color:#1a7f37}     /* 续命确认 */
  .modal select{width:100%;margin-top:6px;padding:6px 8px;border-radius:6px;border:1px solid #d0d7de;
                font-family:ui-monospace,monospace;font-size:12px}
+ #t1-source{background:#fff;border:1px solid #d0d7de;border-radius:6px;padding:10px 12px;margin-bottom:12px}
+ #t1-source h3{margin:0 0 8px;font-size:15px}
+ #t1-source .hint{font-size:12px;color:#57606a;margin-bottom:8px}
+ #t1-source .cards{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+ #t1-source .card{border:1px solid #d0d7de;border-radius:6px;padding:8px;background:#f6f8fa}
+ #t1-source .card.sel{outline:2px solid #0969da;background:#ddf4ff}
+ #t1-source .card h4{margin:0 0 6px;font-size:13px}
+ #t1-source .card .syn-tag{background:#b45309;color:#fff;font-size:11px;padding:1px 6px;border-radius:8px}
+ #t1-source textarea{width:100%;min-height:72px;font-family:ui-monospace,Consolas,monospace;font-size:12px;
+                     border:1px solid #d0d7de;border-radius:4px;padding:6px;box-sizing:border-box}
+ #t1-source button{margin-top:6px;padding:5px 10px;border-radius:6px;border:1px solid #d0d7de;cursor:pointer;background:#fff}
+ #t1-source button.primary{background:#1f883d;color:#fff;border-color:#1f883d}
+ #t1-source .net{font-size:12px;color:#57606a;margin-top:8px}
+ #t1-source .msg{font-size:12px;margin-top:6px;color:#0969da}
 </style>
 </head>
 <body>
@@ -252,6 +338,9 @@ HTML_PAGE = """<!DOCTYPE html>
 </div></div>
 <script>
 let STATE = {claims: [], question: "", latch: {thread_id: null, pending: []}};
+let T1SRC = {kind:'none', ready:false, paste_status:'none', synthetic:false,
+             network_enabled:false, message:'', cards:[]};
+let PASTE_DRAFT_TEXT = '';  // 重绘三卡时保留粘贴框内容
 let CURRENT_ANCHOR = null;  // 用户在右栏当前选中的小节(手动选择优先于证据锚点)
 let PENDING_DECISIONS = []; // 本轮已选的人审决定(批量提交)
 let MODAL_CLAIM = null;
@@ -263,7 +352,75 @@ const BADGE = {fresh:["绿 · 仍成立","#1a7f37"],stale:["红 · 已失效","#
 async function boot(){
   await fetch('/api/import',{method:'POST'});
   const j = await (await fetch('/api/claims')).json();
-  STATE = j; renderClaims();
+  STATE = j;
+  await refreshT1Source();
+  renderClaims();
+}
+async function refreshT1Source(){
+  T1SRC = await (await fetch('/api/t1-source')).json();
+}
+function renderT1Source(){
+  // T1 来源三卡(ADR-0016):合法入口全集;粘贴须确认入库;合成标明 synthetic
+  const sel = T1SRC.kind || 'none';
+  let h = '<div id="t1-source"><h3>T1 来源三卡</h3>'
+        + '<div class="hint">复验前须选定合法 T1 来源。未选定不得假装已有最新事实。</div>'
+        + '<div class="cards">'
+        + '<div class="card'+(sel==='upload'?' sel':'')+'" id="t1-card-upload">'
+        + '<h4>上传 T1 语料包</h4>'
+        + '<input type="file" id="t1-upload-input" accept=".md,text/markdown" multiple>'
+        + '<button class="primary" onclick="uploadT1()">上传并入库</button></div>'
+        + '<div class="card'+(sel==='paste'?' sel':'')+'" id="t1-card-paste">'
+        + '<h4>粘贴变更要点</h4>'
+        + '<textarea id="t1-paste-draft" aria-label="粘贴变更要点" placeholder="粘贴变更要点(先成草稿)"></textarea>'
+        + '<button onclick="savePasteDraft()">保存草稿</button> '
+        + '<button class="primary" onclick="confirmPasteIngest()">确认入库</button>'
+        + '<div class="hint">未确认不可 retrieve、不可作续命证据</div></div>'
+        + '<div class="card'+(sel==='synthetic'?' sel':'')+'" id="t1-card-synthetic">'
+        + '<h4>内置合成评测包 <span class="syn-tag">synthetic</span></h4>'
+        + '<button class="primary" onclick="selectSynthetic()">选用合成评测包</button></div>'
+        + '</div>'
+        + '<div class="net">联网插座:默认关闭(不进本批主路径)</div>'
+        + '<div class="msg" id="t1-msg">'+esc(T1SRC.message||'')+'</div></div>';
+  return h;
+}
+function restorePasteDraftBox(){
+  const box = document.getElementById('t1-paste-draft');
+  if(box) box.value = PASTE_DRAFT_TEXT;
+}
+async function uploadT1(){
+  const input = document.getElementById('t1-upload-input');
+  if(!input || !input.files || !input.files.length){
+    document.getElementById('status').textContent = '请先选择要上传的 T1 markdown 文件';
+    return;
+  }
+  const fd = new FormData();
+  for(const f of input.files) fd.append('files', f);
+  const j = await (await fetch('/api/t1-source/upload',{method:'POST', body:fd})).json();
+  if(j.error){ document.getElementById('status').textContent = j.error; return; }
+  T1SRC = j; renderClaims();
+  document.getElementById('status').textContent = j.message || 'T1 语料包已入库';
+}
+async function savePasteDraft(){
+  const text = document.getElementById('t1-paste-draft').value;
+  PASTE_DRAFT_TEXT = text;
+  const j = await (await fetch('/api/t1-source/paste',{
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({text: text})})).json();
+  if(j.error){ document.getElementById('status').textContent = j.error; return; }
+  T1SRC = j; renderClaims();
+  document.getElementById('status').textContent = j.message || '草稿已保存';
+}
+async function confirmPasteIngest(){
+  const j = await (await fetch('/api/t1-source/confirm',{method:'POST'})).json();
+  if(j.error){ document.getElementById('status').textContent = j.error; return; }
+  T1SRC = j; renderClaims();
+  document.getElementById('status').textContent = j.message || '已确认入库';
+}
+async function selectSynthetic(){
+  const j = await (await fetch('/api/t1-source/synthetic',{method:'POST'})).json();
+  if(j.error){ document.getElementById('status').textContent = j.error; return; }
+  T1SRC = j; renderClaims();
+  document.getElementById('status').textContent = j.message || '已选用合成评测包';
 }
 function pickedAction(cid){
   const d = PENDING_DECISIONS.find(x=>x.claim_id===cid);
@@ -308,7 +465,8 @@ function renderBanner(){
 }
 function renderClaims(){
   const el = document.getElementById('claims');
-  let h = '<div id="banner-wrap"></div>';
+  let h = renderT1Source();
+  h += '<div id="banner-wrap"></div>';
   h += '<h3 style="margin:4px 0 10px">主张复验单 <span style="font-weight:400;font-size:13px;color:#57606a">'
         + esc(STATE.question||'') + '</span></h3>';
   for(const c of STATE.claims){
@@ -352,6 +510,7 @@ function renderClaims(){
     h += '</div>';  // 闭合 .claim 卡片(T9 加时间线时丢了这行,卡片互相嵌套堆积)
   }
   el.innerHTML = h;
+  restorePasteDraftBox();
   renderBanner();
 }
 function pickClaim(cid){

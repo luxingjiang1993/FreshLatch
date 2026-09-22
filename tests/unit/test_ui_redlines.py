@@ -18,8 +18,13 @@ def test_main_button_whitelist():
 
 
 def test_no_chat_main_box():
-    """红线 1:无聊天主框(无输入框/发送按钮类聊天形态)。"""
-    assert "<textarea" not in HTML_PAGE
+    """红线 1:无聊天主框(无输入框/发送按钮类聊天形态)。
+
+    #89 T1 来源三卡允许唯一粘贴面 textarea#t1-paste-draft(复验前入库入口,不是聊天);
+    仍禁止聊天态 marker。
+    """
+    assert HTML_PAGE.count("<textarea") == 1
+    assert 'id="t1-paste-draft"' in HTML_PAGE
     for marker in ("placeholder=\"输入", "发送", "chat-input", "message-input"):
         assert marker not in HTML_PAGE
 
