@@ -33,8 +33,24 @@ _Avoid_: 记忆准确率、隔离率
 ## 复验主链
 
 **复验单 (Reverify Sheet)**:
-一次复验的主界面与产出物:每条主张的原文点回、判定、理由、人审动作。不是聊天框。
+一次复验的主界面与产出物:每条主张的原文点回、判定、理由、人审动作。不是聊天框。默认「职人视图」只用主张状态与人动作语言;同一页可切到「审计视图」才显示 Lead/Critic/轨迹等工程角色信息。
 _Avoid_: 报告、看板
+
+**职人视图 / 审计视图**:
+复验单同一界面的两种信息密度:职人视图是默认成交面;审计视图展开 Agent 轨迹与角色名,供排障与面试演示,不改变闸与人闩语义。
+_Avoid_: 简单模式/专家模式、调试页
+
+**客户向复验备忘 (Client Memo)**:
+可转发附件形态的复验产出:课题问题句、生成时间、免责声明、三分栏(仍成立/已作废/缺口)、每条 claim_id 与一句话理由、可点回的 evidence_id(可含原文 span)。不含 Agent 轨迹、不含「建议进入/不进入」类商业裁决。与内部审计导出分离。
+_Avoid_: 客户报告、复验 PDF、结论备忘录
+
+**T1 来源三卡 (T1 Source Picker)**:
+复验前用户显式选择 T1 ground truth 来源的三种合法入口:上传 T1 语料包、粘贴变更要点(先成草稿,人确认后才 ingest)、使用内置合成评测包。未选定合法 T1 来源不得假装已有最新事实。
+_Avoid_: T1 自动盯梢、联网默认同步
+
+**主张导入稿 (Claim Import Draft)**:
+职人用 Markdown/粘贴进入的主张清单约定格式:每条以 `## claim_id` 起头、其后正文一段;缺 id 时系统分配 `c-import-N`。只读已签发主张,不做新调查。JSON docket 为高级入口。
+_Avoid_: 自由散文抽主张、一键 LLM 切分(首版不做)
 
 **evidence_id 时点格式**:
 检索层返回的证据标识,格式 `doc_id#anchor@as_of`(如 `t0-competitor-notes#p2@T1`)。`@` 后缀标明快照时点;判 fresh/stale 引用的证据必须锚 T1。Lead 引用 evidence_id 必须逐字来自本会话 retrieve 返回(白名单校验),不得编造。
@@ -79,15 +95,19 @@ _Avoid_: 记忆插件、Mem0、记忆体检产品
 ## 闸与人审
 
 **规则闸 (Gate)**:
-纯函数/Workflow 层,强制执行不变量:`stale` / `unknown` 不得绿灯、无 `t1_evidence_ids` 不得 `fresh`、checksum 对不上不得 fresh/续命(本期**留位未启用**:语料 checksum 全空、store 无读口、fresh 路径不构造 `validity_basis` 故该半边结构性空转;激活契约与「checksum_fn 不得读同一个库列」的套套逻辑陷阱见 docs/research/checksum链激活契约.md)、stale 必须携带可点回 T1 反证 id、stale 反证不得为纯元陈述、fresh 需双判一致(`auditor_verdict` 在场且非 dissent,ADR-0009)、stale 反证经 Auditor 维度核对异议时打回落 unknown + 异议记录(ADR-0010)、登记维度 ≠ 反证自标维度时机械跨检打回 unknown + 机械比对异议(`DIMENSION_CROSSCHECK_MISMATCH`,ADR-0011;两维任一缺失回落 Auditor 语义核对;**受理层预检先行、闸层转兜底**,ADR-0012)、续命(renew)必须带 ≥1 个锚 T1 的 evidence_id(ADR-0006 §4;renew 是人审 L0 出口,不受双判一致约束)。绿灯唯一出口。
+纯函数/Workflow 层,强制执行不变量:`stale` / `unknown` 不得绿灯、无 `t1_evidence_ids` 不得 `fresh`、checksum 对不上不得 fresh/续命(**Batch 2 半激活**,ADR-0017:renew 半边接线真 `checksum_fn`=语料现算 sha256且禁读库列,以确定性负例验收;fresh 半边仍**结构性空转**——不构造 `validity_basis`;不得升格为「checksum 已证明 latch」;盘点见 docs/research/checksum链激活契约.md,决议见 docs/research/β-checksum激活契约与空转设计评估.md)、stale 必须携带可点回 T1 反证 id、stale 反证不得为纯元陈述、fresh 需双判一致(`auditor_verdict` 在场且非 dissent,ADR-0009)、stale 反证经 Auditor 维度核对异议时打回落 unknown + 异议记录(ADR-0010)、登记维度 ≠ 反证自标维度时机械跨检打回 unknown + 机械比对异议(`DIMENSION_CROSSCHECK_MISMATCH`,ADR-0011;两维任一缺失回落 Auditor 语义核对;**受理层预检先行、闸层转兜底**,ADR-0012)、续命(renew)必须带 ≥1 个锚 T1 的 evidence_id(ADR-0006 §4;renew 是人审 L0 出口,不受双判一致约束)。绿灯唯一出口。
 _Avoid_: 校验器、检查器
+
+**checksum 半激活 / 结构性空转**:
+checksum 链按半边诚实登记启用态:已宣称激活的半边须接线且确定性负例打得响;未激活半边明示结构性空转,不得宣传全链已启用。套套逻辑(`checksum_fn` 读与 basis 同源库列)视为假激活。操作验收句在评估文档与 ADR-0017,不进本定义扩写。Batch 2 攻击面用例表(ATK-CS-*)见 docs/research/β-checksum攻击面用例集合设计评估.md。
+_Avoid_: checksum 已启用(含糊全称)、开关已打开
 
 **元陈述 (meta-statement)**:
 T1 中关于测量/跟踪行为本身的陈述(未复测/不再列入跟踪项/无新数据/待发布/未入账),不承载关于主张对象的实质事实。元陈述是证据缺口,不是推翻:stale 理由以纯元陈述为唯一依据由规则闸打回(`META_ONLY_DISPROOF`)并落 `unknown`。标记词表封闭枚举,增补走评审工单。
 _Avoid_: 状态说明、跟踪备注
 
 **HumanLatch**:
-人审工作流:人对每条红/黄灯主张点「作废」或「续命」(续命必须带 T1 evidence_id),并确认记忆隔离。Agent 不得自己把红灯改回绿灯。
+人审工作流:人对每条红/黄灯主张点「作废」或「续命」(续命必须带 T1 evidence_id),并确认记忆隔离。Agent 不得自己把红灯改回绿灯。续命生效链次序(Batch 2):格式→点回→闸(含 checksum)→仅绿后写 validity_basis;失败零写;`error_code`+短中文透传;不启用跨轮重检(见 docs/research/β-checksum与HumanLatch-renew交界设计评估.md)。
 
 **作废名单 (Invalidation List)**:
 被人作废的主张 id 清单;进名单的主张重跑时不得再判 fresh。删除文件另闸,可先隔离不删盘。存储真相是 SQLite `invalidation_list` 表,随课题持久,与长期记忆的「已废 id」是同一份,不复制。
@@ -110,6 +130,10 @@ _Avoid_: 过时词匹配、记忆准确率
 
 **假绿对照 (False-Green Control)**:
 无工具基线:同模型不带工具只读 T0 摘要,应把已死主张判「成立」(假绿)。本产品必须红,对照成立才说明复验真在起作用。
+
+**判定拉齐预登记 (γ / C3)**:
+Batch 3 判据与「禁改 gold 凑绿」操作化的单一真相在 `docs/research/C3-判定拉齐预登记卡.md`(ADR-0018)。通过线/加严句不在此扩写;γ 通过 ≠ 假绿对照成立。消融/多 seed 本批仅锁规格、实跑未做(未跑 ≠ 已证明;见 docs/research/γ-消融表与多seed规格时序设计评估.md)。假绿仪器与 γ/消融须分条引用、禁互相顶替(见 docs/research/γ-与假绿仪器分条措辞设计评估.md)。
+_Avoid_: 改金标凑绿、把 smoke 当统计证明、未跑称作已证明、γ 通过称作假绿已根治
 
 **金标 (Gold)**:
 人工标注的期望判定(dead / alive / must_stale 等),harness 据此打分;评测期联网代码级禁用,保住可复现性。
