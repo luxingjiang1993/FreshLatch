@@ -18,6 +18,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
 from freshlatch.latch import HumanLatch, HumanLatchError  # noqa: E402
 from freshlatch.runner import Runner, load_docket  # noqa: E402
+from freshlatch.sheet import project_claim  # noqa: E402
 from freshlatch.store.ingest import parse_document  # noqa: E402
 from freshlatch.store.sqlite_store import SQLiteStore  # noqa: E402
 
@@ -34,8 +35,6 @@ BADGE = {
 }
 MAIN_BUTTON_TEXT = "开始复验"  # 文案白名单(红线 2):主按钮唯一合法文案
 EMPTY_LATCH = {"thread_id": None, "pending": []}  # 人审轮状态收口(不各处字面造 dict)
-# 人审动作时间线文案(后端唯一生成,前端不复制分支);重跑文案走 HumanLatch.timeline_label
-LATCH_EVENT_LABELS = {"discard": "人审作废", "renew": "人审续命"}
 
 app = FastAPI(title="FreshLatch 复验单")
 _state: dict = {"claims": [], "question": "", "trajectory": None, "running": False,
@@ -51,29 +50,8 @@ def _latch() -> HumanLatch:
 
 
 def _claim_to_dict(store: SQLiteStore, c) -> dict:
-    # 时间线 = 重跑(rerun_log)+ 人审动作(latch_log 的作废/续命)两条审计迹按 ts 合并;
-    # rerun 同时写两表,只从 rerun_log 计一次,不重复。单一真相在库表。
-    events = [{**t, "kind": "rerun", "evidence_id": None,
-               "label": HumanLatch.timeline_label(t["verdict"], t["nth"])}
-              for t in store.list_reruns(c.claim_id)]
-    events += [{"kind": e["action"], "ts": e["ts"], "thread_id": None, "note": "",
-                "evidence_id": e["evidence_id"],
-                "label": LATCH_EVENT_LABELS.get(e["action"], e["action"])}
-               for e in store.list_latch_events(c.claim_id) if e["action"] != "rerun"]
-    events.sort(key=lambda e: e["ts"])
-    return {
-        "claim_id": c.claim_id,
-        "statement": c.statement,
-        "t0_evidence_ids": c.t0_evidence_ids,
-        "t1_evidence_ids": c.t1_evidence_ids,
-        "status": c.status,
-        "reason": c.reason,
-        "voided": c.voided,
-        "voided_at": c.voided_at,
-        "last_confirmed_at": c.last_confirmed_at,      # 续命时间戳(§5.4)
-        "validity_basis": c.validity_basis,            # 续命写的新有效性依据(§5.4)
-        "timeline": events,
-    }
+    """薄委托:与导出/对账单测同吃核心包 project_claim(K4)。"""
+    return project_claim(store, c)
 
 
 @app.get("/api/claims")
