@@ -9,6 +9,7 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
+from typing import Any
 
 from dotenv import find_dotenv, load_dotenv
 from openai import OpenAI
@@ -53,23 +54,46 @@ class TokenUsage:
 
 
 class LLMClient:
-    """不假设并行 tool_calls(qwen-flash 冒烟实测 0 次并行,§3 协议):串行执行。"""
+    """不假设并行 tool_calls(qwen-flash 冒烟实测 0 次并行,§3 协议):串行执行。
+
+    OpenAI 客户端延迟到首次 chat()/访问 client 再构造:装配 Runner/接线/finalize
+    不需要凭据。避免 openai 新版对空 api_key 在 __init__ 即抛 Missing credentials,
+    从而让无密钥的 CI unit 误红(本机有 .env 则假绿)。
+    """
 
     def __init__(self, api_key: str | None = None, base_url: str | None = None) -> None:
         load_dotenv(find_dotenv(usecwd=True))
-        self.client = OpenAI(
-            api_key=api_key or os.getenv("DASHSCOPE_API_KEY", ""),
-            base_url=base_url or os.getenv("DASHSCOPE_BASE_URL", DASHSCOPE_BASE_URL),
-        )
+        self._api_key = api_key
+        self._base_url = base_url
+        self._client: Any | None = None
         self.decoding_log: list[DecodingParams] = []
         self.token_usage = TokenUsage()
+
+    @property
+    def client(self) -> Any:
+        """兼容旧代码读 self.client;首次访问时才向 OpenAI SDK 要凭据。"""
+        if self._client is None:
+            key = self._api_key if self._api_key is not None else os.getenv("DASHSCOPE_API_KEY", "")
+            # 非空占位仅绕过 SDK 对 "" 的构造期拒绝;真调用仍会因无效 key 鉴权失败。
+            if not key:
+                key = "MISSING_DASHSCOPE_API_KEY"
+            self._client = OpenAI(
+                api_key=key,
+                base_url=self._base_url or os.getenv("DASHSCOPE_BASE_URL", DASHSCOPE_BASE_URL),
+            )
+        return self._client
+
+    @client.setter
+    def client(self, value: Any) -> None:
+        """单测可注入 mock client,跳过真实 SDK 构造。"""
+        self._client = value
 
     def chat(self, messages: list, *, tools: list | None = None,
              decoding: DecodingParams | None = None,
              response_format: dict | None = None) -> object:
         d = decoding or DecodingParams()
         self.decoding_log.append(d)
-        kwargs: dict = {"model": d.model, "messages": messages, "temperature": d.temperature}
+        kwargs: dict[str, Any] = {"model": d.model, "messages": messages, "temperature": d.temperature}
         if d.seed is not None:
             kwargs["seed"] = d.seed
         if tools is not None:

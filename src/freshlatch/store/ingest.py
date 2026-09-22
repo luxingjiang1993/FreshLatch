@@ -9,15 +9,32 @@ import re
 from pathlib import Path
 
 from freshlatch.store.base import Chunk, Document
+from freshlatch.store.checksum import sha256_hex
 from freshlatch.store.pipeline import tokenize
 
-META_RE = re.compile(r"^---\n(.*?)\n---\n", re.DOTALL)
+# 容许 CRLF(Windows checkout / CI 偶发);解析前归一化为 \n
+META_RE = re.compile(r"^---\r?\n(.*?)\r?\n---\r?\n", re.DOTALL)
 CLAUSE_RE = re.compile(r"^## (p\d+)\s*$", re.MULTILINE)
 AS_OF_DIR = {"t0": "T0", "t1": "T1"}
 
 
-def parse_document_text(text: str) -> tuple[Document, list[Chunk]]:
-    """从 markdown 正文解析 Document + Chunk(与磁盘文件同构)。"""
+def _normalize_newlines(text: str) -> str:
+    return text.replace("\r\n", "\n").replace("\r", "\n")
+
+
+def parse_document_text(
+    text: str,
+    *,
+    checksum: str | None = None,
+) -> tuple[Document, list[Chunk]]:
+    """从 markdown 正文解析 Document + Chunk(与磁盘文件同构)。
+
+    checksum 缺省时对 UTF-8 编码后的正文现算 sha256(粘贴/内存路径);
+    磁盘路径请走 parse_document,以文件原始字节为权威指纹(ADR-0017)。
+    """
+    text = _normalize_newlines(text)
+    if checksum is None:
+        checksum = sha256_hex(text.encode("utf-8"))
     meta: dict[str, str] = {}
     body = text
     m = META_RE.match(text)
@@ -32,7 +49,6 @@ def parse_document_text(text: str) -> tuple[Document, list[Chunk]]:
     as_of = meta["as_of"]  # 目录即 as_of 维度,下方断言兜底一致性
     source_type = meta["source_type"]
     title = meta.get("title", doc_id)
-    checksum = meta.get("checksum", "")  # 三处留位之一,本期为空
 
     # 按二级标题切分,锚点 = 标题文本(p2 等);引言(首个 ## 之前)不入块
     parts = CLAUSE_RE.split(body)
@@ -64,7 +80,15 @@ def parse_document_text(text: str) -> tuple[Document, list[Chunk]]:
 
 
 def parse_document(path: Path) -> tuple[Document, list[Chunk]]:
-    return parse_document_text(path.read_text(encoding="utf-8"))
+    """读语料文件:权威 checksum = 文件字节 sha256(弃 frontmatter 手填)。
+
+    解析前把正文换行归一化为 \\n,避免 CRLF 导致 frontmatter 匹配失败;
+    指纹仍对磁盘原始字节现算(与 checksum_fn 同口径)。
+    """
+    raw = path.read_bytes()
+    checksum = sha256_hex(raw)
+    text = raw.decode("utf-8")
+    return parse_document_text(text, checksum=checksum)
 
 
 def wrap_paste_as_t1_markdown(

@@ -21,6 +21,7 @@ from freshlatch.guardrails import Guardrails  # noqa: E402
 from freshlatch.latch import HumanLatch, HumanLatchError  # noqa: E402
 from freshlatch.runner import RunContext, Runner, load_docket  # noqa: E402
 from freshlatch.sheet import project_claim  # noqa: E402
+from freshlatch.store.checksum import make_checksum_fn  # noqa: E402
 from freshlatch.store.ingest import parse_document  # noqa: E402
 from freshlatch.store.sqlite_store import SQLiteStore  # noqa: E402
 from freshlatch.t1_source import T1SourceSession  # noqa: E402
@@ -98,7 +99,9 @@ def _reset_t1_source(store: SQLiteStore | None = None) -> T1SourceSession:
 
 
 def _latch() -> HumanLatch:
-    return HumanLatch(_store(), CHECKPOINTS, mode="online")
+    # Batch 2 档 2:renew 半边真 checksum_fn(语料现算,禁读库列);不升格为 latch 证明
+    return HumanLatch(_store(), CHECKPOINTS, mode="online",
+                      checksum_fn=make_checksum_fn(CORPUS))
 
 
 def _claim_to_dict(store: SQLiteStore, c) -> dict:
