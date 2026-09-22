@@ -29,8 +29,11 @@ def test_corpus_mirror_parity():
 
 
 def test_chunk_schema_13_columns():
-    """chunk schema 13 列在位(3 留位空)。"""
-    doc, chunks = parse_document(CORPUS / "t0" / "t0-competitor-notes.md")
+    """chunk schema 13 列在位;parent/hypo/vec 仍留位空;checksum 为语料字节现算(ADR-0017)。"""
+    from freshlatch.store.checksum import sha256_hex
+
+    path = CORPUS / "t0" / "t0-competitor-notes.md"
+    doc, chunks = parse_document(path)
     assert len(chunks) >= 2
     c = chunks[0]
     cols = [c.doc_id, c.chunk_id, c.clause_id, c.title, c.text, c.source_type,
@@ -38,8 +41,9 @@ def test_chunk_schema_13_columns():
             c.hypo_questions, c.vec]
     assert len(cols) == 13
     assert c.parent_id is None and c.hypo_questions is None and c.vec is None
-    assert c.checksum == ""  # 留位为空
-
+    expected = sha256_hex(path.read_bytes())
+    assert c.checksum == expected == doc.checksum
+    assert len(c.checksum) == 64 and c.checksum.isalnum()
 
 def test_ingestion_deterministic():
     """切块确定:同一文件两次解析 chunk_id 序列一致(金标复现优先)。"""
