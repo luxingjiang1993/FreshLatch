@@ -1,12 +1,14 @@
-"""复验单共享投影与 Markdown 导出(K4)。
+"""复验单共享投影与 Markdown 导出(K4)+ 客户向复验备忘(ADR-0015)。
 
 真源:内存 Claim ⊕ 审计表(latch_log / rerun_log)合并投影——与复验单 UI 卡片同构。
 导出写 voided,不伪造 status=void。CLI 读快照 JSON,不现场跑复验。
+客户向备忘复用同一投影,但不含轨迹/人审时间线,并过禁语与字段契约。
 """
 
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 from typing import Any
 
@@ -167,6 +169,164 @@ def export_sheet_from_snapshot(
     claims = [claim_from_dict(c) for c in snap["claims"]]
     projections = [project_claim(store, c) for c in claims]
     md = render_sheet_markdown(projections, question=str(snap.get("question") or ""))
+    if out_path is not None:
+        path = Path(out_path)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(md, encoding="utf-8")
+    return md
+
+
+# ---- 客户向复验备忘 (Client Memo;ADR-0015 / INV-2·INV-3) ----
+# 与复验单导出分离:读同一投影,不写轨迹/人审时间线,过禁语与字段契约。
+
+# 禁止项字面:「建议进入/不进入」→ 建议进入 | 建议不进入(不含裸「不进入」,避免误伤)
+_CLIENT_MEMO_FORBIDDEN = re.compile(r"Lead|Critic|建议进入|建议不进入")
+_CLIENT_MEMO_DISCLAIMER = (
+    "免责声明:本备忘非法律意见、非自动商业决策;"
+    "仅反映既定 T1 事实下的复验投影,不构成投资或交易建议。"
+)
+
+
+def _sanitize_client_memo_text(text: str) -> str:
+    """洗掉角色名与商业裁决禁语,避免投影理由泄漏进客户向正文。"""
+    cleaned = _CLIENT_MEMO_FORBIDDEN.sub("", text or "")
+    return re.sub(r"\s+", " ", cleaned).strip()
+
+
+def _client_memo_bucket(proj: dict[str, Any]) -> str:
+    """三分栏归属:已作废优先;仍成立=fresh 且未作废;其余进缺口。"""
+    if proj.get("voided"):
+        return "voided"
+    if (proj.get("status") or "") == "fresh":
+        return "held"
+    return "gap"
+
+
+def _client_memo_pointback_ids(proj: dict[str, Any]) -> list[str]:
+    """可点回 evidence_id:仅 T1;`doc_id#anchor@as_of`,不做字符级偏移。"""
+    return [str(e) for e in (proj.get("t1_evidence_ids") or []) if e]
+
+
+def _render_client_memo_entry(proj: dict[str, Any], *, gap_no_t1: bool = False) -> str:
+    """单条:claim_id + 一句话理由 + 可选 evidence_id 点回。
+
+    「无 T1 覆盖」仅挂在缺口栏(gap_no_t1);仍成立/已作废不强制该文案。
+    """
+    cid = proj.get("claim_id") or ""
+    reason = _sanitize_client_memo_text(str(proj.get("reason") or ""))
+    eids = _client_memo_pointback_ids(proj)
+    if gap_no_t1:
+        if not reason:
+            reason = "无 T1 覆盖"
+        elif "无 T1 覆盖" not in reason:
+            reason = f"{reason};无 T1 覆盖"
+    if not reason:
+        reason = "(无理由)"
+    lines = [f"- **{cid}**: {reason}"]
+    for eid in eids:
+        # Markdown 链接保留完整 evidence_id,供点回;无字符偏移 span
+        lines.append(f"  - 证据: [`{eid}`](evidence:{eid})")
+    return "\n".join(lines)
+
+
+def _render_client_memo_section(
+    title: str,
+    entries: list[dict[str, Any]],
+    *,
+    empty_gap_explicit: bool = False,
+) -> str:
+    parts = [f"## {title}", ""]
+    if not entries:
+        if empty_gap_explicit:
+            parts.append("- 无 T1 覆盖")
+        else:
+            parts.append("- (无)")
+        parts.append("")
+        return "\n".join(parts)
+    for proj in entries:
+        gap_no_t1 = empty_gap_explicit and not _client_memo_pointback_ids(proj)
+        parts.append(_render_client_memo_entry(proj, gap_no_t1=gap_no_t1))
+        parts.append("")
+    return "\n".join(parts)
+
+
+def _render_dem3_rubric_checklist() -> str:
+    """DEM-3 人工勾选面:五条「是」+禁止项「无」;不升格为产品验证。"""
+    return "\n".join(
+        [
+            "## DEM-3 人工 rubric(勾选面;不升格为产品验证)",
+            "",
+            "以下由人勾选;机器套件只锁字段/禁语边界,勾选结果不作通过线。",
+            "",
+            "- [ ] 有课题问题句与生成时间戳",
+            "- [ ] 有免责声明(非法律意见/非自动决策;可标明 synthetic)",
+            "- [ ] 三分栏齐全:仍成立/已作废/缺口",
+            "- [ ] 每条有 claim_id + 一句话理由",
+            "- [ ] 至少一条带可点回 evidence_id,或缺口栏显式写「无 T1 覆盖」",
+            "- [ ] 禁止项全无:无「建议进入/不进入」;默认备忘正文无 Lead/Critic 字样",
+            "",
+        ]
+    )
+
+
+def render_client_memo_markdown(
+    projections: list[dict[str, Any]],
+    *,
+    question: str = "",
+    generated_at: str,
+    synthetic: bool = False,
+) -> str:
+    """客户向复验备忘 Markdown(ADR-0015 必填字段;禁轨迹与商业裁决句)。"""
+    held: list[dict[str, Any]] = []
+    voided: list[dict[str, Any]] = []
+    gap: list[dict[str, Any]] = []
+    for proj in projections:
+        bucket = _client_memo_bucket(proj)
+        if bucket == "held":
+            held.append(proj)
+        elif bucket == "voided":
+            voided.append(proj)
+        else:
+            gap.append(proj)
+
+    disclaimer = _CLIENT_MEMO_DISCLAIMER
+    if synthetic:
+        disclaimer += "本导出所依据语料标明为 synthetic(合成评测包)。"
+
+    parts = [
+        "# 客户向复验备忘",
+        "",
+        f"**课题问题句**: {_sanitize_client_memo_text(question) or '(未提供)'}",
+        "",
+        f"**生成时间**: {generated_at}",
+        "",
+        f"**{disclaimer}**",
+        "",
+        _render_client_memo_section("仍成立", held),
+        _render_client_memo_section("已作废", voided),
+        _render_client_memo_section("缺口", gap, empty_gap_explicit=True),
+        _render_dem3_rubric_checklist(),
+    ]
+    return "\n".join(parts).rstrip() + "\n"
+
+
+def export_client_memo_from_snapshot(
+    snapshot_path: str | Path,
+    store: RetrievalStore,
+    *,
+    generated_at: str,
+    out_path: str | Path | None = None,
+) -> str:
+    """读复验投影 → 客户向备忘 Markdown;不跑复验。可选落盘。"""
+    snap = load_snapshot(snapshot_path)
+    claims = [claim_from_dict(c) for c in snap["claims"]]
+    projections = [project_claim(store, c) for c in claims]
+    md = render_client_memo_markdown(
+        projections,
+        question=str(snap.get("question") or ""),
+        generated_at=generated_at,
+        synthetic=bool(snap.get("synthetic")),
+    )
     if out_path is not None:
         path = Path(out_path)
         path.parent.mkdir(parents=True, exist_ok=True)

@@ -16,8 +16,8 @@ CLAUSE_RE = re.compile(r"^## (p\d+)\s*$", re.MULTILINE)
 AS_OF_DIR = {"t0": "T0", "t1": "T1"}
 
 
-def parse_document(path: Path) -> tuple[Document, list[Chunk]]:
-    text = path.read_text(encoding="utf-8")
+def parse_document_text(text: str) -> tuple[Document, list[Chunk]]:
+    """从 markdown 正文解析 Document + Chunk(与磁盘文件同构)。"""
     meta: dict[str, str] = {}
     body = text
     m = META_RE.match(text)
@@ -61,6 +61,35 @@ def parse_document(path: Path) -> tuple[Document, list[Chunk]]:
         doc_version="1.0", checksum=checksum, full_text=text,
     )
     return doc, chunks
+
+
+def parse_document(path: Path) -> tuple[Document, list[Chunk]]:
+    return parse_document_text(path.read_text(encoding="utf-8"))
+
+
+def wrap_paste_as_t1_markdown(
+    text: str,
+    *,
+    doc_id: str = "paste-change",
+    title: str = "粘贴变更要点",
+) -> str:
+    """把职人粘贴的变更要点包成可 ingest 的 T1 markdown。
+
+    若正文已含 ``## pN`` 条款头则原样保留切块;否则整段落入 ``## p1``。
+    """
+    body = (text or "").replace("\r\n", "\n").replace("\r", "\n").strip()
+    if not CLAUSE_RE.search(body):
+        body = f"## p1\n{body}\n"
+    return (
+        "---\n"
+        f"doc_id: {doc_id}\n"
+        "as_of: T1\n"
+        "source_type: private\n"
+        f"title: {title}\n"
+        "checksum:\n"
+        "---\n"
+        f"{body}\n"
+    )
 
 
 def load_corpus(corpus_root: Path) -> list[tuple[Document, list[Chunk]]]:
