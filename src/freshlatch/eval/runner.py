@@ -14,7 +14,7 @@ from pathlib import Path
 
 from freshlatch.eval.checks import check_counterevidence, expected_evidence_id
 from freshlatch.eval.matrix import BUCKETS, EXPECTED_VERDICT, confusion_matrix
-from freshlatch.llm import DecodingParams, LLMClient
+from freshlatch.llm import DecodingParams, LLMClient, TokenUsage
 from freshlatch.roles.auditor import EVIDENCE_PACKET_SCHEMA_VERSION
 from freshlatch.runner import Runner, load_docket
 from freshlatch.store.base import RetrievalStore
@@ -30,6 +30,23 @@ EVAL_MODE_SWITCHES = (
 )
 REPRO_NOTE = ("闸层(must_* 零违例)给定解码参数下逐位复现;判定层(矩阵条数)按文档化容差;"
               "违例级背离(must_stale 被判 fresh)触发人查。qwen-flash 为活托管端点,跨会话复现只能近似。")
+
+_ZERO_USAGE = {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}
+
+
+def _reset_token_usage(llm: object) -> None:
+    """单桶清零;非 LLMClient 的脚本假件无 token_usage 时静默跳过。"""
+    tu = getattr(llm, "token_usage", None)
+    if isinstance(tu, TokenUsage):
+        tu.reset()
+
+
+def _snapshot_token_usage(llm: object) -> dict:
+    """读取当前桶快照;假件无桶时回零(报告块字段仍在,schema 稳定)。"""
+    tu = getattr(llm, "token_usage", None)
+    if isinstance(tu, TokenUsage):
+        return tu.to_dict()
+    return dict(_ZERO_USAGE)
 
 
 def load_gold(path: str | Path) -> dict:
@@ -83,7 +100,10 @@ def run_gold(store: RetrievalStore, llm: LLMClient | None, *, gold_path: str | P
 
     per_run: list[dict] = []
     per_run_distractor: list[dict] = []
+    # K5-1:顶层合计 = 各遍 token_usage 之和;每遍开跑前清零单桶
+    total_usage = TokenUsage()
     for run_idx in range(1, runs + 1):
+        _reset_token_usage(llm)
         # 逐运行 decoding 留档(§4.7):每遍独立 DecodingParams,recorded_at 区分运行
         run_decoding = replace(decoding, recorded_at=datetime.now(timezone.utc).isoformat())
         decisions: dict[str, str] = {}
@@ -95,10 +115,7 @@ def run_gold(store: RetrievalStore, llm: LLMClient | None, *, gold_path: str | P
             decisions[claim.claim_id] = final
             detail[claim.claim_id] = _detail(result, claim)
         matrix = confusion_matrix(gold, decisions)
-        per_run.append({"run": run_idx, "decoding": run_decoding.__dict__,
-                        "decisions": decisions,
-                        "detail": detail, "matrix": matrix.to_dict()})
-        # 干扰项同链跑(同一 decoding、同一 Runner 入口),不进 matrix
+        # 干扰项同链跑(同一 decoding、同一 Runner 入口),不进 matrix;用量计入本遍桶
         if distractor_claims:
             d_decisions: dict[str, str] = {}
             d_detail: dict[str, dict] = {}
@@ -109,6 +126,12 @@ def run_gold(store: RetrievalStore, llm: LLMClient | None, *, gold_path: str | P
                 d_detail[claim.claim_id] = _detail(result, claim)
             per_run_distractor.append({"run": run_idx, "decisions": d_decisions,
                                        "detail": d_detail})
+        run_usage = _snapshot_token_usage(llm)
+        total_usage.add(run_usage["prompt_tokens"], run_usage["completion_tokens"])
+        per_run.append({"run": run_idx, "decoding": run_decoding.__dict__,
+                        "decisions": decisions,
+                        "detail": detail, "matrix": matrix.to_dict(),
+                        "token_usage": run_usage})
 
     # per-claim 命中次数/N(报告按 N>1 设计的 pass@k 表)
     pass_at_k = {
@@ -154,6 +177,7 @@ def run_gold(store: RetrievalStore, llm: LLMClient | None, *, gold_path: str | P
         "decoding": decoding.__dict__,
         "eval_mode_switches": list(EVAL_MODE_SWITCHES),
         "repro_note": REPRO_NOTE,
+        "token_usage": total_usage.to_dict(),  # K5-1:顶层合计(与 per_run[i].token_usage 同字段)
         "per_run": per_run,
         "pass_at_k": pass_at_k,
         "point_back_j1": point_back,

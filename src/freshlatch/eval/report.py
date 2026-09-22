@@ -39,6 +39,24 @@ def _decoding_block(raw: dict) -> list[str]:
     return lines
 
 
+def _token_usage_block(raw: dict) -> list[str]:
+    """K5-1:报告 MD 用量节(raw JSON 顶层 + per_run 已写;无块则跳过)。"""
+    tu = raw.get("token_usage")
+    if not tu:
+        return []
+    lines = [
+        "## Token 用量(K5)",
+        "",
+        f"- prompt_tokens: `{tu['prompt_tokens']}`",
+        f"- completion_tokens: `{tu['completion_tokens']}`",
+        f"- total_tokens: `{tu['total_tokens']}`",
+    ]
+    if raw.get("runs", 1) > 1:
+        lines.append("- 逐遍: `per_run[i].token_usage`")
+    lines += ["", ""]
+    return lines
+
+
 def render_report(raw: dict) -> str:
     if raw["kind"] == "gold_run":
         return _render_gold(raw)
@@ -59,6 +77,7 @@ def _render_gold(raw: dict) -> str:
         "",
     ]
     lines += _decoding_block(raw)
+    lines += _token_usage_block(raw)
 
     # 混淆矩阵:条数,不报百分比
     lines += ["## 混淆矩阵(条数;小样本不报百分比,§4.3)", "",
