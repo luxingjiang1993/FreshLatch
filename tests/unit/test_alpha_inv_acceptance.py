@@ -275,12 +275,14 @@ def test_dem7_script_exists_and_records_minutes(tmp_path):
             str(out_dir),
         ],
         cwd=str(REPO_ROOT),
-        env={**os.environ, "PYTHONPATH": str(SRC)},
+        env={**os.environ, "PYTHONPATH": str(SRC), "PYTHONIOENCODING": "utf-8"},
         capture_output=True,
         text=True,
+        encoding="utf-8",
+        errors="replace",
         check=False,
     )
-    assert proc.returncode == 0, proc.stderr + proc.stdout
+    assert proc.returncode == 0, (proc.stderr or "") + (proc.stdout or "")
     record = out_dir / "dem7-time-to-sheet.json"
     assert record.exists()
     payload = json.loads(record.read_text(encoding="utf-8"))

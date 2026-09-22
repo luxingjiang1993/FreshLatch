@@ -256,11 +256,13 @@ def test_cli_module_client_memo_invocation(tmp_path):
             "2026-09-22T12:00:00+08:00",
         ],
         cwd=str(REPO_ROOT),
-        env={**os.environ, "PYTHONPATH": str(SRC)},
+        env={**os.environ, "PYTHONPATH": str(SRC), "PYTHONIOENCODING": "utf-8"},
         capture_output=True,
         text=True,
+        encoding="utf-8",
+        errors="replace",
         check=False,
     )
     assert proc.returncode == 0, proc.stderr
     assert out.exists()
-    assert "客户向复验备忘已写出" in proc.stdout
+    assert "客户向复验备忘已写出" in (proc.stdout or "")
