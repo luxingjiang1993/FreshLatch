@@ -23,6 +23,27 @@ RETRIEVAL_EXHAUSTED = {"budget_exhausted": True,
                        "message": "检索预算已尽(24/Run)。请改用 read_source 直读原文,或基于现有证据下结论。"}
 
 
+def list_retrieve_zero_hits(events: list[dict]) -> list[dict]:
+    """从轨迹事件抽出 retrieve 空命中(DEM-5 真源)。
+
+    只计 type=retrieve 且 hits==0;预算耗尽(budget)与有命中不计入。
+    返回浅拷贝列表,供 UI 强提示;调用方不得据此改写主张判定。
+    """
+    out: list[dict] = []
+    for ev in events:
+        if ev.get("type") != "retrieve":
+            continue
+        if int(ev.get("hits", -1)) != 0:
+            continue
+        out.append({
+            "query": ev.get("query", ""),
+            "as_of": ev.get("as_of"),
+            "used": ev.get("used"),
+            "hits": 0,
+        })
+    return out
+
+
 @dataclass
 class RunContext:
     """一次 Run 的共享状态:store、护栏、作废名单、检索预算计数、轨迹事件。"""
@@ -77,6 +98,8 @@ class RunResult:
     steps_by_claim: dict[str, int]
     retrieval_used: int
     decoding: DecodingParams
+    # DEM-5:本轮 retrieve 空命中清单(UI 强提示真源);空列表 = 无零命中,不触发横幅
+    retrieve_zero_hits: list[dict] = field(default_factory=list)
 
 
 @dataclass
@@ -157,7 +180,8 @@ class Runner:
                          trajectory_path=self._trajectory_path,
                          steps_by_claim=steps_by_claim,
                          retrieval_used=self.ctx.retrieval_used,
-                         decoding=self.ctx.decoding)
+                         decoding=self.ctx.decoding,
+                         retrieve_zero_hits=list_retrieve_zero_hits(self.ctx.events))
 
     def _finalize(self, claim: Claim, decision: ClaimDecision) -> None:
         """判定落档:Agent 不得拥有放行权——fresh/stale 必须过规则闸,闸打回落 unknown。

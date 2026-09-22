@@ -39,7 +39,8 @@ EMPTY_LATCH = {"thread_id": None, "pending": []}  # 人审轮状态收口(不各
 
 app = FastAPI(title="FreshLatch 复验单")
 _state: dict = {"claims": [], "question": "", "trajectory": None, "running": False,
-                "latch": dict(EMPTY_LATCH)}
+                "latch": dict(EMPTY_LATCH),
+                "retrieve_zero_hits": []}  # DEM-5:本轮 retrieve 空命中;仅提示,不改写判定
 _t1: T1SourceSession | None = None
 
 
@@ -80,6 +81,8 @@ def api_claims() -> dict:
         "trajectory": str(_state["trajectory"]) if _state["trajectory"] else None,
         "running": _state["running"],
         "latch": _state["latch"],
+        # DEM-5:零命中告警投影;UI 只展示,不得据此改写 status
+        "retrieve_zero_hits": list(_state.get("retrieve_zero_hits") or []),
     }
 
 
@@ -169,6 +172,8 @@ def api_reverify() -> JSONResponse:
         runner = Runner(_store())
         result = runner.run(list(_state["claims"]))
         _state["trajectory"] = result.trajectory_path
+        # DEM-5:记录零命中清单供 UI 强提示;不改写任何主张 status
+        _state["retrieve_zero_hits"] = list(result.retrieve_zero_hits)
         rnd = _latch().enter_round(_state["claims"])  # 无红/黄灯则 thread_id=None 直接完成
         _state["latch"] = {"thread_id": rnd.thread_id, "pending": rnd.pending}
     finally:
@@ -180,6 +185,7 @@ def api_reverify() -> JSONResponse:
         "steps_by_claim": result.steps_by_claim,
         "decoding": result.decoding.__dict__,
         "latch": _state["latch"],
+        "retrieve_zero_hits": list(_state["retrieve_zero_hits"]),
     })
 
 
@@ -309,6 +315,14 @@ HTML_PAGE = """<!DOCTYPE html>
  #t1-source button.primary{background:#1f883d;color:#fff;border-color:#1f883d}
  #t1-source .net{font-size:12px;color:#57606a;margin-top:8px}
  #t1-source .msg{font-size:12px;margin-top:6px;color:#0969da}
+ /* DEM-5:检索零命中强提示(非判定闸;不改写 status) */
+ #retrieve-zero-hit{background:#fff1f0;border:2px solid #cf222e;border-radius:6px;
+   padding:10px 12px;margin-bottom:10px;color:#82071e}
+ #retrieve-zero-hit b{font-size:14px}
+ #retrieve-zero-hit .note{font-size:12px;margin-top:6px;color:#57606a}
+ #retrieve-zero-hit ul{margin:6px 0 0;padding-left:18px;font-size:12px;font-family:ui-monospace,Consolas,monospace}
+ #retrieve-unknown-note{font-size:12px;color:#57606a;margin:0 0 10px;padding:6px 8px;
+   border-left:3px solid #d0d7de;background:#f6f8fa}
 </style>
 </head>
 <body>
@@ -343,7 +357,8 @@ HTML_PAGE = """<!DOCTYPE html>
   </div>
 </div></div>
 <script>
-let STATE = {claims: [], question: "", latch: {thread_id: null, pending: []}};
+let STATE = {claims: [], question: "", latch: {thread_id: null, pending: []},
+             retrieve_zero_hits: []};
 let T1SRC = {kind:'none', ready:false, paste_status:'none', synthetic:false,
              network_enabled:false, message:'', cards:[]};
 let PASTE_DRAFT_TEXT = '';  // 重绘三卡时保留粘贴框内容
@@ -359,6 +374,7 @@ async function boot(){
   await fetch('/api/import',{method:'POST'});
   const j = await (await fetch('/api/claims')).json();
   STATE = j;
+  if(!STATE.retrieve_zero_hits) STATE.retrieve_zero_hits = [];
   await refreshT1Source();
   renderClaims();
 }
@@ -455,6 +471,28 @@ function renewButton(cid){
     return '<button disabled title="本轮无已检索 T1 原文块,续命不可用">续命</button>';
   return '<button class="renew" onclick="event.stopPropagation();openRenew(&quot;'+cid+'&quot;)">续命</button>';
 }
+function renderZeroHitBanner(){
+  // DEM-5:retrieve 空命中 → 强提示「没搜到」;不改写任何主张判定
+  const hits = STATE.retrieve_zero_hits || [];
+  if(!hits.length) return '';
+  let h = '<div id="retrieve-zero-hit" role="alert">'
+        + '<b>检索零命中</b> · 本轮有 '+hits.length
+        + ' 次 retrieve 返回空结果——这是「没搜到」,不是静默成功。'
+        + '<ul>';
+  for(const z of hits){
+    h += '<li>'+esc(String(z.as_of||''))+' · '+esc(String(z.query||''))+'</li>';
+  }
+  h += '</ul>'
+     + '<div class="note">本提示不改写主张判定,也不冒充判定闸。</div></div>';
+  return h;
+}
+function renderUnknownPathNote(){
+  // DEM-5 旁注:unknown 仍须 Lead 显式落档(与 UI 提示解耦)
+  return '<div id="retrieve-unknown-note">'
+       + '缺口(unknown)仍须 Lead 经 <code>mark_gap</code> / '
+       + '<code>reverify_claim(unknown)</code> 显式落档;'
+       + 'UI 零命中提示不得自动改写判定。</div>';
+}
 function renderBanner(){
   const el = document.getElementById('banner-wrap');
   const L = STATE.latch || {};
@@ -483,6 +521,8 @@ function renderBanner(){
 function renderClaims(){
   const el = document.getElementById('claims');
   let h = renderT1Source();
+  h += renderZeroHitBanner();
+  h += renderUnknownPathNote();
   h += '<div id="banner-wrap"></div>';
   h += '<h3 style="margin:4px 0 10px">主张复验单 <span style="font-weight:400;font-size:13px;color:#57606a">'
         + esc(STATE.question||'') + '</span></h3>';
@@ -566,9 +606,13 @@ async function runReverify(){
     const j = await (await fetch('/api/reverify',{method:'POST'})).json();
     if(j.error){ document.getElementById('status').textContent = j.error; return; }
     STATE.claims = j.claims; STATE.latch = j.latch; PENDING_DECISIONS = [];
+    STATE.retrieve_zero_hits = j.retrieve_zero_hits || [];
     renderClaims();
+    const zc = (STATE.retrieve_zero_hits||[]).length;
     document.getElementById('status').textContent =
-      '复验完成 · 检索 '+j.retrieval_used+'/24 · 轨迹 '+j.trajectory
+      '复验完成 · 检索 '+j.retrieval_used+'/24'
+      +(zc?(' · 零命中 '+zc+' 次'):'')
+      +' · 轨迹 '+j.trajectory
       +' · '+j.decoding.model+' temp='+j.decoding.temperature+' '+j.decoding.recorded_at;
   } finally { btn.disabled = false; }
 }
