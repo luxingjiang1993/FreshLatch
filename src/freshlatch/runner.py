@@ -31,6 +31,7 @@ class RunContext:
     guardrails: Guardrails = field(default_factory=Guardrails)
     invalidation_list: set[str] = field(default_factory=set)
     retrieval_used: int = 0
+    lead_steps_used: int = 0  # 当前 Lead 会话步数(UI DEM-4 进度;与 lead_max_steps 对齐)
     events: list[dict] = field(default_factory=list)
     decoding: DecodingParams = field(default_factory=DecodingParams)
     mode: str = "online"  # online | eval

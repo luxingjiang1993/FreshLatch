@@ -16,8 +16,9 @@ from pydantic import BaseModel
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
+from freshlatch.guardrails import Guardrails  # noqa: E402
 from freshlatch.latch import HumanLatch, HumanLatchError  # noqa: E402
-from freshlatch.runner import Runner, load_docket  # noqa: E402
+from freshlatch.runner import RunContext, Runner, load_docket  # noqa: E402
 from freshlatch.sheet import project_claim  # noqa: E402
 from freshlatch.store.ingest import parse_document  # noqa: E402
 from freshlatch.store.sqlite_store import SQLiteStore  # noqa: E402
@@ -35,10 +36,37 @@ BADGE = {
 }
 MAIN_BUTTON_TEXT = "开始复验"  # 文案白名单(红线 2):主按钮唯一合法文案
 EMPTY_LATCH = {"thread_id": None, "pending": []}  # 人审轮状态收口(不各处字面造 dict)
+# DEM-4:步数/检索预算进度;天花板与 Guardrails 默认对齐(α-demo 可见性,非 latch 证明)
+_G = Guardrails()
+EMPTY_BUDGET = {
+    "steps_used": 0,
+    "lead_max_steps": _G.lead_max_steps,
+    "retrieval_used": 0,
+    "retrieval_budget": _G.retrieval_budget,
+}
+del _G
 
 app = FastAPI(title="FreshLatch 复验单")
 _state: dict = {"claims": [], "question": "", "trajectory": None, "running": False,
-                "latch": dict(EMPTY_LATCH)}
+                "latch": dict(EMPTY_LATCH), "budget": dict(EMPTY_BUDGET), "run_ctx": None}
+
+
+def _budget_from_ctx(ctx: RunContext) -> dict:
+    """从 RunContext 投影预算进度(与 Guardrails 字段对齐)。"""
+    g = ctx.guardrails
+    return {
+        "steps_used": ctx.lead_steps_used,
+        "lead_max_steps": g.lead_max_steps,
+        "retrieval_used": ctx.retrieval_used,
+        "retrieval_budget": g.retrieval_budget,
+    }
+
+
+def _current_budget() -> dict:
+    """复验中读 live RunContext;完成后读会话摘要。"""
+    if _state.get("running") and _state.get("run_ctx") is not None:
+        return _budget_from_ctx(_state["run_ctx"])
+    return dict(_state.get("budget") or EMPTY_BUDGET)
 
 
 def _store() -> SQLiteStore:
@@ -63,6 +91,7 @@ def api_claims() -> dict:
         "trajectory": str(_state["trajectory"]) if _state["trajectory"] else None,
         "running": _state["running"],
         "latch": _state["latch"],
+        "budget": _current_budget(),  # DEM-4:复验中/完成后可读
     }
 
 
@@ -87,14 +116,18 @@ def api_reverify() -> JSONResponse:
     if not _state["claims"]:
         api_import()
     _state["running"] = True
+    runner = Runner(_store())
+    _state["run_ctx"] = runner.ctx
+    _state["budget"] = _budget_from_ctx(runner.ctx)
     try:
-        runner = Runner(_store())
         result = runner.run(list(_state["claims"]))
         _state["trajectory"] = result.trajectory_path
+        _state["budget"] = _budget_from_ctx(runner.ctx)  # 会话内保留用量摘要(DEM-4)
         rnd = _latch().enter_round(_state["claims"])  # 无红/黄灯则 thread_id=None 直接完成
         _state["latch"] = {"thread_id": rnd.thread_id, "pending": rnd.pending}
     finally:
         _state["running"] = False
+        _state["run_ctx"] = None
     return JSONResponse({
         "claims": [_claim_to_dict(_store(), c) for c in _state["claims"]],
         "trajectory": str(result.trajectory_path),
@@ -102,6 +135,7 @@ def api_reverify() -> JSONResponse:
         "steps_by_claim": result.steps_by_claim,
         "decoding": result.decoding.__dict__,
         "latch": _state["latch"],
+        "budget": dict(_state["budget"]),
     })
 
 
@@ -206,6 +240,13 @@ HTML_PAGE = """<!DOCTYPE html>
  .tabs button{padding:4px 12px;border:1px solid #d0d7de;background:#fff;cursor:pointer}
  .tabs button.on{background:#0a2540;color:#fff}
  #status{font-size:13px;color:#57606a}
+ /* DEM-4:步数/检索预算进度(α-demo 可见性;非 latch/产品验证结论) */
+ #budget-progress{display:flex;flex-direction:column;gap:4px;min-width:200px;font-size:12px;color:#fff}
+ .budget-row{display:flex;align-items:center;gap:8px}
+ .budget-label{width:2.5em;opacity:.9}
+ .budget-track{flex:1;height:6px;background:rgba(255,255,255,.25);border-radius:3px;overflow:hidden}
+ .budget-fill{height:100%;background:#3fb950;width:0%;transition:width .2s linear}
+ .budget-text{font-variant-numeric:tabular-nums;min-width:3.5em;text-align:right;opacity:.95}
  details{margin-top:12px;background:#fff;border:1px solid #d0d7de;border-radius:6px;padding:8px 12px}
  code{background:#eff1f3;padding:1px 5px;border-radius:4px}
  .timeline{font-size:12px;color:#57606a;margin-top:6px;border-top:1px dashed #d0d7de;padding-top:4px}
@@ -224,6 +265,18 @@ HTML_PAGE = """<!DOCTYPE html>
  <strong>FreshLatch 复验单</strong>
  <span class="syn">SYNTHETIC · 合成语料,非真实客户数据</span>
  <span id="status"></span>
+ <div id="budget-progress" aria-live="polite" title="护栏预算进度(α-demo)">
+  <div class="budget-row">
+   <span class="budget-label">步数</span>
+   <div class="budget-track"><div id="bar-steps" class="budget-fill"></div></div>
+   <span id="budget-steps-text" class="budget-text" title="当前 Lead 会话 / lead_max_steps">—/—</span>
+  </div>
+  <div class="budget-row">
+   <span class="budget-label">检索</span>
+   <div class="budget-track"><div id="bar-retrieval" class="budget-fill"></div></div>
+   <span id="budget-retrieval-text" class="budget-text" title="本轮 Run / retrieval_budget">—/—</span>
+  </div>
+ </div>
  <span style="flex:1"></span>
  <button class="big" id="btn-run" onclick="runReverify()">开始复验</button>
 </header>
@@ -251,19 +304,42 @@ HTML_PAGE = """<!DOCTYPE html>
   </div>
 </div></div>
 <script>
-let STATE = {claims: [], question: "", latch: {thread_id: null, pending: []}};
+let STATE = {claims: [], question: "", latch: {thread_id: null, pending: []}, budget: null};
 let CURRENT_ANCHOR = null;  // 用户在右栏当前选中的小节(手动选择优先于证据锚点)
 let PENDING_DECISIONS = []; // 本轮已选的人审决定(批量提交)
 let MODAL_CLAIM = null;
 let RENEW_CLAIM = null;
+let budgetPoll = null;  // DEM-4:复验中轮询预算
 function esc(s){return s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}
 const BADGE = {fresh:["绿 · 仍成立","#1a7f37"],stale:["红 · 已失效","#cf222e"],
                unknown:["灰 · 证据不足","#6e7781"],void:["void · 已作废","#8250df"]};
 
+function renderBudget(b){
+  // DEM-4:steps_used/lead_max_steps 与 retrieval_used/retrieval_budget
+  if(!b) return;
+  STATE.budget = b;
+  const su = Number(b.steps_used)||0, sm = Number(b.lead_max_steps)||0;
+  const ru = Number(b.retrieval_used)||0, rm = Number(b.retrieval_budget)||0;
+  const sp = sm > 0 ? Math.min(100, Math.round(100 * su / sm)) : 0;
+  const rp = rm > 0 ? Math.min(100, Math.round(100 * ru / rm)) : 0;
+  document.getElementById('bar-steps').style.width = sp + '%';
+  document.getElementById('bar-retrieval').style.width = rp + '%';
+  document.getElementById('budget-steps-text').textContent = su + '/' + sm;
+  document.getElementById('budget-retrieval-text').textContent = ru + '/' + rm;
+}
+async function pollBudget(){
+  try{
+    const j = await (await fetch('/api/claims')).json();
+    if(j.budget) renderBudget(j.budget);
+  }catch(e){}
+}
+
 async function boot(){
   await fetch('/api/import',{method:'POST'});
   const j = await (await fetch('/api/claims')).json();
-  STATE = j; renderClaims();
+  STATE = Object.assign(STATE, j);
+  if(j.budget) renderBudget(j.budget);
+  renderClaims();
 }
 function pickedAction(cid){
   const d = PENDING_DECISIONS.find(x=>x.claim_id===cid);
@@ -386,15 +462,25 @@ async function runReverify(){
   const btn = document.getElementById('btn-run');
   btn.disabled = true;
   document.getElementById('status').textContent = '复验中(端到端真主链:Lead 循环 + 规则闸)……';
+  // DEM-4:复验中轮询 /api/claims 刷新 steps/retrieve 进度(reverify 同步端点在线程池)
+  if(budgetPoll) clearInterval(budgetPoll);
+  budgetPoll = setInterval(pollBudget, 400);
   try{
     const j = await (await fetch('/api/reverify',{method:'POST'})).json();
     if(j.error){ document.getElementById('status').textContent = j.error; return; }
     STATE.claims = j.claims; STATE.latch = j.latch; PENDING_DECISIONS = [];
+    if(j.budget) renderBudget(j.budget);
     renderClaims();
+    const b = j.budget || STATE.budget || {};
     document.getElementById('status').textContent =
-      '复验完成 · 检索 '+j.retrieval_used+'/24 · 轨迹 '+j.trajectory
+      '复验完成 · 步数(当前主张) '+b.steps_used+'/'+b.lead_max_steps
+      +' · 检索(本轮) '+b.retrieval_used+'/'+b.retrieval_budget
+      +' · 轨迹 '+j.trajectory
       +' · '+j.decoding.model+' temp='+j.decoding.temperature+' '+j.decoding.recorded_at;
-  } finally { btn.disabled = false; }
+  } finally {
+    if(budgetPoll){ clearInterval(budgetPoll); budgetPoll = null; }
+    btn.disabled = false;
+  }
 }
 function openVoidConfirm(cid){
   MODAL_CLAIM = cid;
