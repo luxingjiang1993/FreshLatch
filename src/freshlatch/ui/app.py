@@ -17,8 +17,9 @@ from pydantic import BaseModel
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
 from freshlatch.claim_import import ClaimImportError, parse_claim_import_draft  # noqa: E402
+from freshlatch.guardrails import Guardrails  # noqa: E402
 from freshlatch.latch import HumanLatch, HumanLatchError  # noqa: E402
-from freshlatch.runner import Runner, load_docket  # noqa: E402
+from freshlatch.runner import RunContext, Runner, load_docket  # noqa: E402
 from freshlatch.sheet import project_claim  # noqa: E402
 from freshlatch.store.ingest import parse_document  # noqa: E402
 from freshlatch.store.sqlite_store import SQLiteStore  # noqa: E402
@@ -40,12 +41,41 @@ VIEW_MODE_DEFAULT = "craftsman"  # DEM-6:默认职人视图(去角色化成交�
 # HTML 模板占位:index() 注入 VIEW_MODE_DEFAULT,避免 Python/JS 默认值漂移
 _VIEW_MODE_TOKEN = "__VIEW_MODE_DEFAULT__"
 EMPTY_LATCH = {"thread_id": None, "pending": []}  # 人审轮状态收口(不各处字面造 dict)
+# DEM-4:步数/检索预算进度;天花板与 Guardrails 默认对齐(α-demo 可见性 ≠ latch 证明)
+_G = Guardrails()
+EMPTY_BUDGET = {
+    "steps_used": 0,
+    "lead_max_steps": _G.lead_max_steps,
+    "retrieval_used": 0,
+    "retrieval_budget": _G.retrieval_budget,
+}
+del _G
 
 app = FastAPI(title="FreshLatch 复验单")
 _state: dict = {"claims": [], "question": "", "trajectory": None, "running": False,
                 "latch": dict(EMPTY_LATCH),
+                "budget": dict(EMPTY_BUDGET),
+                "run_ctx": None,
                 "retrieve_zero_hits": []}  # DEM-5:本轮 retrieve 空命中;仅提示,不改写判定
 _t1: T1SourceSession | None = None
+
+
+def _budget_from_ctx(ctx: RunContext) -> dict:
+    """从 RunContext 投影预算进度(与 Guardrails 字段对齐)。"""
+    g = ctx.guardrails
+    return {
+        "steps_used": ctx.lead_steps_used,
+        "lead_max_steps": g.lead_max_steps,
+        "retrieval_used": ctx.retrieval_used,
+        "retrieval_budget": g.retrieval_budget,
+    }
+
+
+def _current_budget() -> dict:
+    """复验中读 live RunContext;完成后读会话摘要。"""
+    if _state.get("running") and _state.get("run_ctx") is not None:
+        return _budget_from_ctx(_state["run_ctx"])
+    return dict(_state.get("budget") or EMPTY_BUDGET)
 
 
 def _store() -> SQLiteStore:
@@ -87,6 +117,7 @@ def api_claims() -> dict:
         "latch": _state["latch"],
         # DEM-5:零命中告警投影;UI 只展示,不得据此改写 status
         "retrieve_zero_hits": list(_state.get("retrieve_zero_hits") or []),
+        "budget": _current_budget(),  # DEM-4:复验中/完成后可见
     }
 
 
@@ -198,14 +229,18 @@ def api_reverify() -> JSONResponse:
     _state["running"] = True
     try:
         runner = Runner(_store())
+        _state["run_ctx"] = runner.ctx
+        _state["budget"] = _budget_from_ctx(runner.ctx)
         result = runner.run(list(_state["claims"]))
         _state["trajectory"] = result.trajectory_path
+        _state["budget"] = _budget_from_ctx(runner.ctx)  # 会话内保留用量摘要(DEM-4)
         # DEM-5:记录零命中清单供 UI 强提示;不改写任何主张 status
         _state["retrieve_zero_hits"] = list(result.retrieve_zero_hits)
         rnd = _latch().enter_round(_state["claims"])  # 无红/黄灯则 thread_id=None 直接完成
         _state["latch"] = {"thread_id": rnd.thread_id, "pending": rnd.pending}
     finally:
         _state["running"] = False
+        _state["run_ctx"] = None
     return JSONResponse({
         "claims": [_claim_to_dict(_store(), c) for c in _state["claims"]],
         "trajectory": str(result.trajectory_path),
@@ -214,6 +249,7 @@ def api_reverify() -> JSONResponse:
         "decoding": result.decoding.__dict__,
         "latch": _state["latch"],
         "retrieve_zero_hits": list(_state["retrieve_zero_hits"]),
+        "budget": dict(_state["budget"]),
     })
 
 
@@ -370,6 +406,12 @@ HTML_PAGE = """<!DOCTYPE html>
  #import-panel .hint{font-size:12px;color:#57606a;margin:6px 0}
  header button.ghost{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.45);
                      border-radius:6px;padding:6px 12px;font-size:13px;cursor:pointer}
+ #budget-progress{display:flex;flex-direction:column;gap:4px;min-width:200px;font-size:12px;color:#fff}
+ .budget-row{display:flex;align-items:center;gap:8px}
+ .budget-label{width:2.5em;opacity:.9}
+ .budget-track{flex:1;height:6px;background:rgba(255,255,255,.25);border-radius:3px;overflow:hidden}
+ .budget-fill{height:100%;background:#3fb950;width:0%;transition:width .2s linear}
+ .budget-text{font-variant-numeric:tabular-nums;min-width:3.5em;text-align:right;opacity:.95}
 </style>
 </head>
 <body>
@@ -380,6 +422,18 @@ HTML_PAGE = """<!DOCTYPE html>
   <button type="button" id="view-craftsman" class="on" onclick="setViewMode(&quot;craftsman&quot;)">职人视图</button>
   <button type="button" id="view-audit" onclick="setViewMode(&quot;audit&quot;)">审计视图</button>
  </span>
+ <div id="budget-progress" aria-live="polite" title="护栏预算进度(α-demo)">
+  <div class="budget-row">
+   <span class="budget-label">步数</span>
+   <div class="budget-track"><div id="bar-steps" class="budget-fill"></div></div>
+   <span id="budget-steps-text" class="budget-text" title="当前 Lead 会话 / lead_max_steps">0/0</span>
+  </div>
+  <div class="budget-row">
+   <span class="budget-label">检索</span>
+   <div class="budget-track"><div id="bar-retrieval" class="budget-fill"></div></div>
+   <span id="budget-retrieval-text" class="budget-text" title="本轮 Run / retrieval_budget">0/0</span>
+  </div>
+ </div>
  <span id="status"></span>
  <span style="flex:1"></span>
  <button class="ghost" type="button" onclick="toggleImportPanel()">主张导入稿</button>
@@ -416,7 +470,8 @@ HTML_PAGE = """<!DOCTYPE html>
 <script>
 let STATE = {claims: [], question: "", latch: {thread_id: null, pending: []},
              retrieve_zero_hits: [],
-             trajectory: null, retrieval_used: null, decoding: null};
+             trajectory: null, retrieval_used: null, decoding: null,
+             budget: null};
 let T1SRC = {kind:'none', ready:false, paste_status:'none', synthetic:false,
              network_enabled:false, message:'', cards:[]};
 let PASTE_DRAFT_TEXT = '';  // 重绘三卡时保留粘贴框内容
@@ -425,6 +480,7 @@ let PENDING_DECISIONS = []; // 本轮已选的人审决定(批量提交)
 let MODAL_CLAIM = null;
 let RENEW_CLAIM = null;
 let IMPORT_PANEL_OPEN = false;  // 主张导入稿面板展开态(跨 renderClaims 保留)
+let budgetPoll = null;  // DEM-4:复验中轮询预算
 // DEM-6:同一复验单两密度;默认职人;切换只改呈现,不碰 Latch/Gate
 let VIEW_MODE = "__VIEW_MODE_DEFAULT__";
 const STATUS_RUNNING_CRAFTSMAN = "复验中……";
@@ -434,6 +490,26 @@ const STATUS_DONE_AUDIT = "复验完成";  // 详情拼在 audit 面板,状态�
 function esc(s){return s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}
 const BADGE = {fresh:["绿 · 仍成立","#1a7f37"],stale:["红 · 已失效","#cf222e"],
                unknown:["灰 · 证据不足","#6e7781"],void:["void · 已作废","#8250df"]};
+
+function renderBudget(b){
+  // DEM-4:steps_used/lead_max_steps 与 retrieval_used/retrieval_budget
+  if(!b) return;
+  STATE.budget = b;
+  const su = Number(b.steps_used)||0, sm = Number(b.lead_max_steps)||0;
+  const ru = Number(b.retrieval_used)||0, rm = Number(b.retrieval_budget)||0;
+  const sp = sm > 0 ? Math.min(100, Math.round(100 * su / sm)) : 0;
+  const rp = rm > 0 ? Math.min(100, Math.round(100 * ru / rm)) : 0;
+  document.getElementById('budget-steps-text').textContent = su + '/' + sm;
+  document.getElementById('budget-retrieval-text').textContent = ru + '/' + rm;
+  document.getElementById('bar-steps').style.width = sp + '%';
+  document.getElementById('bar-retrieval').style.width = rp + '%';
+}
+async function pollBudget(){
+  try{
+    const j = await (await fetch('/api/claims')).json();
+    if(j.budget) renderBudget(j.budget);
+  }catch(e){}
+}
 
 function setViewMode(mode){
   // 只改呈现密度:不提交人审、不触发复验端点
@@ -480,6 +556,7 @@ async function boot(){
   const j = await (await fetch('/api/claims')).json();
   STATE = Object.assign(STATE, j);
   if(!STATE.retrieve_zero_hits) STATE.retrieve_zero_hits = [];
+  if(j.budget) renderBudget(j.budget);
   await refreshT1Source();
   renderViewChrome();
   renderClaims();
@@ -753,6 +830,8 @@ async function runReverify(){
   // DEM-6:职人默认成交面不用 Lead/轨迹作状态文案;审计视图才露工程角色
   document.getElementById('status').textContent =
     (VIEW_MODE === "audit") ? STATUS_RUNNING_AUDIT : STATUS_RUNNING_CRAFTSMAN;
+  if(budgetPoll) clearInterval(budgetPoll);
+  budgetPoll = setInterval(pollBudget, 400);
   try{
     const j = await (await fetch('/api/reverify',{method:'POST'})).json();
     if(j.error){ document.getElementById('status').textContent = j.error; return; }
@@ -760,19 +839,28 @@ async function runReverify(){
     STATE.retrieve_zero_hits = j.retrieve_zero_hits || [];
     STATE.trajectory = j.trajectory; STATE.retrieval_used = j.retrieval_used;
     STATE.decoding = j.decoding;
+    if(j.budget) renderBudget(j.budget);
     renderViewChrome();
     renderClaims();
     const zc = (STATE.retrieve_zero_hits||[]).length;
+    const b = j.budget || STATE.budget || {};
     if(VIEW_MODE === "audit"){
       document.getElementById('status').textContent =
-        STATUS_DONE_AUDIT + ' · 检索 '+j.retrieval_used+'/24'
+        STATUS_DONE_AUDIT + ' · 步数 '+b.steps_used+'/'+b.lead_max_steps
+        +' · 检索 '+b.retrieval_used+'/'+b.retrieval_budget
         +(zc?(' · 零命中 '+zc+' 次'):'')
         +' · 见下方 Agent 轨迹';
     } else {
       document.getElementById('status').textContent =
-        STATUS_DONE_CRAFTSMAN + (zc?(' · 零命中 '+zc+' 次'):'');
+        STATUS_DONE_CRAFTSMAN
+        +' · 步数 '+b.steps_used+'/'+b.lead_max_steps
+        +' · 检索 '+b.retrieval_used+'/'+b.retrieval_budget
+        +(zc?(' · 零命中 '+zc+' 次'):'');
     }
-  } finally { btn.disabled = false; }
+  } finally {
+    if(budgetPoll){ clearInterval(budgetPoll); budgetPoll = null; }
+    btn.disabled = false;
+  }
 }
 function openVoidConfirm(cid){
   MODAL_CLAIM = cid;

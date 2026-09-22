@@ -14,7 +14,7 @@ from fastapi.testclient import TestClient
 
 import freshlatch.ui.app as appmod
 from freshlatch.llm import DecodingParams
-from freshlatch.runner import RunResult, list_retrieve_zero_hits
+from freshlatch.runner import RunContext, RunResult, list_retrieve_zero_hits
 
 
 @pytest.fixture()
@@ -84,6 +84,7 @@ def test_reverify_exposes_zero_hits_without_auto_unknown(client, monkeypatch, tm
     class _FakeRunner:
         def __init__(self, store):
             self.store = store
+            self.ctx = RunContext(store=store)
 
         def run(self, claims):
             # 与真 Runner 同构:原地改写传入列表;故意保持 fresh——

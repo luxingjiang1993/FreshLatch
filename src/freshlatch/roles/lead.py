@@ -137,15 +137,22 @@ class LeadReverifier:
         system = self._build_system()
         task = self._build_task()
         tools = tool_specs(list(LEAD_TOOLS_W3))
+        self.ctx.lead_steps_used = 0  # 每主张会话重置;UI DEM-4 读实时步数
+
+        def _on_step(ev: dict) -> None:
+            self.ctx.lead_steps_used = int(ev["step"])
+            self.ctx.emit({"type": "lead_step", "claim_id": self.claim.claim_id, **ev})
+
         loop: LoopResult = run_loop(
             system=system, task=task, tools=tools,
             execute=self._execute,
             chat=lambda msgs, tools=None: self.llm.chat(msgs, tools=tools, decoding=self.ctx.decoding),
             max_steps=self.ctx.guardrails.lead_max_steps,
             soft_close=self.ctx.guardrails.exhausted_soft_close(),
-            on_event=lambda ev: self.ctx.emit({"type": "lead_step", "claim_id": self.claim.claim_id, **ev}),
+            on_event=_on_step,
         )
         self.steps_used = loop.steps_used
+        self.ctx.lead_steps_used = loop.steps_used
         self.decision.dimension_objection = self._objection  # ADR-0012:未清异议随判定移交闸侧挂卡
         self.ctx.emit({"type": "lead_loop_end", "claim_id": self.claim.claim_id,
                        "steps_used": loop.steps_used, "finished": loop.finished})
