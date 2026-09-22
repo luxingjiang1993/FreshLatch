@@ -16,6 +16,7 @@ from pydantic import BaseModel
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
+from freshlatch.claim_import import ClaimImportError, parse_claim_import_draft  # noqa: E402
 from freshlatch.latch import HumanLatch, HumanLatchError  # noqa: E402
 from freshlatch.runner import Runner, load_docket  # noqa: E402
 from freshlatch.sheet import project_claim  # noqa: E402
@@ -88,15 +89,21 @@ def api_claims() -> dict:
 
 @app.post("/api/import")
 def api_import() -> dict:
-    """docket 导入(Workflow):只读 statement 与 t0_evidence_ids,不做新调查。"""
+    """JSON docket 高级入口(Workflow):只读 statement 与 t0_evidence_ids,不做新调查。"""
     docket = load_docket(DEMO_DOCKET)
     _state["claims"] = docket.claims
     _state["question"] = docket.question  # 单一真相:data/t0_docket.json
+    _state["latch"] = dict(EMPTY_LATCH)
     return {"imported": len(docket.claims)}
 
 
 class PasteDraftRequest(BaseModel):
     text: str
+
+
+class DraftImportRequest(BaseModel):
+    text: str
+    question: str | None = None
 
 
 @app.get("/api/t1-source")
@@ -149,6 +156,24 @@ async def api_t1_upload(files: list[UploadFile] = File(...)) -> JSONResponse:
     if not result.ok:
         return JSONResponse({"error": result.error}, status_code=400)
     return JSONResponse(_t1_session().snapshot())
+
+
+@app.post("/api/import/draft")
+def api_import_draft(req: DraftImportRequest) -> JSONResponse:
+    """主张导入稿(MD/粘贴):按 ## claim_id 切条;缺 id → c-import-N。不做散文抽主张/LLM 切分。"""
+    try:
+        docket, assigned = parse_claim_import_draft(req.text, question=req.question)
+    except ClaimImportError as e:
+        return JSONResponse({"error": str(e)}, status_code=400)
+    _state["claims"] = docket.claims
+    _state["question"] = docket.question
+    _state["latch"] = dict(EMPTY_LATCH)
+    return JSONResponse({
+        "imported": len(docket.claims),
+        "assigned_ids": assigned,
+        "question": docket.question,
+        "claim_ids": [c.claim_id for c in docket.claims],
+    })
 
 
 @app.post("/api/reverify")
@@ -323,6 +348,15 @@ HTML_PAGE = """<!DOCTYPE html>
  #retrieve-zero-hit ul{margin:6px 0 0;padding-left:18px;font-size:12px;font-family:ui-monospace,Consolas,monospace}
  #retrieve-unknown-note{font-size:12px;color:#57606a;margin:0 0 10px;padding:6px 8px;
    border-left:3px solid #d0d7de;background:#f6f8fa}
+ #import-panel{display:none;background:#fff;border:1px solid #d0d7de;border-radius:6px;
+               padding:10px 12px;margin-bottom:10px}
+ #import-panel.open{display:block}
+ #import-panel textarea{width:100%;min-height:140px;font-family:ui-monospace,Consolas,monospace;
+                        font-size:12px;padding:8px;border:1px solid #d0d7de;border-radius:6px;
+                        box-sizing:border-box;resize:vertical}
+ #import-panel .hint{font-size:12px;color:#57606a;margin:6px 0}
+ header button.ghost{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.45);
+                     border-radius:6px;padding:6px 12px;font-size:13px;cursor:pointer}
 </style>
 </head>
 <body>
@@ -331,6 +365,8 @@ HTML_PAGE = """<!DOCTYPE html>
  <span class="syn">SYNTHETIC · 合成语料,非真实客户数据</span>
  <span id="status"></span>
  <span style="flex:1"></span>
+ <button class="ghost" type="button" onclick="toggleImportPanel()">主张导入稿</button>
+ <button class="ghost" type="button" onclick="importDocket()">导入合成 docket(高级)</button>
  <button class="big" id="btn-run" onclick="runReverify()">开始复验</button>
 </header>
 <main>
@@ -366,6 +402,7 @@ let CURRENT_ANCHOR = null;  // 用户在右栏当前选中的小节(手动选择
 let PENDING_DECISIONS = []; // 本轮已选的人审决定(批量提交)
 let MODAL_CLAIM = null;
 let RENEW_CLAIM = null;
+let IMPORT_PANEL_OPEN = false;  // 主张导入稿面板展开态(跨 renderClaims 保留)
 function esc(s){return s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}
 const BADGE = {fresh:["绿 · 仍成立","#1a7f37"],stale:["红 · 已失效","#cf222e"],
                unknown:["灰 · 证据不足","#6e7781"],void:["void · 已作废","#8250df"]};
@@ -455,6 +492,36 @@ async function selectSynthetic(){
   T1SRC = j; renderClaims();
   document.getElementById('status').textContent = j.message || '已选用合成评测包';
 }
+function toggleImportPanel(){
+  IMPORT_PANEL_OPEN = !IMPORT_PANEL_OPEN;
+  const p = document.getElementById('import-panel');
+  if(p) p.classList.toggle('open', IMPORT_PANEL_OPEN);
+}
+async function importClaimDraft(){
+  const text = document.getElementById('claim-import-draft').value;
+  const r = await fetch('/api/import/draft',{
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({text: text})});
+  const j = await r.json();
+  if(!r.ok){ document.getElementById('status').textContent = j.error; return; }
+  PENDING_DECISIONS = [];
+  const claims = await (await fetch('/api/claims')).json();
+  STATE = claims;
+  IMPORT_PANEL_OPEN = false;
+  renderClaims();
+  let msg = '已导入主张导入稿 '+j.imported+' 条';
+  if(j.assigned_ids && j.assigned_ids.length)
+    msg += ' · 系统分配 id: '+j.assigned_ids.join(', ');
+  document.getElementById('status').textContent = msg;
+}
+async function importDocket(){
+  await fetch('/api/import',{method:'POST'});
+  PENDING_DECISIONS = [];
+  const j = await (await fetch('/api/claims')).json();
+  STATE = j; renderClaims();
+  document.getElementById('status').textContent =
+    '已导入合成 JSON docket(高级入口) '+j.claims.length+' 条';
+}
 function pickedAction(cid){
   const d = PENDING_DECISIONS.find(x=>x.claim_id===cid);
   return d ? d.action : null;
@@ -520,7 +587,17 @@ function renderBanner(){
 }
 function renderClaims(){
   const el = document.getElementById('claims');
-  let h = renderT1Source();
+  let h = '<div id="import-panel" class="'+(IMPORT_PANEL_OPEN?'open':'')+'">'
+        + '<b>主张导入稿</b>'
+        + '<div class="hint">每条以 <code>## claim_id</code> 起头、其后正文一段;'
+        + '缺 id 时系统分配 <code>c-import-N</code>。只导入已签发主张,不做散文抽取或模型切分。</div>'
+        + '<textarea id="claim-import-draft" '
+        + 'aria-label="主张导入稿"></textarea>'
+        + '<div style="margin-top:8px">'
+        + '<button type="button" onclick="importClaimDraft()">导入主张导入稿</button> '
+        + '<button type="button" onclick="toggleImportPanel()">收起</button>'
+        + '</div></div>';
+  h += renderT1Source();
   h += renderZeroHitBanner();
   h += renderUnknownPathNote();
   h += '<div id="banner-wrap"></div>';

@@ -44,6 +44,10 @@ _Avoid_: 报告、看板
 可转发附件形态的复验产出:课题问题句、生成时间、免责声明、三分栏(仍成立/已作废/缺口)、每条 claim_id 与一句话理由、可点回的 evidence_id(格式 `doc_id#anchor@as_of`,本批不做字符级偏移 span)。不含 Agent 轨迹、不含「建议进入/不进入」类商业裁决。与内部审计/复验单导出分离。
 _Avoid_: 客户报告、复验 PDF、结论备忘录
 
+**主张导入稿 (Claim Import Draft)**:
+职人用 Markdown/粘贴进入的主张清单约定格式:每条以 `## claim_id` 起头、其后正文一段;缺 id 时系统分配 `c-import-N`。只读已签发主张,不做新调查。JSON docket 为高级入口。
+_Avoid_: 自由散文抽主张、一键 LLM 切分(首版不做)
+
 **evidence_id 时点格式**:
 检索层返回的证据标识,格式 `doc_id#anchor@as_of`(如 `t0-competitor-notes#p2@T1`)。`@` 后缀标明快照时点;判 fresh/stale 引用的证据必须锚 T1。Lead 引用 evidence_id 必须逐字来自本会话 retrieve 返回(白名单校验),不得编造。
 _Avoid_: 证据链接、出处编号
