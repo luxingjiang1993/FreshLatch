@@ -1,0 +1,16 @@
+{
+  "layer": "α-demo",
+  "id": "DEM-7",
+  "label": "Time-to-Sheet",
+  "elapsed_seconds": 0.0552,
+  "elapsed_minutes": 0.0009,
+  "hard_threshold": null,
+  "observation_only": true,
+  "artifacts": {
+    "sheet": "reports/batch1_alpha/dem7/sheet.md",
+    "client_memo": "reports/batch1_alpha/dem7/client_memo.md",
+    "snapshot": "reports/batch1_alpha/dem7/dem7_snapshot.json"
+  },
+  "recorded_at": "2026-09-22T14:43:35Z",
+  "note": "仅观测记分钟数;无 <10min 硬阈值。不得把本读数说成产品已验证 / 一期测量闭合 / UX 证明了 latch。"
+}
