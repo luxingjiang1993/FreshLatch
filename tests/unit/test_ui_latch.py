@@ -103,19 +103,36 @@ DOC = "t0-competitor-notes"
 RENEW_EID = f"{DOC}#p2@T1"
 
 
-def _seed_t1_chunk(store):
+def _seed_t1_chunk(store, *, checksum: str = ""):
     store.add_document(
         Document(doc_id=DOC, as_of="T1", source_type="competitor", title="竞品笔记",
-                 doc_version="v2", checksum="", full_text="T1:竞品客单价仍显著高于我们。"),
+                 doc_version="v2", checksum=checksum,
+                 full_text="T1:竞品客单价仍显著高于我们。"),
         [Chunk(doc_id=DOC, chunk_id=f"{DOC}-p2", clause_id="p2", title="竞品笔记",
                text="T1:竞品客单价仍显著高于我们。", source_type="competitor",
-               as_of="T1", doc_version="v2", checksum="", tokens=20)],
+               as_of="T1", doc_version="v2", checksum=checksum, tokens=20)],
     )
 
 
-def test_decide_renew_turns_card_green_with_timeline(client):
-    """#23 用户旅程:红灯主张 → 续命(带 T1 证据)→ 闸过 → 卡片转绿 + 时间线条目。"""
-    _seed_t1_chunk(appmod._store())
+def test_decide_renew_turns_card_green_with_timeline(client, tmp_path, monkeypatch):
+    """#23 用户旅程:红灯主张 → 续命(带 T1 证据)→ 闸过 → 卡片转绿 + 时间线条目。
+
+    Batch 2:UI 已注入真 checksum_fn;夹具语料字节须与 claimed 指纹一致(ATK-CS-04 同构)。
+    """
+    from freshlatch.store.checksum import sha256_hex
+
+    corpus = tmp_path / "corpus"
+    (corpus / "t1").mkdir(parents=True)
+    raw = (
+        f"---\ndoc_id: {DOC}\nas_of: T1\nsource_type: competitor\n"
+        f"title: 竞品笔记\nchecksum:\n---\n\n## p2\n"
+        f"T1:竞品客单价仍显著高于我们。\n"
+    ).encode("utf-8")
+    (corpus / "t1" / f"{DOC}.md").write_bytes(raw)
+    cs = sha256_hex(raw)
+    monkeypatch.setattr(appmod, "CORPUS", corpus)
+
+    _seed_t1_chunk(appmod._store(), checksum=cs)
     claims = [Claim(claim_id="c1", statement="竞品客单价仍显著高于我们",
                     status="stale", reason="T1 竞品降价", t1_evidence_ids=[RENEW_EID])]
     appmod._state["claims"] = claims

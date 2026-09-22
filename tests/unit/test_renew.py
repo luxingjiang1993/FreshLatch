@@ -118,6 +118,42 @@ def test_renew_turns_card_green_and_logs(tmp_path):
     assert store.list_invalidation() == []          # 续命不进作废名单
 
 
+def test_atk_cs_04_renew_with_corpus_sha256_writes_basis(tmp_path):
+    """ATK-CS-04:未篡改 + claimed=语料现算 → 过闸写 validity_basis + 审计迹。
+
+    不得升格为「checksum 已证明 latch」——仅 invariant 牙齿正例。
+    """
+    from freshlatch.store.checksum import make_checksum_fn, sha256_hex
+    from freshlatch.store.ingest import parse_document, ingest_into
+
+    corpus = tmp_path / "corpus"
+    (corpus / "t1").mkdir(parents=True)
+    raw = (
+        f"---\ndoc_id: {DOC}\nas_of: T1\nsource_type: competitor\n"
+        f"title: 竞品笔记\nchecksum:\n---\n\n## p2\n"
+        f"T1:竞品客单价仍显著高于我们。\n"
+    ).encode("utf-8")
+    (corpus / "t1" / f"{DOC}.md").write_bytes(raw)
+    # t0 镜像可空目录;ingest 只扫有文件的
+    (corpus / "t0").mkdir(parents=True)
+
+    store = SQLiteStore(tmp_path / "atk.db")
+    assert ingest_into(store, corpus) >= 1
+    doc, _chunks = parse_document(corpus / "t1" / f"{DOC}.md")
+    assert doc.checksum == sha256_hex(raw) and doc.checksum
+
+    latch = make_latch(store, tmp_path, checksum_fn=make_checksum_fn(corpus))
+    claims = [make_claim()]
+    rnd = latch.enter_round(claims)
+    results = latch.decide(rnd.thread_id, [{"claim_id": "c1", "action": "renew",
+                                            "evidence_id": EID}])
+    assert results[0]["ok"] is True, results[0]
+    c = claims[0]
+    assert c.status == "fresh"
+    assert c.validity_basis == {"doc_id": DOC, "checksum": sha256_hex(raw)}
+    assert latch_actions(store) == [("renew", EID, "human")]
+
+
 def test_renew_without_evidence_writes_nothing(tmp_path):
     store = make_store(tmp_path)
     latch = make_latch(store, tmp_path)
