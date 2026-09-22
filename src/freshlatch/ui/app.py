@@ -34,6 +34,9 @@ BADGE = {
     "void": ("void · 已作废", "#8250df"),
 }
 MAIN_BUTTON_TEXT = "开始复验"  # 文案白名单(红线 2):主按钮唯一合法文案
+VIEW_MODE_DEFAULT = "craftsman"  # DEM-6:默认职人视图(去角色化成交面)
+# HTML 模板占位:index() 注入 VIEW_MODE_DEFAULT,避免 Python/JS 默认值漂移
+_VIEW_MODE_TOKEN = "__VIEW_MODE_DEFAULT__"
 EMPTY_LATCH = {"thread_id": None, "pending": []}  # 人审轮状态收口(不各处字面造 dict)
 
 app = FastAPI(title="FreshLatch 复验单")
@@ -205,7 +208,17 @@ HTML_PAGE = """<!DOCTYPE html>
  .asof{font-size:11px;color:#fff;background:#57606a;border-radius:4px;padding:1px 6px;margin-right:6px}
  .tabs button{padding:4px 12px;border:1px solid #d0d7de;background:#fff;cursor:pointer}
  .tabs button.on{background:#0a2540;color:#fff}
+ .view-toggle{display:inline-flex;gap:0;margin-left:8px}
+ .view-toggle button{padding:4px 12px;border:1px solid #d0d7de;background:#fff;color:#0a2540;
+                     cursor:pointer;font-size:13px}
+ .view-toggle button:first-child{border-radius:6px 0 0 6px}
+ .view-toggle button:last-child{border-radius:0 6px 6px 0;border-left:0}
+ .view-toggle button.on{background:#1f6feb;color:#fff;border-color:#1f6feb}
  #status{font-size:13px;color:#57606a}
+ #audit-panel{display:none;margin:0 16px 10px;background:#fff;border:1px solid #d0d7de;
+              border-radius:6px;padding:10px 14px;font-size:13px;color:#57606a}
+ #audit-panel.visible{display:block}
+ #audit-panel code{word-break:break-all}
  details{margin-top:12px;background:#fff;border:1px solid #d0d7de;border-radius:6px;padding:8px 12px}
  code{background:#eff1f3;padding:1px 5px;border-radius:4px}
  .timeline{font-size:12px;color:#57606a;margin-top:6px;border-top:1px dashed #d0d7de;padding-top:4px}
@@ -223,10 +236,18 @@ HTML_PAGE = """<!DOCTYPE html>
 <header>
  <strong>FreshLatch 复验单</strong>
  <span class="syn">SYNTHETIC · 合成语料,非真实客户数据</span>
+ <span class="view-toggle" role="group" aria-label="视图密度">
+  <button type="button" id="view-craftsman" class="on" onclick="setViewMode(&quot;craftsman&quot;)">职人视图</button>
+  <button type="button" id="view-audit" onclick="setViewMode(&quot;audit&quot;)">审计视图</button>
+ </span>
  <span id="status"></span>
  <span style="flex:1"></span>
  <button class="big" id="btn-run" onclick="runReverify()">开始复验</button>
 </header>
+<div id="audit-panel" aria-live="polite">
+ <b>审计视图</b> · Lead / Critic 工具轨迹与工程角色信息(排障/面试用;不改变作废·续命·闸语义)
+ <div id="audit-body" style="margin-top:6px">尚无本轮轨迹。完成复验后此处显示轨迹路径与解码参数。</div>
+</div>
 <main>
  <section id="claims"><p style="color:#57606a">加载中……</p></section>
  <section id="pane"><p style="color:#57606a">← 点击主张的证据 id,这里显示 T0/T1 原文并高亮锚点段落</p></section>
@@ -251,19 +272,66 @@ HTML_PAGE = """<!DOCTYPE html>
   </div>
 </div></div>
 <script>
-let STATE = {claims: [], question: "", latch: {thread_id: null, pending: []}};
+let STATE = {claims: [], question: "", latch: {thread_id: null, pending: []},
+             trajectory: null, retrieval_used: null, decoding: null};
 let CURRENT_ANCHOR = null;  // 用户在右栏当前选中的小节(手动选择优先于证据锚点)
 let PENDING_DECISIONS = []; // 本轮已选的人审决定(批量提交)
 let MODAL_CLAIM = null;
 let RENEW_CLAIM = null;
+// DEM-6:同一复验单两密度;默认职人;切换只改呈现,不碰 Latch/Gate
+let VIEW_MODE = "__VIEW_MODE_DEFAULT__";
+const STATUS_RUNNING_CRAFTSMAN = "复验中……";
+const STATUS_DONE_CRAFTSMAN = "复验完成";
+const STATUS_RUNNING_AUDIT = "复验中(端到端真主链:Lead 循环 + 规则闸)……";
+const STATUS_DONE_AUDIT = "复验完成";  // 详情拼在 audit 面板,状态栏保持短句
 function esc(s){return s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}
 const BADGE = {fresh:["绿 · 仍成立","#1a7f37"],stale:["红 · 已失效","#cf222e"],
                unknown:["灰 · 证据不足","#6e7781"],void:["void · 已作废","#8250df"]};
 
+function setViewMode(mode){
+  // 只改呈现密度:不提交人审、不触发复验端点
+  VIEW_MODE = (mode === "audit") ? "audit" : "craftsman";
+  document.getElementById("view-craftsman").classList.toggle("on", VIEW_MODE === "craftsman");
+  document.getElementById("view-audit").classList.toggle("on", VIEW_MODE === "audit");
+  renderViewChrome();
+  // 切回职人时收起状态栏工程细节;有本轮结果则按密度重写短状态
+  if(STATE.trajectory){
+    document.getElementById("status").textContent =
+      (VIEW_MODE === "audit")
+        ? (STATUS_DONE_AUDIT + " · 见下方 Agent 轨迹")
+        : STATUS_DONE_CRAFTSMAN;
+  } else if(document.getElementById("status").textContent.indexOf("复验中") === 0){
+    // 复验进行中切视图:同步 running 文案密度
+    document.getElementById("status").textContent =
+      (VIEW_MODE === "audit") ? STATUS_RUNNING_AUDIT : STATUS_RUNNING_CRAFTSMAN;
+  }
+}
+function renderViewChrome(){
+  const panel = document.getElementById("audit-panel");
+  if(VIEW_MODE === "audit") panel.classList.add("visible");
+  else panel.classList.remove("visible");
+  const body = document.getElementById("audit-body");
+  if(!STATE.trajectory){
+    body.innerHTML = "尚无本轮轨迹。完成复验后此处显示 Agent 轨迹路径与 Lead/Critic 工程信息。";
+    return;
+  }
+  let h = '<div>工具轨迹路径:<code>'+esc(String(STATE.trajectory))+'</code></div>';
+  if(STATE.retrieval_used != null)
+    h += '<div style="margin-top:4px">检索次数(本轮): '+esc(String(STATE.retrieval_used))+'</div>';
+  if(STATE.decoding){
+    const d = STATE.decoding;
+    h += '<div style="margin-top:4px">解码: '+esc(String(d.model||''))
+       +' temp='+esc(String(d.temperature))+' '+esc(String(d.recorded_at||''))+'</div>';
+  }
+  h += '<div style="margin-top:6px;color:#8250df">角色信息仅审计视图可见;'
+     + '职人视图成交面只用主张状态与作废/续命/重跑。</div>';
+  body.innerHTML = h;
+}
+
 async function boot(){
   await fetch('/api/import',{method:'POST'});
   const j = await (await fetch('/api/claims')).json();
-  STATE = j; renderClaims();
+  STATE = Object.assign(STATE, j); renderViewChrome(); renderClaims();
 }
 function pickedAction(cid){
   const d = PENDING_DECISIONS.find(x=>x.claim_id===cid);
@@ -385,15 +453,23 @@ async function showSource(docId, anchor, asOf){
 async function runReverify(){
   const btn = document.getElementById('btn-run');
   btn.disabled = true;
-  document.getElementById('status').textContent = '复验中(端到端真主链:Lead 循环 + 规则闸)……';
+  // DEM-6:职人默认成交面不用 Lead/轨迹作状态文案;审计视图才露工程角色
+  document.getElementById('status').textContent =
+    (VIEW_MODE === "audit") ? STATUS_RUNNING_AUDIT : STATUS_RUNNING_CRAFTSMAN;
   try{
     const j = await (await fetch('/api/reverify',{method:'POST'})).json();
     if(j.error){ document.getElementById('status').textContent = j.error; return; }
     STATE.claims = j.claims; STATE.latch = j.latch; PENDING_DECISIONS = [];
+    STATE.trajectory = j.trajectory; STATE.retrieval_used = j.retrieval_used;
+    STATE.decoding = j.decoding;
+    renderViewChrome();
     renderClaims();
-    document.getElementById('status').textContent =
-      '复验完成 · 检索 '+j.retrieval_used+'/24 · 轨迹 '+j.trajectory
-      +' · '+j.decoding.model+' temp='+j.decoding.temperature+' '+j.decoding.recorded_at;
+    if(VIEW_MODE === "audit"){
+      document.getElementById('status').textContent =
+        STATUS_DONE_AUDIT + ' · 检索 '+j.retrieval_used+'/24 · 见下方 Agent 轨迹';
+    } else {
+      document.getElementById('status').textContent = STATUS_DONE_CRAFTSMAN;
+    }
   } finally { btn.disabled = false; }
 }
 function openVoidConfirm(cid){
@@ -467,7 +543,15 @@ boot();
 
 @app.get("/", response_class=HTMLResponse)
 def index() -> str:
-    return HTML_PAGE
+    # 注入单一真相默认视图,避免 Python 常量与 JS 初值漂移
+    html = HTML_PAGE.replace(_VIEW_MODE_TOKEN, VIEW_MODE_DEFAULT)
+    if VIEW_MODE_DEFAULT == "craftsman":
+        # 职人默认:审计钮无 on;职人钮保持模板内 class="on"
+        pass
+    else:
+        html = html.replace('id="view-craftsman" class="on"', 'id="view-craftsman"')
+        html = html.replace('id="view-audit"', 'id="view-audit" class="on"', 1)
+    return html
 
 
 if __name__ == "__main__":
