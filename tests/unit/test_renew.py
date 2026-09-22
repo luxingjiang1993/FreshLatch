@@ -212,6 +212,119 @@ def test_atk_cs_01_tamper_corpus_renew_checksum_mismatch_zero_write(tmp_path):
     assert latch_actions(store) == []
 
 
+def test_atk_cs_03_empty_claimed_nonzero_actual_blocks_write(tmp_path):
+    """ATK-CS-03:checksum_fn 非空 + claimed 空字符串 → 拦截,不得绿灯写入。
+
+    claimed 取自点回块的库内指纹(本夹具为空)。空 claimed 不是「未启用」。
+    不得升格为「checksum 已证明 latch」。
+    """
+    store = make_store(tmp_path, checksum="")
+    claim = make_claim()
+    before = (
+        claim.status,
+        claim.validity_basis,
+        claim.last_confirmed_at,
+        tuple(claim.t1_evidence_ids),
+        claim.reason,
+    )
+    assert latch_actions(store) == []
+    latch = make_latch(store, tmp_path, checksum_fn=lambda doc_id, as_of: "corpus-sha256-nonempty")
+    rnd = latch.enter_round([claim])
+    results = latch.decide(rnd.thread_id, [{"claim_id": "c1", "action": "renew",
+                                            "evidence_id": EID}])
+    assert results[0]["ok"] is False, results[0]
+    assert results[0]["error_code"] == "CHECKSUM_MISMATCH"
+    after = (
+        claim.status,
+        claim.validity_basis,
+        claim.last_confirmed_at,
+        tuple(claim.t1_evidence_ids),
+        claim.reason,
+    )
+    assert after == before
+    assert claim.status == "stale"
+    assert latch_actions(store) == []
+
+
+def test_atk_cs_02_store_column_fn_not_activation_success(tmp_path):
+    """ATK-CS-02:注入读库列的 checksum_fn,不得因恒等过闸记为激活成功。
+
+    错误接线只活在本夹具,不上线。语料先被篡改,使库列与文件现算分开,
+    套套才会暴露;未篡改时二者相同,哨兵分不开。零 LLM。
+    不得升格为「checksum 已证明 latch」。不进档 3a/3b。
+    """
+    from pathlib import Path
+
+    from freshlatch.store.checksum import (
+        counts_as_checksum_activation,
+        make_checksum_fn,
+        sha256_hex,
+    )
+    from freshlatch.store.ingest import ingest_into
+
+    repo_root = Path(__file__).resolve().parents[2]
+
+    corpus = tmp_path / "corpus"
+    (corpus / "t1").mkdir(parents=True)
+    (corpus / "t0").mkdir(parents=True)
+    path = corpus / "t1" / f"{DOC}.md"
+    raw = (
+        f"---\ndoc_id: {DOC}\nas_of: T1\nsource_type: competitor\n"
+        f"title: 竞品笔记\nchecksum:\n---\n\n## p2\n"
+        f"T1:竞品客单价仍显著高于我们。\n"
+    ).encode("utf-8")
+    path.write_bytes(raw)
+
+    store = SQLiteStore(tmp_path / "atk02.db")
+    assert ingest_into(store, corpus) >= 1
+    recorded = store.get_chunk(DOC, "p2", as_of="T1")
+    assert recorded is not None and recorded.checksum == sha256_hex(raw)
+
+    prod = make_checksum_fn(corpus)
+    # 哨兵不是恒 False:未篡改且闸绿时,语料现算可以记为激活(仍非 latch 证明)
+    assert counts_as_checksum_activation(
+        prod, corpus_root=corpus, doc_id=DOC, as_of="T1",
+        store_column=recorded.checksum, gate_green=True,
+    ) is True
+
+    path.write_bytes(raw + b"\nTAMPER-ATK-CS-02\n")
+    file_now = sha256_hex(path.read_bytes())
+    assert file_now != recorded.checksum
+    still = store.get_chunk(DOC, "p2", as_of="T1")
+    assert still is not None and still.checksum == recorded.checksum
+
+    def read_store_column(doc_id, as_of):
+        chunk = store.get_chunk(doc_id, "p2", as_of=as_of)
+        assert chunk is not None
+        return chunk.checksum
+
+    assert read_store_column(DOC, "T1") == recorded.checksum
+    assert read_store_column(DOC, "T1") != file_now
+    # 生产接线读文件,不读库列
+    assert prod(DOC, "T1") == file_now
+    assert prod(DOC, "T1") != recorded.checksum
+
+    claim = make_claim()
+    latch = make_latch(store, tmp_path, checksum_fn=read_store_column)
+    rnd = latch.enter_round([claim])
+    results = latch.decide(rnd.thread_id, [{"claim_id": "c1", "action": "renew",
+                                            "evidence_id": EID}])
+    # 恒等会骗过只比较返回值的闸;该绿不是激活登记
+    assert results[0]["ok"] is True, results[0]
+    assert counts_as_checksum_activation(
+        read_store_column, corpus_root=corpus, doc_id=DOC, as_of="T1",
+        store_column=recorded.checksum, gate_green=bool(results[0]["ok"]),
+    ) is False
+
+    # 契约:生产 checksum 模块与 UI renew 注入不得读库列
+    checksum_src = (repo_root / "src/freshlatch/store/checksum.py").read_text(encoding="utf-8")
+    assert "get_chunk" not in checksum_src
+    assert "get_document" not in checksum_src
+    assert "sqlite" not in checksum_src.lower()
+    app_src = (repo_root / "src/freshlatch/ui/app.py").read_text(encoding="utf-8")
+    assert "checksum_fn=make_checksum_fn(CORPUS)" in app_src
+
+
 def test_renew_without_evidence_writes_nothing(tmp_path):
     store = make_store(tmp_path)
     latch = make_latch(store, tmp_path)
