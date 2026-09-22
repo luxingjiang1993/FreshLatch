@@ -1,0 +1,39 @@
+{
+  "question": "是否应在未来 12 个月内进入东南亚中小企业 AI 客服市场?",
+  "store": "D:\\BaiduNetdiskDownload\\AI大模型应用第21期\\试验项目\\蓝海项目5\\.worktrees\\integrate-batch01\\data\\freshlatch.db",
+  "trajectory": "reports\\trajectories\\run-20260923-004045.jsonl",
+  "claims": [
+    {
+      "claim_id": "c1",
+      "statement": "竞品 SeaDesk 在该市场的客单价显著高于我方公开定价 59 美元/席/月定价",
+      "t0_evidence_ids": [],
+      "t1_evidence_ids": [
+        "t0-competitor-notes#p2@T1"
+      ],
+      "status": "stale",
+      "reason": "T1 原文明确指出，竞品 SeaDesk 于 2026 年 7 月发布 Lite 入门版，报价 39 美元/月/店，已低于我方拟定的 59 美元/月/店定价；且有两家商户已实际转用 Lite 版。此信息直接推翻主张 c1 中‘竞品客单价显著高于我方公开定价’的前提。",
+      "voided": false,
+      "voided_at": null,
+      "last_confirmed_at": null,
+      "validity_basis": null,
+      "timeline": []
+    },
+    {
+      "claim_id": "c2",
+      "statement": "印尼与泰国目前无客服数据本地化强制要求",
+      "t0_evidence_ids": [],
+      "t1_evidence_ids": [
+        "t0-regulatory-memo#p2@T1"
+      ],
+      "status": "stale",
+      "reason": "T1 原文 p2 明确指出：'2026 年 8 月,印尼通信与信息技术部发布 PDP 法实施条例,其中明确规定:面向印尼境内用户的在线客服对话日志须在印尼境内存储,2026 年 12 月 1 日起生效'，此为对『印尼无客服数据本地化强制要求』主张的直接推翻。该条款构成明确的强制性合规义务，已覆盖主张中关于印尼的全部前提。",
+      "voided": false,
+      "voided_at": null,
+      "last_confirmed_at": null,
+      "validity_basis": null,
+      "timeline": []
+    }
+  ],
+  "synthetic": true,
+  "recorded_at": "2026-09-22T16:40:47Z"
+}

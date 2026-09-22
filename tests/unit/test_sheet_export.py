@@ -230,11 +230,13 @@ def test_cli_module_invocation(tmp_path):
             str(out),
         ],
         cwd=str(REPO_ROOT),
-        env={**os.environ, "PYTHONPATH": str(SRC)},
+        env={**os.environ, "PYTHONPATH": str(SRC), "PYTHONIOENCODING": "utf-8"},
         capture_output=True,
         text=True,
+        encoding="utf-8",
+        errors="replace",
         check=False,
     )
     assert proc.returncode == 0, proc.stderr
     assert out.exists()
-    assert "复验单已写出" in proc.stdout
+    assert "复验单已写出" in (proc.stdout or "")

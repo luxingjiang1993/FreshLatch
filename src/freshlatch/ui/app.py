@@ -10,17 +10,20 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-from fastapi import FastAPI, Query
+from fastapi import FastAPI, File, Query, UploadFile
 from fastapi.responses import HTMLResponse, JSONResponse
 from pydantic import BaseModel
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
+from freshlatch.claim_import import ClaimImportError, parse_claim_import_draft  # noqa: E402
+from freshlatch.guardrails import Guardrails  # noqa: E402
 from freshlatch.latch import HumanLatch, HumanLatchError  # noqa: E402
-from freshlatch.runner import Runner, load_docket  # noqa: E402
+from freshlatch.runner import RunContext, Runner, load_docket  # noqa: E402
 from freshlatch.sheet import project_claim  # noqa: E402
 from freshlatch.store.ingest import parse_document  # noqa: E402
 from freshlatch.store.sqlite_store import SQLiteStore  # noqa: E402
+from freshlatch.t1_source import T1SourceSession  # noqa: E402
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent.parent
 CORPUS = REPO_ROOT / "data" / "corpus"
@@ -34,15 +37,64 @@ BADGE = {
     "void": ("void · 已作废", "#8250df"),
 }
 MAIN_BUTTON_TEXT = "开始复验"  # 文案白名单(红线 2):主按钮唯一合法文案
+VIEW_MODE_DEFAULT = "craftsman"  # DEM-6:默认职人视图(去角色化成交面)
+# HTML 模板占位:index() 注入 VIEW_MODE_DEFAULT,避免 Python/JS 默认值漂移
+_VIEW_MODE_TOKEN = "__VIEW_MODE_DEFAULT__"
 EMPTY_LATCH = {"thread_id": None, "pending": []}  # 人审轮状态收口(不各处字面造 dict)
+# DEM-4:步数/检索预算进度;天花板与 Guardrails 默认对齐(α-demo 可见性 ≠ latch 证明)
+_G = Guardrails()
+EMPTY_BUDGET = {
+    "steps_used": 0,
+    "lead_max_steps": _G.lead_max_steps,
+    "retrieval_used": 0,
+    "retrieval_budget": _G.retrieval_budget,
+}
+del _G
 
 app = FastAPI(title="FreshLatch 复验单")
 _state: dict = {"claims": [], "question": "", "trajectory": None, "running": False,
-                "latch": dict(EMPTY_LATCH)}
+                "latch": dict(EMPTY_LATCH),
+                "budget": dict(EMPTY_BUDGET),
+                "run_ctx": None,
+                "retrieve_zero_hits": []}  # DEM-5:本轮 retrieve 空命中;仅提示,不改写判定
+_t1: T1SourceSession | None = None
+
+
+def _budget_from_ctx(ctx: RunContext) -> dict:
+    """从 RunContext 投影预算进度(与 Guardrails 字段对齐)。"""
+    g = ctx.guardrails
+    return {
+        "steps_used": ctx.lead_steps_used,
+        "lead_max_steps": g.lead_max_steps,
+        "retrieval_used": ctx.retrieval_used,
+        "retrieval_budget": g.retrieval_budget,
+    }
+
+
+def _current_budget() -> dict:
+    """复验中读 live RunContext;完成后读会话摘要。"""
+    if _state.get("running") and _state.get("run_ctx") is not None:
+        return _budget_from_ctx(_state["run_ctx"])
+    return dict(_state.get("budget") or EMPTY_BUDGET)
 
 
 def _store() -> SQLiteStore:
     return SQLiteStore(REPO_ROOT / "data" / "freshlatch.db")
+
+
+def _t1_session() -> T1SourceSession:
+    """进程内 T1 来源三卡会话;测试可通过 _reset_t1_source 换店。"""
+    global _t1
+    if _t1 is None:
+        _t1 = T1SourceSession(_store(), corpus_root=CORPUS)
+    return _t1
+
+
+def _reset_t1_source(store: SQLiteStore | None = None) -> T1SourceSession:
+    """测试/重启入口:清空三卡状态并绑到给定 store。"""
+    global _t1
+    _t1 = T1SourceSession(store or _store(), corpus_root=CORPUS)
+    return _t1
 
 
 def _latch() -> HumanLatch:
@@ -63,16 +115,99 @@ def api_claims() -> dict:
         "trajectory": str(_state["trajectory"]) if _state["trajectory"] else None,
         "running": _state["running"],
         "latch": _state["latch"],
+        # DEM-5:零命中告警投影;UI 只展示,不得据此改写 status
+        "retrieve_zero_hits": list(_state.get("retrieve_zero_hits") or []),
+        "budget": _current_budget(),  # DEM-4:复验中/完成后可见
     }
 
 
 @app.post("/api/import")
 def api_import() -> dict:
-    """docket 导入(Workflow):只读 statement 与 t0_evidence_ids,不做新调查。"""
+    """JSON docket 高级入口(Workflow):只读 statement 与 t0_evidence_ids,不做新调查。"""
     docket = load_docket(DEMO_DOCKET)
     _state["claims"] = docket.claims
     _state["question"] = docket.question  # 单一真相:data/t0_docket.json
+    _state["latch"] = dict(EMPTY_LATCH)
     return {"imported": len(docket.claims)}
+
+
+class PasteDraftRequest(BaseModel):
+    text: str
+
+
+class DraftImportRequest(BaseModel):
+    text: str
+    question: str | None = None
+
+
+@app.get("/api/t1-source")
+def api_t1_source() -> dict:
+    """T1 来源三卡状态投影(ADR-0016 / DEM-2)。"""
+    return _t1_session().snapshot()
+
+
+@app.post("/api/t1-source/paste")
+def api_t1_paste(req: PasteDraftRequest) -> JSONResponse:
+    """粘贴变更要点 → 仅草稿,未确认不得 retrieve / 续命。"""
+    result = _t1_session().save_paste_draft(req.text)
+    if not result.ok:
+        return JSONResponse({"error": result.error}, status_code=400)
+    return JSONResponse(_t1_session().snapshot())
+
+
+@app.post("/api/t1-source/confirm")
+def api_t1_confirm() -> JSONResponse:
+    """人点「确认入库」后才 ingest。"""
+    result = _t1_session().confirm_paste()
+    if not result.ok:
+        return JSONResponse({"error": result.error}, status_code=400)
+    return JSONResponse(_t1_session().snapshot())
+
+
+@app.post("/api/t1-source/synthetic")
+def api_t1_synthetic() -> JSONResponse:
+    """选用内置合成评测包(界面标明 synthetic)。"""
+    result = _t1_session().select_synthetic(CORPUS)
+    if not result.ok:
+        return JSONResponse({"error": result.error}, status_code=400)
+    return JSONResponse(_t1_session().snapshot())
+
+
+@app.post("/api/t1-source/upload")
+async def api_t1_upload(files: list[UploadFile] = File(...)) -> JSONResponse:
+    """上传 T1 语料包 → ingest 后可检索。"""
+    payload: list[tuple[str, str]] = []
+    for f in files:
+        raw = await f.read()
+        try:
+            payload.append((f.filename or "upload.md", raw.decode("utf-8")))
+        except UnicodeDecodeError:
+            return JSONResponse(
+                {"error": f"{f.filename or 'upload'}:须为 UTF-8 文本 markdown"},
+                status_code=400,
+            )
+    result = _t1_session().ingest_upload_texts(payload)
+    if not result.ok:
+        return JSONResponse({"error": result.error}, status_code=400)
+    return JSONResponse(_t1_session().snapshot())
+
+
+@app.post("/api/import/draft")
+def api_import_draft(req: DraftImportRequest) -> JSONResponse:
+    """主张导入稿(MD/粘贴):按 ## claim_id 切条;缺 id → c-import-N。不做散文抽主张/LLM 切分。"""
+    try:
+        docket, assigned = parse_claim_import_draft(req.text, question=req.question)
+    except ClaimImportError as e:
+        return JSONResponse({"error": str(e)}, status_code=400)
+    _state["claims"] = docket.claims
+    _state["question"] = docket.question
+    _state["latch"] = dict(EMPTY_LATCH)
+    return JSONResponse({
+        "imported": len(docket.claims),
+        "assigned_ids": assigned,
+        "question": docket.question,
+        "claim_ids": [c.claim_id for c in docket.claims],
+    })
 
 
 @app.post("/api/reverify")
@@ -84,17 +219,28 @@ def api_reverify() -> JSONResponse:
     """
     if _state["running"]:
         return JSONResponse({"error": "已有复验在进行中"}, status_code=409)
+    if not _t1_session().state.ready:
+        return JSONResponse(
+            {"error": "未选定合法 T1 来源,不得假装已有最新事实(请先完成 T1 来源三卡)"},
+            status_code=400,
+        )
     if not _state["claims"]:
         api_import()
     _state["running"] = True
     try:
         runner = Runner(_store())
+        _state["run_ctx"] = runner.ctx
+        _state["budget"] = _budget_from_ctx(runner.ctx)
         result = runner.run(list(_state["claims"]))
         _state["trajectory"] = result.trajectory_path
+        _state["budget"] = _budget_from_ctx(runner.ctx)  # 会话内保留用量摘要(DEM-4)
+        # DEM-5:记录零命中清单供 UI 强提示;不改写任何主张 status
+        _state["retrieve_zero_hits"] = list(result.retrieve_zero_hits)
         rnd = _latch().enter_round(_state["claims"])  # 无红/黄灯则 thread_id=None 直接完成
         _state["latch"] = {"thread_id": rnd.thread_id, "pending": rnd.pending}
     finally:
         _state["running"] = False
+        _state["run_ctx"] = None
     return JSONResponse({
         "claims": [_claim_to_dict(_store(), c) for c in _state["claims"]],
         "trajectory": str(result.trajectory_path),
@@ -102,6 +248,8 @@ def api_reverify() -> JSONResponse:
         "steps_by_claim": result.steps_by_claim,
         "decoding": result.decoding.__dict__,
         "latch": _state["latch"],
+        "retrieve_zero_hits": list(_state["retrieve_zero_hits"]),
+        "budget": dict(_state["budget"]),
     })
 
 
@@ -205,7 +353,17 @@ HTML_PAGE = """<!DOCTYPE html>
  .asof{font-size:11px;color:#fff;background:#57606a;border-radius:4px;padding:1px 6px;margin-right:6px}
  .tabs button{padding:4px 12px;border:1px solid #d0d7de;background:#fff;cursor:pointer}
  .tabs button.on{background:#0a2540;color:#fff}
+ .view-toggle{display:inline-flex;gap:0;margin-left:8px}
+ .view-toggle button{padding:4px 12px;border:1px solid #d0d7de;background:#fff;color:#0a2540;
+                     cursor:pointer;font-size:13px}
+ .view-toggle button:first-child{border-radius:6px 0 0 6px}
+ .view-toggle button:last-child{border-radius:0 6px 6px 0;border-left:0}
+ .view-toggle button.on{background:#1f6feb;color:#fff;border-color:#1f6feb}
  #status{font-size:13px;color:#57606a}
+ #audit-panel{display:none;margin:0 16px 10px;background:#fff;border:1px solid #d0d7de;
+              border-radius:6px;padding:10px 14px;font-size:13px;color:#57606a}
+ #audit-panel.visible{display:block}
+ #audit-panel code{word-break:break-all}
  details{margin-top:12px;background:#fff;border:1px solid #d0d7de;border-radius:6px;padding:8px 12px}
  code{background:#eff1f3;padding:1px 5px;border-radius:4px}
  .timeline{font-size:12px;color:#57606a;margin-top:6px;border-top:1px dashed #d0d7de;padding-top:4px}
@@ -217,16 +375,75 @@ HTML_PAGE = """<!DOCTYPE html>
  .modal .renew-ok{background:#1a7f37;color:#fff;border-color:#1a7f37}     /* 续命确认 */
  .modal select{width:100%;margin-top:6px;padding:6px 8px;border-radius:6px;border:1px solid #d0d7de;
                font-family:ui-monospace,monospace;font-size:12px}
+ #t1-source{background:#fff;border:1px solid #d0d7de;border-radius:6px;padding:10px 12px;margin-bottom:12px}
+ #t1-source h3{margin:0 0 8px;font-size:15px}
+ #t1-source .hint{font-size:12px;color:#57606a;margin-bottom:8px}
+ #t1-source .cards{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+ #t1-source .card{border:1px solid #d0d7de;border-radius:6px;padding:8px;background:#f6f8fa}
+ #t1-source .card.sel{outline:2px solid #0969da;background:#ddf4ff}
+ #t1-source .card h4{margin:0 0 6px;font-size:13px}
+ #t1-source .card .syn-tag{background:#b45309;color:#fff;font-size:11px;padding:1px 6px;border-radius:8px}
+ #t1-source textarea{width:100%;min-height:72px;font-family:ui-monospace,Consolas,monospace;font-size:12px;
+                     border:1px solid #d0d7de;border-radius:4px;padding:6px;box-sizing:border-box}
+ #t1-source button{margin-top:6px;padding:5px 10px;border-radius:6px;border:1px solid #d0d7de;cursor:pointer;background:#fff}
+ #t1-source button.primary{background:#1f883d;color:#fff;border-color:#1f883d}
+ #t1-source .net{font-size:12px;color:#57606a;margin-top:8px}
+ #t1-source .msg{font-size:12px;margin-top:6px;color:#0969da}
+ /* DEM-5:检索零命中强提示(非判定闸;不改写 status) */
+ #retrieve-zero-hit{background:#fff1f0;border:2px solid #cf222e;border-radius:6px;
+   padding:10px 12px;margin-bottom:10px;color:#82071e}
+ #retrieve-zero-hit b{font-size:14px}
+ #retrieve-zero-hit .note{font-size:12px;margin-top:6px;color:#57606a}
+ #retrieve-zero-hit ul{margin:6px 0 0;padding-left:18px;font-size:12px;font-family:ui-monospace,Consolas,monospace}
+ #retrieve-unknown-note{font-size:12px;color:#57606a;margin:0 0 10px;padding:6px 8px;
+   border-left:3px solid #d0d7de;background:#f6f8fa}
+ #import-panel{display:none;background:#fff;border:1px solid #d0d7de;border-radius:6px;
+               padding:10px 12px;margin-bottom:10px}
+ #import-panel.open{display:block}
+ #import-panel textarea{width:100%;min-height:140px;font-family:ui-monospace,Consolas,monospace;
+                        font-size:12px;padding:8px;border:1px solid #d0d7de;border-radius:6px;
+                        box-sizing:border-box;resize:vertical}
+ #import-panel .hint{font-size:12px;color:#57606a;margin:6px 0}
+ header button.ghost{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.45);
+                     border-radius:6px;padding:6px 12px;font-size:13px;cursor:pointer}
+ #budget-progress{display:flex;flex-direction:column;gap:4px;min-width:200px;font-size:12px;color:#fff}
+ .budget-row{display:flex;align-items:center;gap:8px}
+ .budget-label{width:2.5em;opacity:.9}
+ .budget-track{flex:1;height:6px;background:rgba(255,255,255,.25);border-radius:3px;overflow:hidden}
+ .budget-fill{height:100%;background:#3fb950;width:0%;transition:width .2s linear}
+ .budget-text{font-variant-numeric:tabular-nums;min-width:3.5em;text-align:right;opacity:.95}
 </style>
 </head>
 <body>
 <header>
  <strong>FreshLatch 复验单</strong>
  <span class="syn">SYNTHETIC · 合成语料,非真实客户数据</span>
+ <span class="view-toggle" role="group" aria-label="视图密度">
+  <button type="button" id="view-craftsman" class="on" onclick="setViewMode(&quot;craftsman&quot;)">职人视图</button>
+  <button type="button" id="view-audit" onclick="setViewMode(&quot;audit&quot;)">审计视图</button>
+ </span>
+ <div id="budget-progress" aria-live="polite" title="护栏预算进度(α-demo)">
+  <div class="budget-row">
+   <span class="budget-label">步数</span>
+   <div class="budget-track"><div id="bar-steps" class="budget-fill"></div></div>
+   <span id="budget-steps-text" class="budget-text" title="当前 Lead 会话 / lead_max_steps">0/0</span>
+  </div>
+  <div class="budget-row">
+   <span class="budget-label">检索</span>
+   <div class="budget-track"><div id="bar-retrieval" class="budget-fill"></div></div>
+   <span id="budget-retrieval-text" class="budget-text" title="本轮 Run / retrieval_budget">0/0</span>
+  </div>
+ </div>
  <span id="status"></span>
  <span style="flex:1"></span>
+ <button class="ghost" type="button" onclick="toggleImportPanel()">主张导入稿</button>
+ <button class="ghost" type="button" onclick="importDocket()">导入合成 docket(高级)</button>
  <button class="big" id="btn-run" onclick="runReverify()">开始复验</button>
 </header>
+<div id="audit-panel" aria-live="polite">
+ <b>审计视图</b> · Lead / Critic 工具轨迹与工程角色信息(排障/面试用;不改变作废·续命·闸语义)
+ <div id="audit-body" style="margin-top:6px">尚无本轮轨迹。完成复验后此处显示轨迹路径与解码参数。</div>
+</div>
 <main>
  <section id="claims"><p style="color:#57606a">加载中……</p></section>
  <section id="pane"><p style="color:#57606a">← 点击主张的证据 id,这里显示 T0/T1 原文并高亮锚点段落</p></section>
@@ -251,19 +468,208 @@ HTML_PAGE = """<!DOCTYPE html>
   </div>
 </div></div>
 <script>
-let STATE = {claims: [], question: "", latch: {thread_id: null, pending: []}};
+let STATE = {claims: [], question: "", latch: {thread_id: null, pending: []},
+             retrieve_zero_hits: [],
+             trajectory: null, retrieval_used: null, decoding: null,
+             budget: null};
+let T1SRC = {kind:'none', ready:false, paste_status:'none', synthetic:false,
+             network_enabled:false, message:'', cards:[]};
+let PASTE_DRAFT_TEXT = '';  // 重绘三卡时保留粘贴框内容
 let CURRENT_ANCHOR = null;  // 用户在右栏当前选中的小节(手动选择优先于证据锚点)
 let PENDING_DECISIONS = []; // 本轮已选的人审决定(批量提交)
 let MODAL_CLAIM = null;
 let RENEW_CLAIM = null;
+let IMPORT_PANEL_OPEN = false;  // 主张导入稿面板展开态(跨 renderClaims 保留)
+let budgetPoll = null;  // DEM-4:复验中轮询预算
+// DEM-6:同一复验单两密度;默认职人;切换只改呈现,不碰 Latch/Gate
+let VIEW_MODE = "__VIEW_MODE_DEFAULT__";
+const STATUS_RUNNING_CRAFTSMAN = "复验中……";
+const STATUS_DONE_CRAFTSMAN = "复验完成";
+const STATUS_RUNNING_AUDIT = "复验中(端到端真主链:Lead 循环 + 规则闸)……";
+const STATUS_DONE_AUDIT = "复验完成";  // 详情拼在 audit 面板,状态栏保持短句
 function esc(s){return s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}
 const BADGE = {fresh:["绿 · 仍成立","#1a7f37"],stale:["红 · 已失效","#cf222e"],
                unknown:["灰 · 证据不足","#6e7781"],void:["void · 已作废","#8250df"]};
 
+function renderBudget(b){
+  // DEM-4:steps_used/lead_max_steps 与 retrieval_used/retrieval_budget
+  if(!b) return;
+  STATE.budget = b;
+  const su = Number(b.steps_used)||0, sm = Number(b.lead_max_steps)||0;
+  const ru = Number(b.retrieval_used)||0, rm = Number(b.retrieval_budget)||0;
+  const sp = sm > 0 ? Math.min(100, Math.round(100 * su / sm)) : 0;
+  const rp = rm > 0 ? Math.min(100, Math.round(100 * ru / rm)) : 0;
+  document.getElementById('budget-steps-text').textContent = su + '/' + sm;
+  document.getElementById('budget-retrieval-text').textContent = ru + '/' + rm;
+  document.getElementById('bar-steps').style.width = sp + '%';
+  document.getElementById('bar-retrieval').style.width = rp + '%';
+}
+async function pollBudget(){
+  try{
+    const j = await (await fetch('/api/claims')).json();
+    if(j.budget) renderBudget(j.budget);
+  }catch(e){}
+}
+
+function setViewMode(mode){
+  // 只改呈现密度:不提交人审、不触发复验端点
+  VIEW_MODE = (mode === "audit") ? "audit" : "craftsman";
+  document.getElementById("view-craftsman").classList.toggle("on", VIEW_MODE === "craftsman");
+  document.getElementById("view-audit").classList.toggle("on", VIEW_MODE === "audit");
+  renderViewChrome();
+  // 切回职人时收起状态栏工程细节;有本轮结果则按密度重写短状态
+  if(STATE.trajectory){
+    document.getElementById("status").textContent =
+      (VIEW_MODE === "audit")
+        ? (STATUS_DONE_AUDIT + " · 见下方 Agent 轨迹")
+        : STATUS_DONE_CRAFTSMAN;
+  } else if(document.getElementById("status").textContent.indexOf("复验中") === 0){
+    // 复验进行中切视图:同步 running 文案密度
+    document.getElementById("status").textContent =
+      (VIEW_MODE === "audit") ? STATUS_RUNNING_AUDIT : STATUS_RUNNING_CRAFTSMAN;
+  }
+}
+function renderViewChrome(){
+  const panel = document.getElementById("audit-panel");
+  if(VIEW_MODE === "audit") panel.classList.add("visible");
+  else panel.classList.remove("visible");
+  const body = document.getElementById("audit-body");
+  if(!STATE.trajectory){
+    body.innerHTML = "尚无本轮轨迹。完成复验后此处显示 Agent 轨迹路径与 Lead/Critic 工程信息。";
+    return;
+  }
+  let h = '<div>工具轨迹路径:<code>'+esc(String(STATE.trajectory))+'</code></div>';
+  if(STATE.retrieval_used != null)
+    h += '<div style="margin-top:4px">检索次数(本轮): '+esc(String(STATE.retrieval_used))+'</div>';
+  if(STATE.decoding){
+    const d = STATE.decoding;
+    h += '<div style="margin-top:4px">解码: '+esc(String(d.model||''))
+       +' temp='+esc(String(d.temperature))+' '+esc(String(d.recorded_at||''))+'</div>';
+  }
+  h += '<div style="margin-top:6px;color:#8250df">角色信息仅审计视图可见;'
+     + '职人视图成交面只用主张状态与作废/续命/重跑。</div>';
+  body.innerHTML = h;
+}
+
 async function boot(){
   await fetch('/api/import',{method:'POST'});
   const j = await (await fetch('/api/claims')).json();
-  STATE = j; renderClaims();
+  STATE = Object.assign(STATE, j);
+  if(!STATE.retrieve_zero_hits) STATE.retrieve_zero_hits = [];
+  if(j.budget) renderBudget(j.budget);
+  await refreshT1Source();
+  renderViewChrome();
+  renderClaims();
+}
+async function refreshT1Source(){
+  T1SRC = await (await fetch('/api/t1-source')).json();
+}
+function renderT1Source(){
+  // T1 来源三卡(ADR-0016):合法入口全集;粘贴须确认入库;合成标明 synthetic
+  const sel = T1SRC.kind || 'none';
+  let h = '<div id="t1-source"><h3>T1 来源三卡</h3>'
+        + '<div class="hint">复验前须选定合法 T1 来源。未选定不得假装已有最新事实。</div>'
+        + '<div class="cards">'
+        + '<div class="card'+(sel==='upload'?' sel':'')+'" id="t1-card-upload">'
+        + '<h4>上传 T1 语料包</h4>'
+        + '<input type="file" id="t1-upload-input" accept=".md,text/markdown" multiple>'
+        + '<button class="primary" onclick="uploadT1()">上传并入库</button></div>'
+        + '<div class="card'+(sel==='paste'?' sel':'')+'" id="t1-card-paste">'
+        + '<h4>粘贴变更要点</h4>'
+        + '<textarea id="t1-paste-draft" aria-label="粘贴变更要点" placeholder="粘贴变更要点(先成草稿)"></textarea>'
+        + '<button onclick="savePasteDraft()">保存草稿</button> '
+        + '<button class="primary" onclick="confirmPasteIngest()">确认入库</button>'
+        + '<div class="hint">未确认不可 retrieve、不可作续命证据</div></div>'
+        + '<div class="card'+(sel==='synthetic'?' sel':'')+'" id="t1-card-synthetic">'
+        + '<h4>内置合成评测包 <span class="syn-tag">synthetic</span></h4>'
+        + '<button class="primary" onclick="selectSynthetic()">选用合成评测包</button></div>'
+        + '</div>'
+        + '<div class="net">联网插座:默认关闭(不进本批主路径)</div>'
+        + '<div class="msg" id="t1-msg">'+esc(T1SRC.message||'')+'</div></div>';
+  return h;
+}
+function restorePasteDraftBox(){
+  const box = document.getElementById('t1-paste-draft');
+  if(box) box.value = PASTE_DRAFT_TEXT;
+}
+async function uploadT1(){
+  const input = document.getElementById('t1-upload-input');
+  if(!input || !input.files || !input.files.length){
+    document.getElementById('status').textContent = '请先选择要上传的 T1 markdown 文件';
+    return;
+  }
+  const fd = new FormData();
+  for(const f of input.files) fd.append('files', f);
+  const j = await (await fetch('/api/t1-source/upload',{method:'POST', body:fd})).json();
+  if(j.error){ document.getElementById('status').textContent = j.error; return; }
+  T1SRC = j; renderClaims();
+  document.getElementById('status').textContent = j.message || 'T1 语料包已入库';
+}
+async function savePasteDraft(){
+  const text = document.getElementById('t1-paste-draft').value;
+  PASTE_DRAFT_TEXT = text;
+  const j = await (await fetch('/api/t1-source/paste',{
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({text: text})})).json();
+  if(j.error){ document.getElementById('status').textContent = j.error; return; }
+  T1SRC = j; renderClaims();
+  document.getElementById('status').textContent = j.message || '草稿已保存';
+}
+async function confirmPasteIngest(){
+  // 主路径:可直接点「确认入库」;若框内有文且尚未存草稿,先自动保存再确认
+  const box = document.getElementById('t1-paste-draft');
+  const text = box ? box.value : '';
+  if(text && text.trim() && T1SRC.paste_status !== 'draft'){
+    PASTE_DRAFT_TEXT = text;
+    const saved = await (await fetch('/api/t1-source/paste',{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({text: text})})).json();
+    if(saved.error){ document.getElementById('status').textContent = saved.error; return; }
+    T1SRC = saved;
+  }
+  const j = await (await fetch('/api/t1-source/confirm',{method:'POST'})).json();
+  if(j.error){ document.getElementById('status').textContent = j.error; return; }
+  T1SRC = j; renderClaims();
+  document.getElementById('status').textContent = j.message || '已确认入库';
+}
+async function selectSynthetic(){
+  const j = await (await fetch('/api/t1-source/synthetic',{method:'POST'})).json();
+  if(j.error){ document.getElementById('status').textContent = j.error; return; }
+  T1SRC = j; renderClaims();
+  document.getElementById('status').textContent = j.message || '已选用合成评测包';
+}
+function toggleImportPanel(){
+  IMPORT_PANEL_OPEN = !IMPORT_PANEL_OPEN;
+  const p = document.getElementById('import-panel');
+  if(p) p.classList.toggle('open', IMPORT_PANEL_OPEN);
+}
+async function importClaimDraft(){
+  const text = document.getElementById('claim-import-draft').value;
+  const r = await fetch('/api/import/draft',{
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({text: text})});
+  const j = await r.json();
+  if(!r.ok){ document.getElementById('status').textContent = j.error; return; }
+  PENDING_DECISIONS = [];
+  const claims = await (await fetch('/api/claims')).json();
+  STATE = Object.assign(STATE, claims);
+  IMPORT_PANEL_OPEN = false;
+  renderViewChrome();
+  renderClaims();
+  let msg = '已导入主张导入稿 '+j.imported+' 条';
+  if(j.assigned_ids && j.assigned_ids.length)
+    msg += ' · 系统分配 id: '+j.assigned_ids.join(', ');
+  document.getElementById('status').textContent = msg;
+}
+async function importDocket(){
+  await fetch('/api/import',{method:'POST'});
+  PENDING_DECISIONS = [];
+  const j = await (await fetch('/api/claims')).json();
+  STATE = Object.assign(STATE, j);
+  renderViewChrome();
+  renderClaims();
+  document.getElementById('status').textContent =
+    '已导入合成 JSON docket(高级入口) '+j.claims.length+' 条';
 }
 function pickedAction(cid){
   const d = PENDING_DECISIONS.find(x=>x.claim_id===cid);
@@ -280,6 +686,28 @@ function renewButton(cid){
   if(!renewOptions(cid).length)
     return '<button disabled title="本轮无已检索 T1 原文块,续命不可用">续命</button>';
   return '<button class="renew" onclick="event.stopPropagation();openRenew(&quot;'+cid+'&quot;)">续命</button>';
+}
+function renderZeroHitBanner(){
+  // DEM-5:retrieve 空命中 → 强提示「没搜到」;不改写任何主张判定
+  const hits = STATE.retrieve_zero_hits || [];
+  if(!hits.length) return '';
+  let h = '<div id="retrieve-zero-hit" role="alert">'
+        + '<b>检索零命中</b> · 本轮有 '+hits.length
+        + ' 次 retrieve 返回空结果——这是「没搜到」,不是静默成功。'
+        + '<ul>';
+  for(const z of hits){
+    h += '<li>'+esc(String(z.as_of||''))+' · '+esc(String(z.query||''))+'</li>';
+  }
+  h += '</ul>'
+     + '<div class="note">本提示不改写主张判定,也不冒充判定闸。</div></div>';
+  return h;
+}
+function renderUnknownPathNote(){
+  // DEM-5 旁注:unknown 仍须 Lead 显式落档(与 UI 提示解耦)
+  return '<div id="retrieve-unknown-note">'
+       + '缺口(unknown)仍须 Lead 经 <code>mark_gap</code> / '
+       + '<code>reverify_claim(unknown)</code> 显式落档;'
+       + 'UI 零命中提示不得自动改写判定。</div>';
 }
 function renderBanner(){
   const el = document.getElementById('banner-wrap');
@@ -308,7 +736,20 @@ function renderBanner(){
 }
 function renderClaims(){
   const el = document.getElementById('claims');
-  let h = '<div id="banner-wrap"></div>';
+  let h = '<div id="import-panel" class="'+(IMPORT_PANEL_OPEN?'open':'')+'">'
+        + '<b>主张导入稿</b>'
+        + '<div class="hint">每条以 <code>## claim_id</code> 起头、其后正文一段;'
+        + '缺 id 时系统分配 <code>c-import-N</code>。只导入已签发主张,不做散文抽取或模型切分。</div>'
+        + '<textarea id="claim-import-draft" '
+        + 'aria-label="主张导入稿"></textarea>'
+        + '<div style="margin-top:8px">'
+        + '<button type="button" onclick="importClaimDraft()">导入主张导入稿</button> '
+        + '<button type="button" onclick="toggleImportPanel()">收起</button>'
+        + '</div></div>';
+  h += renderT1Source();
+  h += renderZeroHitBanner();
+  h += renderUnknownPathNote();
+  h += '<div id="banner-wrap"></div>';
   h += '<h3 style="margin:4px 0 10px">主张复验单 <span style="font-weight:400;font-size:13px;color:#57606a">'
         + esc(STATE.question||'') + '</span></h3>';
   for(const c of STATE.claims){
@@ -352,6 +793,7 @@ function renderClaims(){
     h += '</div>';  // 闭合 .claim 卡片(T9 加时间线时丢了这行,卡片互相嵌套堆积)
   }
   el.innerHTML = h;
+  restorePasteDraftBox();
   renderBanner();
 }
 function pickClaim(cid){
@@ -385,16 +827,40 @@ async function showSource(docId, anchor, asOf){
 async function runReverify(){
   const btn = document.getElementById('btn-run');
   btn.disabled = true;
-  document.getElementById('status').textContent = '复验中(端到端真主链:Lead 循环 + 规则闸)……';
+  // DEM-6:职人默认成交面不用 Lead/轨迹作状态文案;审计视图才露工程角色
+  document.getElementById('status').textContent =
+    (VIEW_MODE === "audit") ? STATUS_RUNNING_AUDIT : STATUS_RUNNING_CRAFTSMAN;
+  if(budgetPoll) clearInterval(budgetPoll);
+  budgetPoll = setInterval(pollBudget, 400);
   try{
     const j = await (await fetch('/api/reverify',{method:'POST'})).json();
     if(j.error){ document.getElementById('status').textContent = j.error; return; }
     STATE.claims = j.claims; STATE.latch = j.latch; PENDING_DECISIONS = [];
+    STATE.retrieve_zero_hits = j.retrieve_zero_hits || [];
+    STATE.trajectory = j.trajectory; STATE.retrieval_used = j.retrieval_used;
+    STATE.decoding = j.decoding;
+    if(j.budget) renderBudget(j.budget);
+    renderViewChrome();
     renderClaims();
-    document.getElementById('status').textContent =
-      '复验完成 · 检索 '+j.retrieval_used+'/24 · 轨迹 '+j.trajectory
-      +' · '+j.decoding.model+' temp='+j.decoding.temperature+' '+j.decoding.recorded_at;
-  } finally { btn.disabled = false; }
+    const zc = (STATE.retrieve_zero_hits||[]).length;
+    const b = j.budget || STATE.budget || {};
+    if(VIEW_MODE === "audit"){
+      document.getElementById('status').textContent =
+        STATUS_DONE_AUDIT + ' · 步数 '+b.steps_used+'/'+b.lead_max_steps
+        +' · 检索 '+b.retrieval_used+'/'+b.retrieval_budget
+        +(zc?(' · 零命中 '+zc+' 次'):'')
+        +' · 见下方 Agent 轨迹';
+    } else {
+      document.getElementById('status').textContent =
+        STATUS_DONE_CRAFTSMAN
+        +' · 步数 '+b.steps_used+'/'+b.lead_max_steps
+        +' · 检索 '+b.retrieval_used+'/'+b.retrieval_budget
+        +(zc?(' · 零命中 '+zc+' 次'):'');
+    }
+  } finally {
+    if(budgetPoll){ clearInterval(budgetPoll); budgetPoll = null; }
+    btn.disabled = false;
+  }
 }
 function openVoidConfirm(cid){
   MODAL_CLAIM = cid;
@@ -467,7 +933,15 @@ boot();
 
 @app.get("/", response_class=HTMLResponse)
 def index() -> str:
-    return HTML_PAGE
+    # 注入单一真相默认视图,避免 Python 常量与 JS 初值漂移
+    html = HTML_PAGE.replace(_VIEW_MODE_TOKEN, VIEW_MODE_DEFAULT)
+    if VIEW_MODE_DEFAULT == "craftsman":
+        # 职人默认:审计钮无 on;职人钮保持模板内 class="on"
+        pass
+    else:
+        html = html.replace('id="view-craftsman" class="on"', 'id="view-craftsman"')
+        html = html.replace('id="view-audit"', 'id="view-audit" class="on"', 1)
+    return html
 
 
 if __name__ == "__main__":

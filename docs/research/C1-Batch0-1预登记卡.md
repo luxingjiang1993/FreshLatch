@@ -20,7 +20,7 @@
 
 | ID | 判据 | 通过线 |
 |---|---|---|
-| INV-1 | Void→Stay-Red | 作废后重跑该 claim **不得** resh；=100% |
+| INV-1 | Void→Stay-Red | 作废后重跑该 claim **不得** fresh；=100% |
 | INV-2 | Client Memo 字段集 | 导出物含 ADR-0015 必填字段；**不得**含商业裁决句 |
 | INV-3 | 禁止角色泄漏（备忘正文） | 客户向备忘正文不得出现 Lead/Critic 字样 |
 
@@ -31,29 +31,27 @@
 | DEM-1 | Import Friction | ≥1 条非 JSON「主张导入稿」成功导入 |
 | DEM-2 | T1 Clarity | 三卡可选；粘贴路径须「确认入库」后才可被 retrieve |
 | DEM-3 | Client Memo rubric | 下列 5 条全「是」+ 禁止项全「无」（人工勾选，事后不加分项） |
-| DEM-4 | 预算进度可见 | 复验中可见 Lead 步数/lead_max_steps 与 retrieve 次数/
-etrieval_budget |
+| DEM-4 | 预算进度可见 | 复验中可见 Lead 步数/lead_max_steps 与 retrieve 次数/retrieval_budget |
 | DEM-5 | 检索零命中提示 | UI 出现强提示；unknown 仍须 Lead 显式落档 |
 | DEM-6 | 职人/审计视图 | 默认职人视图；可切换审计视图 |
 | DEM-7 | Time-to-Sheet | 固定脚本走通一遍并记录分钟数；**不设 <10min 硬阈值** |
 
 ### Export Attachable rubric（DEM-3 预锁）
 
-1. 有课题问题句与生成时间戳  
-2. 有免责声明（非法律意见 / 非自动决策；可标明 synthetic）  
-3. 三分栏齐全：仍成立 / 已作废 / 缺口  
-4. 每条有 claim_id + 一句话理由  
-5. 至少一条带可点回 evidence_id，或缺口栏显式写「无 T1 覆盖」  
+1. 有课题问题句与生成时间戳
+2. 有免责声明（非法律意见 / 非自动决策；可标明 synthetic）
+3. 三分栏齐全：仍成立 / 已作废 / 缺口
+4. 每条有 claim_id + 一句话理由
+5. 至少一条带可点回 evidence_id，或缺口栏显式写「无 T1 覆盖」
 
 **禁止项：** 出现「建议进入/不进入」；默认备忘正文出现 Lead/Critic 字样。
 
 ## Batch 1 功能锁（与蓝图对齐）
 
-- 引用 span：沿用 evidence_id（doc_id#anchor@as_of），不做字符级偏移  
-- 检索失败→unknown：Lead 经 mark_gap / 
-everify_claim(unknown) 为主；UI 零命中强提示（路径 C）  
-- 主张导入稿：## claim_id + 正文；缺 id → c-import-N  
-- JSON docket = 高级入口  
+- 引用 span：沿用 evidence_id（doc_id#anchor@as_of），不做字符级偏移
+- 检索失败→unknown：Lead 经 mark_gap / reverify_claim(unknown) 为主；UI 零命中强提示（路径 C）
+- 主张导入稿：## claim_id + 正文；缺 id → c-import-N
+- JSON docket = 高级入口
 
 ## 本批指标行总表
 
