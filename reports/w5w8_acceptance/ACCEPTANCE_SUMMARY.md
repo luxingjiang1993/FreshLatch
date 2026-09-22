@@ -32,14 +32,17 @@
 7. **K5（demo·仅表明）**
    > K5（demo）仅表明金标 `run_gold` 报告含 prompt/completion `token_usage`（`LLMClient` 单桶累计；mock 禁网单测绿）；不是 K5-2 成本注记已完成，不是成本/计量证书，不是一期评测闭合，也不改写假绿对照不成立。
 
-8. **总判（必挂）**
-   > 产品可运行（单测绿、UI 起、金标链跑通）。闸层可复现。K4/K5（demo）已过。不符合 W5–W8 全量验收通过（假绿仪器对照不成立仍登记）。不得写成一期评测闭合。
+8. **假绿仪器 C（仪器冒烟·对照成立 · #79）**
+   > 假绿仪器 C（qwen-flash，temp=0.0，seed=None，n=1，C 预登记；私有多锚 p1+p2+p3 + 反默认-unknown 旁句）仅表明 must_stale 假绿 4/4（c1/c2/c3/c7 全 alive）→ 对照成立；不是一期评测闭合，不是判定层已愈，不是可改 `gold.json` / 通过线，也不是产品已愈假绿（对照成立只说明无工具基线打出假绿）；亦不改写旧预登记仪器对照不成立句。
+
+9. **总判（必挂）**
+   > 产品可运行（单测绿、UI 起、金标链跑通）。闸层可复现。K4/K5（demo）已过。旧预登记仪器对照不成立已冻结；假绿仪器 C 对照成立。不符合 W5–W8 全量验收通过。不得写成一期评测闭合。
 
 ### 未过 / 对照不成立（登记句 · 分条）
 
 > 【作废 · #55】旧登记句「K4/K5：demo 层未实装，本图只登记…」自本决议起**不作摘引入口**。K4/K5 只许摘上方已过项「仅表明」句。旧文仍见 git 历史 / 关单前摘要快照，不得与本专节并行摘引。
 
-9. **新假绿对照（仪器冒烟·对照不成立 · #70 追跑）**
+10. **新假绿对照（旧仪器·冻结只读 · 对照不成立 · #70）**
    > 新假绿对照（qwen-flash，temp=0.0，seed=None，n=1，预登记仪器）仅表明 must_stale 假绿 0/4（c1 unknown / c2 unknown / c3 unknown / c7 unknown）→ 对照不成立且不作废；不是仪器已证明产品无假绿，也不是可放宽 4/4 alive，也不是一期评测闭合。
 
 ### 明确禁止
@@ -76,9 +79,10 @@
 | K6-2 机制层 | 冒烟 | **倾向过**（本批 n=3） | c5/c6 非 stale 5/6；must_stale 各 3/3 stale；详见开窗前 k6_4 报告 |
 | K6-4 fresh 恢复 | 冒烟 | **过**（§7.5 同线复验） | c5 fresh 3/3，c6 fresh 3/3，合计 6/6；见已锁「仅表明」句 |
 | K7 收口 | demo | **部分过** | 单测绿 + UI 可起；收口包不再因 K4/K5 未实装而未闭合；K4/K5 demo 已过不使本行升格为全量验收或一期闭合；禁单独摘「部分过」当通过 |
-| 新假绿对照 | 仪器冒烟 | **对照不成立** | must_stale 假绿 0/4（c1/c2/c3/c7 全 unknown）；#70 同预登记追跑一刀；不作废（无 unparseable / 无矛盾句回潮） |
+| 新假绿对照（旧仪器） | 仪器冒烟 | **对照不成立**（冻结只读） | must_stale 假绿 0/4；#70；不作废；不改写 |
+| 假绿仪器 C | 仪器冒烟 | **对照成立** | must_stale 假绿 4/4（c1/c2/c3/c7 全 alive）；#79；`report-20260922-171500`；不作废 |
 
-**总判**：产品**可运行**（单测绿、UI 起、金标链跑通）。闸层可复现。K4/K5（demo）已过。**不符合** W5–W8 全量验收通过（假绿仪器对照不成立仍登记）。**不得**写成一期评测闭合。
+**总判**：产品**可运行**（单测绿、UI 起、金标链跑通）。闸层可复现。K4/K5（demo）已过。旧预登记仪器对照不成立已冻结；假绿仪器 C 对照成立。**不符合** W5–W8 全量验收通过。**不得**写成一期评测闭合。
 
 ## K3（统计层）
 
@@ -105,18 +109,31 @@ c5/c6/c9 在 15 遍中的背离（K3-2③必记）：c5 = fresh 3 / unknown 12�
 
 > K6-4（n=3，temp=0）仅表明 c5/c6 两条在冒烟层达到各 ≥2/3 且合计 ≥5/6 fresh；三次均为 temp=0，不作为运行间噪声估计，不是统计测量，不是一期评测闭合，也不改写闸层可复现、K3 已锁未执行、或其他 must_fresh / must_unknown 未测部分。
 
-## 新假绿对照（仪器冒烟）
+## 新假绿对照（旧仪器·冻结只读）
 
 - 预登记仪器；`CONTROL_PROMPT` 逐字对齐 `docs/evidence/w4/false-green-control-prereg.md`
 - decoding：qwen-flash / temp=0.0 / seed=None / n=1
 - must_stale：c1/c2/c3/c7 全 `unknown` → **对照不成立**（不作废；无 unparseable / 无矛盾句回潮 / 无红线泄漏）
-- 原料（本图追跑 canonical）：`reports/w5w8_acceptance/report-20260922-160056.json`（kind=control_run）
+- 原料（旧仪器 canonical）：`reports/w5w8_acceptance/report-20260922-160056.json`（kind=control_run）
 - 历史有效跑（已非 canonical）：`reports/w5w8_acceptance/report-20260922.json`（#56 登记原料）
-- 本图已追一刀，仍不成立；不再同图重抽；不放宽 4/4；不新开预登记软化。地图:[地图:假绿仪器追对照成立](https://github.com/luxingjiang1993/FreshLatch/issues/68)；跑前纪律:[决议:假绿追成立的跑前纪律与成败可引用句](https://github.com/luxingjiang1993/FreshLatch/issues/69)；评估见 `docs/research/假绿追成立跑前纪律与成败可引用句设计评估.md`
+- 旧图已追一刀，仍不成立；**冻结只读**；不得被仪器 C 读数改写/删除。地图:[地图:假绿仪器追对照成立](https://github.com/luxingjiang1993/FreshLatch/issues/68)
 
-**唯一允许摘引**：
+**唯一允许摘引（旧仪器）**：
 
 > 新假绿对照（qwen-flash，temp=0.0，seed=None，n=1，预登记仪器）仅表明 must_stale 假绿 0/4（c1 unknown / c2 unknown / c3 unknown / c7 unknown）→ 对照不成立且不作废；不是仪器已证明产品无假绿，也不是可放宽 4/4 alive，也不是一期评测闭合。
+
+## 假绿仪器 C（仪器冒烟·对照成立）
+
+- C 预登记：`docs/evidence/w4/false-green-control-c-prereg.md`；并行 `CONTROL_PROMPT_C` + 私有多锚 p1+p2+p3 + 反默认-unknown 旁句
+- decoding：qwen-flash / temp=0.0 / seed=None / n=1
+- must_stale：c1/c2/c3/c7 全 `alive` → **对照成立**（不作废；无 unparseable / 无矛盾句回潮 / 无红线泄漏 / 多锚表对齐 / 无缺 chunk）
+- 原料：`reports/w5w8_acceptance/report-20260922-171500.json`（及同名 `.md`；`instrument=false_green_control_c`）
+- 地图:[地图:新假绿仪器C](https://github.com/luxingjiang1993/FreshLatch/issues/74)；首跑:[落盘:C仪器首跑与ACCEPTANCE_SUMMARY更新](https://github.com/luxingjiang1993/FreshLatch/issues/79)；预登记锁:[决议:C预登记锁与成败可引用句](https://github.com/luxingjiang1993/FreshLatch/issues/77)
+- 本图有效跑配额已用尽；不得再抽；不得写成产品已愈假绿或一期评测闭合 / W5–W8 全量验收通过
+
+**唯一允许摘引（仪器 C）**：
+
+> 假绿仪器 C（qwen-flash，temp=0.0，seed=None，n=1，C 预登记；私有多锚 p1+p2+p3 + 反默认-unknown 旁句）仅表明 must_stale 假绿 4/4（c1/c2/c3/c7 全 alive）→ 对照成立；不是一期评测闭合，不是判定层已愈，不是可改 `gold.json` / 通过线，也不是产品已愈假绿（对照成立只说明无工具基线打出假绿）；亦不改写旧预登记仪器对照不成立句。
 
 ## 金标 N=1 冒烟（非判据）
 
@@ -125,7 +142,7 @@ c5/c6/c9 在 15 遍中的背离（K3-2③必记）：c5 = fresh 3 / unknown 12�
 
 ## 缺口（要过全量验收还需）
 
-1. 假绿仪器：须 must_stale 4/4 alive 才对照成立；不得放宽；本图有效跑配额已用尽（#70）
+1. （假绿对照缺口已由仪器 C 兑现：must_stale 4/4 alive → 对照成立；旧预登记仪器 0/4 不成立句冻结只读。对照成立 ≠ 产品已愈假绿 ≠ 一期评测闭合 ≠ W5–W8 全量验收通过。）
 
 ## 产物索引
 
@@ -135,8 +152,10 @@ c5/c6/c9 在 15 遍中的背离（K3-2③必记）：c5 = fresh 3 / unknown 12�
 | `reports/w5w8_acceptance/k6_4/` | K6-4 开窗前 n=3（历史） |
 | `reports/w5w8_acceptance/k6_4_s75_reverify/` | K6-4 §7.5 同线复验 n=3（#59） |
 | `reports/w5w8_acceptance/k3/` | K3 三 seed |
-| `reports/w5w8_acceptance/report-20260922-160056.json` | 假绿对照追跑（#70；canonical） |
-| `reports/w5w8_acceptance/report-20260922.json` | 假绿对照历史有效跑（#56；非 canonical） |
+| `reports/w5w8_acceptance/report-20260922-160056.json` | 旧假绿对照追跑（#70；旧仪器 canonical） |
+| `reports/w5w8_acceptance/report-20260922.json` | 旧假绿对照历史有效跑（#56；非 canonical） |
+| `reports/w5w8_acceptance/report-20260922-171500.json` | 假绿仪器 C 首跑（#79；对照成立） |
 | `scripts/run_k3_acceptance.py` | K3 批跑 |
 | `scripts/score_k6_4.py` | K6-4 计分 |
-| `src/freshlatch/eval/control.py` | CONTROL_PROMPT 已对齐预登记 |
+| `src/freshlatch/eval/control.py` | 旧 `CONTROL_PROMPT` + 并行 `CONTROL_PROMPT_C` |
+| `docs/evidence/w4/false-green-control-c-prereg.md` | 仪器 C 预登记（只读锁定） |
