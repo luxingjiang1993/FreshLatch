@@ -1,0 +1,16 @@
+{
+  "kind": "k6_4_s75_mechanism_layer",
+  "note": "机制层读数，不进通过线；与行为层分层声明",
+  "all_claims_event_counts": {
+    "dimension_precheck_block": 9,
+    "post_precheck_unknown_refusal": 6,
+    "post_precheck_fresh_accepted": 6
+  },
+  "c5_c6_event_counts": {
+    "dimension_precheck_block": 6,
+    "post_precheck_unknown_refusal": 4,
+    "post_precheck_fresh_accepted": 6
+  },
+  "behavior_k6_4_pass": true,
+  "behavior_cite_if_pass": "K6-4（n=3，temp=0）仅表明 c5/c6 两条在冒烟层达到各 ≥2/3 且合计 ≥5/6 fresh；三次均为 temp=0，不作为运行间噪声估计，不是统计测量，不是一期评测闭合，也不改写闸层可复现、K3 已锁未执行、或其他 must_fresh / must_unknown 未测部分。"
+}

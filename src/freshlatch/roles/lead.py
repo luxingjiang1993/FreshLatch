@@ -98,6 +98,14 @@ FINISH_OBJECTION_REFUSAL = (
     "无同维度覆盖 → unknown。异议在 reverify_claim 受理时清除。"
 )
 
+# ADR-0012 §2 收口次序(#58/#59):block 后未成功受理 fresh 前拒 unknown。
+# 成功受理 = 证据校验通过并写入 recorded;立刻 error 不计;其后双判/闸打回不撤销。
+POST_PRECHECK_UNKNOWN_REFUSAL = (
+    "reverify_claim(unknown) 拒绝: 本会话已因维度预检打回(dimension_precheck_block),"
+    "须先成功受理一次 reverify_claim(fresh,[同维度 T1 证据]) 后再显式 unknown 收口"
+    "(ADR-0012 §2 收口次序)。证据校验失败的 fresh 不计;其后双判/规则闸打回不撤销已尝试。"
+)
+
 
 class LeadReverifier:
     def __init__(self, ctx: RunContext, claim: Claim, llm, *,
@@ -119,6 +127,10 @@ class LeadReverifier:
         # evidence_ids};任何判定成功受理(reverify_claim / mark_stale)即清;
         # 置位期间 finish_reverify 机械拒绝。存活至 run() 结束 → decision.dimension_objection。
         self._objection: dict | None = None
+        # ADR-0012 §2 收口次序(#58/#59):本会话曾 dimension_precheck_block 后,
+        # 未成功受理过一次 reverify_claim(fresh) 前拒 unknown。
+        self._precheck_blocked = False
+        self._post_precheck_fresh_accepted = False
 
     def run(self) -> ClaimDecision:
         self.ctx.gaps = []  # 缺口按主张隔离,禁止跨主张渗漏
@@ -248,12 +260,21 @@ class LeadReverifier:
             return {"error": f"status 只能是 fresh|stale|unknown,收到: {status}"}
         if args.get("claim_id") != self.claim.claim_id:
             return {"error": f"claim_id 只能是 {self.claim.claim_id}"}
+        if status == "stale":
+            return {"error": "stale 请用 mark_stale(必须含显式因果句)"}
+        # ADR-0012 §2 收口次序:block 后未成功受理 fresh 前拒 unknown(先于落档)。
+        if (status == "unknown" and self._precheck_blocked
+                and not self._post_precheck_fresh_accepted):
+            self.ctx.emit({"type": "post_precheck_unknown_refusal",
+                           "claim_id": self.claim.claim_id})
+            return {"error": POST_PRECHECK_UNKNOWN_REFUSAL}
         evidence_ids: list[str] = []
         checkpoint: dict | None = None
         audit: dict | None = None
         if status == "fresh":
             ids, err = self._check_evidence_ids(args.get("evidence_ids"), require_t1=True)
             if err:
+                # 立刻 error 不计「成功受理」(防空调用刷开 unknown)
                 return {"error": f"判 fresh 必须给出锚 T1 的检索证据 id: {err}"}
             evidence_ids = ids or []
             checkpoint = self._auto_critic_checkpoint()  # §8.5:绿灯前反对派必须有一次发言机会
@@ -261,13 +282,16 @@ class LeadReverifier:
                                                   evidence_ids=evidence_ids)  # ADR-0009 双判
         else:
             evidence_ids = [str(e) for e in args.get("evidence_ids") or []]
-        if status == "stale":
-            return {"error": "stale 请用 mark_stale(必须含显式因果句)"}
         self._objection = None  # ADR-0012:判定受理即清维度异议(finish 闸放行)
         self.decision.status = status
         self.decision.evidence_ids = evidence_ids
         if status == "unknown" and self.ctx.gaps:
             self.decision.reason = "缺口: " + "; ".join(self.ctx.gaps)
+        if status == "fresh" and self._precheck_blocked:
+            # 写入 recorded 即计成功受理;其后双判/闸打回不撤销
+            self._post_precheck_fresh_accepted = True
+            self.ctx.emit({"type": "post_precheck_fresh_accepted",
+                           "claim_id": self.claim.claim_id})
         result = {"recorded": {"claim_id": self.claim.claim_id, "status": status,
                                "evidence_ids": evidence_ids},
                   "note": "fresh 需经规则闸(双判一致),闸打回将落 unknown"}
@@ -306,6 +330,7 @@ class LeadReverifier:
             self._objection = {"error_code": ERR_DIMENSION_CROSSCHECK_MISMATCH,
                                "stale_dimension": dimension,
                                "evidence_ids": list(ids or [])}
+            self._precheck_blocked = True  # ADR-0012 §2:触发收口次序闸
             self.ctx.emit({"type": "dimension_precheck_block", "auto": True,
                            "claim_id": self.claim.claim_id,
                            "stale_dimension": dimension,

@@ -1,0 +1,37 @@
+{
+  "kind": "k6_4_score",
+  "n": 3,
+  "temp": 0.0,
+  "c5_fresh": 3,
+  "c6_fresh": 3,
+  "sum_fresh": 6,
+  "pass_line": "各>=2/3 且合计>=5/6",
+  "c5_pass": true,
+  "c6_pass": true,
+  "sum_pass": true,
+  "k6_4_pass": true,
+  "per_run_c5_c6": [
+    {
+      "run": 1,
+      "c5": "fresh",
+      "c6": "fresh"
+    },
+    {
+      "run": 2,
+      "c5": "fresh",
+      "c6": "fresh"
+    },
+    {
+      "run": 3,
+      "c5": "fresh",
+      "c6": "fresh"
+    }
+  ],
+  "must_stale_regression": {
+    "c1": 3,
+    "c2": 3,
+    "c3": 3,
+    "c7": 3
+  },
+  "cite_template_if_pass": "K6-4（n=3，temp=0）仅表明 c5/c6 两条在冒烟层达到各 ≥2/3 且合计 ≥5/6 fresh；三次均为 temp=0，不作为运行间噪声估计，不是统计测量，不是一期评测闭合，也不改写闸层可复现、K3 已锁未执行、或其他 must_fresh / must_unknown 未测部分。"
+}

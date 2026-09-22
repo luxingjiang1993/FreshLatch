@@ -24,6 +24,7 @@ from freshlatch.models import Claim
 from freshlatch.roles.lead import (FINISH_OBJECTION_REFUSAL,
                                    MARK_STALE_DIMENSION_PRECHECK,
                                    MARK_STALE_OBJECTION_QUOTA_REFUSAL,
+                                   POST_PRECHECK_UNKNOWN_REFUSAL,
                                    LeadReverifier)
 from freshlatch.runner import ClaimDecision, RunContext, Runner
 from freshlatch.store.base import InMemoryStore
@@ -163,18 +164,70 @@ def test_finish_refused_while_objection_pending():
     assert not lead._finished
 
 
-def test_reverify_unknown_clears_objection_and_allows_finish():
-    """reverify_claim(unknown) 受理 → 异议清除 → finish 放行。"""
+def test_post_precheck_unknown_refused_before_fresh_accepted():
+    """ADR-0012 §2(#58/#59):block 后未成功受理 fresh 前 → unknown 机械拒绝。"""
     lead = _lead(claim=_registered_claim(), llm=_ScriptLLM([]))
     lead._seen_evidence.add("t0-x#p2@T1")
     lead._t_mark_stale(_stale_args())
     r = lead._t_reverify_claim({"claim_id": "c5", "status": "unknown",
                                 "evidence_ids": []})
-    assert "error" not in r
+    assert "error" in r
+    assert POST_PRECHECK_UNKNOWN_REFUSAL in r["error"]
+    assert lead.decision.status == "unknown", "拒绝不落档改写"
+    assert lead._objection is not None, "拒绝不清异议"
+    assert not lead._post_precheck_fresh_accepted
+    refusals = [e for e in lead.ctx.events
+                if e["type"] == "post_precheck_unknown_refusal"]
+    assert len(refusals) == 1
+
+
+def test_fresh_error_does_not_unlock_unknown():
+    """立刻 error 的 fresh 不计成功受理 → unknown 仍拒(防刷单)。"""
+    lead = _lead(claim=_registered_claim(), llm=_ScriptLLM([]))
+    lead._seen_evidence.add("t0-x#p2@T1")
+    lead._t_mark_stale(_stale_args())
+    r_err = lead._t_reverify_claim({"claim_id": "c5", "status": "fresh",
+                                    "evidence_ids": ["not-seen#x@T1"]})
+    assert "error" in r_err
+    assert not lead._post_precheck_fresh_accepted
+    r_unk = lead._t_reverify_claim({"claim_id": "c5", "status": "unknown",
+                                    "evidence_ids": []})
+    assert POST_PRECHECK_UNKNOWN_REFUSAL in r_unk["error"]
+
+
+def test_fresh_accepted_unlocks_unknown_and_emits_event():
+    """成功受理 fresh(写入 recorded)→ 解锁 unknown;事件 post_precheck_fresh_accepted。"""
+    llm = _ScriptLLM([_aud({"status": "fresh", "reason": "双判一致",
+                            "dimension_match": True})])
+    lead = _lead(claim=_registered_claim(), llm=llm)
+    lead._critic_spawned = True
+    lead._seen_evidence.add("t0-x#p2@T1")
+    lead._t_mark_stale(_stale_args())
+    r_fresh = lead._t_reverify_claim({"claim_id": "c5", "status": "fresh",
+                                      "evidence_ids": ["t0-x#p2@T1"]})
+    assert "error" not in r_fresh
+    assert "recorded" in r_fresh
+    assert lead._post_precheck_fresh_accepted
+    accepted = [e for e in lead.ctx.events
+                if e["type"] == "post_precheck_fresh_accepted"]
+    assert len(accepted) == 1
+    # 解锁后可显式 unknown(模拟双判后改口收口)
+    r_unk = lead._t_reverify_claim({"claim_id": "c5", "status": "unknown",
+                                    "evidence_ids": []})
+    assert "error" not in r_unk
     assert lead.decision.status == "unknown"
     assert lead._objection is None
-    assert "error" not in lead._t_finish({}), "显式收口后 finish 放行"
+    assert "error" not in lead._t_finish({})
     assert lead._finished
+
+
+def test_unknown_without_precheck_still_allowed():
+    """无 dimension_precheck_block 时 unknown 仍合法(不误伤普通缺口路径)。"""
+    lead = _lead(claim=_registered_claim(), llm=_ScriptLLM([]))
+    r = lead._t_reverify_claim({"claim_id": "c5", "status": "unknown",
+                                "evidence_ids": []})
+    assert "error" not in r
+    assert lead.decision.status == "unknown"
 
 
 def test_recovery_fresh_keeps_double_judgment():
@@ -191,6 +244,7 @@ def test_recovery_fresh_keeps_double_judgment():
     assert lead.decision.status == "fresh"
     assert lead.decision.auditor_verdict == "fresh", "fresh 仍唯一经双判一致"
     assert lead._objection is None
+    assert lead._post_precheck_fresh_accepted
 
 
 # -- 4. 闸侧落卡(异议未清 + unknown → dissent 不断供) ----------------------------------------
