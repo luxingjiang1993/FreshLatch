@@ -1,0 +1,77 @@
+{
+  "kind": "k3_aggregate",
+  "spec": "temp=0.7, seed 11/22/33 × n=5",
+  "c2_stale_of_15": 15,
+  "c2_pass_line": ">=14/15",
+  "c2_pass": true,
+  "must_stale_fresh_total": 0,
+  "fresh_pass_line": "==0",
+  "fresh_pass": true,
+  "k3_2_pass": true,
+  "per_seed": [
+    {
+      "seed": 11,
+      "report": "D:\\BaiduNetdiskDownload\\AI大模型应用第21期\\试验项目\\蓝海项目5\\reports\\w5w8_acceptance\\k3\\seed_11\\report-20260922.json",
+      "exit": 0,
+      "c2_stale_of_5": 5,
+      "must_stale_fresh_count": 0,
+      "pass_at_k": {
+        "c1": 5,
+        "c2": 5,
+        "c3": 4,
+        "c4": 5,
+        "c5": 0,
+        "c6": 1,
+        "c7": 5,
+        "c8": 2,
+        "c9": 5,
+        "c10": 5,
+        "c11": 5,
+        "c12": 5
+      }
+    },
+    {
+      "seed": 22,
+      "report": "D:\\BaiduNetdiskDownload\\AI大模型应用第21期\\试验项目\\蓝海项目5\\reports\\w5w8_acceptance\\k3\\seed_22\\report-20260922.json",
+      "exit": 0,
+      "c2_stale_of_5": 5,
+      "must_stale_fresh_count": 0,
+      "pass_at_k": {
+        "c1": 5,
+        "c2": 5,
+        "c3": 5,
+        "c4": 5,
+        "c5": 3,
+        "c6": 1,
+        "c7": 5,
+        "c8": 2,
+        "c9": 4,
+        "c10": 2,
+        "c11": 5,
+        "c12": 5
+      }
+    },
+    {
+      "seed": 33,
+      "report": "D:\\BaiduNetdiskDownload\\AI大模型应用第21期\\试验项目\\蓝海项目5\\reports\\w5w8_acceptance\\k3\\seed_33\\report-20260922.json",
+      "exit": 0,
+      "c2_stale_of_5": 5,
+      "must_stale_fresh_count": 0,
+      "pass_at_k": {
+        "c1": 5,
+        "c2": 5,
+        "c3": 5,
+        "c4": 5,
+        "c5": 0,
+        "c6": 0,
+        "c7": 5,
+        "c8": 0,
+        "c9": 3,
+        "c10": 5,
+        "c11": 5,
+        "c12": 5
+      }
+    }
+  ],
+  "cite_template_if_pass": "K3（temp=0.7，seed 11/22/33，每 seed n=5）仅表明 c2 stale ≥14/15 且 must_stale 判 fresh 合计为 0，不是一期评测闭合，也不是 must_fresh 已愈，也不改写判定层冒烟未愈。"
+}

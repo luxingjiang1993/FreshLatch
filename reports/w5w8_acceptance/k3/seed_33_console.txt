@@ -1,0 +1,11 @@
+Building prefix dict from the default dictionary ...
+Loading model from cache C:\Users\lj946\AppData\Local\Temp\jieba.cache
+Loading model cost 0.430 seconds.
+Prefix dict has been built successfully.
+[gold] N=5 model=qwen-flash temp=0.7 seed=33
+must_stale: 命中 4 漏判 0
+must_fresh: 命中 1 漏判 3
+must_unknown: 命中 4 漏判 0
+all_hit: False
+报告: D:\BaiduNetdiskDownload\AI大模型应用第21期\试验项目\蓝海项目5\reports\w5w8_acceptance\k3\seed_33\report-20260922.md
+原始 JSON: D:\BaiduNetdiskDownload\AI大模型应用第21期\试验项目\蓝海项目5\reports\w5w8_acceptance\k3\seed_33\report-20260922.json

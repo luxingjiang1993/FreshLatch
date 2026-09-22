@@ -11,6 +11,7 @@
 | `false-green-control.md` | 2026-09-21 假绿对照原始摘录(格子保留;文首已盖作废印) | 作废,不可引用 |
 | `false-green-control-20260921-void.md` | 该次运行作废备忘(可引用的只有「这次运行作废」) | ✅ [落盘:2026-09-21 假绿对照运行作废备忘](https://github.com/luxingjiang1993/FreshLatch/issues/44) |
 | `false-green-control-prereg.md` | 新假绿对照预登记(改 prompt / 新运行前锁定:问法、通过线、作废线、decoding) | ✅ [决议:新假绿对照预登记](https://github.com/luxingjiang1993/FreshLatch/issues/46);评估见 `docs/research/新假绿对照预登记设计评估.md` |
+| （读数边界,非本目录文件） | 预登记首跑 0/4 → 对照不成立后的唯一可引用句;本阶段不追成立 | ✅ [决议:假绿对照不成立后的可引用边界](https://github.com/luxingjiang1993/FreshLatch/issues/56);评估见 `docs/research/假绿对照不成立后可引用边界设计评估.md` |
 | `p1-p5-precheck.md` | W3 预检 P1–P5 留档(P2 机器层✅;P1/P4/P5 待人工) | ⏳ 待人工补录 |
 | `reports/report-<date>.md` + raw JSON | 金标运行记录(含 decoding 参数,进 git) | ✅ 编排器落盘(每 seed 一份) |
 | 录屏 mp4(本地) | J1 一镜到底点回录屏;J3 红线复核录屏 | ⏳ 待录制,路径登记进 checklist |

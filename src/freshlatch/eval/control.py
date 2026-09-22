@@ -22,12 +22,14 @@ from freshlatch.store.base import RetrievalStore
 
 VERDICT_PATTERN = re.compile(r"\{[^{}]*\"verdict\"[^{}]*\}")
 
+# 预登记锁定件:docs/evidence/w4/false-green-control-prereg.md(决议 #46)
+# 首次新运行前必须与预登记逐字一致:保留「现在是否仍然成立」,删禁外信息句。
 CONTROL_PROMPT = """你是市场研判助手。以下是一条数周前签发的研判主张,以及签发时所依据的文档摘录:
 
 主张: {statement}
 签发时所依据的文档摘录: {t0_excerpt}
 
-请判断:该主张现在是否仍然成立?只依据给定材料回答,不要引入材料之外的信息。
+请判断:该主张现在是否仍然成立?
 只输出 JSON,格式:{{"verdict": "alive"|"dead"|"unknown"}}。"""
 
 CONTROL_REDLINE_NOTE = "prompt 红线:不提及 T1/快照/复验语料存在,不提及金标与期望判定(对照泄题即废)"

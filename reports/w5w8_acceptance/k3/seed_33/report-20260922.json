@@ -1,0 +1,1705 @@
+{
+ "kind": "gold_run",
+ "recorded_at": "2026-09-21T20:19:26.919575+00:00",
+ "runs": 5,
+ "decoding": {
+  "model": "qwen-flash",
+  "temperature": 0.7,
+  "seed": 33,
+  "recorded_at": "2026-09-21T20:05:46.495260+00:00"
+ },
+ "eval_mode_switches": [
+  "跳过 HumanLatch:W1–W4 未挂载,runner 不 import langgraph,人审不进评测路径",
+  "禁用联网:web_search 不在任何角色白名单,模型物理上不可见(§4.6)"
+ ],
+ "repro_note": "闸层(must_* 零违例)给定解码参数下逐位复现;判定层(矩阵条数)按文档化容差;违例级背离(must_stale 被判 fresh)触发人查。qwen-flash 为活托管端点,跨会话复现只能近似。",
+ "per_run": [
+  {
+   "run": 1,
+   "decoding": {
+    "model": "qwen-flash",
+    "temperature": 0.7,
+    "seed": 33,
+    "recorded_at": "2026-09-21T20:05:46.562291+00:00"
+   },
+   "decisions": {
+    "c1": "stale",
+    "c2": "stale",
+    "c3": "stale",
+    "c4": "fresh",
+    "c5": "unknown",
+    "c6": "unknown",
+    "c7": "stale",
+    "c8": "stale",
+    "c9": "unknown",
+    "c10": "unknown",
+    "c11": "unknown",
+    "c12": "unknown"
+   },
+   "detail": {
+    "c1": {
+     "status": "stale",
+     "reason": "T1 原文明确指出：'SeaDesk 于 2026 年 7 月发布 Lite 入门版,报价 39 美元/月/店...有两家商户已实际转用 Lite 版。' 此句直接推翻主张 c1 所依赖的 '竞品 SeaDesk 客单价仍显著高于我方拟定的 59 美元/月/店定价' 的前提，因竞品存在更低价格的入门版本，且已有商户实际采用，故其整体客单价不再显著高于我方定价。",
+     "evidence_ids": [
+      "t0-competitor-notes#p2@T1"
+     ],
+     "trajectory": "D:\\BaiduNetdiskDownload\\AI大模型应用第21期\\试验项目\\蓝海项目5\\reports\\w5w8_acceptance\\k3\\seed_33\\trajectories\\run-20260922-040600.jsonl",
+     "steps_used": 6,
+     "lead_status": "stale",
+     "auditor_verdict": "stale",
+     "dissent": null
+    },
+    "c2": {
+     "status": "stale",
+     "reason": "T1 原文明确指出，印尼通信与信息技术部已于 2026 年 8 月发布 PDP 法实施条例，明确规定面向印尼境内用户的在线客服对话日志须在印尼境内存储，自 2026 年 12 月 1 日起生效。该条款构成对『监管暂无强制要求』的直接推翻；泰国虽尚处咨询稿阶段，但其拟议要求已表明监管趋势转向本地化，且主张中将印尼与泰国并列作为‘暂无强制要求’的典型，现已被 T1 原文事实覆盖。",
+     "evidence_ids": [
+      "t0-regulatory-memo#p2@T1"
+     ],
+     "trajectory": "D:\\BaiduNetdiskDownload\\AI大模型应用第21期\\试验项目\\蓝海项目5\\reports\\w5w8_acceptance\\k3\\seed_33\\trajectories\\run-20260922-040608.jsonl",
+     "steps_used": 5,
+     "lead_status": "stale",
+     "auditor_verdict": "stale",
+     "dissent": null
+    },
+    "c3": {
+     "status": "stale",
+     "reason": "T1 原文明确指出：'3 月纪要中「均明确接受 30%」的口径已不成立'，且具体说明三家伙伴均未接受 30% 分成——Manila BizLink 与 SiamReach 要求提至 45%，PT MegaSolusi 仅接受首年，第二年需重谈；该反证直接推翻主张的前提。",
+     "evidence_ids": [
+      "t0-channel-interviews#p2@T1"
+     ],
+     "trajectory": "D:\\BaiduNetdiskDownload\\AI大模型应用第21期\\试验项目\\蓝海项目5\\reports\\w5w8_acceptance\\k3\\seed_33\\trajectories\\run-20260922-040619.jsonl",
+     "steps_used": 5,
+     "lead_status": "stale",
+     "auditor_verdict": "stale",
+     "dissent": null
+    },
+    "c4": {
+     "status": "fresh",
+     "reason": "复验会话已结束，主张 c4 判定为 **fresh**，证据链完整，判定生效。",
+     "evidence_ids": [
+      "t0-market-census#p2@T1"
+     ],
+     "trajectory": "D:\\BaiduNetdiskDownload\\AI大模型应用第21期\\试验项目\\蓝海项目5\\reports\\w5w8_acceptance\\k3\\seed_33\\trajectories\\run-20260922-040626.jsonl",
+     "steps_used": 5,
+     "lead_status": "fresh",
+     "auditor_verdict": "fresh",
+     "dissent": null
+    },
+    "c5": {
+     "status": "unknown",
+     "reason": "缺口: T1 原文未提供关于我方单会话服务成本与竞品对比的最新直接证据，仅存在对敏感性场景的假设性推演（如竞品降价至 49 美元档时成本优势将收窄），但无实际新数据支持当前结论。主张前提依赖的成本模型更新未在 T1 原文中获得同维度覆盖，且无法确认是否已重新核算。",
+     "evidence_ids": [],
+     "trajectory": "D:\\BaiduNetdiskDownload\\AI大模型应用第21期\\试验项目\\蓝海项目5\\reports\\w5w8_acceptance\\k3\\seed_33\\trajectories\\run-20260922-040642.jsonl",
+     "steps_used": 9,
+     "lead_status": "unknown",
+     "auditor_verdict": null,
+     "dissent": null
+    },
+    "c6": {
+     "status": "unknown",
+     "reason": "缺口: T1 原文未提供关于市场窗口是否打开的直接证据。虽有付费商户毛利健康、续约率高、资源向付费端集中等支持性信息，但这些均属竞品内部运营表现，无法直接推导出『市场窗口打开』这一外部市场机会结论。主张中‘窗口打开’的度量维度为 'market_structure'，但 T1 无同维度证据覆盖，且已有反证（Lite 版发布）指向市场被低价产品占据，与‘窗口打开’矛盾。因缺乏足够支撑或否定证据，判定为证据缺口。",
+     "evidence_ids": [],
+     "trajectory": "D:\\BaiduNetdiskDownload\\AI大模型应用第21期\\试验项目\\蓝海项目5\\reports\\w5w8_acceptance\\k3\\seed_33\\trajectories\\run-20260922-040701.jsonl",
+     "steps_used": 9,
+     "lead_status": "unknown",
+     "auditor_verdict": null,
+     "dissent": null
+    },
+    "c7": {
+     "status": "stale",
+     "reason": "T1 原文明确指出，行业媒体《东南亚 SaaS 观察》2026 年 9 月刊仍引用 99 美元/月的定价，但该数据已滞后；其编者注说明，本期价格表基于 Q2 报价单编制，7 月后的价格变动将反映在 12 月刊。因此，99 美元/月的报价已不反映竞品当前实际定价，主张中‘最新一期报道显示’的依据无效。",
+     "evidence_ids": [
+      "t0-trade-press#p2@T1",
+      "t0-trade-press#p3@T1"
+     ],
+     "trajectory": "D:\\BaiduNetdiskDownload\\AI大模型应用第21期\\试验项目\\蓝海项目5\\reports\\w5w8_acceptance\\k3\\seed_33\\trajectories\\run-20260922-040717.jsonl",
+     "steps_used": 6,
+     "lead_status": "stale",
+     "auditor_verdict": "stale",
+     "dissent": null
+    },
+    "c8": {
+     "status": "stale",
+     "reason": "T1 原文明确指出：'自 3 月评估后，开源社区新发布两个面向东南亚语言的小模型候选（印尼语-英语混合、泰语专用）'，且在复测中已对这两款模型进行了评估。这表明本地语言小模型生态已有实际进展，不再‘不成熟’；同时原文结论为‘评估结论维持：本地语言小模型生态仍不成熟’，但该结论与新发布的模型存在直接矛盾，因此主张前提被推翻。",
+     "evidence_ids": [
+      "t0-tech-ecosystem#p1@T1",
+      "t0-tech-ecosystem#p2@T1"
+     ],
+     "trajectory": "D:\\BaiduNetdiskDownload\\AI大模型应用第21期\\试验项目\\蓝海项目5\\reports\\w5w8_acceptance\\k3\\seed_33\\trajectories\\run-20260922-040725.jsonl",
+     "steps_used": 5,
+     "lead_status": "stale",
+     "auditor_verdict": "stale",
+     "dissent": null
+    },
+    "c9": {
+     "status": "unknown",
+     "reason": "缺口: T1 原文未覆盖 WhatsApp Business 渗透率指标,明确说明该指标在本轮调查中已不再跟踪",
+     "evidence_ids": [],
+     "trajectory": "D:\\BaiduNetdiskDownload\\AI大模型应用第21期\\试验项目\\蓝海项目5\\reports\\w5w8_acceptance\\k3\\seed_33\\trajectories\\run-20260922-040733.jsonl",
+     "steps_used": 6,
+     "lead_status": "unknown",
+     "auditor_verdict": null,
+     "dissent": null
+    },
+    "c10": {
+     "status": "unknown",
+     "reason": "缺口: T1 原文明确声明雅加达双语客服专员综合用工成本无新测量，2 月数据后无更新记录，缺乏 T1 时段的有效证据支持",
+     "evidence_ids": [],
+     "trajectory": "D:\\BaiduNetdiskDownload\\AI大模型应用第21期\\试验项目\\蓝海项目5\\reports\\w5w8_acceptance\\k3\\seed_33\\trajectories\\run-20260922-040741.jsonl",
+     "steps_used": 6,
+     "lead_status": "unknown",
+     "auditor_verdict": null,
+     "dissent": null
+    },
+    "c11": {
+     "status": "unknown",
+     "reason": "缺口: T1 原文未提供 2026 年 9 月支付方式格局的最新数据,仅声明 2 月小样本访谈数据为当前唯一依据,且该数据之后无新数据入账。无法确认电子钱包占比是否仍为 58%。",
+     "evidence_ids": [],
+     "trajectory": "D:\\BaiduNetdiskDownload\\AI大模型应用第21期\\试验项目\\蓝海项目5\\reports\\w5w8_acceptance\\k3\\seed_33\\trajectories\\run-20260922-040750.jsonl",
+     "steps_used": 7,
+     "lead_status": "unknown",
+     "auditor_verdict": null,
+     "dissent": null
+    },
+    "c12": {
+     "status": "unknown",
+     "reason": "缺口: T1 无 2026 财年区域可用区计划外故障次数的入账数据,无法验证主张中「年计划外故障不超过 2 次」的前提",
+     "evidence_ids": [],
+     "trajectory": "D:\\BaiduNetdiskDownload\\AI大模型应用第21期\\试验项目\\蓝海项目5\\reports\\w5w8_acceptance\\k3\\seed_33\\trajectories\\run-20260922-040756.jsonl",
+     "steps_used": 6,
+     "lead_status": "unknown",
+     "auditor_verdict": null,
+     "dissent": null
+    }
+   },
+   "matrix": {
+    "counts": {
+     "must_stale": {
+      "fresh": [],
+      "stale": [
+       "c1",
+       "c2",
+       "c3",
+       "c7"
+      ],
+      "unknown": []
+     },
+     "must_fresh": {
+      "fresh": [
+       "c4"
+      ],
+      "stale": [
+       "c8"
+      ],
+      "unknown": [
+       "c5",
+       "c6"
+      ]
+     },
+     "must_unknown": {
+      "fresh": [],
+      "stale": [],
+      "unknown": [
+       "c9",
+       "c10",
+       "c11",
+       "c12"
+      ]
+     }
+    },
+    "hits": {
+     "must_stale": 4,
+     "must_fresh": 1,
+     "must_unknown": 4
+    },
+    "misses": {
+     "must_stale": [],
+     "must_fresh": [
+      {
+       "claim_id": "c5",
+       "predicted": "unknown",
+       "expected": "fresh"
+      },
+      {
+       "claim_id": "c6",
+       "predicted": "unknown",
+       "expected": "fresh"
+      },
+      {
+       "claim_id": "c8",
+       "predicted": "stale",
+       "expected": "fresh"
+      }
+     ],
+     "must_unknown": []
+    },
+    "total": 12,
+    "all_hit": false
+   }
+  },
+  {
+   "run": 2,
+   "decoding": {
+    "model": "qwen-flash",
+    "temperature": 0.7,
+    "seed": 33,
+    "recorded_at": "2026-09-21T20:08:26.368597+00:00"
+   },
+   "decisions": {
+    "c1": "stale",
+    "c2": "stale",
+    "c3": "stale",
+    "c4": "fresh",
+    "c5": "unknown",
+    "c6": "unknown",
+    "c7": "stale",
+    "c8": "unknown",
+    "c9": "stale",
+    "c10": "unknown",
+    "c11": "unknown",
+    "c12": "unknown"
+   },
+   "detail": {
+    "c1": {
+     "status": "stale",
+     "reason": "T1 原文明确指出，竞品 SeaDesk 于 2026 年 7 月发布 Lite 入门版，报价为 39 美元/月/店，且该价格已低于我方拟定的 59 美元/月/店定价；同时有两家商户已实际转用 Lite 版，直接推翻了主张中‘竞品客单价仍显著高于我方定价’的前提。",
+     "evidence_ids": [
+      "t0-competitor-notes#p2@T1"
+     ],
+     "trajectory": "D:\\BaiduNetdiskDownload\\AI大模型应用第21期\\试验项目\\蓝海项目5\\reports\\w5w8_acceptance\\k3\\seed_33\\trajectories\\run-20260922-040840.jsonl",
+     "steps_used": 6,
+     "lead_status": "stale",
+     "auditor_verdict": "stale",
+     "dissent": null
+    },
+    "c2": {
+     "status": "stale",
+     "reason": "T1 原文明确指出：『2026 年 8 月，印尼通信与信息技术部发布 PDP 法实施条例，其中明确规定：面向印尼境内用户的在线客服对话日志须在印尼境内存储』，该条款构成对主张『印尼无强制要求』的直接推翻；同时，泰国虽尚处咨询稿阶段，但已明确拟提出类似要求，亦构成监管趋势上的实质性变化。因此，签发时成立的前提（无强制要求）已被当前事实推翻。",
+     "evidence_ids": [
+      "t0-regulatory-memo#p2@T1"
+     ],
+     "trajectory": "D:\\BaiduNetdiskDownload\\AI大模型应用第21期\\试验项目\\蓝海项目5\\reports\\w5w8_acceptance\\k3\\seed_33\\trajectories\\run-20260922-040849.jsonl",
+     "steps_used": 5,
+     "lead_status": "stale",
+     "auditor_verdict": "stale",
+     "dissent": null
+    },
+    "c3": {
+     "status": "stale",
+     "reason": "T1 原文明确指出，3 家意向渠道伙伴已改口：Manila BizLink 与曼谷 SiamReach 要求提高至 45%，PT MegaSolusi 仅接受首年 30%；原因系竞品返点上调至 40%，原 30% 已无吸引力。这直接推翻了主张中‘3 家均接受 30%’的前提。",
+     "evidence_ids": [
+      "t0-channel-interviews#p2@T1"
+     ],
+     "trajectory": "D:\\BaiduNetdiskDownload\\AI大模型应用第21期\\试验项目\\蓝海项目5\\reports\\w5w8_acceptance\\k3\\seed_33\\trajectories\\run-20260922-040857.jsonl",
+     "steps_used": 4,
+     "lead_status": "stale",
+     "auditor_verdict": "stale",
+     "dissent": null
+    },
+    "c4": {
+     "status": "fresh",
+     "reason": "已对主张 c4 完成复验：\n\n- **判定**：`fresh`  \n- **依据**：`t0-market-census#p2@T1` 明确指出，2026 年 9 月更新数据中，六国同口径下可服务目标市场约 **830 万家**，超过主张中的 800 万阈值，且该数据为 T1 时点原文直接陈述，完全支持主张前提。  \n- **证据引用**：`t0-market-census#p2@T1`  \n- **结论**：主张在复验时刻（T1）仍成立，经规则闸校验通过，判定有效。\n\n复验流程结束。",
+     "evidence_ids": [
+      "t0-market-census#p2@T1"
+     ],
+     "trajectory": "D:\\BaiduNetdiskDownload\\AI大模型应用第21期\\试验项目\\蓝海项目5\\reports\\w5w8_acceptance\\k3\\seed_33\\trajectories\\run-20260922-040904.jsonl",
+     "steps_used": 5,
+     "lead_status": "fresh",
+     "auditor_verdict": "fresh",
+     "dissent": null
+    },
+    "c5": {
+     "status": "unknown",
+     "reason": "缺口: T1 原文未提供我方单会话服务成本与竞品价格在相同定价情境下的直接对比证据。虽然 T1 有我方成本 0.009 美元和竞品标准版 79 美元/月/店的数值，但无明确说明该竞品报价是否为当前实际使用档位；且存在竞品推出更低档位（39 美元）的事实，而主张中的『竞品』未限定为具体版本，导致无法确认『仍低于』的前提是否成立。同时，签发登记维度为 cost_model，但反证聚焦 competitor_pricing，经跨检预检不通过，故需显式收口。",
+     "evidence_ids": [],
+     "trajectory": "D:\\BaiduNetdiskDownload\\AI大模型应用第21期\\试验项目\\蓝海项目5\\reports\\w5w8_acceptance\\k3\\seed_33\\trajectories\\run-20260922-040919.jsonl",
+     "steps_used": 9,
+     "lead_status": "unknown",
+     "auditor_verdict": null,
+     "dissent": null
+    },
+    "c6": {
+     "status": "unknown",
+     "reason": "缺口: T1 无有效证据覆盖主张中『市场窗口打开』的判断依据，尤其在成本维度上，原主张依赖的『竞品收缩免费版导致我方机会上升』前提未被 T1 原文支持。虽有检索到关于定价变动的线索（如标准版降至 79 美元/月），但缺乏对『下单会话成本』的具体测算或对比数据；而 Critic 提及的 t0-cost-model#p2@T1 未在本次 retrieve 中返回，无法引用为有效反证。因此，证据不足以支撑 fresh 或 stale 判定。",
+     "evidence_ids": [],
+     "trajectory": "D:\\BaiduNetdiskDownload\\AI大模型应用第21期\\试验项目\\蓝海项目5\\reports\\w5w8_acceptance\\k3\\seed_33\\trajectories\\run-20260922-040935.jsonl",
+     "steps_used": 9,
+     "lead_status": "unknown",
+     "auditor_verdict": null,
+     "dissent": null
+    },
+    "c7": {
+     "status": "stale",
+     "reason": "T1 原文明确指出，'《东南亚 SaaS 观察》2026 年 9 月刊仍写道:「SeaDesk 标准版 99 美元/月,是该市场定价最高的客服 SaaS 之一……」——该表述沿用 6 月刊的价格数据,未反映 SeaDesk 2026 年 7 月的降价。'，此句直接推翻主张中『行业媒体最新一期报道显示,竞品 SeaDesk 客单价仍为 99 美元/月』的前提，表明该价格信息已过时且被明确标注为滞后数据，无法支持我方价格优势仍在的结论。",
+     "evidence_ids": [
+      "t0-trade-press#p2@T1",
+      "t0-trade-press#p3@T1"
+     ],
+     "trajectory": "D:\\BaiduNetdiskDownload\\AI大模型应用第21期\\试验项目\\蓝海项目5\\reports\\w5w8_acceptance\\k3\\seed_33\\trajectories\\run-20260922-040951.jsonl",
+     "steps_used": 6,
+     "lead_status": "stale",
+     "auditor_verdict": "stale",
+     "dissent": null
+    },
+    "c8": {
+     "status": "unknown",
+     "reason": "缺口: Critic 提供的反证 t0-competitor-notes#p2@T1 未在本次 T1 检索结果中出现,无法验证其真实性与相关性,构成证据缺口。",
+     "evidence_ids": [],
+     "trajectory": "D:\\BaiduNetdiskDownload\\AI大模型应用第21期\\试验项目\\蓝海项目5\\reports\\w5w8_acceptance\\k3\\seed_33\\trajectories\\run-20260922-041005.jsonl",
+     "steps_used": 8,
+     "lead_status": "unknown",
+     "auditor_verdict": null,
+     "dissent": null
+    },
+    "c9": {
+     "status": "stale",
+     "reason": "T1 原文明确指出：'本轮未复测 WhatsApp Business 渗透率:1–2 月轮次的渗透率问题(72% 主渠道口径)在本轮问卷中未保留,原因是项目组已把渠道策略重心转向客服场景而非通讯工具选型,该指标不再列入跟踪项。' 该句直接推翻了主张 '目标市场 WhatsApp Business 渗透率不低于 70%' 的前提，表明该指标已停止追踪，无新数据支持，无法确认当前渗透率是否达到或超过 70%。",
+     "evidence_ids": [
+      "t0-messaging-survey#p2@T1"
+     ],
+     "trajectory": "D:\\BaiduNetdiskDownload\\AI大模型应用第21期\\试验项目\\蓝海项目5\\reports\\w5w8_acceptance\\k3\\seed_33\\trajectories\\run-20260922-041011.jsonl",
+     "steps_used": 5,
+     "lead_status": "stale",
+     "auditor_verdict": "stale",
+     "dissent": null
+    },
+    "c10": {
+     "status": "unknown",
+     "reason": "缺口: T1 无新测量数据，2 月调研数据后无更新记录，无法验证雅加达双语客服专员综合用工成本是否仍为 450 美元/月",
+     "evidence_ids": [],
+     "trajectory": "D:\\BaiduNetdiskDownload\\AI大模型应用第21期\\试验项目\\蓝海项目5\\reports\\w5w8_acceptance\\k3\\seed_33\\trajectories\\run-20260922-041016.jsonl",
+     "steps_used": 6,
+     "lead_status": "unknown",
+     "auditor_verdict": null,
+     "dissent": null
+    },
+    "c11": {
+     "status": "unknown",
+     "reason": "缺口: T1 原文未提供电子钱包作为收款方式的市场占比数据，仅提及 2 月小样本访谈结果（58%），但该数据已声明无新数据入账，且本期未复测支付格局。同时，原文明确区分‘分销铺货覆盖率’与‘收款方式市场占比’，二者不可互换，表明主张所依赖的度量维度在 T1 无有效证据支持。",
+     "evidence_ids": [],
+     "trajectory": "D:\\BaiduNetdiskDownload\\AI大模型应用第21期\\试验项目\\蓝海项目5\\reports\\w5w8_acceptance\\k3\\seed_33\\trajectories\\run-20260922-041029.jsonl",
+     "steps_used": 7,
+     "lead_status": "unknown",
+     "auditor_verdict": null,
+     "dissent": null
+    },
+    "c12": {
+     "status": "unknown",
+     "reason": "缺口: T1 无 2026 财年区域可用区计划外故障次数的入账数据,供应商年度报告尚未发布,无法引用。",
+     "evidence_ids": [],
+     "trajectory": "D:\\BaiduNetdiskDownload\\AI大模型应用第21期\\试验项目\\蓝海项目5\\reports\\w5w8_acceptance\\k3\\seed_33\\trajectories\\run-20260922-041035.jsonl",
+     "steps_used": 6,
+     "lead_status": "unknown",
+     "auditor_verdict": null,
+     "dissent": null
+    }
+   },
+   "matrix": {
+    "counts": {
+     "must_stale": {
+      "fresh": [],
+      "stale": [
+       "c1",
+       "c2",
+       "c3",
+       "c7"
+      ],
+      "unknown": []
+     },
+     "must_fresh": {
+      "fresh": [
+       "c4"
+      ],
+      "stale": [],
+      "unknown": [
+       "c5",
+       "c6",
+       "c8"
+      ]
+     },
+     "must_unknown": {
+      "fresh": [],
+      "stale": [
+       "c9"
+      ],
+      "unknown": [
+       "c10",
+       "c11",
+       "c12"
+      ]
+     }
+    },
+    "hits": {
+     "must_stale": 4,
+     "must_fresh": 1,
+     "must_unknown": 3
+    },
+    "misses": {
+     "must_stale": [],
+     "must_fresh": [
+      {
+       "claim_id": "c5",
+       "predicted": "unknown",
+       "expected": "fresh"
+      },
+      {
+       "claim_id": "c6",
+       "predicted": "unknown",
+       "expected": "fresh"
+      },
+      {
+       "claim_id": "c8",
+       "predicted": "unknown",
+       "expected": "fresh"
+      }
+     ],
+     "must_unknown": [
+      {
+       "claim_id": "c9",
+       "predicted": "stale",
+       "expected": "unknown"
+      }
+     ]
+    },
+    "total": 12,
+    "all_hit": false
+   }
+  },
+  {
+   "run": 3,
+   "decoding": {
+    "model": "qwen-flash",
+    "temperature": 0.7,
+    "seed": 33,
+    "recorded_at": "2026-09-21T20:11:02.362476+00:00"
+   },
+   "decisions": {
+    "c1": "stale",
+    "c2": "stale",
+    "c3": "stale",
+    "c4": "fresh",
+    "c5": "unknown",
+    "c6": "unknown",
+    "c7": "stale",
+    "c8": "stale",
+    "c9": "stale",
+    "c10": "unknown",
+    "c11": "unknown",
+    "c12": "unknown"
+   },
+   "detail": {
+    "c1": {
+     "status": "stale",
+     "reason": "T1 原文明确指出，竞品 SeaDesk 于 2026 年 7 月发布 Lite 入门版，报价为 39 美元/月/店，且该价格已低于我方拟定的 59 美元/月/店定价；同时有两家商户已实际转用 Lite 版，直接推翻了主张中‘竞品客单价仍显著高于我方定价’的前提。",
+     "evidence_ids": [
+      "t0-competitor-notes#p2@T1"
+     ],
+     "trajectory": "D:\\BaiduNetdiskDownload\\AI大模型应用第21期\\试验项目\\蓝海项目5\\reports\\w5w8_acceptance\\k3\\seed_33\\trajectories\\run-20260922-041118.jsonl",
+     "steps_used": 6,
+     "lead_status": "stale",
+     "auditor_verdict": "stale",
+     "dissent": null
+    },
+    "c2": {
+     "status": "stale",
+     "reason": "T1 原文明确指出：『2026 年 8 月，印尼通信与信息技术部发布 PDP 法实施条例，其中明确规定：面向印尼境内用户的在线客服对话日志须在印尼境内存储』，该条款构成对主张『印尼无强制要求』的直接推翻；同时，泰国虽尚处咨询稿阶段，但已明确拟提出类似要求，亦构成监管趋势上的强制性预期。因此，签发时声称的『暂无强制要求』已不成立。",
+     "evidence_ids": [
+      "t0-regulatory-memo#p2@T1"
+     ],
+     "trajectory": "D:\\BaiduNetdiskDownload\\AI大模型应用第21期\\试验项目\\蓝海项目5\\reports\\w5w8_acceptance\\k3\\seed_33\\trajectories\\run-20260922-041126.jsonl",
+     "steps_used": 5,
+     "lead_status": "stale",
+     "auditor_verdict": "stale",
+     "dissent": null
+    },
+    "c3": {
+     "status": "stale",
+     "reason": "T1 原文明确指出：复访结果中，Manila BizLink 与曼谷 SiamReach 均改口要求分成比例从 30% 提高到 45%，理由是 30% 已无人愿意推；PT MegaSolusi 表示 30% 仅接受首年，第二年要按 40% 重谈。因此，签发时主张的‘3 家意向渠道伙伴接受 30% 销售分成比例’在 T1 时刻已不成立。",
+     "evidence_ids": [
+      "t0-channel-interviews#p2@T1"
+     ],
+     "trajectory": "D:\\BaiduNetdiskDownload\\AI大模型应用第21期\\试验项目\\蓝海项目5\\reports\\w5w8_acceptance\\k3\\seed_33\\trajectories\\run-20260922-041132.jsonl",
+     "steps_used": 5,
+     "lead_status": "stale",
+     "auditor_verdict": "stale",
+     "dissent": null
+    },
+    "c4": {
+     "status": "fresh",
+     "reason": "复验完成。  \n主张 c4 已判定为 **fresh**，证据链完整，符合规则闸要求。  \n会话结束。",
+     "evidence_ids": [
+      "t0-market-census#p2@T1"
+     ],
+     "trajectory": "D:\\BaiduNetdiskDownload\\AI大模型应用第21期\\试验项目\\蓝海项目5\\reports\\w5w8_acceptance\\k3\\seed_33\\trajectories\\run-20260922-041150.jsonl",
+     "steps_used": 6,
+     "lead_status": "fresh",
+     "auditor_verdict": "fresh",
+     "dissent": null
+    },
+    "c5": {
+     "status": "unknown",
+     "reason": "缺口: T1 原文未提供我方单会话全成本与竞品在当前价格体系下的直接对比证据，仅存在敏感性分析（若竞品降价至 49 美元档则优势收窄），但无明确结论支持‘仍低于’的主张。现有证据中，虽有成本数据，但缺乏对竞品当前实际报价下对标结果的确认，无法形成完整支持链。",
+     "evidence_ids": [],
+     "trajectory": "D:\\BaiduNetdiskDownload\\AI大模型应用第21期\\试验项目\\蓝海项目5\\reports\\w5w8_acceptance\\k3\\seed_33\\trajectories\\run-20260922-041204.jsonl",
+     "steps_used": 9,
+     "lead_status": "unknown",
+     "auditor_verdict": null,
+     "dissent": null
+    },
+    "c6": {
+     "status": "unknown",
+     "reason": "缺口: T1 原文未提供关于市场窗口是否打开的直接证据。虽有付费商户续约率 91%、毛利健康等信息，但主张的核心前提‘市场窗口打开’依赖于对竞品定价策略与市场接受度的整体判断；而 2026 年 7 月发布的 Lite 版低价策略及实际转用情况表明市场结构已调整，但该变化未被签发原文所涵盖，且无明确因果链支持‘窗口打开’结论。现有证据不足以支撑或推翻主张，判定为未知。",
+     "evidence_ids": [],
+     "trajectory": "D:\\BaiduNetdiskDownload\\AI大模型应用第21期\\试验项目\\蓝海项目5\\reports\\w5w8_acceptance\\k3\\seed_33\\trajectories\\run-20260922-041220.jsonl",
+     "steps_used": 9,
+     "lead_status": "unknown",
+     "auditor_verdict": null,
+     "dissent": null
+    },
+    "c7": {
+     "status": "stale",
+     "reason": "T1 原文明确指出，竞品 SeaDesk 于 2026 年 7 月发布 Lite 入门版，报价为 39 美元/月/店（限单渠道接入、不含报表），并将标准版从 99 美元降至 79 美元/月/店；且有两家商户已实际转用 Lite 版。这表明我方拟定的 59 美元/月/店定价已不再具有价格优势，甚至低于竞品入门价，直接推翻了主张中‘我方价格优势仍在’的前提。",
+     "evidence_ids": [
+      "t0-competitor-notes#p2@T1"
+     ],
+     "trajectory": "D:\\BaiduNetdiskDownload\\AI大模型应用第21期\\试验项目\\蓝海项目5\\reports\\w5w8_acceptance\\k3\\seed_33\\trajectories\\run-20260922-041235.jsonl",
+     "steps_used": 6,
+     "lead_status": "stale",
+     "auditor_verdict": "stale",
+     "dissent": null
+    },
+    "c8": {
+     "status": "stale",
+     "reason": "T1 原文明确指出，SeaDesk 于 2026 年 7 月发布 Lite 入门版，报价 39 美元/月/店（限单渠道接入、不含报表），且有两家商户已实际转用 Lite 版；该模型已具备本地语言支持能力并可直接用于核心对话场景，推翻了主张中‘东南亚本地语言小模型生态不成熟，核心对话能力需自研’的前提。",
+     "evidence_ids": [
+      "t0-competitor-notes#p2@T1"
+     ],
+     "trajectory": "D:\\BaiduNetdiskDownload\\AI大模型应用第21期\\试验项目\\蓝海项目5\\reports\\w5w8_acceptance\\k3\\seed_33\\trajectories\\run-20260922-041252.jsonl",
+     "steps_used": 8,
+     "lead_status": "stale",
+     "auditor_verdict": "stale",
+     "dissent": null
+    },
+    "c9": {
+     "status": "stale",
+     "reason": "T1 原文明确指出：'本轮未复测 WhatsApp Business 渗透率:1–2 月轮次的渗透率问题(72% 主渠道口径)在本轮问卷中未保留,原因是项目组已把渠道策略重心转向客服场景而非通讯工具选型,该指标不再列入跟踪项。' 此句直接表明目标市场 WhatsApp Business 渗透率数据在 T1 已不再被跟踪，且未提供任何更新或支持性证据，因此无法成立 '不低于 70%' 的主张前提。",
+     "evidence_ids": [
+      "t0-messaging-survey#p2@T1"
+     ],
+     "trajectory": "D:\\BaiduNetdiskDownload\\AI大模型应用第21期\\试验项目\\蓝海项目5\\reports\\w5w8_acceptance\\k3\\seed_33\\trajectories\\run-20260922-041259.jsonl",
+     "steps_used": 5,
+     "lead_status": "stale",
+     "auditor_verdict": "stale",
+     "dissent": null
+    },
+    "c10": {
+     "status": "unknown",
+     "reason": "缺口: T1 无新测量数据,2 月调研数据后无更新记录;复访因排期调整推迟,新时间未定。",
+     "evidence_ids": [],
+     "trajectory": "D:\\BaiduNetdiskDownload\\AI大模型应用第21期\\试验项目\\蓝海项目5\\reports\\w5w8_acceptance\\k3\\seed_33\\trajectories\\run-20260922-041304.jsonl",
+     "steps_used": 6,
+     "lead_status": "unknown",
+     "auditor_verdict": null,
+     "dissent": null
+    },
+    "c11": {
+     "status": "unknown",
+     "reason": "缺口: T1 原文未提供 2026 年 Q3 支付方式格局的最新数据,签发时占比 58% 的结论缺乏当前证据支持。",
+     "evidence_ids": [],
+     "trajectory": "D:\\BaiduNetdiskDownload\\AI大模型应用第21期\\试验项目\\蓝海项目5\\reports\\w5w8_acceptance\\k3\\seed_33\\trajectories\\run-20260922-041321.jsonl",
+     "steps_used": 9,
+     "lead_status": "unknown",
+     "auditor_verdict": null,
+     "dissent": null
+    },
+    "c12": {
+     "status": "unknown",
+     "reason": "缺口: T1 无 2026 财年区域可用区计划外故障次数的入账数据,供应商年度报告尚未发布,无法验证主张中「年计划外故障不超过 2 次」的实证。",
+     "evidence_ids": [],
+     "trajectory": "D:\\BaiduNetdiskDownload\\AI大模型应用第21期\\试验项目\\蓝海项目5\\reports\\w5w8_acceptance\\k3\\seed_33\\trajectories\\run-20260922-041325.jsonl",
+     "steps_used": 6,
+     "lead_status": "unknown",
+     "auditor_verdict": null,
+     "dissent": null
+    }
+   },
+   "matrix": {
+    "counts": {
+     "must_stale": {
+      "fresh": [],
+      "stale": [
+       "c1",
+       "c2",
+       "c3",
+       "c7"
+      ],
+      "unknown": []
+     },
+     "must_fresh": {
+      "fresh": [
+       "c4"
+      ],
+      "stale": [
+       "c8"
+      ],
+      "unknown": [
+       "c5",
+       "c6"
+      ]
+     },
+     "must_unknown": {
+      "fresh": [],
+      "stale": [
+       "c9"
+      ],
+      "unknown": [
+       "c10",
+       "c11",
+       "c12"
+      ]
+     }
+    },
+    "hits": {
+     "must_stale": 4,
+     "must_fresh": 1,
+     "must_unknown": 3
+    },
+    "misses": {
+     "must_stale": [],
+     "must_fresh": [
+      {
+       "claim_id": "c5",
+       "predicted": "unknown",
+       "expected": "fresh"
+      },
+      {
+       "claim_id": "c6",
+       "predicted": "unknown",
+       "expected": "fresh"
+      },
+      {
+       "claim_id": "c8",
+       "predicted": "stale",
+       "expected": "fresh"
+      }
+     ],
+     "must_unknown": [
+      {
+       "claim_id": "c9",
+       "predicted": "stale",
+       "expected": "unknown"
+      }
+     ]
+    },
+    "total": 12,
+    "all_hit": false
+   }
+  },
+  {
+   "run": 4,
+   "decoding": {
+    "model": "qwen-flash",
+    "temperature": 0.7,
+    "seed": 33,
+    "recorded_at": "2026-09-21T20:14:01.105165+00:00"
+   },
+   "decisions": {
+    "c1": "stale",
+    "c2": "stale",
+    "c3": "stale",
+    "c4": "fresh",
+    "c5": "unknown",
+    "c6": "unknown",
+    "c7": "stale",
+    "c8": "stale",
+    "c9": "unknown",
+    "c10": "unknown",
+    "c11": "unknown",
+    "c12": "unknown"
+   },
+   "detail": {
+    "c1": {
+     "status": "stale",
+     "reason": "T1 原文明确指出，SeaDesk 于 2026 年 7 月发布 Lite 入门版，报价 39 美元/月/店，已低于我方拟定的 59 美元/月/店定价；且有两家商户已实际转用 Lite 版。此句直接推翻主张中‘竞品 SeaDesk 客单价仍显著高于我方拟定的 59 美元/月/店定价’的前提。",
+     "evidence_ids": [
+      "t0-competitor-notes#p2@T1"
+     ],
+     "trajectory": "D:\\BaiduNetdiskDownload\\AI大模型应用第21期\\试验项目\\蓝海项目5\\reports\\w5w8_acceptance\\k3\\seed_33\\trajectories\\run-20260922-041414.jsonl",
+     "steps_used": 6,
+     "lead_status": "stale",
+     "auditor_verdict": "stale",
+     "dissent": null
+    },
+    "c2": {
+     "status": "stale",
+     "reason": "T1 原文明确指出，印尼通信与信息技术部已于 2026 年 8 月发布 PDP 法实施条例，明确规定面向印尼境内用户的在线客服对话日志须在印尼境内存储，自 2026 年 12 月 1 日起生效。这直接推翻了主张中「监管暂无强制要求」的前提。泰国虽尚处咨询稿阶段，但其拟议要求已构成对「无强制要求」的实质性否定。因此，主张所依赖的「无强制要求」前提已被 T1 原文明确推翻。",
+     "evidence_ids": [
+      "t0-regulatory-memo#p2@T1"
+     ],
+     "trajectory": "D:\\BaiduNetdiskDownload\\AI大模型应用第21期\\试验项目\\蓝海项目5\\reports\\w5w8_acceptance\\k3\\seed_33\\trajectories\\run-20260922-041422.jsonl",
+     "steps_used": 5,
+     "lead_status": "stale",
+     "auditor_verdict": "stale",
+     "dissent": null
+    },
+    "c3": {
+     "status": "stale",
+     "reason": "T1 原文明确指出：复访结果中，Manila BizLink 与曼谷 SiamReach 均改口，要求分成比例从 30% 提高到 45%，理由是 30% 已无人愿意推；PT MegaSolusi 表示 30% 仅接受首年，第二年要按 40% 重谈。因此，3 家意向渠道伙伴均未在 T1 时仍接受 30% 分成比例，签发时的‘均接受’口径已不成立。",
+     "evidence_ids": [
+      "t0-channel-interviews#p2@T1"
+     ],
+     "trajectory": "D:\\BaiduNetdiskDownload\\AI大模型应用第21期\\试验项目\\蓝海项目5\\reports\\w5w8_acceptance\\k3\\seed_33\\trajectories\\run-20260922-041431.jsonl",
+     "steps_used": 5,
+     "lead_status": "stale",
+     "auditor_verdict": "stale",
+     "dissent": null
+    },
+    "c4": {
+     "status": "fresh",
+     "reason": "复验完成。主张 c4 已判定为 **fresh**，依据为 T1 原文 `t0-market-census#p2@T1` 明确指出六国可服务目标市场约 830 万家，超过 800 万门槛，且定义与签发时一致。无反证介入，判定有效。",
+     "evidence_ids": [
+      "t0-market-census#p2@T1"
+     ],
+     "trajectory": "D:\\BaiduNetdiskDownload\\AI大模型应用第21期\\试验项目\\蓝海项目5\\reports\\w5w8_acceptance\\k3\\seed_33\\trajectories\\run-20260922-041440.jsonl",
+     "steps_used": 5,
+     "lead_status": "fresh",
+     "auditor_verdict": "fresh",
+     "dissent": null
+    },
+    "c5": {
+     "status": "unknown",
+     "reason": "缺口: T1 原文未提供关于我方单会话全成本在竞品进一步降价情境下的持续对比数据，且无证据表明竞品价格不变。尽管有证据显示当前成本仍低于竞品（t0-cost-model#p2@T1），但该主张依赖于‘竞品价格不变’的前提，而 T1 证据中已明确指出若竞品降价至 49 美元档，我方优势将收窄至 20% 需重新评估。因此，无法确认该前提在复验时刻是否成立，证据不足以支撑 fresh 判定；同时，亦无直接反证推翻主张本身。判定依据不足，应归为 unknown。",
+     "evidence_ids": [],
+     "trajectory": "D:\\BaiduNetdiskDownload\\AI大模型应用第21期\\试验项目\\蓝海项目5\\reports\\w5w8_acceptance\\k3\\seed_33\\trajectories\\run-20260922-041457.jsonl",
+     "steps_used": 9,
+     "lead_status": "unknown",
+     "auditor_verdict": null,
+     "dissent": null
+    },
+    "c6": {
+     "status": "unknown",
+     "reason": "缺口: T1 无直接证据支持主张中『市场窗口打开』的因果链;现有证据显示付费续约率高、毛利健康,但未提市场整体需求窗口是否开放或扩张。反证方向聚焦竞品定价,与主张维度不匹配,不予采纳。",
+     "evidence_ids": [],
+     "trajectory": "D:\\BaiduNetdiskDownload\\AI大模型应用第21期\\试验项目\\蓝海项目5\\reports\\w5w8_acceptance\\k3\\seed_33\\trajectories\\run-20260922-041509.jsonl",
+     "steps_used": 7,
+     "lead_status": "unknown",
+     "auditor_verdict": null,
+     "dissent": null
+    },
+    "c7": {
+     "status": "stale",
+     "reason": "T1 原文明确指出，竞品 SeaDesk 于 2026 年 7 月已将标准版价格从 99 美元/月降至 79 美元/月/店，且《东南亚 SaaS 观察》2026 年 9 月刊所引用的 99 美元报价存在已知滞后，未反映最新变动。因此，主张中‘竞品 SeaDesk 客单价仍为 99 美元/月’这一前提已被推翻。",
+     "evidence_ids": [
+      "t0-competitor-notes#p2@T1",
+      "t0-trade-press#p2@T1",
+      "t0-trade-press#p3@T1"
+     ],
+     "trajectory": "D:\\BaiduNetdiskDownload\\AI大模型应用第21期\\试验项目\\蓝海项目5\\reports\\w5w8_acceptance\\k3\\seed_33\\trajectories\\run-20260922-041524.jsonl",
+     "steps_used": 6,
+     "lead_status": "stale",
+     "auditor_verdict": "stale",
+     "dissent": null
+    },
+    "c8": {
+     "status": "stale",
+     "reason": "T1 原文明确指出，SeaDesk 于 2026 年 7 月发布 Lite 入门版，报价 39 美元/月/店（限单渠道接入、不含报表），且有两家商户已实际转用该版本；这表明东南亚本地语言小模型生态已具备可直接使用的成熟产品，无需自研即可实现核心对话能力。该反证直接推翻了主张中『本地语言小模型生态不成熟』的前提，且其证据来源为竞品访谈笔记（private），属于 tech_ecosystem 维度。",
+     "evidence_ids": [
+      "t0-competitor-notes#p2@T1"
+     ],
+     "trajectory": "D:\\BaiduNetdiskDownload\\AI大模型应用第21期\\试验项目\\蓝海项目5\\reports\\w5w8_acceptance\\k3\\seed_33\\trajectories\\run-20260922-041542.jsonl",
+     "steps_used": 8,
+     "lead_status": "stale",
+     "auditor_verdict": "stale",
+     "dissent": null
+    },
+    "c9": {
+     "status": "unknown",
+     "reason": "缺口: T1 原文未覆盖 WhatsApp Business 渗透率数据,明确说明该指标已不再跟踪,无新数据可查",
+     "evidence_ids": [],
+     "trajectory": "D:\\BaiduNetdiskDownload\\AI大模型应用第21期\\试验项目\\蓝海项目5\\reports\\w5w8_acceptance\\k3\\seed_33\\trajectories\\run-20260922-041545.jsonl",
+     "steps_used": 6,
+     "lead_status": "unknown",
+     "auditor_verdict": null,
+     "dissent": null
+    },
+    "c10": {
+     "status": "unknown",
+     "reason": "缺口: T1 无新数据覆盖雅加达双语客服专员综合用工成本，2 月调研数据未更新，存在数据缺口",
+     "evidence_ids": [],
+     "trajectory": "D:\\BaiduNetdiskDownload\\AI大模型应用第21期\\试验项目\\蓝海项目5\\reports\\w5w8_acceptance\\k3\\seed_33\\trajectories\\run-20260922-041553.jsonl",
+     "steps_used": 6,
+     "lead_status": "unknown",
+     "auditor_verdict": null,
+     "dissent": null
+    },
+    "c11": {
+     "status": "unknown",
+     "reason": "缺口: T1 原文未提供关于电子钱包在目标市场收款方式占比的最新格局性数据，仅提及2月小样本访谈结果（电子钱包58%）后无新数据入账，无法确认该比例是否仍成立。同时，检索到的证据中虽有相关描述，但均未覆盖主张的核心前提——当前市场占比是否维持在58%。",
+     "evidence_ids": [],
+     "trajectory": "D:\\BaiduNetdiskDownload\\AI大模型应用第21期\\试验项目\\蓝海项目5\\reports\\w5w8_acceptance\\k3\\seed_33\\trajectories\\run-20260922-041616.jsonl",
+     "steps_used": 11,
+     "lead_status": "unknown",
+     "auditor_verdict": null,
+     "dissent": null
+    },
+    "c12": {
+     "status": "unknown",
+     "reason": "缺口: T1 无 2026 财年区域可用区计划外故障次数的入账数据,无法验证主张中「年计划外故障不超过 2 次」的前提",
+     "evidence_ids": [],
+     "trajectory": "D:\\BaiduNetdiskDownload\\AI大模型应用第21期\\试验项目\\蓝海项目5\\reports\\w5w8_acceptance\\k3\\seed_33\\trajectories\\run-20260922-041623.jsonl",
+     "steps_used": 6,
+     "lead_status": "unknown",
+     "auditor_verdict": null,
+     "dissent": null
+    }
+   },
+   "matrix": {
+    "counts": {
+     "must_stale": {
+      "fresh": [],
+      "stale": [
+       "c1",
+       "c2",
+       "c3",
+       "c7"
+      ],
+      "unknown": []
+     },
+     "must_fresh": {
+      "fresh": [
+       "c4"
+      ],
+      "stale": [
+       "c8"
+      ],
+      "unknown": [
+       "c5",
+       "c6"
+      ]
+     },
+     "must_unknown": {
+      "fresh": [],
+      "stale": [],
+      "unknown": [
+       "c9",
+       "c10",
+       "c11",
+       "c12"
+      ]
+     }
+    },
+    "hits": {
+     "must_stale": 4,
+     "must_fresh": 1,
+     "must_unknown": 4
+    },
+    "misses": {
+     "must_stale": [],
+     "must_fresh": [
+      {
+       "claim_id": "c5",
+       "predicted": "unknown",
+       "expected": "fresh"
+      },
+      {
+       "claim_id": "c6",
+       "predicted": "unknown",
+       "expected": "fresh"
+      },
+      {
+       "claim_id": "c8",
+       "predicted": "stale",
+       "expected": "fresh"
+      }
+     ],
+     "must_unknown": []
+    },
+    "total": 12,
+    "all_hit": false
+   }
+  },
+  {
+   "run": 5,
+   "decoding": {
+    "model": "qwen-flash",
+    "temperature": 0.7,
+    "seed": 33,
+    "recorded_at": "2026-09-21T20:16:54.531631+00:00"
+   },
+   "decisions": {
+    "c1": "stale",
+    "c2": "stale",
+    "c3": "stale",
+    "c4": "fresh",
+    "c5": "unknown",
+    "c6": "stale",
+    "c7": "stale",
+    "c8": "stale",
+    "c9": "unknown",
+    "c10": "unknown",
+    "c11": "unknown",
+    "c12": "unknown"
+   },
+   "detail": {
+    "c1": {
+     "status": "stale",
+     "reason": "T1 原文明确指出，SeaDesk 的 Lite 入门版报价为 39 美元/月/店，且受访商户表示该价格已低于我方拟定的 59 美元/月/店定价；同时标准版已降至 79 美元/月/店。因此，竞品在该市场的客单价已不再显著高于我方定价，主张前提被直接推翻。",
+     "evidence_ids": [
+      "t0-competitor-notes#p2@T1"
+     ],
+     "trajectory": "D:\\BaiduNetdiskDownload\\AI大模型应用第21期\\试验项目\\蓝海项目5\\reports\\w5w8_acceptance\\k3\\seed_33\\trajectories\\run-20260922-041702.jsonl",
+     "steps_used": 5,
+     "lead_status": "stale",
+     "auditor_verdict": "stale",
+     "dissent": null
+    },
+    "c2": {
+     "status": "stale",
+     "reason": "T1 原文明确指出，印尼通信与信息技术部已于 2026 年 8 月发布 PDP 法实施条例，明确规定面向印尼境内用户的在线客服对话日志须在印尼境内存储，自 2026 年 12 月 1 日起生效。这直接推翻了主张中‘监管暂无强制要求’的前提。泰国虽尚未定稿，但其已发布咨询稿拟提出类似要求，亦表明监管趋势已转向本地化强制。因此，原主张在 T1 时刻已不成立。",
+     "evidence_ids": [
+      "t0-regulatory-memo#p2@T1"
+     ],
+     "trajectory": "D:\\BaiduNetdiskDownload\\AI大模型应用第21期\\试验项目\\蓝海项目5\\reports\\w5w8_acceptance\\k3\\seed_33\\trajectories\\run-20260922-041710.jsonl",
+     "steps_used": 5,
+     "lead_status": "stale",
+     "auditor_verdict": "stale",
+     "dissent": null
+    },
+    "c3": {
+     "status": "stale",
+     "reason": "T1 原文明确指出，Manila BizLink 与曼谷 SiamReach 均改口，要求分成比例从 30% 提高到 45%，理由是竞品返点已达 40%；PT MegaSolusi 表示 30% 仅接受首年，第二年需重谈。因此，3 家意向渠道伙伴均接受 30% 分成的前提在 T1 已被推翻。",
+     "evidence_ids": [
+      "t0-channel-interviews#p2@T1"
+     ],
+     "trajectory": "D:\\BaiduNetdiskDownload\\AI大模型应用第21期\\试验项目\\蓝海项目5\\reports\\w5w8_acceptance\\k3\\seed_33\\trajectories\\run-20260922-041720.jsonl",
+     "steps_used": 4,
+     "lead_status": "stale",
+     "auditor_verdict": "stale",
+     "dissent": null
+    },
+    "c4": {
+     "status": "fresh",
+     "reason": "复验会话已结束。  \n主张 c4（目标市场不少于 800 万家）经 T1 原文核验，**判定为 fresh**，证据链完整，已提交规则闸待终审。  \n\n会话终止。",
+     "evidence_ids": [
+      "t0-market-census#p2@T1"
+     ],
+     "trajectory": "D:\\BaiduNetdiskDownload\\AI大模型应用第21期\\试验项目\\蓝海项目5\\reports\\w5w8_acceptance\\k3\\seed_33\\trajectories\\run-20260922-041741.jsonl",
+     "steps_used": 6,
+     "lead_status": "fresh",
+     "auditor_verdict": "fresh",
+     "dissent": null
+    },
+    "c5": {
+     "status": "unknown",
+     "reason": "缺口: T1 原文未提供与主张签发原文同维度（成本模型）的直接支持证据，虽有竞品定价变动信息，但未更新我方成本与竞品成本的对比计算。此前 Critic 提供的反证虽指向竞品定价，但因维度不匹配被机械跨检拦截，无法作为判定依据。现有证据中无明确说明我方单会话服务成本是否仍低于竞品的最新数据。",
+     "evidence_ids": [],
+     "trajectory": "D:\\BaiduNetdiskDownload\\AI大模型应用第21期\\试验项目\\蓝海项目5\\reports\\w5w8_acceptance\\k3\\seed_33\\trajectories\\run-20260922-041757.jsonl",
+     "steps_used": 9,
+     "lead_status": "unknown",
+     "auditor_verdict": null,
+     "dissent": null
+    },
+    "c6": {
+     "status": "stale",
+     "reason": "T1 原文明确指出，尽管竞品 SeaDesk 收缩东南亚免费版并聚焦付费商户，但其新报价（标准版 79 美元/月/店）与我方成本测算对比，仍维持单会话成本高于我方的格局；且原文强调「我方成本仍约为竞品的 47%」，说明成本优势未被侵蚀，市场窗口并未因竞品策略调整而打开。此句直接推翻主张『意味着市场窗口打开』的前提——即竞品降价或成本优势下降导致我方机会增大。",
+     "evidence_ids": [
+      "t0-cost-model#p2@T1"
+     ],
+     "trajectory": "D:\\BaiduNetdiskDownload\\AI大模型应用第21期\\试验项目\\蓝海项目5\\reports\\w5w8_acceptance\\k3\\seed_33\\trajectories\\run-20260922-041816.jsonl",
+     "steps_used": 8,
+     "lead_status": "stale",
+     "auditor_verdict": "stale",
+     "dissent": null
+    },
+    "c7": {
+     "status": "stale",
+     "reason": "T1 原文明确指出《东南亚 SaaS 观察》2026 年 9 月刊仍沿用 6 月刊的 99 美元报价，但编者注已说明该数据存在已知滞后，7 月后的价格变动将反映在 12 月刊；同时，内部私有证据 t0-competitor-notes#p2@T1 明确记录：SeaDesk 已于 2026 年 7 月将标准版价格从 99 美元降至 79 美元/月/店，且已有商户实际转用其入门版。因此，主张中‘竞品 SeaDesk 客单价仍为 99 美元/月’的前提已被推翻。",
+     "evidence_ids": [
+      "t0-trade-press#p2@T1",
+      "t0-competitor-notes#p2@T1"
+     ],
+     "trajectory": "D:\\BaiduNetdiskDownload\\AI大模型应用第21期\\试验项目\\蓝海项目5\\reports\\w5w8_acceptance\\k3\\seed_33\\trajectories\\run-20260922-041831.jsonl",
+     "steps_used": 6,
+     "lead_status": "stale",
+     "auditor_verdict": "stale",
+     "dissent": null
+    },
+    "c8": {
+     "status": "stale",
+     "reason": "T1 原文明确指出：'两个新模型幻觉率分别为 15% 与 22%，意图识别准确率最高 81%，较 3 月最佳水平仅有小幅改善，仍明显高于商用门槛（幻觉率 <10%）'，该句直接推翻主张中‘核心对话能力需自研’的前提——即现有生态已无法满足商用要求；而‘评估结论维持：本地语言小模型生态仍不成熟，自研或深度微调的必要性不变’表明该前提在当前版本中已被确认为成立，因此主张的‘核心对话能力需自研’这一判断在逻辑上已被反证覆盖。",
+     "evidence_ids": [
+      "t0-tech-ecosystem#p2@T1"
+     ],
+     "trajectory": "D:\\BaiduNetdiskDownload\\AI大模型应用第21期\\试验项目\\蓝海项目5\\reports\\w5w8_acceptance\\k3\\seed_33\\trajectories\\run-20260922-041840.jsonl",
+     "steps_used": 5,
+     "lead_status": "stale",
+     "auditor_verdict": "stale",
+     "dissent": null
+    },
+    "c9": {
+     "status": "unknown",
+     "reason": "缺口: T1 原文未覆盖 WhatsApp Business 渗透率数据,明确说明该指标在本轮调查中已取消跟踪,无新数据可支撑主张",
+     "evidence_ids": [],
+     "trajectory": "D:\\BaiduNetdiskDownload\\AI大模型应用第21期\\试验项目\\蓝海项目5\\reports\\w5w8_acceptance\\k3\\seed_33\\trajectories\\run-20260922-041844.jsonl",
+     "steps_used": 6,
+     "lead_status": "unknown",
+     "auditor_verdict": null,
+     "dissent": null
+    },
+    "c10": {
+     "status": "unknown",
+     "reason": "缺口: T1 原文明确声明雅加达双语客服专员综合用工成本无新测量，2 月数据后无更新记录，无法验证签发时主张是否仍成立",
+     "evidence_ids": [],
+     "trajectory": "D:\\BaiduNetdiskDownload\\AI大模型应用第21期\\试验项目\\蓝海项目5\\reports\\w5w8_acceptance\\k3\\seed_33\\trajectories\\run-20260922-041850.jsonl",
+     "steps_used": 6,
+     "lead_status": "unknown",
+     "auditor_verdict": null,
+     "dissent": null
+    },
+    "c11": {
+     "status": "unknown",
+     "reason": "缺口: T1 原文未提供 2026 年 Q3 支付格局新数据,签发时的 58% 占比无新证据支持或推翻。原主张依赖的 2 月小样本访谈数据已过时,且未复测。",
+     "evidence_ids": [],
+     "trajectory": "D:\\BaiduNetdiskDownload\\AI大模型应用第21期\\试验项目\\蓝海项目5\\reports\\w5w8_acceptance\\k3\\seed_33\\trajectories\\run-20260922-041859.jsonl",
+     "steps_used": 7,
+     "lead_status": "unknown",
+     "auditor_verdict": null,
+     "dissent": null
+    },
+    "c12": {
+     "status": "unknown",
+     "reason": "缺口: T1 无 2026 财年区域可用区计划外故障次数的入账数据,无法验证主张中「不超过 2 次」的量化前提",
+     "evidence_ids": [],
+     "trajectory": "D:\\BaiduNetdiskDownload\\AI大模型应用第21期\\试验项目\\蓝海项目5\\reports\\w5w8_acceptance\\k3\\seed_33\\trajectories\\run-20260922-041903.jsonl",
+     "steps_used": 6,
+     "lead_status": "unknown",
+     "auditor_verdict": null,
+     "dissent": null
+    }
+   },
+   "matrix": {
+    "counts": {
+     "must_stale": {
+      "fresh": [],
+      "stale": [
+       "c1",
+       "c2",
+       "c3",
+       "c7"
+      ],
+      "unknown": []
+     },
+     "must_fresh": {
+      "fresh": [
+       "c4"
+      ],
+      "stale": [
+       "c6",
+       "c8"
+      ],
+      "unknown": [
+       "c5"
+      ]
+     },
+     "must_unknown": {
+      "fresh": [],
+      "stale": [],
+      "unknown": [
+       "c9",
+       "c10",
+       "c11",
+       "c12"
+      ]
+     }
+    },
+    "hits": {
+     "must_stale": 4,
+     "must_fresh": 1,
+     "must_unknown": 4
+    },
+    "misses": {
+     "must_stale": [],
+     "must_fresh": [
+      {
+       "claim_id": "c5",
+       "predicted": "unknown",
+       "expected": "fresh"
+      },
+      {
+       "claim_id": "c6",
+       "predicted": "stale",
+       "expected": "fresh"
+      },
+      {
+       "claim_id": "c8",
+       "predicted": "stale",
+       "expected": "fresh"
+      }
+     ],
+     "must_unknown": []
+    },
+    "total": 12,
+    "all_hit": false
+   }
+  }
+ ],
+ "pass_at_k": {
+  "c1": 5,
+  "c2": 5,
+  "c3": 5,
+  "c4": 5,
+  "c5": 0,
+  "c6": 0,
+  "c7": 5,
+  "c8": 0,
+  "c9": 3,
+  "c10": 5,
+  "c11": 5,
+  "c12": 5
+ },
+ "point_back_j1": {
+  "c1": {
+   "expected_anchor": "t0-competitor-notes#p2@T1",
+   "hit": true,
+   "evidence_ids": [
+    "t0-competitor-notes#p2@T1"
+   ],
+   "exempt": false
+  },
+  "c2": {
+   "expected_anchor": "t0-regulatory-memo#p2@T1",
+   "hit": true,
+   "evidence_ids": [
+    "t0-regulatory-memo#p2@T1"
+   ],
+   "exempt": false
+  },
+  "c3": {
+   "expected_anchor": "t0-channel-interviews#p2@T1",
+   "hit": true,
+   "evidence_ids": [
+    "t0-channel-interviews#p2@T1"
+   ],
+   "exempt": false
+  },
+  "c4": {
+   "expected_anchor": "t0-market-census#p2@T1",
+   "hit": true,
+   "evidence_ids": [
+    "t0-market-census#p2@T1"
+   ],
+   "exempt": false
+  },
+  "c5": {
+   "expected_anchor": "t0-cost-model#p2@T1",
+   "hit": false,
+   "evidence_ids": [],
+   "exempt": false
+  },
+  "c6": {
+   "expected_anchor": "t0-competitor-news#p2@T1",
+   "hit": false,
+   "evidence_ids": [
+    "t0-cost-model#p2@T1"
+   ],
+   "exempt": false
+  },
+  "c7": {
+   "expected_anchor": "t0-trade-press#p2@T1",
+   "hit": true,
+   "evidence_ids": [
+    "t0-trade-press#p2@T1",
+    "t0-competitor-notes#p2@T1"
+   ],
+   "exempt": false
+  },
+  "c8": {
+   "expected_anchor": "t0-tech-ecosystem#p2@T1",
+   "hit": true,
+   "evidence_ids": [
+    "t0-tech-ecosystem#p2@T1"
+   ],
+   "exempt": false
+  },
+  "c9": {
+   "expected_anchor": null,
+   "hit": false,
+   "evidence_ids": [],
+   "exempt": true
+  },
+  "c10": {
+   "expected_anchor": null,
+   "hit": false,
+   "evidence_ids": [],
+   "exempt": true
+  },
+  "c11": {
+   "expected_anchor": null,
+   "hit": false,
+   "evidence_ids": [],
+   "exempt": true
+  },
+  "c12": {
+   "expected_anchor": null,
+   "hit": false,
+   "evidence_ids": [],
+   "exempt": true
+  }
+ },
+ "counterevidence_j2": {
+  "c1": [
+   {
+    "claim_id": "c1",
+    "status": "stale",
+    "expected_anchor": "t0-competitor-notes#p2@T1",
+    "evidence_ids": [
+     "t0-competitor-notes#p2@T1"
+    ],
+    "stale_direction": true,
+    "pointable": true,
+    "resolvable_detail": {
+     "t0-competitor-notes#p2@T1": true
+    },
+    "anchor_aligned": true,
+    "causal_sentence_proxy": false,
+    "causal_sentence_note": "② 显式因果句为语义判据,机器仅查 reason 提及 t1_doc(代理),硬判定归人工复核",
+    "valid_machine": true
+   },
+   {
+    "claim_id": "c1",
+    "status": "stale",
+    "expected_anchor": "t0-competitor-notes#p2@T1",
+    "evidence_ids": [
+     "t0-competitor-notes#p2@T1"
+    ],
+    "stale_direction": true,
+    "pointable": true,
+    "resolvable_detail": {
+     "t0-competitor-notes#p2@T1": true
+    },
+    "anchor_aligned": true,
+    "causal_sentence_proxy": false,
+    "causal_sentence_note": "② 显式因果句为语义判据,机器仅查 reason 提及 t1_doc(代理),硬判定归人工复核",
+    "valid_machine": true
+   },
+   {
+    "claim_id": "c1",
+    "status": "stale",
+    "expected_anchor": "t0-competitor-notes#p2@T1",
+    "evidence_ids": [
+     "t0-competitor-notes#p2@T1"
+    ],
+    "stale_direction": true,
+    "pointable": true,
+    "resolvable_detail": {
+     "t0-competitor-notes#p2@T1": true
+    },
+    "anchor_aligned": true,
+    "causal_sentence_proxy": false,
+    "causal_sentence_note": "② 显式因果句为语义判据,机器仅查 reason 提及 t1_doc(代理),硬判定归人工复核",
+    "valid_machine": true
+   },
+   {
+    "claim_id": "c1",
+    "status": "stale",
+    "expected_anchor": "t0-competitor-notes#p2@T1",
+    "evidence_ids": [
+     "t0-competitor-notes#p2@T1"
+    ],
+    "stale_direction": true,
+    "pointable": true,
+    "resolvable_detail": {
+     "t0-competitor-notes#p2@T1": true
+    },
+    "anchor_aligned": true,
+    "causal_sentence_proxy": false,
+    "causal_sentence_note": "② 显式因果句为语义判据,机器仅查 reason 提及 t1_doc(代理),硬判定归人工复核",
+    "valid_machine": true
+   },
+   {
+    "claim_id": "c1",
+    "status": "stale",
+    "expected_anchor": "t0-competitor-notes#p2@T1",
+    "evidence_ids": [
+     "t0-competitor-notes#p2@T1"
+    ],
+    "stale_direction": true,
+    "pointable": true,
+    "resolvable_detail": {
+     "t0-competitor-notes#p2@T1": true
+    },
+    "anchor_aligned": true,
+    "causal_sentence_proxy": false,
+    "causal_sentence_note": "② 显式因果句为语义判据,机器仅查 reason 提及 t1_doc(代理),硬判定归人工复核",
+    "valid_machine": true
+   }
+  ],
+  "c2": [
+   {
+    "claim_id": "c2",
+    "status": "stale",
+    "expected_anchor": "t0-regulatory-memo#p2@T1",
+    "evidence_ids": [
+     "t0-regulatory-memo#p2@T1"
+    ],
+    "stale_direction": true,
+    "pointable": true,
+    "resolvable_detail": {
+     "t0-regulatory-memo#p2@T1": true
+    },
+    "anchor_aligned": true,
+    "causal_sentence_proxy": false,
+    "causal_sentence_note": "② 显式因果句为语义判据,机器仅查 reason 提及 t1_doc(代理),硬判定归人工复核",
+    "valid_machine": true
+   },
+   {
+    "claim_id": "c2",
+    "status": "stale",
+    "expected_anchor": "t0-regulatory-memo#p2@T1",
+    "evidence_ids": [
+     "t0-regulatory-memo#p2@T1"
+    ],
+    "stale_direction": true,
+    "pointable": true,
+    "resolvable_detail": {
+     "t0-regulatory-memo#p2@T1": true
+    },
+    "anchor_aligned": true,
+    "causal_sentence_proxy": false,
+    "causal_sentence_note": "② 显式因果句为语义判据,机器仅查 reason 提及 t1_doc(代理),硬判定归人工复核",
+    "valid_machine": true
+   },
+   {
+    "claim_id": "c2",
+    "status": "stale",
+    "expected_anchor": "t0-regulatory-memo#p2@T1",
+    "evidence_ids": [
+     "t0-regulatory-memo#p2@T1"
+    ],
+    "stale_direction": true,
+    "pointable": true,
+    "resolvable_detail": {
+     "t0-regulatory-memo#p2@T1": true
+    },
+    "anchor_aligned": true,
+    "causal_sentence_proxy": false,
+    "causal_sentence_note": "② 显式因果句为语义判据,机器仅查 reason 提及 t1_doc(代理),硬判定归人工复核",
+    "valid_machine": true
+   },
+   {
+    "claim_id": "c2",
+    "status": "stale",
+    "expected_anchor": "t0-regulatory-memo#p2@T1",
+    "evidence_ids": [
+     "t0-regulatory-memo#p2@T1"
+    ],
+    "stale_direction": true,
+    "pointable": true,
+    "resolvable_detail": {
+     "t0-regulatory-memo#p2@T1": true
+    },
+    "anchor_aligned": true,
+    "causal_sentence_proxy": false,
+    "causal_sentence_note": "② 显式因果句为语义判据,机器仅查 reason 提及 t1_doc(代理),硬判定归人工复核",
+    "valid_machine": true
+   },
+   {
+    "claim_id": "c2",
+    "status": "stale",
+    "expected_anchor": "t0-regulatory-memo#p2@T1",
+    "evidence_ids": [
+     "t0-regulatory-memo#p2@T1"
+    ],
+    "stale_direction": true,
+    "pointable": true,
+    "resolvable_detail": {
+     "t0-regulatory-memo#p2@T1": true
+    },
+    "anchor_aligned": true,
+    "causal_sentence_proxy": false,
+    "causal_sentence_note": "② 显式因果句为语义判据,机器仅查 reason 提及 t1_doc(代理),硬判定归人工复核",
+    "valid_machine": true
+   }
+  ],
+  "c3": [
+   {
+    "claim_id": "c3",
+    "status": "stale",
+    "expected_anchor": "t0-channel-interviews#p2@T1",
+    "evidence_ids": [
+     "t0-channel-interviews#p2@T1"
+    ],
+    "stale_direction": true,
+    "pointable": true,
+    "resolvable_detail": {
+     "t0-channel-interviews#p2@T1": true
+    },
+    "anchor_aligned": true,
+    "causal_sentence_proxy": false,
+    "causal_sentence_note": "② 显式因果句为语义判据,机器仅查 reason 提及 t1_doc(代理),硬判定归人工复核",
+    "valid_machine": true
+   },
+   {
+    "claim_id": "c3",
+    "status": "stale",
+    "expected_anchor": "t0-channel-interviews#p2@T1",
+    "evidence_ids": [
+     "t0-channel-interviews#p2@T1"
+    ],
+    "stale_direction": true,
+    "pointable": true,
+    "resolvable_detail": {
+     "t0-channel-interviews#p2@T1": true
+    },
+    "anchor_aligned": true,
+    "causal_sentence_proxy": false,
+    "causal_sentence_note": "② 显式因果句为语义判据,机器仅查 reason 提及 t1_doc(代理),硬判定归人工复核",
+    "valid_machine": true
+   },
+   {
+    "claim_id": "c3",
+    "status": "stale",
+    "expected_anchor": "t0-channel-interviews#p2@T1",
+    "evidence_ids": [
+     "t0-channel-interviews#p2@T1"
+    ],
+    "stale_direction": true,
+    "pointable": true,
+    "resolvable_detail": {
+     "t0-channel-interviews#p2@T1": true
+    },
+    "anchor_aligned": true,
+    "causal_sentence_proxy": false,
+    "causal_sentence_note": "② 显式因果句为语义判据,机器仅查 reason 提及 t1_doc(代理),硬判定归人工复核",
+    "valid_machine": true
+   },
+   {
+    "claim_id": "c3",
+    "status": "stale",
+    "expected_anchor": "t0-channel-interviews#p2@T1",
+    "evidence_ids": [
+     "t0-channel-interviews#p2@T1"
+    ],
+    "stale_direction": true,
+    "pointable": true,
+    "resolvable_detail": {
+     "t0-channel-interviews#p2@T1": true
+    },
+    "anchor_aligned": true,
+    "causal_sentence_proxy": false,
+    "causal_sentence_note": "② 显式因果句为语义判据,机器仅查 reason 提及 t1_doc(代理),硬判定归人工复核",
+    "valid_machine": true
+   },
+   {
+    "claim_id": "c3",
+    "status": "stale",
+    "expected_anchor": "t0-channel-interviews#p2@T1",
+    "evidence_ids": [
+     "t0-channel-interviews#p2@T1"
+    ],
+    "stale_direction": true,
+    "pointable": true,
+    "resolvable_detail": {
+     "t0-channel-interviews#p2@T1": true
+    },
+    "anchor_aligned": true,
+    "causal_sentence_proxy": false,
+    "causal_sentence_note": "② 显式因果句为语义判据,机器仅查 reason 提及 t1_doc(代理),硬判定归人工复核",
+    "valid_machine": true
+   }
+  ],
+  "c7": [
+   {
+    "claim_id": "c7",
+    "status": "stale",
+    "expected_anchor": "t0-trade-press#p2@T1",
+    "evidence_ids": [
+     "t0-trade-press#p2@T1",
+     "t0-trade-press#p3@T1"
+    ],
+    "stale_direction": true,
+    "pointable": true,
+    "resolvable_detail": {
+     "t0-trade-press#p2@T1": true,
+     "t0-trade-press#p3@T1": true
+    },
+    "anchor_aligned": true,
+    "causal_sentence_proxy": false,
+    "causal_sentence_note": "② 显式因果句为语义判据,机器仅查 reason 提及 t1_doc(代理),硬判定归人工复核",
+    "valid_machine": true
+   },
+   {
+    "claim_id": "c7",
+    "status": "stale",
+    "expected_anchor": "t0-trade-press#p2@T1",
+    "evidence_ids": [
+     "t0-trade-press#p2@T1",
+     "t0-trade-press#p3@T1"
+    ],
+    "stale_direction": true,
+    "pointable": true,
+    "resolvable_detail": {
+     "t0-trade-press#p2@T1": true,
+     "t0-trade-press#p3@T1": true
+    },
+    "anchor_aligned": true,
+    "causal_sentence_proxy": false,
+    "causal_sentence_note": "② 显式因果句为语义判据,机器仅查 reason 提及 t1_doc(代理),硬判定归人工复核",
+    "valid_machine": true
+   },
+   {
+    "claim_id": "c7",
+    "status": "stale",
+    "expected_anchor": "t0-trade-press#p2@T1",
+    "evidence_ids": [
+     "t0-competitor-notes#p2@T1"
+    ],
+    "stale_direction": true,
+    "pointable": true,
+    "resolvable_detail": {
+     "t0-competitor-notes#p2@T1": true
+    },
+    "anchor_aligned": false,
+    "causal_sentence_proxy": false,
+    "causal_sentence_note": "② 显式因果句为语义判据,机器仅查 reason 提及 t1_doc(代理),硬判定归人工复核",
+    "valid_machine": false
+   },
+   {
+    "claim_id": "c7",
+    "status": "stale",
+    "expected_anchor": "t0-trade-press#p2@T1",
+    "evidence_ids": [
+     "t0-competitor-notes#p2@T1",
+     "t0-trade-press#p2@T1",
+     "t0-trade-press#p3@T1"
+    ],
+    "stale_direction": true,
+    "pointable": true,
+    "resolvable_detail": {
+     "t0-competitor-notes#p2@T1": true,
+     "t0-trade-press#p2@T1": true,
+     "t0-trade-press#p3@T1": true
+    },
+    "anchor_aligned": true,
+    "causal_sentence_proxy": false,
+    "causal_sentence_note": "② 显式因果句为语义判据,机器仅查 reason 提及 t1_doc(代理),硬判定归人工复核",
+    "valid_machine": true
+   },
+   {
+    "claim_id": "c7",
+    "status": "stale",
+    "expected_anchor": "t0-trade-press#p2@T1",
+    "evidence_ids": [
+     "t0-trade-press#p2@T1",
+     "t0-competitor-notes#p2@T1"
+    ],
+    "stale_direction": true,
+    "pointable": true,
+    "resolvable_detail": {
+     "t0-trade-press#p2@T1": true,
+     "t0-competitor-notes#p2@T1": true
+    },
+    "anchor_aligned": true,
+    "causal_sentence_proxy": false,
+    "causal_sentence_note": "② 显式因果句为语义判据,机器仅查 reason 提及 t1_doc(代理),硬判定归人工复核",
+    "valid_machine": true
+   }
+  ]
+ },
+ "fresh_guardrail_j2": {
+  "c4": [
+   true,
+   true,
+   true,
+   true,
+   true
+  ],
+  "c5": [
+   true,
+   true,
+   true,
+   true,
+   true
+  ],
+  "c6": [
+   true,
+   true,
+   true,
+   true,
+   true
+  ],
+  "c8": [
+   false,
+   true,
+   true,
+   true,
+   false
+  ]
+ },
+ "dimension_confusion_flags": {
+  "c4": [
+   false,
+   false,
+   false,
+   false,
+   false
+  ],
+  "c5": [
+   false,
+   false,
+   false,
+   false,
+   false
+  ],
+  "c6": [
+   false,
+   false,
+   false,
+   false,
+   true
+  ],
+  "c8": [
+   false,
+   false,
+   true,
+   true,
+   false
+  ]
+ },
+ "distractor_sensitivity": {
+  "c13": {
+   "expected_anchor": "t0-competitor-economics#p2@T1",
+   "statuses": [
+    "stale",
+    "stale",
+    "stale",
+    "fresh",
+    "unknown"
+   ],
+   "fresh_hits": 1,
+   "anchor_hits": 3,
+   "trajectory": "D:\\BaiduNetdiskDownload\\AI大模型应用第21期\\试验项目\\蓝海项目5\\reports\\w5w8_acceptance\\k3\\seed_33\\trajectories\\run-20260922-041912.jsonl"
+  },
+  "c14": {
+   "expected_anchor": "t0-channel-coverage#p2@T1",
+   "statuses": [
+    "fresh",
+    "fresh",
+    "fresh",
+    "stale",
+    "stale"
+   ],
+   "fresh_hits": 3,
+   "anchor_hits": 5,
+   "trajectory": "D:\\BaiduNetdiskDownload\\AI大模型应用第21期\\试验项目\\蓝海项目5\\reports\\w5w8_acceptance\\k3\\seed_33\\trajectories\\run-20260922-041926.jsonl"
+  }
+ },
+ "divergence_s1_s2": {
+  "s1": 60,
+  "s2": 0,
+  "total": 60,
+  "s2_rate": 0.0
+ },
+ "evidence_packet_schema": "1",
+ "trajectory_dir": "D:\\BaiduNetdiskDownload\\AI大模型应用第21期\\试验项目\\蓝海项目5\\reports\\w5w8_acceptance\\k3\\seed_33\\trajectories"
+}
