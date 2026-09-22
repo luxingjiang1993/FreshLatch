@@ -154,6 +154,64 @@ def test_atk_cs_04_renew_with_corpus_sha256_writes_basis(tmp_path):
     assert latch_actions(store) == [("renew", EID, "human")]
 
 
+def test_atk_cs_01_tamper_corpus_renew_checksum_mismatch_zero_write(tmp_path):
+    """ATK-CS-01:篡改语料文件后经 HumanLatch renew → CHECKSUM_MISMATCH,续命字段零写。
+
+    确定性负例钉死 ADR-0017 预锁激活句。不得升格为「checksum 已证明 latch」。
+    """
+    from freshlatch.store.checksum import make_checksum_fn, sha256_hex
+    from freshlatch.store.ingest import ingest_into
+
+    corpus = tmp_path / "corpus"
+    (corpus / "t1").mkdir(parents=True)
+    (corpus / "t0").mkdir(parents=True)
+    path = corpus / "t1" / f"{DOC}.md"
+    raw = (
+        f"---\ndoc_id: {DOC}\nas_of: T1\nsource_type: competitor\n"
+        f"title: 竞品笔记\nchecksum:\n---\n\n## p2\n"
+        f"T1:竞品客单价仍显著高于我们。\n"
+    ).encode("utf-8")
+    path.write_bytes(raw)
+
+    store = SQLiteStore(tmp_path / "atk01.db")
+    assert ingest_into(store, corpus) >= 1
+    recorded = store.get_chunk(DOC, "p2", as_of="T1")
+    assert recorded is not None
+    assert recorded.checksum == sha256_hex(raw) and recorded.checksum
+
+    claim = make_claim()
+    before = (
+        claim.status,
+        claim.validity_basis,
+        claim.last_confirmed_at,
+        tuple(claim.t1_evidence_ids),
+        claim.reason,
+    )
+    assert latch_actions(store) == []
+
+    path.write_bytes(raw + b"\nTAMPER-ATK-CS-01\n")
+    assert sha256_hex(path.read_bytes()) != recorded.checksum
+    # 库内指纹保持入库时现算值;比对对象是篡改后的文件现算,不是刷新库列
+    still = store.get_chunk(DOC, "p2", as_of="T1")
+    assert still is not None and still.checksum == recorded.checksum
+
+    latch = make_latch(store, tmp_path, checksum_fn=make_checksum_fn(corpus))
+    rnd = latch.enter_round([claim])
+    results = latch.decide(rnd.thread_id, [{"claim_id": "c1", "action": "renew",
+                                            "evidence_id": EID}])
+    assert results[0]["ok"] is False, results[0]
+    assert results[0]["error_code"] == "CHECKSUM_MISMATCH"
+    after = (
+        claim.status,
+        claim.validity_basis,
+        claim.last_confirmed_at,
+        tuple(claim.t1_evidence_ids),
+        claim.reason,
+    )
+    assert after == before
+    assert latch_actions(store) == []
+
+
 def test_renew_without_evidence_writes_nothing(tmp_path):
     store = make_store(tmp_path)
     latch = make_latch(store, tmp_path)
