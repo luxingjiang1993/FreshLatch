@@ -191,9 +191,13 @@ def _render_gold(raw: dict) -> str:
 
 
 def _render_control(raw: dict) -> str:
+    instrument = raw.get("instrument") or "false_green_control"
+    prompt_id = raw.get("prompt_id") or "CONTROL_PROMPT"
+    title = "假绿仪器 C 报告" if instrument == "false_green_control_c" else "假绿对照报告"
     lines: list[str] = [
-        f"# 假绿对照报告({raw['recorded_at'][:10]})",
+        f"# {title}({raw['recorded_at'][:10]})",
         "",
+        f"- 仪器:`{instrument}`; prompt_id:`{prompt_id}`",
         "- 基线:同模型(qwen-flash)无工具,只读 T0 摘要;输出契约 JSON mode 三档(alive/dead/unknown)",
         f"- prompt 红线留档:{raw['redline_note']}",
         "- 对照成立判据:全部 must_stale 被判 alive(已死主张必须假绿,本产品必须红);"
@@ -201,9 +205,18 @@ def _render_control(raw: dict) -> str:
         "",
     ]
     lines += _decoding_block(raw)
-    lines += ["## 对照结果", "", "| claim_id | 基线判定 |", "|---|---|"]
-    for cid, r in sorted(raw["results"].items(), key=lambda kv: int(kv[0][1:])):
-        lines.append(f"| {cid} | {r['verdict']} |")
+    has_excerpt = any("t0_excerpt_char_len" in r for r in raw["results"].values())
+    if has_excerpt:
+        lines += ["## 对照结果", "",
+                  "| claim_id | 基线判定 | t0_excerpt 字数 | 送模 evidence ids |",
+                  "|---|---|---|---|"]
+        for cid, r in sorted(raw["results"].items(), key=lambda kv: int(kv[0][1:])):
+            ids = ", ".join(r.get("t0_evidence_ids_sent") or [])
+            lines.append(f"| {cid} | {r['verdict']} | {r.get('t0_excerpt_char_len', '')} | {ids} |")
+    else:
+        lines += ["## 对照结果", "", "| claim_id | 基线判定 |", "|---|---|"]
+        for cid, r in sorted(raw["results"].items(), key=lambda kv: int(kv[0][1:])):
+            lines.append(f"| {cid} | {r['verdict']} |")
     lines += [
         "",
         f"- must_stale 假绿条数: {len(raw['false_green_must_stale'])}/{raw['must_stale_total']} ({', '.join(raw['false_green_must_stale']) or '无'})",
@@ -233,7 +246,8 @@ def console_summary(raw: dict) -> str:
         parts.append(f"all_hit: {last['all_hit']}")
         return "\n".join(parts)
     if raw["kind"] == "control_run":
-        return (f"[control] model={raw['decoding']['model']} "
+        tag = "control-c" if raw.get("instrument") == "false_green_control_c" else "control"
+        return (f"[{tag}] model={raw['decoding']['model']} "
                 f"must_stale 假绿 {len(raw['false_green_must_stale'])}/{raw['must_stale_total']}; "
                 f"对照成立: {raw['control_pass']}")
     raise ValueError(f"未知的 raw 结果类型: {raw['kind']}")
