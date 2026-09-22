@@ -1,0 +1,64 @@
+{
+  "layer": "α-demo",
+  "label": "local-smoke-ui",
+  "base": "http://127.0.0.1:8765",
+  "steps": [
+    {
+      "step": "boot",
+      "ok": true
+    },
+    {
+      "step": "t1_three_cards_synthetic",
+      "ok": true,
+      "ready": true,
+      "synthetic": true,
+      "message": "已选用内置合成评测包(synthetic)"
+    },
+    {
+      "step": "import_draft",
+      "ok": true,
+      "imported": 2,
+      "ids": [
+        "c1",
+        "c2"
+      ],
+      "question": "是否应在未来 12 个月内进入东南亚中小企业 AI 客服市场?"
+    },
+    {
+      "step": "reverify",
+      "ok": true,
+      "trajectory": "reports\\trajectories\\run-20260923-004045.jsonl",
+      "statuses": {
+        "c1": "stale",
+        "c2": "stale"
+      },
+      "retrieve_zero_hits": 0,
+      "status_bar": "复验完成 · 步数 5/18 · 检索 3/24"
+    },
+    {
+      "step": "view_toggle",
+      "ok": true,
+      "craftsman_default_panel_hidden": true,
+      "audit_toggle_ok": true,
+      "craftsman_toggle_ok": true
+    },
+    {
+      "step": "client_memo_export",
+      "ok": true,
+      "returncode": 0,
+      "stdout": "客户向复验备忘已写出: D:\\BaiduNetdiskDownload\\AI大模型应用第21期\\试验项目\\蓝海项目5\\.worktrees\\integrate-batch01\\reports\\batch1_alpha\\local_smoke_ui\\client_memo.md",
+      "stderr": "",
+      "memo_path": "reports/batch1_alpha/local_smoke_ui/client_memo.md",
+      "memo_chars": 940,
+      "has_title": true,
+      "inv3_body_clean": true,
+      "has_three_columns": true
+    }
+  ],
+  "ok": true,
+  "note": "本地冒烟;不得说成产品已验证 / 一期测量闭合 / UX 证明了 latch。",
+  "elapsed_seconds": 23.96,
+  "elapsed_minutes": 0.3993,
+  "recorded_at": "2026-09-22T16:41:51Z",
+  "memo_revalidated": "INV-3 body-only (exclude DEM-3 rubric labels)"
+}
