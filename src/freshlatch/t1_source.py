@@ -14,7 +14,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Literal
 
-from freshlatch.store.base import RetrievalStore
+from freshlatch.store.base import Document, RetrievalStore
 from freshlatch.store.ingest import ingest_into, parse_document_text, wrap_paste_as_t1_markdown
 
 SourceKind = Literal["none", "upload", "paste", "synthetic"]
@@ -144,30 +144,37 @@ class T1SourceSession:
         """上传若干 markdown 文本:(filename, text) → 立即 ingest。
 
         仅接受 as_of=T1 的语料;无 frontmatter 时按粘贴包装为 T1 单篇。
+        先全部解析/校验再一次性写入,避免中途失败留下脏 chunk。
         """
         if not files:
             return ActionResult(ok=False, error="未上传任何文件")
-        total = 0
+        parsed: list[tuple[Document, list]] = []
         for name, text in files:
             raw = (text or "").strip()
             if not raw:
                 continue
-            if raw.startswith("---"):
-                doc, chunks = parse_document_text(raw)
-            else:
-                stem = Path(name).stem or "upload"
-                doc_id = f"upload-{stem}"
-                md = wrap_paste_as_t1_markdown(raw, doc_id=doc_id, title=stem)
-                doc, chunks = parse_document_text(md)
+            try:
+                if raw.startswith("---"):
+                    doc, chunks = parse_document_text(raw)
+                else:
+                    stem = Path(name).stem or "upload"
+                    doc_id = f"upload-{stem}"
+                    md = wrap_paste_as_t1_markdown(raw, doc_id=doc_id, title=stem)
+                    doc, chunks = parse_document_text(md)
+            except (KeyError, ValueError, AssertionError) as e:
+                return ActionResult(ok=False, error=f"{name}:解析失败({e})")
             if doc.as_of != "T1":
                 return ActionResult(
                     ok=False,
                     error=f"{name}:只接受 T1 语料包(as_of=T1),收到 as_of={doc.as_of}",
                 )
+            parsed.append((doc, chunks))
+        if not parsed:
+            return ActionResult(ok=False, error="上传文件无可入库内容")
+        total = 0
+        for doc, chunks in parsed:
             self.store.add_document(doc, chunks)
             total += len(chunks)
-        if total == 0:
-            return ActionResult(ok=False, error="上传文件无可入库内容")
         self._paste_text = ""
         self._state = T1SourceState(
             kind="upload",

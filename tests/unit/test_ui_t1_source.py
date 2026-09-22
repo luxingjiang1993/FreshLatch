@@ -143,3 +143,52 @@ def test_upload_ingests_and_ready(client):
     assert body["ready"] is True
     assert body["kind"] == "upload"
     assert appmod._store().get_chunk("upload-demo", "p1", as_of="T1") is not None
+
+
+def test_upload_rejects_non_t1_without_dirty_write(client):
+    """上传含非 T1 文件时整批拒绝,不得留下已解析的脏 chunk。"""
+    good = (
+        "---\n"
+        "doc_id: upload-good\n"
+        "as_of: T1\n"
+        "source_type: private\n"
+        "title: 好文件\n"
+        "checksum:\n"
+        "---\n"
+        "## p1\n"
+        "好文件锚词。\n"
+    )
+    bad = (
+        "---\n"
+        "doc_id: upload-bad\n"
+        "as_of: T0\n"
+        "source_type: private\n"
+        "title: 坏文件\n"
+        "checksum:\n"
+        "---\n"
+        "## p1\n"
+        "坏文件不应入库。\n"
+    )
+    r = client.post(
+        "/api/t1-source/upload",
+        files=[
+            ("files", ("good.md", good.encode("utf-8"), "text/markdown")),
+            ("files", ("bad.md", bad.encode("utf-8"), "text/markdown")),
+        ],
+    )
+    assert r.status_code == 400
+    assert "T1" in r.json()["error"]
+    store = appmod._store()
+    assert store.get_chunk("upload-good", "p1", as_of="T1") is None
+    assert store.get_chunk("upload-bad", "p1", as_of="T0") is None
+    assert client.get("/api/t1-source").json()["ready"] is False
+
+
+def test_upload_rejects_non_utf8(client):
+    """非 UTF-8 上传返回 400,不 500。"""
+    r = client.post(
+        "/api/t1-source/upload",
+        files=[("files", ("bad.md", b"\xff\xfe\x00not-utf8", "text/markdown"))],
+    )
+    assert r.status_code == 400
+    assert "UTF-8" in r.json()["error"]

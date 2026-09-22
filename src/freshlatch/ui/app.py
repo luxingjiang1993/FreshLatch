@@ -135,7 +135,13 @@ async def api_t1_upload(files: list[UploadFile] = File(...)) -> JSONResponse:
     payload: list[tuple[str, str]] = []
     for f in files:
         raw = await f.read()
-        payload.append((f.filename or "upload.md", raw.decode("utf-8")))
+        try:
+            payload.append((f.filename or "upload.md", raw.decode("utf-8")))
+        except UnicodeDecodeError:
+            return JSONResponse(
+                {"error": f"{f.filename or 'upload'}:须为 UTF-8 文本 markdown"},
+                status_code=400,
+            )
     result = _t1_session().ingest_upload_texts(payload)
     if not result.ok:
         return JSONResponse({"error": result.error}, status_code=400)
@@ -411,6 +417,17 @@ async function savePasteDraft(){
   document.getElementById('status').textContent = j.message || '草稿已保存';
 }
 async function confirmPasteIngest(){
+  // 主路径:可直接点「确认入库」;若框内有文且尚未存草稿,先自动保存再确认
+  const box = document.getElementById('t1-paste-draft');
+  const text = box ? box.value : '';
+  if(text && text.trim() && T1SRC.paste_status !== 'draft'){
+    PASTE_DRAFT_TEXT = text;
+    const saved = await (await fetch('/api/t1-source/paste',{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({text: text})})).json();
+    if(saved.error){ document.getElementById('status').textContent = saved.error; return; }
+    T1SRC = saved;
+  }
   const j = await (await fetch('/api/t1-source/confirm',{method:'POST'})).json();
   if(j.error){ document.getElementById('status').textContent = j.error; return; }
   T1SRC = j; renderClaims();
