@@ -69,7 +69,7 @@ _Avoid_: 双人复核、双重确认
 _Avoid_: 异议备注、反对票
 
 **同维度复验 (same-dimension reverify)**:
-被维度异议打回后的恢复路径:Lead 回到 T1 检索与主张签发原文度量维度一致的证据,再走 reverify_claim(fresh) 过双判一致;无同维度覆盖则显式 unknown 收口。每 Lead 会话每主张 mark_stale 维度打回额度 1 次(封死枚举探测),异议未清时 finish_reverify 机械拒绝(ADR-0012)。fresh 仍唯一经双判一致,本路径不引入任何放行或降门槛。
+被维度异议打回后的恢复路径:Lead 回到 T1 检索与主张签发原文度量维度一致的证据,再走 reverify_claim(fresh) 过双判一致;无同维度覆盖则显式 unknown 收口——且仅在本会话维度预检打回之后已成功受理过一次 reverify_claim(fresh) 之后才允许该 unknown(ADR-0012 §2 收口次序)。每 Lead 会话每主张 mark_stale 维度打回额度 1 次(封死枚举探测),异议未清时 finish_reverify 机械拒绝。fresh 仍唯一经双判一致,本路径不引入任何放行或降门槛。
 _Avoid_: 二次复验、重判
 
 **Forensic (记忆刑侦)**:
