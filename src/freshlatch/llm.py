@@ -65,12 +65,12 @@ class LLMClient:
         load_dotenv(find_dotenv(usecwd=True))
         self._api_key = api_key
         self._base_url = base_url
-        self._client: OpenAI | None = None
+        self._client: Any | None = None
         self.decoding_log: list[DecodingParams] = []
         self.token_usage = TokenUsage()
 
     @property
-    def client(self) -> OpenAI:
+    def client(self) -> Any:
         """兼容旧代码读 self.client;首次访问时才向 OpenAI SDK 要凭据。"""
         if self._client is None:
             key = self._api_key if self._api_key is not None else os.getenv("DASHSCOPE_API_KEY", "")
@@ -82,6 +82,11 @@ class LLMClient:
                 base_url=self._base_url or os.getenv("DASHSCOPE_BASE_URL", DASHSCOPE_BASE_URL),
             )
         return self._client
+
+    @client.setter
+    def client(self, value: Any) -> None:
+        """单测可注入 mock client,跳过真实 SDK 构造。"""
+        self._client = value
 
     def chat(self, messages: list, *, tools: list | None = None,
              decoding: DecodingParams | None = None,
