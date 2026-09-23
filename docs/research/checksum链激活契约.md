@@ -49,9 +49,9 @@
 | # | 取舍 | 难点 | 处置(β+) |
 |---|---|---|---|
 | 3a | fresh 路径补构造 `validity_basis` | Lead 常引多个跨 doc 的 `t1_evidence_ids`,而历史形状是**单 doc** —— 取主证据(脆弱)还是改 list(动 schema + 动闸)? | **方向已锁·本批未实装**(ADR-0024):将来 = list 按 `doc_id` 去重、全员现算比对;否决单 doc 主证据激活;renew 将来一元 list;存量迁一元 list;实装另票。评估见 `docs/research/β+-档3a-fresh-validity_basis设计评估.md` |
-| 3b | 跨轮重检 | 谁比、何时比(新一轮 reverify 开头 / UI 渲染时)、不符降级到哪。**是改产品行为**,不是补校验 | **仍待决议**(#111);设计须分开事实层(今日仅 renew 写单对象)与意图层(3a 方向=list) |
+| 3b | 跨轮重检 | 谁比、何时比(新一轮 reverify 开头 / UI 渲染时)、不符降级到哪。**是改产品行为**,不是补校验 | **方向已锁·待实装**(ADR-0025):复验入口+UI 拉单双触发、同一 `check_basis`/`apply_rot`;不符→`unknown`+机械码;保留 basis;无 basis 的 fresh 不检;list 前向兼容 ADR-0024。评估见 `docs/research/β+-档3b-跨轮腐烂重检设计评估.md` |
 
-档 3 是价值全部所在,但动产品行为 / 动 schema → 判据须 pre-registration(Anthropic 纪律 #5)。3a 方向见 ADR-0024;不得把「方向已锁」讲成「fresh 半边已启用」。
+档 3 是价值全部所在,但动产品行为 / 动 schema → 判据须 pre-registration(Anthropic 纪律 #5)。3a/3b 方向见 ADR-0024/0025;不得把「方向已锁」讲成「已上线/已证明 latch」。
 
 ## 7. 工程手段总登记册
 
@@ -60,7 +60,7 @@
 | checksum 比对逻辑 | 记录指纹 vs 现算指纹 | 机械、零模型意见 | 三层空位未填前恒不触发 | ADR-0003 / 规格 §1.3 | **留位**(已实装,未启用) |
 | `checksum_fn` 注入点 | 闸纯函数零 I/O,校验源由调用方给 | 可测、可换真/假实现 | 接错来源 = 套套逻辑 | ADR-0001(闸零 I/O) | **承载**(#23 已留) |
 | `validity_basis` 写回 | 绿灯依据落档可溯 | 跨轮可检的前提 | 当前只写不读,无牙齿 | ADR-0006 §4 | **留位**(renew 写;fresh 见 ADR-0024 方向) |
-| 跨轮腐烂检测 | basis.checksum vs 现算,不符降级 | 兑现 validity_basis 的产品承诺 | 改产品行为,须决议 + pre-registration | 无 | **弃**(本期),转档 3b #111 |
+| 跨轮腐烂检测 | basis vs 现算,不符→unknown | 兑现 validity_basis 的产品承诺 | 改产品行为;双触发须同写库 | ADR-0025 | **留位(方向已锁)** |
 | fresh 补 `validity_basis`(list) | 多证集合全员指纹 | 闭合不变量 3 fresh 半边 | 动 schema+闸+迁移 | ADR-0024 | **留位(方向已锁)** |
 | 语料 frontmatter 手填 checksum | 人工维护指纹 | 直观 | 易错、与内容脱钩 | — | **弃**(改 ingest 现算) |
 
