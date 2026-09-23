@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import Literal
 
 from freshlatch.store.base import Document, RetrievalStore
+from freshlatch.store.checksum import write_corpus_doc
 from freshlatch.store.ingest import ingest_into, parse_document_text, wrap_paste_as_t1_markdown
 
 SourceKind = Literal["none", "upload", "paste", "synthetic"]
@@ -108,6 +109,9 @@ class T1SourceSession:
         md = wrap_paste_as_t1_markdown(self._paste_text, doc_id=self.draft_doc_id)
         doc, chunks = parse_document_text(md)
         self.store.add_document(doc, chunks)
+        # 落盘语料文件:与 doc.checksum 同口径,供 make_checksum_fn / 档3b 跨轮腐烂现算
+        if self.corpus_root is not None:
+            write_corpus_doc(self.corpus_root, doc.doc_id, doc.as_of, doc.full_text)
         self._state = T1SourceState(
             kind="paste",
             paste_status="confirmed",
@@ -174,6 +178,9 @@ class T1SourceSession:
         total = 0
         for doc, chunks in parsed:
             self.store.add_document(doc, chunks)
+            # 与粘贴同口径:上传也必须落盘,否则 checksum_fn 恒 None、腐烂假牙
+            if self.corpus_root is not None:
+                write_corpus_doc(self.corpus_root, doc.doc_id, doc.as_of, doc.full_text)
             total += len(chunks)
         self._paste_text = ""
         self._state = T1SourceState(
