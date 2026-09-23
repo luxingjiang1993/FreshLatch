@@ -21,7 +21,8 @@ class Claim:
     status: Status = "unknown"
     reason: str = ""
     last_confirmed_at: str | None = None
-    validity_basis: dict | None = None  # {doc_id, checksum},W5 起续命写入
+    # ADR-0024 / #149:目标形状 list[{doc_id, checksum}];renew 写一元 list;历史 dict 读侧过渡归一
+    validity_basis: list[dict] | None = None
     voided: bool = False  # 人的决定(ADR-0006 §3);与 status 的机器判定并存不互斥
     voided_at: str | None = None
     dissent: dict | None = None  # 异议记录(ADR-0009/0010/0012):{kind, auditor_verdict, reason, evidence_ids}

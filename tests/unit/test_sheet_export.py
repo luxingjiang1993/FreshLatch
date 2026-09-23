@@ -49,7 +49,7 @@ def _seed_fixture(tmp_path) -> tuple[SQLiteStore, list[Claim], Path]:
                 voided=(i == 1),
                 voided_at="20260922-100000" if i == 1 else None,
                 last_confirmed_at="20260922-110000" if i == 2 else None,
-                validity_basis={"doc_id": "t0-doc-c2", "checksum": "abc"} if i == 2 else None,
+                validity_basis=[{"doc_id": "t0-doc-c2", "checksum": "abc"}] if i == 2 else None,
             )
         )
 
@@ -114,7 +114,7 @@ def test_voided_and_timeline_in_projection(tmp_path):
     p2 = project_claim(store, claims[1])
     assert p2["voided"] is False
     assert p2["last_confirmed_at"] == "20260922-110000"
-    assert p2["validity_basis"] == {"doc_id": "t0-doc-c2", "checksum": "abc"}
+    assert p2["validity_basis"] == [{"doc_id": "t0-doc-c2", "checksum": "abc"}]
     assert len(p2["timeline"]) == 1
     assert p2["timeline"][0]["kind"] == "renew"
     assert p2["timeline"][0]["label"] == "人审续命"

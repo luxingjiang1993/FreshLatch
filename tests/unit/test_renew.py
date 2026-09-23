@@ -59,7 +59,7 @@ def test_gate_renew_checksum_mismatch_blocked():
     """§1.3:checksum 对不上不得续命(有效性依据的机械一致性)。"""
     ctx = make_ctx(checksum_fn=lambda doc_id, as_of: "current-9f3")
     d = GateDecision(status="renew", t1_evidence_ids=[EID],
-                     validity_basis={"doc_id": DOC, "checksum": "recorded-111"})
+                     validity_basis=[{"doc_id": DOC, "checksum": "recorded-111"}])
     r = rule_gate(make_claim(), d, ctx)
     assert not r.green and r.error_code == "CHECKSUM_MISMATCH"
 
@@ -67,7 +67,7 @@ def test_gate_renew_checksum_mismatch_blocked():
 def test_gate_renew_happy_path_green():
     """renew 是 L0 人审出口:过闸即绿,不受不变量 9 双判一致约束。"""
     d = GateDecision(status="renew", t1_evidence_ids=[EID],
-                     validity_basis={"doc_id": DOC, "checksum": ""})
+                     validity_basis=[{"doc_id": DOC, "checksum": ""}])
     assert rule_gate(make_claim(), d, make_ctx()).green
 
 
@@ -112,10 +112,27 @@ def test_renew_turns_card_green_and_logs(tmp_path):
     c = claims[0]
     assert c.status == "fresh"                      # 卡片转绿
     assert c.last_confirmed_at                      # 续命时间戳
-    assert c.validity_basis and c.validity_basis["doc_id"] == DOC  # 新 validity_basis
+    assert c.validity_basis and c.validity_basis[0]["doc_id"] == DOC  # 新 validity_basis
     assert EID in c.t1_evidence_ids                 # 续命依据可点回
     assert latch_actions(store) == [("renew", EID, "human")]  # 审计迹落档
     assert store.list_invalidation() == []          # 续命不进作废名单
+
+
+def test_renew_writes_unary_list_basis(tmp_path):
+    """#149 / ADR-0024:renew 人选一条不变,写出一元 list [{doc_id, checksum}]。
+
+    与 Agent 写侧同形;禁止长期写单对象 dict。
+    """
+    store = make_store(tmp_path, checksum="recorded-abc")
+    latch = make_latch(store, tmp_path)
+    claims = [make_claim()]
+    rnd = latch.enter_round(claims)
+    results = latch.decide(rnd.thread_id, [{"claim_id": "c1", "action": "renew",
+                                            "evidence_id": EID}])
+    assert results[0]["ok"] is True, results[0]
+    basis = claims[0].validity_basis
+    assert isinstance(basis, list) and len(basis) == 1
+    assert basis == [{"doc_id": DOC, "checksum": "recorded-abc"}]
 
 
 def test_atk_cs_04_renew_with_corpus_sha256_writes_basis(tmp_path):
@@ -150,7 +167,7 @@ def test_atk_cs_04_renew_with_corpus_sha256_writes_basis(tmp_path):
     assert results[0]["ok"] is True, results[0]
     c = claims[0]
     assert c.status == "fresh"
-    assert c.validity_basis == {"doc_id": DOC, "checksum": sha256_hex(raw)}
+    assert c.validity_basis == [{"doc_id": DOC, "checksum": sha256_hex(raw)}]
     assert latch_actions(store) == [("renew", EID, "human")]
 
 
@@ -546,7 +563,7 @@ def test_batch2_junction_order_zero_write_then_green(tmp_path):
     for bad in _BANNED_DETAIL:
         assert bad not in ok["detail"]
     assert claim.status == "fresh"
-    assert claim.validity_basis == {"doc_id": DOC, "checksum": recorded}
+    assert claim.validity_basis == [{"doc_id": DOC, "checksum": recorded}]
     assert claim.last_confirmed_at
     assert EID in claim.t1_evidence_ids
     assert latch_actions(store) == [("renew", EID, "human")]
@@ -579,7 +596,7 @@ def test_batch2_no_cross_round_recheck_after_green(tmp_path):
     latch = make_latch(store, tmp_path, checksum_fn=make_checksum_fn(corpus))
     ok = _submit_renew(latch, claim, EID, "20260923-117010")
     assert ok["ok"] is True, ok
-    basis = {"doc_id": DOC, "checksum": recorded}
+    basis = [{"doc_id": DOC, "checksum": recorded}]
     assert claim.validity_basis == basis
     assert claim.status == "fresh"
 

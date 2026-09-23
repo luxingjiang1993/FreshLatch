@@ -49,7 +49,7 @@ def test_paste_renew_then_tamper_rots(tmp_path, monkeypatch):
 
     eid = f"{sess.draft_doc_id}#p1@T1"
     claim = _renew_fresh(store, tmp_path, eid, corpus)
-    assert claim.validity_basis["checksum"] == recorded
+    assert claim.validity_basis[0]["checksum"] == recorded
 
     path.write_bytes(path.read_bytes() + b"\n# tampered-paste\n")
 

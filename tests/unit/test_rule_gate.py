@@ -49,8 +49,66 @@ def test_checksum_mismatch_not_fresh():
     """不变量 3:checksum 对不上不得 fresh/续命。"""
     ctx = make_ctx(checksum_fn=lambda doc_id, as_of: "real-checksum")
     d = GateDecision(status="fresh", t1_evidence_ids=["t0-x#p2"],
-                     validity_basis={"doc_id": "t0-x", "checksum": "tampered"},
+                     validity_basis=[{"doc_id": "t0-x", "checksum": "tampered"}],
                      auditor_verdict="fresh")
+    r = rule_gate(make_claim(), d, ctx)
+    assert not r.allowed and r.error_code == "CHECKSUM_MISMATCH"
+
+
+def test_checksum_list_all_entries_checked_non_first_mismatch():
+    """#149 / ADR-0024:闸对 validity_basis list 全员现算比对;篡改非首元 → CHECKSUM_MISMATCH。
+
+    禁止回归「只比 [0]」假牙。
+    """
+    actuals = {"doc-a": "ok-a", "doc-b": "ok-b"}
+
+    def checksum_fn(doc_id: str, as_of: AsOf) -> str | None:
+        return actuals.get(doc_id)
+
+    ctx = make_ctx(checksum_fn=checksum_fn)
+    d = GateDecision(
+        status="fresh",
+        t1_evidence_ids=["doc-a#p1@T1", "doc-b#p1@T1"],
+        validity_basis=[
+            {"doc_id": "doc-a", "checksum": "ok-a"},
+            {"doc_id": "doc-b", "checksum": "tampered-b"},  # 非首元不符
+        ],
+        auditor_verdict="fresh",
+    )
+    r = rule_gate(make_claim(), d, ctx)
+    assert not r.allowed and not r.green and r.error_code == "CHECKSUM_MISMATCH"
+    assert "doc-b" in r.reason
+
+
+def test_checksum_list_all_match_passes():
+    """#149:list 全员现算一致 → 过闸(正例对照全员负例)。"""
+    actuals = {"doc-a": "ok-a", "doc-b": "ok-b"}
+
+    def checksum_fn(doc_id: str, as_of: AsOf) -> str | None:
+        return actuals.get(doc_id)
+
+    ctx = make_ctx(checksum_fn=checksum_fn)
+    d = GateDecision(
+        status="fresh",
+        t1_evidence_ids=["doc-a#p1@T1", "doc-b#p1@T1"],
+        validity_basis=[
+            {"doc_id": "doc-a", "checksum": "ok-a"},
+            {"doc_id": "doc-b", "checksum": "ok-b"},
+        ],
+        auditor_verdict="fresh",
+    )
+    assert rule_gate(make_claim(), d, ctx).green
+
+
+def test_checksum_legacy_dict_still_checked_via_basis_entries():
+    """#149 过渡:历史单对象 dict 经 _basis_entries 归一后仍受检(批迁前读侧,归 #150)。"""
+    ctx = make_ctx(checksum_fn=lambda doc_id, as_of: "real")
+    d = GateDecision(
+        status="fresh",
+        t1_evidence_ids=["t0-x#p2@T1"],
+        validity_basis={"doc_id": "t0-x", "checksum": "tampered"},  # type: ignore[arg-type]
+        auditor_verdict="fresh",
+    )
     r = rule_gate(make_claim(), d, ctx)
     assert not r.allowed and r.error_code == "CHECKSUM_MISMATCH"
 

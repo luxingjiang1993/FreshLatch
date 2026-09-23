@@ -30,7 +30,7 @@
 | `t1_evidence_ids` | list[str] | T1 证据,**无则不得 fresh(闸强制)** |
 | `status` | enum | `fresh` / `stale` / `unknown` / `void` |
 | `last_confirmed_at` | str\|null | 续命时更新(W5 起) |
-| `validity_basis` | {doc_id, checksum} | 续命写新的 T1 证据基础(W5 起) |
+| `validity_basis` | list[{doc_id, checksum}] \| None | 续命写一元 list(#149);Agent fresh 构造见 #150;存量 dict 批迁见 #150 |
 
 ## 2.3 语料文档(双镜像目录)
 

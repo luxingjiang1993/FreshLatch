@@ -12,6 +12,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Callable
 
+from freshlatch.gates.basis_rot import _basis_entries
 from freshlatch.gates.meta_gate import META_ONLY_MESSAGE, is_meta_only_disproof
 from freshlatch.models import AsOf, Claim
 
@@ -37,7 +38,8 @@ class GateDecision:
 
     status: str  # fresh | stale | unknown | renew
     t1_evidence_ids: list[str] = field(default_factory=list)
-    validity_basis: dict | None = None  # {doc_id, checksum},续命/点绿时携带(W5 起)
+    # ADR-0024 / #149:目标形状 list[{doc_id, checksum}];读侧过渡期经 _basis_entries 归一历史 dict
+    validity_basis: list[dict] | None = None
     stale_reason: str = ""  # stale 的理由文本(#17 不变量 6 校验用;空 = 跳过元陈述校验)
     auditor_verdict: str | None = None  # fresh|stale|unknown(ADR-0009 在场不变量;None = 缺席)
     auditor_dimension_match: bool | None = None  # ADR-0010 不变量 7:False = Auditor 维度异议
@@ -219,13 +221,18 @@ def rule_gate(claim: Claim, decision: GateDecision, ctx: GateContext) -> GateRes
                               reason=f"双判未一致:Auditor 判 {decision.auditor_verdict},"
                                      "fresh 请求打回,路由 unknown")
 
-    # 3. checksum 校验(留位:checksum_fn 返回空/None = 本期未启用,不拦)
+    # 3. checksum 校验(留位:checksum_fn 返回空/None = 本期未启用,不拦)。
+    # ADR-0024 / #149:list 全员现算比对,任一不符 → CHECKSUM_MISMATCH;禁只比 [0]。
+    # 读侧过渡:历史单对象 dict 经 _basis_entries 归一(与档 3b 同构);批迁见 #150。
     if decision.validity_basis:
-        doc_id = decision.validity_basis.get("doc_id", "")
-        claimed = decision.validity_basis.get("checksum", "")
-        actual = ctx.checksum_fn(doc_id, "T1")  # AsOf 的 Literal 注解,str 值即类型
-        if actual and claimed != actual:
-            return GateResult(allowed=False, green=False, error_code="CHECKSUM_MISMATCH",
-                              reason=f"checksum 对不上: {doc_id} 声称 {claimed!r},实际 {actual!r}")
+        for entry in _basis_entries(decision.validity_basis):
+            doc_id = str(entry.get("doc_id", "") or "")
+            claimed = str(entry.get("checksum", "") or "")
+            actual = ctx.checksum_fn(doc_id, "T1")  # AsOf 的 Literal 注解,str 值即类型
+            if actual and claimed != actual:
+                return GateResult(
+                    allowed=False, green=False, error_code="CHECKSUM_MISMATCH",
+                    reason=f"checksum 对不上: {doc_id} 声称 {claimed!r},实际 {actual!r}",
+                )
 
     return GateResult(allowed=True, green=True, reason="过闸:绿灯")

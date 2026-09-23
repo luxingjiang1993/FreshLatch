@@ -148,7 +148,7 @@ def test_decide_renew_turns_card_green_with_timeline(client, tmp_path, monkeypat
     c1 = next(c for c in r.json()["claims"] if c["claim_id"] == "c1")
     assert c1["status"] == "fresh"                       # 卡片转绿
     assert c1["last_confirmed_at"]                       # 续命时间戳
-    assert c1["validity_basis"]["doc_id"] == DOC         # 新有效性依据
+    assert c1["validity_basis"][0]["doc_id"] == DOC         # 新有效性依据(一元 list)
     assert [t["label"] for t in c1["timeline"]] == ["人审续命"]   # 时间线条目
     assert c1["timeline"][0]["evidence_id"] == RENEW_EID          # 依据可点回
     assert "c1" not in appmod._store().list_invalidation()        # 续命不进作废名单
