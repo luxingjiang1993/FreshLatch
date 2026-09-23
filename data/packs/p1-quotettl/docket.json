@@ -1,0 +1,23 @@
+{
+  "question": "9 月 1 日供应商报价是否仍可在 9 月 18 日转报客户？",
+  "claims": [
+    {
+      "claim_id": "q1",
+      "statement": "供应商 9 月 1 日函件写明的交期（下单后 21 天）在 9 月 18 日仍可原样转报客户",
+      "t0_evidence_ids": ["q1-supplier-quote#p2"],
+      "dimension": "interview_reversal"
+    },
+    {
+      "claim_id": "q2",
+      "statement": "该报价的单价仍为 12.40 美元/件，有效期内可按 9 月 1 日函件转报",
+      "t0_evidence_ids": ["q1-supplier-quote#p3"],
+      "dimension": "competitor_pricing"
+    },
+    {
+      "claim_id": "q3",
+      "statement": "客户已书面确认接受该报价的到门运费",
+      "t0_evidence_ids": ["q1-customer-ack#p2"],
+      "dimension": "cost_model"
+    }
+  ]
+}
