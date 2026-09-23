@@ -278,12 +278,27 @@ def test_finalize_no_dissent_without_objection():
 
 def test_finalize_no_dissent_when_recovered_fresh():
     """异议后经显式收口落 fresh(双判一致)→ 不挂异议(异议已被解决,黄卡无需此输入)。"""
+    from freshlatch.store.base import Chunk, Document
+
     claim = _registered_claim()
     decision = ClaimDecision(claim_id="c5", status="fresh", reason="同维度证据支持",
                              evidence_ids=["t0-x#p2@T1"],
                              auditor_verdict="fresh",
                              dimension_objection=None)
-    runner = Runner(InMemoryStore(), mode="eval")
+    store = InMemoryStore()
+    chunk = Chunk(
+        doc_id="t0-x", chunk_id="t0-x-p2", clause_id="p2", title="t",
+        text="T1 同维度支持。", source_type="internal", as_of="T1",
+        doc_version="v1", checksum="fp-x", tokens=10,
+    )
+    store.add_document(
+        Document(
+            doc_id="t0-x", as_of="T1", source_type="internal", title="t",
+            doc_version="v1", checksum="fp-x", full_text=chunk.text,
+        ),
+        [chunk],
+    )
+    runner = Runner(store, mode="eval")
     runner._finalize(claim, decision)
     assert claim.status == "fresh"
     assert claim.dissent is None

@@ -20,10 +20,11 @@ from freshlatch.guardrails import Guardrails
 from freshlatch.models import Claim
 from freshlatch.roles.lead import LeadReverifier
 from freshlatch.runner import ClaimDecision, RunContext, Runner
-from freshlatch.store.base import InMemoryStore
+from freshlatch.store.base import Chunk, Document, InMemoryStore
 
 CLAIM_ID = "cx"
 EID = "t0-cost-model#p2@T1"
+DOC = "t0-cost-model"
 REASON = ("T1 成本模型原文显示我方单会话成本 0.009 美元低于竞品折算 0.019 美元,"
           "推翻成本优势消失的前提")
 AUD_STALE_REASON = "T1 原文同一度量维度推翻该前提"
@@ -36,11 +37,29 @@ class _NoLLM:
         raise AssertionError("γ-INV 检查为零 LLM")
 
 
+def _seeded_store() -> InMemoryStore:
+    """#150:fresh 构造 validity_basis 须点回 T1 chunk;仲裁单测种最小种子。"""
+    store = InMemoryStore()
+    chunk = Chunk(
+        doc_id=DOC, chunk_id=f"{DOC}-p2", clause_id="p2", title="成本模型",
+        text="T1 复测:我方单会话成本 0.009 美元。", source_type="internal",
+        as_of="T1", doc_version="v2", checksum="fp-gamma", tokens=20,
+    )
+    store.add_document(
+        Document(
+            doc_id=DOC, as_of="T1", source_type="internal", title="成本模型",
+            doc_version="v2", checksum="fp-gamma", full_text=chunk.text,
+        ),
+        [chunk],
+    )
+    return store
+
+
 def _finalize(status: str, *, auditor_verdict=None, auditor_reason="",
               auditor_dimension_match=None, evidence=None, dimension=None,
               stale_dimension=None, dimension_objection=None,
               prior_dissent=None) -> Claim:
-    runner = Runner(InMemoryStore())
+    runner = Runner(_seeded_store())
     claim = Claim(claim_id=CLAIM_ID, statement="我方单会话服务成本仍低于竞品",
                   t0_evidence_ids=["t0-cost-model#p2"], dimension=dimension)
     if prior_dissent is not None:

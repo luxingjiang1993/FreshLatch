@@ -444,11 +444,13 @@ _BANNED_DETAIL = (
     "已证明",
 )
 
-# fresh 半边允许出现 validity_basis 的模块:字段、续命写入、闸比对、导出投影、跨轮腐烂。
-# runner / 角色 / 工具 / UI 不在此列 = 不构造 basis(结构性空转,档 3a OUT)。
+# fresh 半边允许出现 validity_basis 的模块:字段、续命写入、闸比对、导出投影、跨轮腐烂、
+# runner fresh 构造(#150)、显式批迁。角色/工具/UI 仍不构造 basis。
 _BASIS_ALLOWED = {
     "models.py",
     "sheet.py",
+    "runner.py",
+    "basis_migrate.py",
     "gates/human_latch.py",
     "gates/rule_gate.py",
     "gates/basis_rot.py",
@@ -612,9 +614,10 @@ def test_batch2_no_cross_round_recheck_after_green(tmp_path):
 
 
 def test_batch2_boundary_note_fresh_idle_and_atk_refs():
-    """#117:验收注记可核对;fresh 不构造 validity_basis;ATK-CS-01..04 在本模块可引用。
+    """#117:验收注记可核对;ATK-CS-01..04 在本模块可引用。
 
-    不新开 runner 行为缝:fresh 空转用源码允许集钉死。档 3a/3b 未实现。
+    Batch 2 注记仍记录当时 fresh 空转叙事;#150 已打开 runner 构造,
+    故源码允许集含 runner/basis_migrate。档 3b 跨轮重检仍另票。
     """
     from pathlib import Path
 
@@ -648,7 +651,6 @@ def test_batch2_boundary_note_fresh_idle_and_atk_refs():
         if "validity_basis" in p.read_text(encoding="utf-8")
     )
     assert set(hits) <= _BASIS_ALLOWED
-    assert "runner.py" not in hits
     assert "roles/lead.py" not in hits
     assert "tools.py" not in hits
 
@@ -659,6 +661,7 @@ def test_batch2_boundary_note_fresh_idle_and_atk_refs():
     body = body[:nxt] if nxt != -1 else body
     assert "return None" in body
     assert "sha256" not in body
+    # _checksum_fn 本身仍不读库列、不写 basis(比对走闸;构造另函数)
     assert "get_chunk" not in body
     assert "validity_basis" not in body
 

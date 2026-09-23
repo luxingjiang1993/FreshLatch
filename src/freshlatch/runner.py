@@ -11,6 +11,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 
+from freshlatch.gates.human_latch import parse_evidence_id
 from freshlatch.guardrails import BUDGET_EXHAUSTED_MESSAGE, Guardrails
 from freshlatch.llm import DecodingParams, LLMClient
 from freshlatch.models import AsOf, Claim
@@ -42,6 +43,35 @@ def list_retrieve_zero_hits(events: list[dict]) -> list[dict]:
             "hits": 0,
         })
     return out
+
+
+def build_fresh_validity_basis(
+    store: RetrievalStore,
+    evidence_ids: list[str],
+) -> list[dict] | None:
+    """Agent fresh 写侧:由 t1_evidence_ids 按 doc_id 去重构造 validity_basis(ADR-0024 / #150)。
+
+    checksum = 对应 T1 chunk 的入库指纹(与 renew 同源字段;禁用 checksum_fn 现算填入,防套套)。
+    保序:首次出现的 doc_id 优先。空 evidence → None(交给 NO_T1)。
+    任一 id 解析失败或 chunk 点不回 → None(显式不可构造;禁止空 list 充绿)。
+    """
+    if not evidence_ids:
+        return None
+    basis: list[dict] = []
+    seen: set[str] = set()
+    for eid in evidence_ids:
+        parsed = parse_evidence_id(eid)
+        if parsed is None:
+            return None
+        doc_id, anchor, as_of = parsed
+        if doc_id in seen:
+            continue
+        chunk = store.get_chunk(doc_id, anchor, as_of=as_of)
+        if chunk is None:
+            return None
+        seen.add(doc_id)
+        basis.append({"doc_id": chunk.doc_id, "checksum": chunk.checksum})
+    return basis if basis else None
 
 
 @dataclass
@@ -229,15 +259,18 @@ class Runner:
         gate_ctx = GateContext(invalidation_list=self.ctx.invalidation_list,
                                checksum_fn=self._checksum_fn, eval_mode=(self.ctx.mode == "eval"))
 
-        def _gate_decision(status: str, *, stale_reason: str = "") -> GateDecision:
+        def _gate_decision(status: str, *, stale_reason: str = "",
+                           validity_basis: list[dict] | None = None) -> GateDecision:
             # auditor 三字段随判定包一次搬运(双判一致的闸输入,ADR-0009/0010);
             # 维度两字段(ADR-0011):登记维度来自签发卷宗,反证维度来自 mark_stale 必填字段
+            # fresh 写侧(#150):validity_basis 须在进闸前由 runner 预构,闸不补写
             return GateDecision(status=status, t1_evidence_ids=decision.evidence_ids,
                                 stale_reason=stale_reason,
                                 auditor_verdict=decision.auditor_verdict,
                                 auditor_dimension_match=decision.auditor_dimension_match,
                                 registered_dimension=claim.dimension,
-                                stale_dimension=decision.stale_dimension)
+                                stale_dimension=decision.stale_dimension,
+                                validity_basis=validity_basis)
 
         def _gate_back(reason_text: str) -> None:
             claim.status = "unknown"
@@ -267,11 +300,23 @@ class Runner:
         if decision.status == "fresh":
             routed = arbitrate_fresh(decision.auditor_verdict)
             if routed == "fresh":
-                gate = rule_gate(claim, _gate_decision("fresh"), gate_ctx)
-                if gate.green:
-                    claim.status = "fresh"
+                # #150 / ADR-0024:进闸前由 evidence 构造 list;不可构造不得空 basis 充绿
+                basis = build_fresh_validity_basis(self.ctx.store, decision.evidence_ids)
+                if decision.evidence_ids and basis is None:
+                    claim.status = "unknown"
+                    claim.reason = (
+                        f"[不可构造 validity_basis] t1_evidence_ids 无法点回 T1 chunk"
+                        f"或格式非法,禁止空 basis 仍 fresh;原理由: {decision.reason}"
+                    )
                 else:
-                    _gate_back(decision.reason)
+                    gate = rule_gate(claim, _gate_decision("fresh", validity_basis=basis),
+                                     gate_ctx)
+                    if gate.green:
+                        claim.status = "fresh"
+                        if basis:
+                            claim.validity_basis = basis  # 仅绿后写,与 renew 同构
+                    else:
+                        _gate_back(decision.reason)
             elif routed == "stale":
                 # Auditor 推翻 Lead 的 fresh:按 stale 落档链过闸(Auditor 理由作 stale_reason);
                 # 不变量 7 优先:dimension_match=False 时 DIMENSION_MISMATCH 打回 unknown
