@@ -16,15 +16,24 @@ from freshlatch.tools import WEB_SEARCH_SOCKET_NOTE
 @pytest.fixture()
 def client(tmp_path, monkeypatch):
     store = appmod.SQLiteStore(tmp_path / "t.db")
+    corpus = tmp_path / "corpus"
+    corpus.mkdir()
     monkeypatch.setattr(appmod, "_store", lambda: store)
     monkeypatch.setattr(appmod, "CHECKPOINTS", tmp_path / "cp.db")
-    # 合成包指向临时空树时 select_synthetic 会失败;单测用真实 corpus 路径
+    # 粘贴/上传会落盘语料文件;必须指向临时树,禁止污染 data/corpus
+    monkeypatch.setattr(appmod, "CORPUS", corpus)
+    # 合成包仍用仓库真实语料(select_synthetic 需要 t1/)
+    real_corpus = appmod.REPO_ROOT / "data" / "corpus"
     appmod._state.update({
         "claims": [], "question": "", "trajectory": None,
         "running": False, "latch": dict(appmod.EMPTY_LATCH),
     })
     appmod._reset_t1_source(store)
-    return TestClient(appmod.app)
+    # 合成卡单测单独换回真实路径
+    client = TestClient(appmod.app)
+    client.real_corpus = real_corpus  # type: ignore[attr-defined]
+    client.tmp_corpus = corpus  # type: ignore[attr-defined]
+    return client
 
 
 # -- 源码/DOM 红线 ------------------------------------------------------------------
@@ -110,8 +119,11 @@ def test_paste_draft_confirm_flow(client):
     assert any(anchor in c.text for c in hits)
 
 
-def test_synthetic_card_marks_synthetic_and_ready(client):
+def test_synthetic_card_marks_synthetic_and_ready(client, monkeypatch):
     """选用内置合成评测包 → ready + synthetic 标明。"""
+    # 合成包读真实 data/corpus;粘贴/上传仍用 fixture 临时树
+    monkeypatch.setattr(appmod, "CORPUS", client.real_corpus)
+    appmod._reset_t1_source(appmod._store())
     r = client.post("/api/t1-source/synthetic")
     assert r.status_code == 200
     body = r.json()
@@ -121,8 +133,24 @@ def test_synthetic_card_marks_synthetic_and_ready(client):
     assert "synthetic" in body["message"].lower() or "合成" in body["message"]
 
 
-def test_upload_ingests_and_ready(client):
-    """上传 T1 语料包 → ingest 后 ready。"""
+def test_paste_confirm_writes_corpus_file(client):
+    """确认粘贴后落盘 corpus/t1/{doc_id}.md,与 store checksum 同口径(档3b 牙齿)。"""
+    from freshlatch.store.checksum import corpus_doc_path, sha256_hex
+
+    r = client.post("/api/t1-source/paste", json={"text": "变更:落盘锚词"})
+    assert r.status_code == 200
+    assert client.post("/api/t1-source/confirm").status_code == 200
+    path = corpus_doc_path(client.tmp_corpus, "paste-change", "T1")
+    assert path.is_file()
+    chunk = appmod._store().get_chunk("paste-change", "p1", as_of="T1")
+    assert chunk is not None
+    assert chunk.checksum == sha256_hex(path.read_bytes())
+
+
+def test_upload_writes_corpus_file(client):
+    """上传入库后落盘语料文件,供 make_checksum_fn 现算。"""
+    from freshlatch.store.checksum import corpus_doc_path, sha256_hex
+
     md = (
         "---\n"
         "doc_id: upload-demo\n"
@@ -139,10 +167,11 @@ def test_upload_ingests_and_ready(client):
         files=[("files", ("upload-demo.md", md.encode("utf-8"), "text/markdown"))],
     )
     assert r.status_code == 200
-    body = r.json()
-    assert body["ready"] is True
-    assert body["kind"] == "upload"
-    assert appmod._store().get_chunk("upload-demo", "p1", as_of="T1") is not None
+    path = corpus_doc_path(client.tmp_corpus, "upload-demo", "T1")
+    assert path.is_file()
+    chunk = appmod._store().get_chunk("upload-demo", "p1", as_of="T1")
+    assert chunk is not None
+    assert chunk.checksum == sha256_hex(path.read_bytes())
 
 
 def test_upload_rejects_non_t1_without_dirty_write(client):

@@ -29,6 +29,23 @@ def sha256_corpus_file(corpus_root: Path, doc_id: str, as_of: str) -> str | None
     return sha256_hex(path.read_bytes())
 
 
+def write_corpus_doc(
+    corpus_root: Path,
+    doc_id: str,
+    as_of: str,
+    text: str,
+) -> Path:
+    """把正文落成语料文件,字节 = UTF-8(与 parse_document_text 现算口径一致)。
+
+    粘贴/上传只写 store 时 make_checksum_fn 恒 None → 跨轮腐烂永不触发(假牙)。
+    入库后必须落盘,权威源仍是文件字节,禁止改成读库列 checksum。
+    """
+    path = corpus_doc_path(corpus_root, doc_id, as_of)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(text.encode("utf-8"))
+    return path
+
+
 def make_checksum_fn(corpus_root: Path) -> Callable[[str, str], str | None]:
     """生产 renew 注入点:只读语料文件现算,绝不读库列。
 
