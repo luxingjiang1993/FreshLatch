@@ -445,13 +445,14 @@ _BANNED_DETAIL = (
 )
 
 # fresh 半边允许出现 validity_basis 的模块:字段、续命写入、闸比对、导出投影、跨轮腐烂、
-# runner fresh 构造(#150)、显式批迁。角色/工具/UI 仍不构造 basis。
+# runner fresh 构造(#150)、显式批迁、UI 完整 list 展示(#151)。角色/工具仍不构造 basis。
 _BASIS_ALLOWED = {
     "models.py",
     "sheet.py",
     "runner.py",
     "basis_migrate.py",
     "gates/human_latch.py",
+    "ui/app.py",
     "gates/rule_gate.py",
     "gates/basis_rot.py",
 }

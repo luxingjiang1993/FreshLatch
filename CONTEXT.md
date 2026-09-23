@@ -103,8 +103,8 @@ _Avoid_: 记忆插件、Mem0、记忆体检产品
 _Avoid_: 校验器、检查器
 
 **checksum 半激活 / 结构性空转**:
-checksum 链按半边诚实登记启用态:已宣称激活的半边须接线且确定性负例打得响;未激活半边明示结构性空转,不得宣传全链已启用。套套逻辑(`checksum_fn` 读与 basis 同源库列)视为假激活。操作验收句在评估文档与 ADR-0017,不进本定义扩写。Batch 2 攻击面用例表(ATK-CS-*)见 docs/research/β-checksum攻击面用例集合设计评估.md。β+ 档 3a(ADR-0024):方向已锁为将来 list 同构全员受检,本批仍不构造 fresh `validity_basis`;单 doc 主证据激活已否;实装须另票预登记。评估见 docs/research/β+-档3a-fresh-validity_basis设计评估.md。β+ 档 3b(ADR-0025):跨轮腐烂重检方向已锁——复验入口与 UI 拉单双触发、同一 `check_basis`/`apply_rot`,不符→`unknown`+机械码;无 basis 的 fresh 不检;实装须另票。评估见 docs/research/β+-档3b-跨轮腐烂重检设计评估.md。
-_Avoid_: checksum 已启用(含糊全称)、开关已打开、档3a已启用、跨轮重检已上线(决议未实装时)
+checksum 链按半边诚实登记启用态:已宣称激活的半边须接线且确定性负例打得响;未激活半边明示结构性空转,不得宣传全链已启用。套套逻辑(`checksum_fn` 读与 basis 同源库列)视为假激活。操作验收句在评估文档与 ADR-0017,不进本定义扩写。Batch 2 攻击面用例表(ATK-CS-*)见 docs/research/β-checksum攻击面用例集合设计评估.md。β+ 档 3a(ADR-0024 / #148–#151):fresh 写侧已启用,`validity_basis` 目标形状为 `[{doc_id, checksum}, …]`(由 `t1_evidence_ids` 按 `doc_id` 去重构造),闸对 list 全员现算比对,任一不符 → `CHECKSUM_MISMATCH`;renew 写一元 list;存量单对象经显式批迁为一元 list;UI/导出展示完整 list。仍不得宣传「checksum 已证明 latch」或「档 3a 已验证」。β+ 档 3b(ADR-0025):跨轮腐烂重检方向已锁——复验入口与 UI 拉单双触发、同一 `check_basis`/`apply_rot`,不符→`unknown`+机械码;无 basis 的 fresh 不检;实装须另票。评估见 docs/research/β+-档3b-跨轮腐烂重检设计评估.md。
+_Avoid_: checksum 已启用(含糊全称)、开关已打开、档3a已证明latch、跨轮重检已上线(决议未实装时)
 
 **元陈述 (meta-statement)**:
 T1 中关于测量/跟踪行为本身的陈述(未复测/不再列入跟踪项/无新数据/待发布/未入账),不承载关于主张对象的实质事实。元陈述是证据缺口,不是推翻:stale 理由以纯元陈述为唯一依据由规则闸打回(`META_ONLY_DISPROOF`)并落 `unknown`。标记词表封闭枚举,增补走评审工单。

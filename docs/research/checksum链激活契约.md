@@ -48,7 +48,7 @@
 
 | # | 取舍 | 难点 | 处置(β+) |
 |---|---|---|---|
-| 3a | fresh 路径补构造 `validity_basis` | Lead 常引多个跨 doc 的 `t1_evidence_ids`,而历史形状是**单 doc** —— 取主证据(脆弱)还是改 list(动 schema + 动闸)? | **方向已锁·本批未实装**(ADR-0024):将来 = list 按 `doc_id` 去重、全员现算比对;否决单 doc 主证据激活;renew 将来一元 list;存量迁一元 list;实装另票。评估见 `docs/research/β+-档3a-fresh-validity_basis设计评估.md` |
+| 3a | fresh 路径补构造 `validity_basis` | Lead 常引多个跨 doc 的 `t1_evidence_ids`,而历史形状是**单 doc** —— 取主证据(脆弱)还是改 list(动 schema + 动闸)? | **fresh 写侧已启用·list 同构**(ADR-0024 / #148–#151):`validity_basis` = `[{doc_id, checksum}, …]`(按 `doc_id` 去重、全员现算比对;任一不符 → `CHECKSUM_MISMATCH`);renew 一元 list;存量单对象迁一元 list;UI/导出完整 list。仍不得升格为「checksum 已证明 latch」。评估见 `docs/research/β+-档3a-fresh-validity_basis设计评估.md` |
 | 3b | 跨轮重检 | 谁比、何时比(新一轮 reverify 开头 / UI 渲染时)、不符降级到哪。**是改产品行为**,不是补校验 | **方向已锁·待实装**(ADR-0025):复验入口+UI 拉单双触发、同一 `check_basis`/`apply_rot`;不符→`unknown`+机械码;保留 basis;无 basis 的 fresh 不检;list 前向兼容 ADR-0024。评估见 `docs/research/β+-档3b-跨轮腐烂重检设计评估.md` |
 
 档 3 是价值全部所在,但动产品行为 / 动 schema → 判据须 pre-registration(Anthropic 纪律 #5)。3a/3b 方向见 ADR-0024/0025;不得把「方向已锁」讲成「已上线/已证明 latch」。

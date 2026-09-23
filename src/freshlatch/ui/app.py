@@ -372,6 +372,8 @@ HTML_PAGE = """<!DOCTYPE html>
  .ev{font-size:12px;margin-top:4px}
  .ev a{color:#0969da;cursor:pointer;text-decoration:none;margin-right:8px}
  .ev a:hover{text-decoration:underline}
+ .basis-list{font-size:12px;margin-top:4px;color:#57606a}
+ .basis-item{display:inline-block;margin:2px 6px 0 0;background:#f6f8fa;border-radius:4px;padding:2px 6px}
  button.big{background:#1f883d;color:#fff;border:0;border-radius:6px;padding:8px 18px;font-size:15px;cursor:pointer}
  button.big:disabled{background:#9e9e9e;cursor:wait}
  .latch button{margin-right:8px;padding:6px 14px;border-radius:6px;border:1px solid #d0d7de;cursor:pointer}
@@ -853,6 +855,17 @@ function renderClaims(){
       h += '<a onclick="event.stopPropagation();showSource(&quot;'+bare[0]+'&quot;,&quot;'+bare[1]+'&quot;,&quot;'+asOf+'&quot;)">'+esc(e)+'</a>';
     }
     h += '</div>';
+    // β+3a:完整 list 展示;禁止只取 validity_basis[0]
+    if(c.validity_basis && c.validity_basis.length){
+      h += '<div class="basis-list" title="validity_basis:按 doc_id 去重构造的完整 list">';
+      h += '<b>依据集</b> ';
+      for(const b of c.validity_basis){
+        const full = esc(String(b.checksum||''));
+        h += '<span class="basis-item">'+esc(String(b.doc_id||''))+' '
+           + '<code title="'+full+'">'+full.substring(0,8)+(full.length>8?'…':'')+'</code></span>';
+      }
+      h += '</div>';
+    }
     h += '<div class="latch" style="margin-top:6px">';
     if(c.voided){
       h += '<button class="rerun" onclick="event.stopPropagation();rerunClaim(&quot;'+c.claim_id+'&quot;)">重跑作废主张</button>';
