@@ -23,6 +23,7 @@ from freshlatch.latch import HumanLatch, HumanLatchError  # noqa: E402
 from freshlatch.runner import RunContext, Runner, load_docket  # noqa: E402
 from freshlatch.sheet import project_claim  # noqa: E402
 from freshlatch.store.checksum import make_checksum_fn  # noqa: E402
+from freshlatch.gates.basis_rot import rot_claims  # noqa: E402
 from freshlatch.store.ingest import parse_document  # noqa: E402
 from freshlatch.store.sqlite_store import SQLiteStore  # noqa: E402
 from freshlatch.t1_source import T1SourceSession  # noqa: E402
@@ -141,7 +142,10 @@ def _claim_to_dict(store: SQLiteStore, c) -> dict:
 
 @app.get("/api/claims")
 def api_claims() -> dict:
+    """拉复验单:对可见 fresh∧basis 主张跑与复验入口同一腐烂路径并真写库(ADR-0025)。"""
     store = _store()
+    # 档 3b UI 触发:禁止只改展示;与 Runner 共用 check_basis/apply_rot
+    rot_claims(store, list(_state["claims"]), make_checksum_fn(CORPUS))
     return {
         "question": _state["question"],
         "claims": [_claim_to_dict(store, c) for c in _state["claims"]],
@@ -555,7 +559,18 @@ async function pollBudget(){
   try{
     const j = await (await fetch('/api/claims')).json();
     if(j.budget) renderBudget(j.budget);
+    // 拉单路径会跑跨轮腐烂;同步主张状态,避免语料变更后卡片仍显示 fresh
+    if(j.claims){ STATE.claims = j.claims; renderClaims(); }
   }catch(e){}
+}
+
+async function reloadClaimsFromServer(){
+  // 打开/渲染复验单的统一拉单口:服务端 rot_claims 真写库后再投影
+  const j = await (await fetch('/api/claims')).json();
+  if(j.claims) STATE.claims = j.claims;
+  if(j.latch) STATE.latch = j.latch;
+  if(j.budget) renderBudget(j.budget);
+  renderClaims();
 }
 
 function setViewMode(mode){
@@ -650,7 +665,7 @@ async function uploadT1(){
   for(const f of input.files) fd.append('files', f);
   const j = await (await fetch('/api/t1-source/upload',{method:'POST', body:fd})).json();
   if(j.error){ document.getElementById('status').textContent = j.error; return; }
-  T1SRC = j; renderClaims();
+  T1SRC = j; await reloadClaimsFromServer();
   document.getElementById('status').textContent = j.message || 'T1 语料包已入库';
 }
 async function savePasteDraft(){
@@ -677,13 +692,13 @@ async function confirmPasteIngest(){
   }
   const j = await (await fetch('/api/t1-source/confirm',{method:'POST'})).json();
   if(j.error){ document.getElementById('status').textContent = j.error; return; }
-  T1SRC = j; renderClaims();
+  T1SRC = j; await reloadClaimsFromServer();
   document.getElementById('status').textContent = j.message || '已确认入库';
 }
 async function selectSynthetic(){
   const j = await (await fetch('/api/t1-source/synthetic',{method:'POST'})).json();
   if(j.error){ document.getElementById('status').textContent = j.error; return; }
-  T1SRC = j; renderClaims();
+  T1SRC = j; await reloadClaimsFromServer();
   document.getElementById('status').textContent = j.message || '已选用合成评测包';
 }
 function toggleImportPanel(){

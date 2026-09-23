@@ -166,15 +166,14 @@ class Runner:
                               auditor_doctrine=self._doctrine.get("freshness_audit"))
 
     def run(self, claims: list[Claim], *, trajectory_dir: str | Path = "reports/trajectories") -> RunResult:
-        from freshlatch.gates.basis_rot import apply_rot, check_basis
+        from freshlatch.gates.basis_rot import apply_rot_if_mismatch
 
         decisions: dict[str, ClaimDecision] = {}
         steps_by_claim: dict[str, int] = {}
         for claim in claims:
             # 档 3b:复验入口机械前置——fresh∧basis 不符则掉灯,本轮不进 Lead
-            basis_check = check_basis(claim, self._checksum_fn)
-            if basis_check.verdict == "mismatch":
-                apply_rot(self.ctx.store, claim)
+            rot = apply_rot_if_mismatch(self.ctx.store, claim, self._checksum_fn)
+            if rot.outcome == "applied":
                 decision = ClaimDecision(
                     claim_id=claim.claim_id,
                     status="unknown",

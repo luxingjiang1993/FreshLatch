@@ -121,3 +121,41 @@ def apply_rot(
         reviewer_note=BASIS_CHECKSUM_MISMATCH,
     )
     return RotApplyResult("applied", claim.reason)
+
+
+def apply_rot_if_mismatch(
+    store,
+    claim: Claim,
+    checksum_fn: Callable[[str, AsOf], str | None],
+    *,
+    now: Callable[[], datetime] | None = None,
+    run_id: str | None = None,
+    as_of: AsOf = "T1",
+) -> RotApplyResult:
+    """双触发共用接线:check → 仅 mismatch 时 apply_rot。
+
+    复验入口与 UI 拉单都必须经此(或等价的 check_basis+apply_rot 组合),
+    禁止另写比对/降级逻辑。
+    """
+    check = check_basis(claim, checksum_fn, as_of=as_of)
+    if check.verdict != "mismatch":
+        return RotApplyResult("noop", check.detail)
+    return apply_rot(store, claim, now=now, run_id=run_id)
+
+
+def rot_claims(
+    store,
+    claims: list[Claim],
+    checksum_fn: Callable[[str, AsOf], str | None],
+    *,
+    now: Callable[[], datetime] | None = None,
+    run_id: str | None = None,
+    as_of: AsOf = "T1",
+) -> list[RotApplyResult]:
+    """对可见主张列表逐条跑 apply_rot_if_mismatch(UI 拉单/渲染用)。"""
+    return [
+        apply_rot_if_mismatch(
+            store, c, checksum_fn, now=now, run_id=run_id, as_of=as_of,
+        )
+        for c in claims
+    ]
