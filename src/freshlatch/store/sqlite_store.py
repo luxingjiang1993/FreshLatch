@@ -53,7 +53,11 @@ CREATE TABLE IF NOT EXISTS latch_log (
     claim_id TEXT NOT NULL,
     action TEXT NOT NULL,
     evidence_id TEXT,
-    actor TEXT NOT NULL DEFAULT 'human'
+    actor TEXT NOT NULL DEFAULT 'human',
+    machine_status_before TEXT,   -- 人审成功写入必填;旧行与 rerun 可空
+    override INTEGER,             -- 人审成功写入 0/1;旧行与 rerun 可空。不是模型变好
+    run_id TEXT,                  -- 可选,跨跑次串联留位
+    reviewer_note TEXT            -- 可选,与 discard reason 对齐
 );
 CREATE TABLE IF NOT EXISTS rerun_log (
     ts TEXT NOT NULL,
@@ -103,6 +107,14 @@ CREATE INDEX IF NOT EXISTS idx_memory_source ON long_term_memory (source_ref);
 CREATE INDEX IF NOT EXISTS idx_memory_flags_memory ON memory_flags (memory_id);
 """
 
+# 旧库缺列时补齐。新写入的人审成功行必须自己填满契约;旧行缺省保持 NULL,不回填对抗语义。
+_LATCH_LOG_ADDED_COLUMNS = (
+    ("machine_status_before", "TEXT"),
+    ("override", "INTEGER"),
+    ("run_id", "TEXT"),
+    ("reviewer_note", "TEXT"),
+)
+
 
 class SQLiteStore(RetrievalStore):
     def __init__(self, path: str | Path) -> None:
@@ -110,6 +122,14 @@ class SQLiteStore(RetrievalStore):
         Path(self.path).parent.mkdir(parents=True, exist_ok=True)
         with self._conn() as conn:
             conn.executescript(SCHEMA)
+            self._ensure_latch_log_columns(conn)
+
+    @staticmethod
+    def _ensure_latch_log_columns(conn: sqlite3.Connection) -> None:
+        existing = {row[1] for row in conn.execute("PRAGMA table_info(latch_log)")}
+        for name, decl in _LATCH_LOG_ADDED_COLUMNS:
+            if name not in existing:
+                conn.execute(f"ALTER TABLE latch_log ADD COLUMN {name} {decl}")
 
     def _conn(self) -> sqlite3.Connection:
         conn = sqlite3.connect(self.path)
@@ -144,11 +164,34 @@ class SQLiteStore(RetrievalStore):
                 (claim_id, voided_at, actor, reason),
             )
 
-    def log_latch(self, ts: str, claim_id: str, action: str, evidence_id: str | None = None, actor: str = "human") -> None:
+    def log_latch(
+        self,
+        ts: str,
+        claim_id: str,
+        action: str,
+        evidence_id: str | None = None,
+        actor: str = "human",
+        *,
+        machine_status_before: str | None = None,
+        override: bool | None = None,
+        run_id: str | None = None,
+        reviewer_note: str | None = None,
+    ) -> None:
+        """人审/重跑审计行。成功 discard/renew 须带 machine_status_before 与 override。
+
+        override 只标记人是否对抗落档前机器 status,不表示模型变好,也不作通过线。
+        """
+        override_val = None if override is None else int(bool(override))
         with self._conn() as conn:
             conn.execute(
-                "INSERT INTO latch_log VALUES (?,?,?,?,?)",
-                (ts, claim_id, action, evidence_id, actor),
+                "INSERT INTO latch_log "
+                "(ts, claim_id, action, evidence_id, actor, "
+                "machine_status_before, override, run_id, reviewer_note) "
+                "VALUES (?,?,?,?,?,?,?,?,?)",
+                (
+                    ts, claim_id, action, evidence_id, actor,
+                    machine_status_before, override_val, run_id, reviewer_note,
+                ),
             )
 
     def log_rerun(self, ts: str, claim_id: str, thread_id: str, verdict: str, nth: int, note: str = "") -> None:
@@ -212,13 +255,45 @@ class SQLiteStore(RetrievalStore):
 
     def list_latch_events(self, claim_id: str) -> list[dict]:
         """人审动作时间线(latch_log 单一真相:谁、何时、什么决定、凭什么证据)。"""
+        return self.list_latch_rows(claim_id=claim_id)
+
+    def list_latch_rows(
+        self,
+        *,
+        claim_id: str | None = None,
+        override: bool | None = None,
+    ) -> list[dict]:
+        """审计读取。override=True 时只返回对抗标记行,供审计过滤。
+
+        过滤结果不是模型变好,也不作 Override Rate 通过线。
+        """
+        sql = (
+            "SELECT ts, claim_id, action, evidence_id, actor, "
+            "machine_status_before, override, run_id, reviewer_note "
+            "FROM latch_log"
+        )
+        clauses: list[str] = []
+        params: list[object] = []
+        if claim_id is not None:
+            clauses.append("claim_id = ?")
+            params.append(claim_id)
+        if override is True:
+            clauses.append("override = 1")
+        elif override is False:
+            clauses.append("override = 0")
+        if clauses:
+            sql += " WHERE " + " AND ".join(clauses)
+        sql += " ORDER BY ts, rowid"
         with self._conn() as conn:
-            rows = conn.execute(
-                "SELECT ts, action, evidence_id, actor FROM latch_log "
-                "WHERE claim_id = ? ORDER BY ts, rowid",
-                (claim_id,),
-            ).fetchall()
-        return [dict(r) for r in rows]
+            rows = conn.execute(sql, params).fetchall()
+        return [self._normalize_latch_row(r) for r in rows]
+
+    @staticmethod
+    def _normalize_latch_row(row: sqlite3.Row) -> dict:
+        item = dict(row)
+        if item.get("override") is not None:
+            item["override"] = bool(item["override"])
+        return item
 
     def list_memories(self) -> list[dict]:
         """列出长期记忆条目（W9-W12新增）"""

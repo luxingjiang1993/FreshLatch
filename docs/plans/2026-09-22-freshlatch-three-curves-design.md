@@ -37,7 +37,7 @@ Branch: eature/future-roadmap
 | **Batch 2** | β checksum + 攻击面用例 | invariant | NEXT（可另会话并行） |
 | **Batch 3** | γ + 消融/多 seed **规格** | invariant + smoke | NEXT |
 | **Batch 4** | δ 第二课题 + 数据释放草稿 | 迁移预锁 | NEXT |
-| **Batch 5** | ε 信任内嵌 + 对抗套件目录骨架 + override 管道 | 文案+管道 | NEXT |
+| **Batch 5** | ε 信任内嵌 + 对抗套件目录骨架 + override 管道 | 文案+管道 | **决策已齐**（#106–108；待 `/to-spec`） |
 | **侧轨 R1** | must_quarantine 金标 | 研究 | RESEARCH |
 | **不进** | 无触发 vector、HyDE、金标前 W9/真 Forensic、Mem0、换框架、主会真实对照 | — | REJECT/HOLD |
 

@@ -77,7 +77,7 @@ SQLITE_COLUMNS = {
         "doc_version", "checksum", "tokens", "parent_id", "hypo_questions", "vec",
     },
     "invalidation_list": {"claim_id", "voided_at", "actor", "reason"},
-    "latch_log": {"ts", "claim_id", "action", "evidence_id", "actor"},
+    "latch_log": {"ts", "claim_id", "action", "evidence_id", "actor", "machine_status_before", "override", "run_id", "reviewer_note"},
     "rerun_log": {"ts", "claim_id", "thread_id", "verdict", "nth", "note"},
     "long_term_memory": {
         "memory_id", "content", "written_at", "last_confirmed_at", "source_ref",
@@ -98,8 +98,13 @@ FORBIDDEN_UPGRADE = (
 )
 
 
+def _normalize_bytes(data: bytes) -> bytes:
+    """字节锁按 LF 语义,避免 Windows autocrlf 工作区 CRLF 假红。"""
+    return data.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+
+
 def _sha256(path: Path) -> str:
-    return hashlib.sha256(path.read_bytes()).hexdigest()
+    return hashlib.sha256(_normalize_bytes(path.read_bytes())).hexdigest()
 
 
 def _corpus_sha256(root: Path) -> str:
@@ -107,7 +112,7 @@ def _corpus_sha256(root: Path) -> str:
     for path in sorted(root.rglob("*.md")):
         digest.update(path.relative_to(root).as_posix().encode())
         digest.update(b"\0")
-        digest.update(path.read_bytes())
+        digest.update(_normalize_bytes(path.read_bytes()))
         digest.update(b"\0")
     return digest.hexdigest()
 

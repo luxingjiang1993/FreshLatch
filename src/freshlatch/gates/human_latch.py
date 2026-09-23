@@ -19,7 +19,22 @@ from typing import Callable
 from freshlatch.gates.rule_gate import GateContext, GateDecision, rule_gate
 from freshlatch.models import AsOf, Claim
 
-VALID_ACTIONS = ("discard", "renew")
+VALID_ACTIONS = ("discard", "renew")  # 封闭集;禁止新增 override action
+
+
+def derive_override(action: str, machine_status_before: str) -> bool:
+    """成功人审落档时的派生标签(ADR-0023)。不是第三按钮,也不表示模型变好。
+
+    - discard 且落档前机器 status 为 fresh → True
+    - renew 且落档前机器 status 为 stale 或 unknown → True
+    - 其余成功人审 → False
+    失败与幂等跳过不调用本函数写新行。
+    """
+    if action == "discard" and machine_status_before == "fresh":
+        return True
+    if action == "renew" and machine_status_before in ("stale", "unknown"):
+        return True
+    return False
 
 # 错误码(结构化,端点直接透传给 UI)
 RENEW_EVIDENCE_MALFORMED = "RENEW_EVIDENCE_MALFORMED"
@@ -53,12 +68,16 @@ def apply_decisions(
     pending_ids: set[str] | None = None,
     now: Callable[[], datetime] | None = None,
     checksum_fn: Callable[[str, AsOf], str | None] | None = None,
+    run_id: str | None = None,
 ) -> list[dict]:
     """整轮决定列表逐条落档。单条失败不影响其余;已作废的重复 discard 幂等跳过。
 
     写路径唯一:invalidation_list / latch_log 只从这里(及重跑的 rerun 分支)写。
     pending_ids 给定时,claim_id 必须在待审清单内(防止对绿灯主张落人审决定)。
     checksum_fn 续命链注入点(留位:缺省 None = checksum 未启用,闸不拦,同 runner)。
+    run_id 可选:成功人审行写入 latch_log,供跨跑次串联;缺省不填。
+    成功行必填 machine_status_before 与派生 override。失败或幂等跳过不新增对抗语义行。
+    override 不是模型变好,本路径不计算 Override Rate。
     """
     now = now or datetime.now
     results: list[DecisionResult] = []
@@ -69,13 +88,17 @@ def apply_decisions(
             evidence_id=raw.get("evidence_id"),
             reviewer_note=raw.get("reviewer_note"),
         )
-        results.append(_apply_one(store, claims_by_id, d, now, pending_ids, checksum_fn))
+        row_run_id = raw.get("run_id") if raw.get("run_id") else run_id
+        results.append(
+            _apply_one(store, claims_by_id, d, now, pending_ids, checksum_fn, row_run_id)
+        )
     return [r.__dict__ for r in results]
 
 
 def _apply_one(store, claims_by_id: dict, d: HumanDecision, now: Callable[[], datetime],
                pending_ids: set[str] | None,
-               checksum_fn: Callable[[str, AsOf], str | None] | None) -> DecisionResult:
+               checksum_fn: Callable[[str, AsOf], str | None] | None,
+               run_id: str | None = None) -> DecisionResult:
     if pending_ids is not None and d.claim_id not in pending_ids:
         return DecisionResult(d.claim_id, ok=False, action=d.action,
                               error_code=UNKNOWN_CLAIM, detail="该主张不在本轮待审清单")
@@ -88,14 +111,22 @@ def _apply_one(store, claims_by_id: dict, d: HumanDecision, now: Callable[[], da
                               error_code=INVALID_ACTION,
                               detail=f"action 只能是 {'|'.join(VALID_ACTIONS)};收到: {d.action!r}")
     if d.action == "renew":
-        return _apply_renew(store, claim, d, now, checksum_fn)
+        return _apply_renew(store, claim, d, now, checksum_fn, run_id)
     # discard:作废(幂等——interrupt 重执行语义下可能二次落档)
     if claim.voided:
+        # 幂等跳过:不新增 latch_log 行,避免把重复作废记成新的对抗语义
         return DecisionResult(d.claim_id, ok=True, action="discard",
                               detail="已作废,幂等跳过(invalidation_list 已有该 id)")
+    machine_status_before = claim.status
     ts = now().isoformat(timespec="seconds")
     store.add_invalidation(d.claim_id, ts, actor="human", reason=d.reviewer_note)
-    store.log_latch(ts, d.claim_id, "discard", evidence_id=None, actor="human")
+    store.log_latch(
+        ts, d.claim_id, "discard", evidence_id=None, actor="human",
+        machine_status_before=machine_status_before,
+        override=derive_override("discard", machine_status_before),
+        run_id=run_id,
+        reviewer_note=d.reviewer_note,
+    )
     claim.voided = True
     claim.voided_at = ts
     return DecisionResult(d.claim_id, ok=True, action="discard",
@@ -116,7 +147,8 @@ def parse_evidence_id(eid: object) -> tuple[str, str, AsOf] | None:
 
 
 def _apply_renew(store, claim: Claim, d: HumanDecision, now: Callable[[], datetime],
-                 checksum_fn: Callable[[str, AsOf], str | None] | None) -> DecisionResult:
+                 checksum_fn: Callable[[str, AsOf], str | None] | None,
+                 run_id: str | None = None) -> DecisionResult:
     """续命(#23 / ADR-0006 §4):人带 T1 证据主张仍然成立 → 过闸 → 写回转绿。
 
     三层各守一段,全过才写(任一违例零写,附结构化原因):
@@ -124,6 +156,7 @@ def _apply_renew(store, claim: Claim, d: HumanDecision, now: Callable[[], dateti
       2. 点回校验:证据必须点回真实 chunk(编造的 id 不得续命);
       3. 规则闸:证据锚 T1 / checksum 对不上 / 作废名单(#23 实装清单第 3 项)。
     """
+    machine_status_before = claim.status  # 落档前机器判定;失败路径不得改 status
     if not str(d.evidence_id or "").strip():
         return DecisionResult(claim.claim_id, ok=False, action="renew",
                               error_code="RENEW_NO_EVIDENCE",
@@ -156,6 +189,12 @@ def _apply_renew(store, claim: Claim, d: HumanDecision, now: Callable[[], dateti
     claim.t1_evidence_ids = list(dict.fromkeys([*claim.t1_evidence_ids, str(d.evidence_id)]))
     claim.status = "fresh"  # 卡片转绿(机器判定被人的决定取代,理由留痕不抹)
     claim.reason = f"[人审续命 {ts}] 依据 {d.evidence_id}" + (f";原机器判定: {prior}" if prior else "")
-    store.log_latch(ts, claim.claim_id, "renew", evidence_id=str(d.evidence_id), actor="human")
+    store.log_latch(
+        ts, claim.claim_id, "renew", evidence_id=str(d.evidence_id), actor="human",
+        machine_status_before=machine_status_before,
+        override=derive_override("renew", machine_status_before),
+        run_id=run_id,
+        reviewer_note=d.reviewer_note,
+    )
     return DecisionResult(claim.claim_id, ok=True, action="renew",
                           detail=f"已续命(last_confirmed_at={ts},依据 {d.evidence_id})")

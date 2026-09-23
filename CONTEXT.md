@@ -120,6 +120,14 @@ _Avoid_: 黑名单、封禁列表
 **void（已作废）**:
 被人工作废的主张终态,复验单上灰显。与 Auditor 判的 `stale` 并存不互斥:`stale` 是机器判定,`void` 是人的决定。作废后重跑不得再绿,由规则闸查作废名单强制。
 
+**override（派生标签）**:
+人审 `discard`/`renew` 落档时,相对落档前机器 `status` 是否构成对抗的布尔标记(非新 action)。谓词与 `latch_log` 扩列见 ADR-0023;禁止把 override 计数解释为「模型变好」,本批不锁 Override Rate 通过线。
+_Avoid_: override 按钮、第三种人审动作、模型变好指标
+
+**读法源 (How-to-Read source)**:
+「如何读复验」的单一文案真相:身份(卖作废)/机器判定/人作废/边界(非法律·非自动)/验收诚实;投影至复验单旁路、Client Memo 附注与 ACCEPTANCE 可引用句(Batch 5 ε)。demo 可读 ≠ 付费或验证成功。
+_Avoid_: 产品验证证书、法律意见书、自动决策说明
+
 **重跑 (Rerun)**:
 人对某条作废主张发起的单主张复验:新开一个 LangGraph thread(`reverify-{claim_id}-{ts}`),只重跑该主张,结果作为时间线条目挂在该主张卡片下(如「重跑后仍红(第 N 次)」)。人点按钮触发,不自动。
 
@@ -160,3 +168,7 @@ _Avoid_: 硬零改、零改代码(含糊)、已多垂类 Port
 **合成数据释放草稿 (C4)**:
 合成评测材料(语料/gold/平行课题包)对外分发前的规矩预锁文档;必须标明 synthetic;许可在草稿阶段可为占位。文档落盘不等于数据集已对外可用;已释放须满足 C4 卡门闩(ADR-0021)。不是产品功能说明书,不管闸与 Agent 实现。
 _Avoid_: 已开源数据集、数据已释放(仅因 C4 存在)、多垂类数据集已发布
+
+**对抗套件目录 (Adversarial Catalog)**:
+假绿/对抗用例的版本化索引(`docs/research/adversarial/`,`catalog_version` semver,条目 `ATK-<FAMILY>-NN`)。Batch 5 仅为骨架(ADR-0022);目录存在 ≠ 仪器已过;禁报统计通过率、禁 pass_rate 列;与金标/预登记/ATK-CS 只指针。
+_Avoid_: 对抗已通过证书、套件通过率表(本批)、仪器已过(仅因目录有行)

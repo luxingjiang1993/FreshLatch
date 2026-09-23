@@ -398,6 +398,10 @@ HTML_PAGE = """<!DOCTYPE html>
               border-radius:6px;padding:10px 14px;font-size:13px;color:#57606a}
  #audit-panel.visible{display:block}
  #audit-panel code{word-break:break-all}
+ #how-to-read{margin:0 16px 10px;background:#fff;border:1px solid #d0d7de;border-radius:6px;
+              padding:8px 12px;font-size:13px;color:#57606a}
+ #how-to-read strong{color:#0a2540}
+ #audit-override-filter{display:block;margin-top:8px}
  details{margin-top:12px;background:#fff;border:1px solid #d0d7de;border-radius:6px;padding:8px 12px}
  code{background:#eff1f3;padding:1px 5px;border-radius:4px}
  .timeline{font-size:12px;color:#57606a;margin-top:6px;border-top:1px dashed #d0d7de;padding-top:4px}
@@ -478,7 +482,15 @@ HTML_PAGE = """<!DOCTYPE html>
 <div id="audit-panel" aria-live="polite">
  <b>审计视图</b> · Lead / Critic 工具轨迹与工程角色信息(排障/面试用;不改变作废·续命·闸语义)
  <div id="audit-body" style="margin-top:6px">尚无本轮轨迹。完成复验后此处显示轨迹路径与解码参数。</div>
+ <label id="audit-override-filter">
+  <input type="checkbox" id="filter-override" onchange="renderClaims()">
+  只看 override=true(人对抗落档前机器判定;不是模型变好,不作通过线)
+ </label>
 </div>
+<aside id="how-to-read">
+ <strong>如何读</strong>
+ <p>如何读本复验单:【身份】卖作废。【机器】fresh/stale/unknown 是机器判定。【人】void 是人的决定,void≠stale。【边界】非法律意见、非自动决策。</p>
+</aside>
 <main>
  <section id="claims"><p style="color:#57606a">加载中……</p></section>
  <section id="pane"><p style="color:#57606a">← 点击主张的证据 id,这里显示 T0/T1 原文并高亮锚点段落</p></section>
@@ -552,6 +564,7 @@ function setViewMode(mode){
   document.getElementById("view-craftsman").classList.toggle("on", VIEW_MODE === "craftsman");
   document.getElementById("view-audit").classList.toggle("on", VIEW_MODE === "audit");
   renderViewChrome();
+  renderClaims();  // 切出审计时清掉 override 过滤后的卡片子集,只改呈现
   // 切回职人时收起状态栏工程细节;有本轮结果则按密度重写短状态
   if(STATE.trajectory){
     document.getElementById("status").textContent =
@@ -779,9 +792,14 @@ function renderPackBadge(){
   if(p.synthetic) bits.push('synthetic');
   el.textContent = bits.join(' · ');
 }
+function overrideFilterOn(){
+  const box = document.getElementById('filter-override');
+  return VIEW_MODE === 'audit' && !!(box && box.checked);
+}
 function renderClaims(){
   renderPackBadge();
   const el = document.getElementById('claims');
+  if(!el) return;
   let h = '<div id="import-panel" class="'+(IMPORT_PANEL_OPEN?'open':'')+'">'
         + '<b>主张导入稿</b>'
         + '<div class="hint">每条以 <code>## claim_id</code> 起头、其后正文一段;'
@@ -799,6 +817,7 @@ function renderClaims(){
   h += '<h3 style="margin:4px 0 10px">主张复验单 <span style="font-weight:400;font-size:13px;color:#57606a">'
         + esc(STATE.question||'') + '</span></h3>';
   for(const c of STATE.claims){
+    if(overrideFilterOn() && !(c.timeline||[]).some(t => t.override === true)) continue;
     const [label,color] = BADGE[c.status] || BADGE.unknown;
     h += '<div class="claim'+(c.voided?' voided':'')+'" id="c-'+c.claim_id+'" style="border-left-color:'+color+'" '
        + 'onclick="pickClaim(&quot;'+c.claim_id+'&quot;)">'
@@ -830,6 +849,7 @@ function renderClaims(){
       h += '<div class="timeline">';
       for(const t of c.timeline){
         h += '<div>· '+esc(t.ts)+' '+esc(t.label)
+           + (t.override===true?' · override':'')
            + (t.evidence_id?(' · 依据 <code>'+esc(t.evidence_id)+'</code>'):'')
            + (t.note?(' — '+esc(t.note)):'')
            + (t.thread_id?(' <code>'+esc(t.thread_id)+'</code>'):'')+'</div>';
