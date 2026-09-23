@@ -1,0 +1,28 @@
+{
+  "question": "9 月 1 日供应商报价是否仍可在 9 月 18 日转报客户？",
+  "must_stale": ["q1"],
+  "must_fresh": ["q2"],
+  "must_unknown": ["q3"],
+  "must_quarantine": [],
+  "must_fresh_distractor": [],
+  "causal_chain": {
+    "q1": {
+      "t1_doc": "q1-supplier-quote",
+      "anchor": "p2",
+      "change": "9 月 12 日更新函将交期由下单后 21 天改为 45 天，并将到门运费由 180 美元改为 260 美元",
+      "why_stale": "主张依赖 T0「交期仍为 21 天可原样转报」；T1 原文确认交期已改，原口径不再成立"
+    },
+    "q2": {
+      "t1_doc": "q1-supplier-quote",
+      "anchor": "p3",
+      "change": "更新函写明单价仍为 12.40 美元/件，未随交期与运费一并调整",
+      "why_fresh": "主张「单价仍为 12.40 美元/件」被 T1 原文继续支持；交期与运费变化不推翻单价"
+    }
+  },
+  "meta": {
+    "seed": null,
+    "temperature": 0,
+    "checksums": {},
+    "note": "P1 QuoteTTL 薄 synthetic 最小桶。claim 级故事，不是字段引擎。本文件默认未释放。Port 通过线不含 LLM run_gold。"
+  }
+}
