@@ -121,6 +121,7 @@ class HumanLatch:
         self._checksum_fn = checksum_fn
         self._claims_by_id: dict[str, Claim] = {}  # enter_round/decide 时绑定的本轮主张表
         self._pending_ids: set[str] = set()  # 本轮待审 id(重跑恢复时从 checkpoint 回填)
+        self._run_id: str | None = None  # 本轮 thread,成功人审行可选写入 latch_log.run_id
 
     # -- 轮次:一轮复验 = 一个 thread -------------------------------------------------
 
@@ -135,6 +136,7 @@ class HumanLatch:
         if not pending:
             return LatchRound(thread_id=None, pending=[], ts=ts)
         thread_id = f"reverify-round-{ts}"
+        self._run_id = thread_id
         with self._saver() as saver:
             graph = self._graph(saver)
             graph.invoke({"pending": pending}, self._config(thread_id))
@@ -149,6 +151,7 @@ class HumanLatch:
         """
         if self.mode == "eval":
             raise HumanLatchError("eval 模式代码级跳过 HumanLatch(ADR-0006 §7)")
+        self._run_id = thread_id
         if claims is not None:
             self._claims_by_id = {c.claim_id: c for c in claims}
         if not self._pending_ids:
@@ -257,7 +260,8 @@ class HumanLatch:
     def _apply(self, decisions: list[dict]) -> list[dict]:
         """写路径唯一:execute 节点的落档函数(由 gates/human_latch 执行)。"""
         return apply_decisions(self.store, self._claims_by_id, decisions,
-                               pending_ids=self._pending_ids, checksum_fn=self._checksum_fn)
+                               pending_ids=self._pending_ids, checksum_fn=self._checksum_fn,
+                               run_id=self._run_id)
 
     @contextmanager
     def _saver(self):
