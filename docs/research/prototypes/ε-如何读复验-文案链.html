@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<title>PROTOTYPE · ε · 「如何读复验」文案链 · #106</title>
+<style>
+  :root {
+    --ink: #1a1f1c;
+    --muted: #5a635c;
+    --paper: #f7f4ee;
+    --band: #e8efe6;
+    --accent: #2f5d3a;
+    --warn: #8a4b12;
+    --void: #6b6b6b;
+    --line: #c9cfc6;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "IBM Plex Sans", "Noto Sans SC", "Segoe UI", sans-serif;
+    background: linear-gradient(165deg, #eef2ea 0%, var(--paper) 45%, #ebe4d8 100%);
+    color: var(--ink);
+    line-height: 1.55;
+    padding: 24px 24px 120px;
+  }
+  .banner {
+    border: 2px dashed var(--warn);
+    background: #fff8ef;
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    font-size: 14px;
+  }
+  h1 { font-size: 22px; margin: 0 0 8px; font-weight: 650; }
+  .meta { color: var(--muted); font-size: 13px; margin-bottom: 20px; }
+  .layout {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 20px;
+    max-width: 1100px;
+  }
+  @media (max-width: 880px) { .layout { grid-template-columns: 1fr; } }
+  .panel {
+    background: rgba(255,255,255,0.72);
+    border: 1px solid var(--line);
+    padding: 16px 18px;
+  }
+  .panel h2 {
+    margin: 0 0 12px;
+    font-size: 15px;
+    letter-spacing: 0.02em;
+    color: var(--accent);
+    text-transform: none;
+  }
+  .claim {
+    border-left: 3px solid var(--accent);
+    padding: 8px 12px;
+    margin: 8px 0;
+    background: var(--band);
+  }
+  .claim.voided {
+    border-left-color: var(--void);
+    opacity: 0.72;
+    background: #ececec;
+  }
+  .claim.stale { border-left-color: #b45309; }
+  .tag {
+    display: inline-block;
+    font-size: 11px;
+    padding: 1px 6px;
+    border: 1px solid currentColor;
+    margin-right: 6px;
+  }
+  .howto {
+    font-size: 14px;
+    white-space: pre-wrap;
+  }
+  .howto strong { color: var(--accent); }
+  .forbid {
+    margin-top: 12px;
+    padding: 10px 12px;
+    background: #fff1f0;
+    border: 1px solid #e8b4b0;
+    font-size: 13px;
+  }
+  .accept {
+    margin-top: 12px;
+    padding: 10px 12px;
+    background: #eef6f0;
+    border: 1px solid #a8c9b0;
+    font-size: 13px;
+  }
+  .export-note {
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--line);
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .switcher {
+    position: fixed;
+    left: 50%;
+    bottom: 18px;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 8px;
+    background: #111;
+    color: #fff;
+    padding: 10px 14px;
+    border-radius: 999px;
+    z-index: 20;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    font-size: 13px;
+    align-items: center;
+  }
+  .switcher button {
+    border: 0;
+    background: #333;
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 999px;
+    cursor: pointer;
+  }
+  .switcher button.on { background: #3d8b55; }
+  .hidden { display: none !important; }
+  code { font-family: "IBM Plex Mono", Consolas, monospace; font-size: 12px; }
+</style>
+</head>
+<body>
+  <div class="banner">
+    <strong>PROTOTYPE / 可丢弃</strong> · 工单
+    <a href="https://github.com/luxingjiang1993/FreshLatch/issues/106">ε: 「如何读复验」ACCEPTANCE 文案链</a>
+    · 双击本文件即可；底部切换 A/B/C。本文件不是生产 UI，不写实现。
+  </div>
+
+  <h1>「如何读复验」文案链 · 三变体</h1>
+  <p class="meta">
+    问题：复验单旁路 + 导出附注 + ACCEPTANCE 可引用句，如何钉住误读边界
+    （非法律意见 / 非自动决策 / void≠stale / demo 可读 ≠ 付费或验证成功）？
+  </p>
+
+  <!-- ========== VARIANT A：旁路短卡 + 导出脚注同构 ========== -->
+  <div id="variant-A" class="layout">
+    <div class="panel">
+      <h2>变体 A · 复验单旁路「读法卡」（短）</h2>
+      <div class="howto"><strong>如何读本复验单</strong>
+
+1. 绿灯/红灯是<strong>机器判定</strong>（fresh / stale / unknown），不是商业裁决。
+2. <span class="tag">已作废</span>灰显是<strong>人的决定</strong>（void），可与 stale 并存；作废后重跑不得再绿。
+3. 本单<strong>非法律意见</strong>、<strong>非自动决策</strong>；不得据此「进入/不进入」。
+4. 主叙事是<strong>卖作废</strong>：能闩住已死主张，不是证明「建议可行」。
+
+误读禁区：把 Time-to-Sheet / rubric 勾选说成「产品已验证 / 客户会付费」。</div>
+      <div class="forbid">
+        <strong>禁升格（旁路可见）</strong><br>
+        · demo 可读 ≠ 付费成功 · demo 可读 ≠ 一期验证闭合 · 不得从 override/续命推断「模型变好」
+      </div>
+      <div class="accept">
+        <strong>ACCEPTANCE 可引用句（本批 ε 文案层预锁草稿）</strong><br>
+        「如何读复验」文案链已挂复验单旁路与 Client Memo 附注，且含非法律/非自动决策与 void/stale 分工；
+        <em>仅表明</em>误读边界可被人工勾选核对，<strong>不表明</strong>产品验证成功或付费意愿。
+      </div>
+    </div>
+    <div class="panel">
+      <h2>示意 · 主张卡片</h2>
+      <div class="claim">
+        <span class="tag">fresh</span> c-fresh · T1 同口径仍成立
+      </div>
+      <div class="claim stale">
+        <span class="tag">stale</span> c-stale · T1 推翻原前提（机器）
+      </div>
+      <div class="claim voided">
+        <span class="tag">void</span><span class="tag">stale</span> c-void · 人已作废 · 灰显（人决定 ⊕ 机器判定）
+      </div>
+      <div class="export-note">
+        <strong>导出附注（与旁路同构，ADR-0015 免责声明扩展）</strong><br>
+        本备忘非法律意见、非自动商业决策；三分栏仅为复验投影。void=人作废；stale/unknown/fresh=机器判定。synthetic 语料须标明。禁止「建议进入/不进入」。
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== VARIANT B：折叠 FAQ + 分层标签 ========== -->
+  <div id="variant-B" class="layout hidden">
+    <div class="panel">
+      <h2>变体 B · 折叠 FAQ（职人默认收起一行）</h2>
+      <div class="howto"><strong>如何读 ▸</strong> 机器灯 ≠ 人作废 ≠ 商业裁决
+
+<details open>
+<summary>Q1 绿灯是不是「可以投」？</summary>
+否。绿灯只表示在既定 T1 下机器未判死；<strong>非自动决策</strong>。
+</details>
+<details open>
+<summary>Q2 灰显「已作废」和红灯 stale 一样吗？</summary>
+不一样。<code>stale</code>=Auditor/机器；<code>void</code>=人审 discard。可并存。作废进作废名单，重跑不得再绿。
+</details>
+<details open>
+<summary>Q3 这算法律/合规意见吗？</summary>
+<strong>非法律意见</strong>。仅复验投影。
+</details>
+<details open>
+<summary>Q4 演示跑通了算验证成功吗？</summary>
+否。<strong>demo 可读 ≠ 付费/验证成功</strong>。latch 由 Void→Stay-Red / 闸证明，不靠文案或 Time-to-Sheet。
+</details></div>
+      <div class="forbid">
+        <strong>禁升格</strong> · 目录/文案存在 ≠ 仪器已过 · override 次数 ↓ ≠ 模型变好
+      </div>
+      <div class="accept">
+        <strong>ACCEPTANCE 可引用句</strong><br>
+        Batch 5 ε：职人视图默认一行折叠「如何读」；展开后四问覆盖非法律/非自动/void≠stale/demo≠验证；
+        人工 rubric 全「是」仅表明文案链可读，不升格为测量或商业结论。
+      </div>
+    </div>
+    <div class="panel">
+      <h2>示意 · 分层标签条</h2>
+      <p style="font-size:13px;color:var(--muted)">审计视图可见层标签；职人视图只留旁路一行。</p>
+      <div class="claim"><span class="tag">层:demo</span> 本屏为演示可读性，不是 instrument 通过证。</div>
+      <div class="claim voided"><span class="tag">void</span> 人决定 · 卖作废主叙事</div>
+      <div class="export-note">
+        Client Memo 脚注复用 Q2+Q3 两句；禁止塞入 Lead/Critic 轨迹（ADR-0015）。
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== VARIANT C：三出口同文一源 ========== -->
+  <div id="variant-C" class="layout hidden">
+    <div class="panel">
+      <h2>变体 C · 单一「读法源」三出口投影</h2>
+      <div class="howto"><strong>读法源（canonical，to-spec 落一处）</strong>
+
+【身份】本产出是复验投影，主叙事<strong>卖作废</strong>。
+【机器】fresh / stale / unknown = 闸与角色判定；不是投资建议。
+【人】void = HumanLatch discard；与 stale 并存不互斥；进作废名单。
+【边界】非法律意见 · 非自动决策 · 禁止「建议进入/不进入」。
+【验收诚实】文案链 ACCEPTANCE 只证明「误读边界在场」；demo 可读 ≠ 付费/验证成功；不得把 override 当模型变好。
+
+—— 投影出口 ——
+· 复验单旁路：上列前四条缩写
+· Client Memo：免责声明段引用【边界】+【人】/【机器】一句
+· ACCEPTANCE 索引：只摘【验收诚实】整句</div>
+      <div class="forbid">
+        <strong>禁</strong>：三出口各写各的导致漂移；事后为「好懂」删掉 void/stale 分工。
+      </div>
+      <div class="accept">
+        <strong>ACCEPTANCE 可引用句（推荐作本批 canonical）</strong><br>
+        「如何读复验」读法源已投影至复验单旁路与 Client Memo 附注；ACCEPTANCE 仅表明误读边界（非法律/非自动、void≠stale、demo≠验证）可被核对在场，不表明产品验证成功、付费意愿或对抗仪器已过。
+      </div>
+    </div>
+    <div class="panel">
+      <h2>示意 · 三出口对照</h2>
+      <table style="width:100%;font-size:12px;border-collapse:collapse">
+        <tr style="background:var(--band)"><th align="left">出口</th><th align="left">取自读法源</th></tr>
+        <tr><td>旁路</td><td>身份+机器+人+边界（短）</td></tr>
+        <tr><td>Memo</td><td>边界 + 人/机器一句</td></tr>
+        <tr><td>ACCEPTANCE</td><td>仅【验收诚实】</td></tr>
+      </table>
+      <div class="export-note">
+        与 ADR-0015 免责声明兼容：本变体把「如何读」升格为可版本化读法源，Memo 仍禁商业裁决与角色泄漏。
+      </div>
+    </div>
+  </div>
+
+  <div class="switcher">
+    <span>variant</span>
+    <button type="button" data-v="A" class="on">A 短卡</button>
+    <button type="button" data-v="B">B FAQ</button>
+    <button type="button" data-v="C">C 同文源</button>
+    <span id="state-label" style="opacity:.7;margin-left:6px">A</span>
+  </div>
+
+<script>
+(function () {
+  var params = new URLSearchParams(location.search);
+  var cur = (params.get('variant') || 'A').toUpperCase();
+  if (!/^[ABC]$/.test(cur)) cur = 'A';
+  function show(v) {
+    cur = v;
+    ['A','B','C'].forEach(function (x) {
+      document.getElementById('variant-' + x).classList.toggle('hidden', x !== v);
+    });
+    document.querySelectorAll('.switcher button').forEach(function (b) {
+      b.classList.toggle('on', b.getAttribute('data-v') === v);
+    });
+    document.getElementById('state-label').textContent = v;
+    var u = new URL(location.href);
+    u.searchParams.set('variant', v);
+    history.replaceState(null, '', u);
+  }
+  document.querySelectorAll('.switcher button').forEach(function (b) {
+    b.addEventListener('click', function () { show(b.getAttribute('data-v')); });
+  });
+  show(cur);
+})();
+</script>
+</body>
+</html>
