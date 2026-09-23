@@ -32,3 +32,4 @@
 - 主缝：`tests/unit/test_basis_rot.py`（#143）
 - UI 拉单：`tests/unit/test_ui_basis_rot.py`（#144）
 - 本文件自检：`tests/unit/test_beta_plus_3b_acceptance.py`
+- 演示录屏 / 面试取材：`DEMO_ORAL.md`（评估 §6 + 本文件预锁句；demo 层，不升格）
