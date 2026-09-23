@@ -92,7 +92,7 @@ def test_reverify_keeps_budget_summary_after_complete(client, monkeypatch):
     ]
 
     class _FakeRunner:
-        def __init__(self, store):
+        def __init__(self, store, **_kwargs):
             self.ctx = RunContext(
                 store=store,
                 guardrails=Guardrails(lead_max_steps=18, retrieval_budget=24),

@@ -427,13 +427,14 @@ _BANNED_DETAIL = (
     "已证明",
 )
 
-# fresh 半边允许出现 validity_basis 的模块:字段、续命写入、闸比对、导出投影。
+# fresh 半边允许出现 validity_basis 的模块:字段、续命写入、闸比对、导出投影、跨轮腐烂。
 # runner / 角色 / 工具 / UI 不在此列 = 不构造 basis(结构性空转,档 3a OUT)。
 _BASIS_ALLOWED = {
     "models.py",
     "sheet.py",
     "gates/human_latch.py",
     "gates/rule_gate.py",
+    "gates/basis_rot.py",
 }
 
 

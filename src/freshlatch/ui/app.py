@@ -262,7 +262,7 @@ def api_reverify() -> JSONResponse:
         api_import()
     _state["running"] = True
     try:
-        runner = Runner(_store())
+        runner = Runner(_store(), checksum_fn=make_checksum_fn(CORPUS))
         _state["run_ctx"] = runner.ctx
         _state["budget"] = _budget_from_ctx(runner.ctx)
         result = runner.run(list(_state["claims"]))

@@ -82,7 +82,7 @@ def test_reverify_exposes_zero_hits_without_auto_unknown(client, monkeypatch, tm
     zero = [{"query": "找不到的关键词XYZ", "as_of": "T1", "used": 1, "hits": 0}]
 
     class _FakeRunner:
-        def __init__(self, store):
+        def __init__(self, store, **_kwargs):
             self.store = store
             self.ctx = RunContext(store=store)
 
