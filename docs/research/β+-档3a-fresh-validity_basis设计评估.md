@@ -5,6 +5,7 @@
 > **决议落点**: ADR-0024、CONTEXT.md（checksum 半激活指针）、`checksum链激活契约.md` §6、本评估、工单 #110 决议评论、β+ 地图
 > **前置**: ADR-0017 / [β: checksum 激活契约 vs 空转](https://github.com/luxingjiang1993/FreshLatch/issues/97)；盘点 `docs/research/checksum链激活契约.md`
 > **格式基准**: 《β-checksum激活契约与空转设计评估.md》《HumanLatch闭环设计评估.md》
+> **实装工程附录**: [β+3a: 实装工程子决策（迁移/接线/构造落点/ACCEPTANCE）](https://github.com/luxingjiang1993/FreshLatch/issues/147)（2026-09-23，地图 [#146](https://github.com/luxingjiang1993/FreshLatch/issues/146)；**不新开 ADR**；不重开 ADR-0024 产品方向）
 
 ---
 
@@ -219,8 +220,102 @@ A:不算。本票连 fresh 半边都没启用。预锁句在 ADR-0017；本票�
 
 实装/规格票开启前必须书面锁死（可增补，不可事后为凑绿改判）：
 
-1. 构造：`t1_evidence_ids` → 按 `doc_id` 去重 → 现算 checksum 填 list；
+1. 构造：`t1_evidence_ids` → 按 `doc_id` 去重 → **填入库指纹**（`chunk.checksum`，与 renew 同构）成 list；**比对**仍靠现算 `checksum_fn`（禁读库列）。（原「现算填 list」措辞易与套套混淆，以附录 A §A.4 为准。）
 2. 闸：逐项比对；任一不符 → `CHECKSUM_MISMATCH`；仍禁读库列；
 3. renew：写一元 list；人选一条交互不变；
-4. 迁移：存量单对象 → 一元 list；验收无双读残留；
+4. 迁移：存量单对象 → 一元 list；**显式一次性批迁**（非懒读）；验收无双读残留；
 5. 负例至少：篡改 list 中任一 doc 的语料 → fresh（或带 basis 的闸路径）拒绝；空/`t1_evidence_ids` 缺失仍由既有不变量拦。
+
+---
+
+## 附录 A. 实装工程子决策（#147 / 地图 #146）
+
+> **工单**: [β+3a: 实装工程子决策（迁移/接线/构造落点/ACCEPTANCE）](https://github.com/luxingjiang1993/FreshLatch/issues/147)
+> **日期**: 2026-09-23（开图两轮 + 本票一轮，推荐全部采纳）
+> **范围**: 工程子决策 only；**不重开** ADR-0024 产品方向（list / 去重全员受检 / renew 一元 list / 否决单 doc 主证）
+> **ADR**: 不新开（三条件不齐：迁移时机/构造落点可逆且不反直觉到须独立 ADR）
+> **CONTEXT**: 本附录**不**改半激活词条；fresh 写侧启用后的叙事收口留给实现收口票（地图子票 UI/ACCEPTANCE）
+
+### A.1 问题 + 前置约束
+
+ADR-0024 / 上文 §4 已锁「若做则 list」，并设实装门闩。地图 [#146](https://github.com/luxingjiang1993/FreshLatch/issues/146) 已开，须在 to-spec 前钉死：
+
+1. 存量单对象 → 一元 list 的**迁移时机与触发形态**；
+2. **接线/竖切次序**；
+3. **ACCEPTANCE** 层与预锁 invariant 落点；
+4. 导出/UI 对 list 的**展示**；
+5. Agent fresh **构造落点**（runner vs 闸）与 basis 内 checksum **填写源**；
+6. 是否新开 ADR。
+
+验收层（本附录）：**决议 / 工程预登记**——不是「fresh checksum 半边已启用」，也不是 latch 证明。
+
+### A.2 候选路线
+
+**维度 M（迁移触发）**: A 显式批迁脚本/步骤 + ACCEPTANCE 勾无残留 · B 启动静默扫库 · C 读时懒包不写回  
+**维度 O（接线次序）**: A schema→闸→renew→fresh 构造→批迁→UI→ACCEPTANCE · B 先双读适配再迁 · C 单 PR 无序  
+**维度 Acc（验收）**: A 独立 `docs/evidence/beta-plus-3a/ACCEPTANCE.md` · B 仅单测 · C 并入 3b ACCEPTANCE  
+**维度 UI**: A 完整 list · B 只展示 `[0]` · C 本图 OUT  
+**维度 C（构造落点）**: A runner 组 GateDecision 后进闸 · B 闸内补构 · C 闸后写回  
+**维度 F（填写源）**: A 入库指纹 `chunk.checksum` · B 构造时现算填入 · C 故意留空  
+**维度 ADR**: A 不新开、附录本评估 · B 新开 ADR-0026 · C 改写 ADR-0024 时态
+
+### A.3 逐路线评估（含 Anthropic 清单）
+
+| 维度 | 拍板 | 被否要点 |
+|---|---|---|
+| M | **A** | B 难验收；C = 长期双读，违背 ADR-0024 存量目标 |
+| O | **A** | B 合法化双形状窗口；C 无验收顺序 |
+| Acc | **A** | B 缺预锁勾选面；C 写/读侧混档 |
+| UI | **A** | B 展示层假牙（Anthropic：演示可过≠牙齿真）；C 审计读者无完整依据 |
+| C | **A** | B 闸变胖且与 renew 不对称；C 拦不住当次 fresh（`CHECKSUM_MISMATCH` 空转） |
+| F | **A** | B 易与 `checksum_fn` 同源套套；C 破坏可溯 |
+| ADR | **A** | B 三条件不齐；C 偷改历史决策时态 |
+
+**Anthropic 主动检**:
+
+1. **演示≠测量**：ACCEPTANCE / invariant 声明不得升格 latch 或统计结论。  
+2. **单次随机判生死**：本路径以确定性闸为主；n 小冒烟不报方差。  
+3. **「默认」不是规格**：构造规则、填写源、批迁步骤须写进 to-spec，禁止「照 renew 随便做」。  
+4. **词表**：操作句不进 CONTEXT；半激活收口在实现关单时改。  
+5. **pre-registration**：负例与预锁句先于跑通；凑绿改判 = 作废。  
+6. **复现两层**：闸/批迁确定性逐位；随机层本附录不宣称。  
+7. **ADR 三条件**：工程时机可逆 → 不新开 ADR。
+
+### A.4 拍板 + 逐项子决策
+
+1. **迁移**: 实装批内**显式一次性批迁**（脚本或等价写库步骤）；此后写路径只写 list；读路径不长期双读；ACCEPTANCE 勾「无单对象残留」。  
+2. **次序**: schema/导出类型 → 闸 list 全员比对 → renew 一元 list → runner fresh 构造 → 批迁 → UI/导出完整 list → ACCEPTANCE。  
+3. **ACCEPTANCE**: 独立落 `docs/evidence/beta-plus-3a/ACCEPTANCE.md` + 规格预锁 invariant 句；demo 不得升格。  
+4. **展示**: sheet/复验卡完整 list；**禁止**只展示 `[0]`。  
+5. **构造落点**: runner 组 `GateDecision` 时构造 list，**再**进 `rule_gate`；闸只比对不补写。  
+6. **填写源**: 与 renew 同构，填 `chunk.checksum`（入库指纹）；空指纹进闸由既有空 claimed 路径打回；比对牙齿仍是现算 `checksum_fn`。  
+7. **ADR / CONTEXT**: 不新开 ADR；本附录即落点；CONTEXT 半激活收口**不**在本票，属实现收口票。  
+8. **解锁**: 本票关单后 [spec: β+ 档3a Agent fresh validity_basis list 写侧（to-spec）](https://github.com/luxingjiang1993/FreshLatch/issues/148) 可领；本票不派生 ready-for-agent 实现偷跑。
+
+### A.5 工程手段总登记册（本附录增量）
+
+| 手段 | 原理 | 优势 | 代价 | 参考先例 | 本期处置 |
+|---|---|---|---|---|---|
+| 显式批迁 + ACCEPTANCE 勾残留 | 一次写齐形状 | 可检、无双读 | 实装票多一步 | ADR-0024 存量 | **触发（to-spec/实现）** |
+| 接线次序 A | 先闸形状后开写侧 | 假牙窗口最短 | 竖切多票 | 地图 #146 | **实装（竖切约束）** |
+| 独立 beta-plus-3a ACCEPTANCE | 写侧启用单独预锁 | 与 3b 分档 | 多一份证据树 | #144 先例 | **触发** |
+| UI 完整 list | 展示与闸同构 | 无展示假牙 | 文案略长 | — | **实装** |
+| runner 预构 + 闸只比 | 闸零补写 | 与 renew/ADR-0001 同构 | runner 多几行 | ADR-0006 | **实装** |
+| 入库指纹填 basis | 可溯、与 renew 同 | 套套面只在注入点 | 空指纹依赖既有负例 | renew | **实装** |
+| 新开 ADR-0026 | 工程拍板升格 | — | 噪音 | — | **弃** |
+| 改 ADR-0024「本批不实装」时态 | 文档省事 | — | 历史谎言 | — | **弃** |
+| 读时懒包 / 只展示首元 / 闸后写回 | 便宜 | — | 假牙或当次空转 | — | **弃** |
+
+### A.6 面试讲法
+
+**Q:方向都锁了，为什么还要再 grilling 一轮？**  
+A:ADR-0024 锁的是产品形状；迁移怎么跑、谁填 checksum、UI 是否露全 list，仍能做出假牙。工程子决策单独收口，避免 to-spec 作者自由发挥。
+
+**Q:为什么构造填入库指纹而不是现算？**  
+A:与 renew 同构：basis 记录「当时依据的指纹」，闸用独立现算比对。构造时现算填入再拿同一函数比对，容易滑成套套。
+
+**Q:这算不算 fresh checksum 已启用？**  
+A:不算。本附录只预登记工程口径；启用以实装 + ACCEPTANCE 勾选为准，且不得升格 latch 证明。
+
+**Q:为什么不新开 ADR？**  
+A:难反转的是 list 方向（已有 0024）。批迁触发和构造落点改起来便宜，不满足 ADR 三条件。
