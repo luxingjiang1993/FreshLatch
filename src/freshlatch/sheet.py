@@ -14,6 +14,7 @@ from typing import Any
 
 from freshlatch.latch import HumanLatch
 from freshlatch.models import Claim
+from freshlatch.reading_source import BYPASS_TEXT, MEMO_NOTE
 from freshlatch.store.base import RetrievalStore
 
 # 人审动作时间线文案(后端唯一生成;重跑文案走 HumanLatch.timeline_label)
@@ -30,6 +31,8 @@ def project_claim(store: RetrievalStore, claim: Claim) -> dict[str, Any]:
             "kind": "rerun",
             "evidence_id": None,
             "label": HumanLatch.timeline_label(t["verdict"], t["nth"]),
+            "override": None,
+            "machine_status_before": None,
         }
         for t in store.list_reruns(claim.claim_id)
     ]
@@ -41,6 +44,10 @@ def project_claim(store: RetrievalStore, claim: Claim) -> dict[str, Any]:
             "note": "",
             "evidence_id": e["evidence_id"],
             "label": LATCH_EVENT_LABELS.get(e["action"], e["action"]),
+            # override 是派生标签,可在时间线上观察;不表示模型变好
+            "override": e.get("override"),
+            "machine_status_before": e.get("machine_status_before"),
+            "run_id": e.get("run_id"),
         }
         for e in store.list_latch_events(claim.claim_id)
         if e["action"] != "rerun"
@@ -94,6 +101,18 @@ def _fmt_evidence_ids(proj: dict[str, Any]) -> str:
     return ", ".join(f"`{eid}`" for eid in ids) if ids else "(无)"
 
 
+def projections_with_override(projections: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """审计过滤:时间线含 override=true 的主张。
+
+    过滤只便于抽查人机对抗。结果不是模型变好,也不作 Override Rate 通过线。
+    """
+    kept: list[dict[str, Any]] = []
+    for proj in projections:
+        if any(ev.get("override") is True for ev in (proj.get("timeline") or [])):
+            kept.append(proj)
+    return kept
+
+
 def _fmt_timeline(proj: dict[str, Any]) -> list[str]:
     lines: list[str] = []
     for ev in proj.get("timeline") or []:
@@ -101,7 +120,10 @@ def _fmt_timeline(proj: dict[str, Any]) -> list[str]:
         ts = ev.get("ts") or ""
         eid = ev.get("evidence_id")
         note = ev.get("note") or ""
-        parts = [f"- {ts} · {label}".rstrip(" ·")]
+        line = f"- {ts} · {label}".rstrip(" ·")
+        if ev.get("override") is True:
+            line += " · override"
+        parts = [line]
         if eid:
             parts.append(f"  evidence_id: `{eid}`")
         if note:
@@ -146,6 +168,8 @@ def render_sheet_markdown(
     """全量复验单 Markdown。"""
     parts = [
         "# 复验单",
+        "",
+        BYPASS_TEXT,
         "",
         f"**问题**: {question or '(未提供)'}",
         "",
@@ -301,6 +325,8 @@ def render_client_memo_markdown(
         f"**生成时间**: {generated_at}",
         "",
         f"**{disclaimer}**",
+        "",
+        MEMO_NOTE,
         "",
         _render_client_memo_section("仍成立", held),
         _render_client_memo_section("已作废", voided),
