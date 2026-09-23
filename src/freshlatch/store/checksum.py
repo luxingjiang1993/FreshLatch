@@ -40,3 +40,27 @@ def make_checksum_fn(corpus_root: Path) -> Callable[[str, str], str | None]:
         return sha256_corpus_file(root, doc_id, as_of)
 
     return checksum_fn
+
+
+def counts_as_checksum_activation(
+    checksum_fn: Callable[[str, str], str | None],
+    *,
+    corpus_root: Path,
+    doc_id: str,
+    as_of: str,
+    store_column: str,
+    gate_green: bool,
+) -> bool:
+    """ATK-CS-02 套套哨兵:读库列的配置不得记为激活成功。
+
+    闸因 claimed 与返回值恒等而绿,只说明比对式成立,不说明 fn 在现算语料。
+    返回值等于库列且不等于当前语料文件 sha256 时记为套套,激活登记失败。
+    本函数不是「checksum 已证明 latch」,也不是统计结论。
+    """
+    file_now = sha256_corpus_file(corpus_root, doc_id, as_of)
+    returned = checksum_fn(doc_id, as_of)
+    if returned == store_column and returned != file_now:
+        return False
+    if not gate_green:
+        return False
+    return bool(file_now) and returned == file_now
