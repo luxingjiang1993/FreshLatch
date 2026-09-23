@@ -187,10 +187,12 @@ class Runner:
     def _finalize(self, claim: Claim, decision: ClaimDecision) -> None:
         """判定落档:Agent 不得拥有放行权——fresh/stale 必须过规则闸,闸打回落 unknown。
 
-        双判一致仲裁(ADR-0009 fresh 请求行 / ADR-0010 mark_stale 路径表,单一真相在
+        双判一致仲裁(ADR-0009 3×3 / ADR-0010 mark_stale 路径表,单一真相在
         gates/rule_gate.py 的 arbitrate_* 纯函数):fresh × Auditor stale → stale 落档;
-        fresh × unknown/缺席 → unknown;mark_stale × 维度异议 → unknown + 异议记录;
+        fresh × unknown/缺席 → unknown;Lead unknown × Auditor fresh → unknown + 异议;
+        Lead unknown × Auditor stale → stale(仍过闸);mark_stale × 维度异议 → unknown + 异议记录;
         mark_stale × Auditor fresh → stale + 异议记录。Auditor 无任何路径把状态改绿。
+        收口 seal_no_unfounded_fresh:无 Auditor / 未双判一致不得留下 fresh。
         """
         from freshlatch.gates.rule_gate import (
             ERR_DIMENSION_CROSSCHECK_MISMATCH,
@@ -198,7 +200,9 @@ class Runner:
             GateDecision,
             arbitrate_fresh,
             arbitrate_stale_mark,
+            arbitrate_unknown,
             rule_gate,
+            seal_no_unfounded_fresh,
         )
         claim.reason = decision.reason
         claim.t1_evidence_ids = decision.evidence_ids
@@ -220,6 +224,26 @@ class Runner:
             claim.reason = (f"[闸打回:{gate.error_code}] {gate.reason}; "
                             f"原理由: {reason_text}")
 
+        def _hang_stale_arbitration_dissent() -> None:
+            """stale 落档链的异议挂卡(ADR-0009 §3 / ADR-0010 / ADR-0011)。
+
+            闸因无关原因打回时语义异议照挂:status 已落 unknown,异议是给人审的合法输入。
+            """
+            _, dissent = arbitrate_stale_mark(decision.auditor_verdict,
+                                              decision.auditor_dimension_match)
+            if dissent:
+                claim.dissent = {"kind": "auditor_semantic",
+                                 "auditor_verdict": decision.auditor_verdict,
+                                 "reason": decision.auditor_reason,
+                                 "evidence_ids": list(decision.evidence_ids)}
+            elif gate.error_code == ERR_DIMENSION_CROSSCHECK_MISMATCH:
+                claim.dissent = {"kind": "mechanical_crosscheck",
+                                 "auditor_verdict": decision.auditor_verdict,
+                                 "reason": (f"[机械跨检] 登记维度 {claim.dimension} ≠ "
+                                            f"反证自标维度 {decision.stale_dimension}"
+                                            "(纯字符串比对,零模型意见;ADR-0011 不变量 8)"),
+                                 "evidence_ids": list(decision.evidence_ids)}
+
         if decision.status == "fresh":
             routed = arbitrate_fresh(decision.auditor_verdict)
             if routed == "fresh":
@@ -238,6 +262,7 @@ class Runner:
                     claim.reason = f"[Auditor 双判推翻 Lead fresh] {decision.auditor_reason}"
                 else:
                     _gate_back(decision.reason)
+                _hang_stale_arbitration_dissent()
             else:
                 claim.status = "unknown"
                 basis = (f"Auditor 判 {decision.auditor_verdict}" if decision.auditor_verdict
@@ -253,28 +278,14 @@ class Runner:
             # 异议记录(ADR-0009 §3 / ADR-0010):Auditor 反对 Lead 的 stale 时结构化挂卡。
             # 闸因无关原因(如元陈述)打回时异议照挂:status 已落 unknown,异议是给人审的
             # 合法输入(「机器拒了这条 stale,且 Auditor 认为主张仍成立」),两 ADR 均未禁止。
-            _, dissent = arbitrate_stale_mark(decision.auditor_verdict,
-                                              decision.auditor_dimension_match)
-            if dissent:
-                claim.dissent = {"kind": "auditor_semantic",
-                                 "auditor_verdict": decision.auditor_verdict,
-                                 "reason": decision.auditor_reason,
-                                 "evidence_ids": list(decision.evidence_ids)}
-            elif gate.error_code == ERR_DIMENSION_CROSSCHECK_MISMATCH:
-                # ADR-0011 不变量 8:机械跨检打回,异议 = 纯结构比对事实(零模型意见),
-                # 复用 arbitrate_stale_mark 异议形态(随黄卡进 HumanLatch)
-                claim.dissent = {"kind": "mechanical_crosscheck",
-                                 "auditor_verdict": decision.auditor_verdict,
-                                 "reason": (f"[机械跨检] 登记维度 {claim.dimension} ≠ "
-                                            f"反证自标维度 {decision.stale_dimension}"
-                                            "(纯字符串比对,零模型意见;ADR-0011 不变量 8)"),
-                                 "evidence_ids": list(decision.evidence_ids)}
-        else:
+            _hang_stale_arbitration_dissent()
+        elif decision.dimension_objection:
+            # ADR-0012:受理层维度预检打回后 Lead 未显式收口(soft_close 兜底
+            # 或未过双判),机械比对异议照挂——异议记录是黄卡进 HumanLatch 的
+            # 合法输入,不因拦截点上移而断供(登记维度值仍不披露)。
+            # 预检未受理的反证不得被 unknown 行仲裁改写成 stale。
             claim.status = "unknown"
-            if decision.dimension_objection and not claim.dissent:
-                # ADR-0012:受理层维度预检打回后 Lead 未显式收口(soft_close 兜底
-                # 或未过双判),机械比对异议照挂——异议记录是黄卡进 HumanLatch 的
-                # 合法输入,不因拦截点上移而断供(登记维度值仍不披露)。
+            if not claim.dissent:
                 obj = decision.dimension_objection
                 claim.dissent = {"kind": "mechanical_precheck",
                                  "auditor_verdict": decision.auditor_verdict,
@@ -283,6 +294,30 @@ class Runner:
                                             "(值不披露),mark_stale 未受理、零 Auditor 调用;"
                                             "Lead 未显式收口,路由 unknown"),
                                  "evidence_ids": list(obj.get("evidence_ids", []))}
+        else:
+            routed, need_dissent = arbitrate_unknown(decision.auditor_verdict)
+            if routed == "stale":
+                # 含 stale 落 stale;维度不符 / 缺反证由闸打回,不得放行 stale
+                stale_reason = decision.auditor_reason or decision.reason
+                gate = rule_gate(claim, _gate_decision("stale", stale_reason=stale_reason),
+                                 gate_ctx)
+                if gate.allowed:
+                    claim.status = "stale"
+                    claim.reason = (f"[含 stale 落 stale] Lead unknown × Auditor stale: "
+                                    f"{stale_reason}")
+                else:
+                    _gate_back(decision.reason)
+                _hang_stale_arbitration_dissent()
+            else:
+                claim.status = "unknown"
+                if need_dissent:
+                    claim.dissent = {"kind": "auditor_semantic",
+                                     "auditor_verdict": decision.auditor_verdict,
+                                     "reason": decision.auditor_reason,
+                                     "evidence_ids": list(decision.evidence_ids)}
+                    claim.reason = (f"[双判未一致] Lead unknown × Auditor fresh: "
+                                    f"{decision.auditor_reason or decision.reason}")
+        seal_no_unfounded_fresh(claim, decision.auditor_verdict)
         self.ctx.emit({"type": "claim_result", "claim_id": claim.claim_id,
                        "status": claim.status, "reason": claim.reason,
                        "auditor_verdict": decision.auditor_verdict})

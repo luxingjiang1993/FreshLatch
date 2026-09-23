@@ -94,6 +94,40 @@ def arbitrate_stale_mark(auditor_verdict: str | None,
     return "stale", False     # auditor unknown:含 stale 落 stale
 
 
+def arbitrate_unknown(auditor_verdict: str | None) -> tuple[str, bool]:
+    """ADR-0009 3×3 的 unknown 请求行。返回 (落档状态, 是否挂异议记录)。
+
+    Auditor fresh → unknown + 异议(Auditor 不得把 unknown 改绿);
+    Auditor stale → stale(含 stale 落 stale;runner 仍须过闸,维度不符不得放行);
+    Auditor unknown / 缺席 / 非法值 → unknown,不造异议。
+    """
+    if auditor_verdict == "fresh":
+        return "unknown", True
+    if auditor_verdict == "stale":
+        return "stale", False
+    return "unknown", False
+
+
+def seal_no_unfounded_fresh(claim: Claim, auditor_verdict: str | None) -> None:
+    """落档收口:fresh 仅保留双判一致且无异议的结果。
+
+    本轮 Auditor 判 fresh 时清除异议(ADR-0012 同维复验可以落绿,绿灯不携带异议)。
+    Auditor 缺席或未判 fresh 却已是 fresh → 打回 unknown;已有异议保留,收口可观察。
+    """
+    if claim.status != "fresh":
+        return
+    if auditor_verdict == "fresh":
+        claim.dissent = None
+        return
+    claim.status = "unknown"
+    if auditor_verdict is None:
+        claim.reason = ("[闸打回:AUDITOR_ABSENT] Auditor 缺席不构成任何绿格,"
+                        "不得无依据 fresh")
+    else:
+        claim.reason = (f"[闸打回:ARBITRATION_MISMATCH] Auditor 判 {auditor_verdict},"
+                        "不得无依据 fresh")
+
+
 def rule_gate(claim: Claim, decision: GateDecision, ctx: GateContext) -> GateResult:
     """任何 status=fresh/续命 的写都必须经过本函数。违例即打回并附结构化原因。
 
