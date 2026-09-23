@@ -134,7 +134,8 @@ def load_docket(path: str | Path) -> Docket:
 class Runner:
     def __init__(self, store: RetrievalStore, llm: LLMClient | None = None,
                  guardrails: Guardrails | None = None, *, mode: str = "online",
-                 decoding: DecodingParams | None = None) -> None:
+                 decoding: DecodingParams | None = None,
+                 checksum_fn=None) -> None:
         self.ctx = RunContext(
             store=store,
             guardrails=guardrails or Guardrails(),
@@ -144,6 +145,8 @@ class Runner:
         )
         self.llm = llm or LLMClient()
         self._trajectory_path: Path | None = None
+        # 跨轮腐烂 / renew 闸共用注入点(ADR-0025;#143):缺省 None = 未启用,不误杀
+        self._injected_checksum_fn = checksum_fn
         # 教义表接线(规格 T6 实装债,#21):skills/*.md 从盘到场,启动时加载一次,
         # 逐会话注入角色系统提示;加载失败为 None,角色侧回退内联人格并落 skill_fallback 事件。
         self._doctrine: dict[str, str | None] = {
@@ -163,9 +166,26 @@ class Runner:
                               auditor_doctrine=self._doctrine.get("freshness_audit"))
 
     def run(self, claims: list[Claim], *, trajectory_dir: str | Path = "reports/trajectories") -> RunResult:
+        from freshlatch.gates.basis_rot import apply_rot_if_mismatch
+
         decisions: dict[str, ClaimDecision] = {}
         steps_by_claim: dict[str, int] = {}
         for claim in claims:
+            # 档 3b:复验入口机械前置——fresh∧basis 不符则掉灯,本轮不进 Lead
+            rot = apply_rot_if_mismatch(self.ctx.store, claim, self._checksum_fn)
+            if rot.outcome == "applied":
+                decision = ClaimDecision(
+                    claim_id=claim.claim_id,
+                    status="unknown",
+                    reason=claim.reason,
+                    evidence_ids=list(claim.t1_evidence_ids),
+                )
+                decisions[claim.claim_id] = decision
+                steps_by_claim[claim.claim_id] = 0
+                self.ctx.emit({"type": "claim_result", "claim_id": claim.claim_id,
+                               "status": claim.status, "reason": claim.reason,
+                               "auditor_verdict": None, "basis_rot": True})
+                continue
             lead = self._spawn_lead(claim)
             decision = lead.run()
             decisions[claim.claim_id] = decision
@@ -323,7 +343,9 @@ class Runner:
                        "auditor_verdict": decision.auditor_verdict})
 
     def _checksum_fn(self, doc_id: str, as_of: AsOf) -> str | None:
-        """checksum 三处留位本期为空:documents 表 checksum 列默认 '',视为未启用。"""
+        """checksum 注入点:有注入则用语料现算 fn;否则 None=未启用(不误杀)。"""
+        if self._injected_checksum_fn is not None:
+            return self._injected_checksum_fn(doc_id, as_of)
         return None
 
     def _dump_trajectory(self, claims: list[Claim], decisions: dict[str, ClaimDecision]) -> None:

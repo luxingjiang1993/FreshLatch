@@ -211,10 +211,13 @@ class HumanLatch:
         return f"重跑后仍红(第 {nth} 次)"
 
     def _default_reverify(self, claim: Claim) -> tuple[str, str]:
-        """真主链迷你复验:Lead 裸循环 + 规则闸(Runner._finalize)。"""
+        """真主链迷你复验:Lead 裸循环 + 规则闸(Runner._finalize)。
+
+        注入与续命链同一 checksum_fn,使档 3b 跨轮腐烂前置在迷你复验入口生效。
+        """
         from freshlatch.runner import Runner  # 延迟导入避免环
 
-        runner = Runner(self.store)
+        runner = Runner(self.store, checksum_fn=self._checksum_fn)
         result = runner.run([claim])
         lead_decision = result.decisions[claim.claim_id]
         note = ""
