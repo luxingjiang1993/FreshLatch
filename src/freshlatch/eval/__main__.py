@@ -19,8 +19,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
 from freshlatch.eval.control import run_control, run_control_c  # noqa: E402
 from freshlatch.eval.report import console_summary, render_report, write_outputs  # noqa: E402
-from freshlatch.eval.runner import DEFAULT_DISTRACTOR_DOCKET, run_gold  # noqa: E402
+from freshlatch.eval.runner import run_gold  # noqa: E402
 from freshlatch.llm import DecodingParams  # noqa: E402
+from freshlatch.packs import PackPaths, resolve_pack  # noqa: E402
 from freshlatch.store.sqlite_store import SQLiteStore  # noqa: E402
 
 
@@ -29,14 +30,16 @@ def _decoding(args: argparse.Namespace) -> DecodingParams:
                           seed=args.seed if args.seed is not None else None)
 
 
-def main() -> None:
+def build_parser(pack: PackPaths | None = None) -> argparse.ArgumentParser:
+    """默认 gold/docket/db 走 active_pack,避免入口再硬编码第二套路径。"""
+    pack = resolve_pack() if pack is None else pack
     ap = argparse.ArgumentParser(prog="freshlatch.eval", description="评测 harness(§4)")
     sub = ap.add_subparsers(dest="cmd", required=True)
 
     def common(p: argparse.ArgumentParser) -> None:
-        p.add_argument("--gold", default="data/eval/gold.json")
-        p.add_argument("--docket", default="data/t0_docket.json")
-        p.add_argument("--db", default="data/freshlatch.db")
+        p.add_argument("--gold", default=str(pack.gold))
+        p.add_argument("--docket", default=str(pack.docket))
+        p.add_argument("--db", default=str(pack.sqlite))
         p.add_argument("--temperature", type=float, default=0.0)
         p.add_argument("--seed", type=int, default=None)
         p.add_argument("--out", default="reports")
@@ -45,20 +48,25 @@ def main() -> None:
     common(p_run)
     p_run.add_argument("--runs", type=int, default=1, help="每条主张跑 N 遍(§4.4,默认 1)")
     p_run.add_argument("--trajectory-dir", default="reports/trajectories")
+    p_run.add_argument("--distractor-docket", default=str(pack.distractor_docket))
 
     p_ctrl = sub.add_parser("control", help="无工具假绿对照(旧仪器)")
     common(p_ctrl)
-    p_ctrl.add_argument("--distractor-docket", default=DEFAULT_DISTRACTOR_DOCKET)
+    p_ctrl.add_argument("--distractor-docket", default=str(pack.distractor_docket))
 
     p_ctrl_c = sub.add_parser("control-c", help="假绿仪器 C(并行 CONTROL_PROMPT_C)")
     common(p_ctrl_c)
-    p_ctrl_c.add_argument("--distractor-docket", default=DEFAULT_DISTRACTOR_DOCKET)
+    p_ctrl_c.add_argument("--distractor-docket", default=str(pack.distractor_docket))
 
     p_rep = sub.add_parser("report", help="从 raw JSON 重渲染 markdown")
     p_rep.add_argument("raw_json")
     p_rep.add_argument("--out", default="reports")
 
-    args = ap.parse_args()
+    return ap
+
+
+def main() -> None:
+    args = build_parser().parse_args()
 
     if args.cmd == "report":
         raw = json.loads(Path(args.raw_json).read_text(encoding="utf-8"))
@@ -69,7 +77,8 @@ def main() -> None:
     if args.cmd == "run":
         raw = run_gold(store, None, gold_path=args.gold, docket_path=args.docket,
                        runs=args.runs, decoding=_decoding(args),
-                       trajectory_dir=args.trajectory_dir)
+                       trajectory_dir=args.trajectory_dir,
+                       distractor_docket_path=args.distractor_docket)
     elif args.cmd == "control-c":
         raw = run_control_c(store, None, gold_path=args.gold, docket_path=args.docket,
                             decoding=_decoding(args),

@@ -18,6 +18,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
 from freshlatch.claim_import import ClaimImportError, parse_claim_import_draft  # noqa: E402
 from freshlatch.guardrails import Guardrails  # noqa: E402
+from freshlatch.packs import PackPaths, resolve_pack  # noqa: E402
 from freshlatch.latch import HumanLatch, HumanLatchError  # noqa: E402
 from freshlatch.runner import RunContext, Runner, load_docket  # noqa: E402
 from freshlatch.sheet import project_claim  # noqa: E402
@@ -27,6 +28,7 @@ from freshlatch.store.sqlite_store import SQLiteStore  # noqa: E402
 from freshlatch.t1_source import T1SourceSession  # noqa: E402
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent.parent
+# 占位与切换前第一课题路径一致;import 末尾 bind_active_pack 按 active_pack 覆盖
 CORPUS = REPO_ROOT / "data" / "corpus"
 DEMO_DOCKET = REPO_ROOT / "data" / "t0_docket.json"
 CHECKPOINTS = REPO_ROOT / "data" / "checkpoints.db"
@@ -59,6 +61,22 @@ _state: dict = {"claims": [], "question": "", "trajectory": None, "running": Fal
                 "run_ctx": None,
                 "retrieve_zero_hits": []}  # DEM-5:本轮 retrieve 空命中;仅提示,不改写判定
 _t1: T1SourceSession | None = None
+ACTIVE_PACK: PackPaths
+
+
+def bind_active_pack(pack_id: str | None = None) -> PackPaths:
+    """把 UI 路径钉到 active_pack 解析结果。显式 pack_id 供测试切换,不改闸。"""
+    global CORPUS, DEMO_DOCKET, CHECKPOINTS, ACTIVE_PACK, _t1
+    pack = resolve_pack(pack_id)
+    ACTIVE_PACK = pack
+    CORPUS = pack.corpus
+    DEMO_DOCKET = pack.docket
+    CHECKPOINTS = pack.checkpoints
+    _t1 = None
+    return pack
+
+
+bind_active_pack()
 
 
 def _budget_from_ctx(ctx: RunContext) -> dict:
@@ -80,7 +98,19 @@ def _current_budget() -> dict:
 
 
 def _store() -> SQLiteStore:
-    return SQLiteStore(REPO_ROOT / "data" / "freshlatch.db")
+    return SQLiteStore(ACTIVE_PACK.sqlite)
+
+
+def _pack_payload() -> dict:
+    """只读展示当前包。问题句优先用本会话已导入的 docket。"""
+    pack = ACTIVE_PACK
+    question = _state["question"] or pack.question
+    return {
+        "pack_id": pack.pack_id,
+        "label": pack.label,
+        "synthetic": pack.synthetic,
+        "question": question,
+    }
 
 
 def _t1_session() -> T1SourceSession:
@@ -121,6 +151,7 @@ def api_claims() -> dict:
         # DEM-5:零命中告警投影;UI 只展示,不得据此改写 status
         "retrieve_zero_hits": list(_state.get("retrieve_zero_hits") or []),
         "budget": _current_budget(),  # DEM-4:复验中/完成后可见
+        "pack": _pack_payload(),
     }
 
 
@@ -129,7 +160,7 @@ def api_import() -> dict:
     """JSON docket 高级入口(Workflow):只读 statement 与 t0_evidence_ids,不做新调查。"""
     docket = load_docket(DEMO_DOCKET)
     _state["claims"] = docket.claims
-    _state["question"] = docket.question  # 单一真相:data/t0_docket.json
+    _state["question"] = docket.question  # 单一真相:当前课题包 docket
     _state["latch"] = dict(EMPTY_LATCH)
     return {"imported": len(docket.claims)}
 
@@ -367,6 +398,10 @@ HTML_PAGE = """<!DOCTYPE html>
               border-radius:6px;padding:10px 14px;font-size:13px;color:#57606a}
  #audit-panel.visible{display:block}
  #audit-panel code{word-break:break-all}
+ #how-to-read{margin:0 16px 10px;background:#fff;border:1px solid #d0d7de;border-radius:6px;
+              padding:8px 12px;font-size:13px;color:#57606a}
+ #how-to-read strong{color:#0a2540}
+ #audit-override-filter{display:block;margin-top:8px}
  details{margin-top:12px;background:#fff;border:1px solid #d0d7de;border-radius:6px;padding:8px 12px}
  code{background:#eff1f3;padding:1px 5px;border-radius:4px}
  .timeline{font-size:12px;color:#57606a;margin-top:6px;border-top:1px dashed #d0d7de;padding-top:4px}
@@ -421,6 +456,7 @@ HTML_PAGE = """<!DOCTYPE html>
 <header>
  <strong>FreshLatch 复验单</strong>
  <span class="syn">SYNTHETIC · 合成语料,非真实客户数据</span>
+ <span id="pack-badge" class="syn"></span>
  <span class="view-toggle" role="group" aria-label="视图密度">
   <button type="button" id="view-craftsman" class="on" onclick="setViewMode(&quot;craftsman&quot;)">职人视图</button>
   <button type="button" id="view-audit" onclick="setViewMode(&quot;audit&quot;)">审计视图</button>
@@ -446,7 +482,15 @@ HTML_PAGE = """<!DOCTYPE html>
 <div id="audit-panel" aria-live="polite">
  <b>审计视图</b> · Lead / Critic 工具轨迹与工程角色信息(排障/面试用;不改变作废·续命·闸语义)
  <div id="audit-body" style="margin-top:6px">尚无本轮轨迹。完成复验后此处显示轨迹路径与解码参数。</div>
+ <label id="audit-override-filter">
+  <input type="checkbox" id="filter-override" onchange="renderClaims()">
+  只看 override=true(人对抗落档前机器判定;不是模型变好,不作通过线)
+ </label>
 </div>
+<aside id="how-to-read">
+ <strong>如何读</strong>
+ <p>如何读本复验单:【身份】卖作废。【机器】fresh/stale/unknown 是机器判定。【人】void 是人的决定,void≠stale。【边界】非法律意见、非自动决策。</p>
+</aside>
 <main>
  <section id="claims"><p style="color:#57606a">加载中……</p></section>
  <section id="pane"><p style="color:#57606a">← 点击主张的证据 id,这里显示 T0/T1 原文并高亮锚点段落</p></section>
@@ -520,6 +564,7 @@ function setViewMode(mode){
   document.getElementById("view-craftsman").classList.toggle("on", VIEW_MODE === "craftsman");
   document.getElementById("view-audit").classList.toggle("on", VIEW_MODE === "audit");
   renderViewChrome();
+  renderClaims();  // 切出审计时清掉 override 过滤后的卡片子集,只改呈现
   // 切回职人时收起状态栏工程细节;有本轮结果则按密度重写短状态
   if(STATE.trajectory){
     document.getElementById("status").textContent =
@@ -737,8 +782,24 @@ function renderBanner(){
      + '<button onclick="submitDecisions(true)">全部搁置,结束本轮</button></div></div>';
   el.innerHTML = h;
 }
+function renderPackBadge(){
+  const el = document.getElementById('pack-badge');
+  if(!el) return;
+  const p = STATE.pack || {};
+  const bits = [];
+  if(p.pack_id) bits.push(p.pack_id);
+  if(p.label) bits.push(p.label);
+  if(p.synthetic) bits.push('synthetic');
+  el.textContent = bits.join(' · ');
+}
+function overrideFilterOn(){
+  const box = document.getElementById('filter-override');
+  return VIEW_MODE === 'audit' && !!(box && box.checked);
+}
 function renderClaims(){
+  renderPackBadge();
   const el = document.getElementById('claims');
+  if(!el) return;
   let h = '<div id="import-panel" class="'+(IMPORT_PANEL_OPEN?'open':'')+'">'
         + '<b>主张导入稿</b>'
         + '<div class="hint">每条以 <code>## claim_id</code> 起头、其后正文一段;'
@@ -756,6 +817,7 @@ function renderClaims(){
   h += '<h3 style="margin:4px 0 10px">主张复验单 <span style="font-weight:400;font-size:13px;color:#57606a">'
         + esc(STATE.question||'') + '</span></h3>';
   for(const c of STATE.claims){
+    if(overrideFilterOn() && !(c.timeline||[]).some(t => t.override === true)) continue;
     const [label,color] = BADGE[c.status] || BADGE.unknown;
     h += '<div class="claim'+(c.voided?' voided':'')+'" id="c-'+c.claim_id+'" style="border-left-color:'+color+'" '
        + 'onclick="pickClaim(&quot;'+c.claim_id+'&quot;)">'
@@ -787,6 +849,7 @@ function renderClaims(){
       h += '<div class="timeline">';
       for(const t of c.timeline){
         h += '<div>· '+esc(t.ts)+' '+esc(t.label)
+           + (t.override===true?' · override':'')
            + (t.evidence_id?(' · 依据 <code>'+esc(t.evidence_id)+'</code>'):'')
            + (t.note?(' — '+esc(t.note)):'')
            + (t.thread_id?(' <code>'+esc(t.thread_id)+'</code>'):'')+'</div>';

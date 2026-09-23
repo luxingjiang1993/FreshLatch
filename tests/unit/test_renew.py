@@ -408,6 +408,243 @@ def test_renew_evidence_anchored_t0_rejected_by_gate(tmp_path):
     assert claims[0].status == "stale"
 
 
+# -- #117 交界与边界:可观察回归(仍走 HumanLatch renew 主缝) ---------------------------
+
+# 预锁句(#99 评估 §4.6)。改句 = 本批交界验收作废。不得升格为 latch 证明。
+JUNCTION_LOCKED = (
+    "Batch 2 renew 交界：格式→点回→闸（含 checksum）→仅绿后写 `validity_basis`/转绿；"
+    "失败零写且 `error_code`+短中文透传；不启用跨轮重检；"
+    "不得升格为 checksum 证明 latch / 商业裁决。"
+)
+
+# 失败 detail 禁止的商业裁决 / Agent 自绿话术(交界评估 §4.3)
+_BANNED_DETAIL = (
+    "建议作废",
+    "主张已死",
+    "该出局",
+    "Agent",
+    "机器改判",
+    "已证明",
+)
+
+# fresh 半边允许出现 validity_basis 的模块:字段、续命写入、闸比对、导出投影。
+# runner / 角色 / 工具 / UI 不在此列 = 不构造 basis(结构性空转,档 3a OUT)。
+_BASIS_ALLOWED = {
+    "models.py",
+    "sheet.py",
+    "gates/human_latch.py",
+    "gates/rule_gate.py",
+}
+
+
+def _has_cjk(text: str) -> bool:
+    return any("\u4e00" <= ch <= "\u9fff" for ch in text)
+
+
+def _assert_short_zh_detail(result: dict) -> None:
+    """error_code + 短中文 detail 透传;不是商业裁决。"""
+    code = result["error_code"]
+    detail = result["detail"]
+    assert code and code.replace("_", "").isalnum() and code == code.upper()
+    assert detail and "\n" not in detail and len(detail) <= 400
+    assert _has_cjk(detail)
+    for bad in _BANNED_DETAIL:
+        assert bad not in detail, detail
+
+
+def _renew_fields(claim: Claim) -> tuple:
+    return (
+        claim.status,
+        claim.validity_basis,
+        claim.last_confirmed_at,
+        tuple(claim.t1_evidence_ids),
+        claim.reason,
+    )
+
+
+def _submit_renew(latch: HumanLatch, claim: Claim, evidence_id: str, ts: str) -> dict:
+    rnd = latch.enter_round([claim], ts=ts)
+    assert rnd.thread_id, ts
+    results = latch.decide(rnd.thread_id, [{"claim_id": claim.claim_id, "action": "renew",
+                                            "evidence_id": evidence_id}])
+    assert len(results) == 1
+    return results[0]
+
+
+def test_batch2_junction_order_zero_write_then_green(tmp_path):
+    """#117:格式→点回→闸→仅绿后写;失败零写且 error_code+短中文透传。
+
+    checksum_fn 调用次数钉次序:格式/点回失败时闸不得先跑。
+    不得升格为「checksum 已证明 latch」。不做档 3a/3b。零 LLM。
+    """
+    from freshlatch.store.checksum import make_checksum_fn, sha256_hex
+    from freshlatch.store.ingest import ingest_into
+
+    corpus = tmp_path / "corpus"
+    (corpus / "t1").mkdir(parents=True)
+    (corpus / "t0").mkdir(parents=True)
+    path = corpus / "t1" / f"{DOC}.md"
+    raw = (
+        f"---\ndoc_id: {DOC}\nas_of: T1\nsource_type: competitor\n"
+        f"title: 竞品笔记\nchecksum:\n---\n\n## p2\n"
+        f"T1:竞品客单价仍显著高于我们。\n"
+    ).encode("utf-8")
+    path.write_bytes(raw)
+
+    store = SQLiteStore(tmp_path / "j117.db")
+    assert ingest_into(store, corpus) >= 1
+    recorded = sha256_hex(raw)
+    chunk = store.get_chunk(DOC, "p2", as_of="T1")
+    assert chunk is not None and chunk.checksum == recorded
+
+    calls: list[tuple[str, str]] = []
+    prod = make_checksum_fn(corpus)
+
+    def counting(doc_id, as_of):
+        calls.append((doc_id, as_of))
+        return prod(doc_id, as_of)
+
+    claim = make_claim()
+    # 历史 basis 只是字段残留;失败不得改它,本批也不拿它做跨轮降级
+    claim.validity_basis = {"doc_id": "hist-doc", "checksum": "old-round"}
+    before = _renew_fields(claim)
+    latch = make_latch(store, tmp_path, checksum_fn=counting)
+
+    malformed = _submit_renew(latch, claim, "not-an-evidence-id", "20260923-117001")
+    assert malformed["ok"] is False
+    assert malformed["error_code"] == RENEW_EVIDENCE_MALFORMED
+    _assert_short_zh_detail(malformed)
+    assert calls == []
+    assert _renew_fields(claim) == before
+    assert latch_actions(store) == []
+
+    unresolved = _submit_renew(latch, claim, "t0-ghost#p9@T1", "20260923-117002")
+    assert unresolved["ok"] is False
+    assert unresolved["error_code"] == RENEW_EVIDENCE_UNRESOLVED
+    _assert_short_zh_detail(unresolved)
+    assert calls == []  # 点回失败,闸(含 checksum)尚未执行
+    assert _renew_fields(claim) == before
+    assert latch_actions(store) == []
+
+    path.write_bytes(raw + b"\nTAMPER-JUNCTION\n")
+    mismatch = _submit_renew(latch, claim, EID, "20260923-117003")
+    assert mismatch["ok"] is False
+    assert mismatch["error_code"] == "CHECKSUM_MISMATCH"
+    _assert_short_zh_detail(mismatch)
+    assert "对不上" in mismatch["detail"]
+    assert calls == [(DOC, "T1")]
+    assert _renew_fields(claim) == before
+    assert claim.status == "stale"
+    assert latch_actions(store) == []
+
+    path.write_bytes(raw)
+    ok = _submit_renew(latch, claim, EID, "20260923-117004")
+    assert ok["ok"] is True, ok
+    assert ok["error_code"] is None
+    assert _has_cjk(ok["detail"])
+    for bad in _BANNED_DETAIL:
+        assert bad not in ok["detail"]
+    assert claim.status == "fresh"
+    assert claim.validity_basis == {"doc_id": DOC, "checksum": recorded}
+    assert claim.last_confirmed_at
+    assert EID in claim.t1_evidence_ids
+    assert latch_actions(store) == [("renew", EID, "human")]
+    assert calls == [(DOC, "T1"), (DOC, "T1")]
+
+
+def test_batch2_no_cross_round_recheck_after_green(tmp_path):
+    """#117:不启用跨轮重检。续命转绿后篡改语料,再进轮不得自动降级。
+
+    档 3b 留 #111,本测试只观察缺席。不得升格为 latch 证明。零 LLM。
+    """
+    from freshlatch.store.checksum import make_checksum_fn, sha256_hex
+    from freshlatch.store.ingest import ingest_into
+
+    corpus = tmp_path / "corpus"
+    (corpus / "t1").mkdir(parents=True)
+    (corpus / "t0").mkdir(parents=True)
+    path = corpus / "t1" / f"{DOC}.md"
+    raw = (
+        f"---\ndoc_id: {DOC}\nas_of: T1\nsource_type: competitor\n"
+        f"title: 竞品笔记\nchecksum:\n---\n\n## p2\n"
+        f"T1:竞品客单价仍显著高于我们。\n"
+    ).encode("utf-8")
+    path.write_bytes(raw)
+    store = SQLiteStore(tmp_path / "j117b.db")
+    assert ingest_into(store, corpus) >= 1
+    recorded = sha256_hex(raw)
+
+    claim = make_claim()
+    latch = make_latch(store, tmp_path, checksum_fn=make_checksum_fn(corpus))
+    ok = _submit_renew(latch, claim, EID, "20260923-117010")
+    assert ok["ok"] is True, ok
+    basis = {"doc_id": DOC, "checksum": recorded}
+    assert claim.validity_basis == basis
+    assert claim.status == "fresh"
+
+    path.write_bytes(raw + b"\nTAMPER-NO-CROSS-ROUND\n")
+    again = latch.enter_round([claim], ts="20260923-117011")
+    assert again.thread_id is None  # 已绿,不进待审,也不重读历史 basis
+    assert claim.status == "fresh"
+    assert claim.validity_basis == basis
+    assert latch_actions(store) == [("renew", EID, "human")]
+
+    public = [n for n in dir(HumanLatch) if not n.startswith("_")]
+    assert not any("recheck" in n or "rot" in n or "downgrade" in n for n in public)
+
+
+def test_batch2_boundary_note_fresh_idle_and_atk_refs():
+    """#117:验收注记可核对;fresh 不构造 validity_basis;ATK-CS-01..04 在本模块可引用。
+
+    不新开 runner 行为缝:fresh 空转用源码允许集钉死。档 3a/3b 未实现。
+    """
+    from pathlib import Path
+
+    repo = Path(__file__).resolve().parents[2]
+    note = (repo / "docs/evidence/batch2/junction-acceptance.md").read_text(encoding="utf-8")
+    assert JUNCTION_LOCKED in note.replace("**", "")
+    assert "结构性空转" in note
+    assert "不构造" in note and "validity_basis" in note
+    assert "不启用跨轮重检" in note
+    assert "data/eval/gold.json" in note
+    for atk in ("ATK-CS-01", "ATK-CS-02", "ATK-CS-03", "ATK-CS-04"):
+        assert atk in note
+    assert "3a" in note and "3b" in note
+    # 注记可以写「不得升格」,不得把升格句当成结论标题
+    assert "checksum 已证明 latch" not in note
+
+    import tests.unit.test_renew as renew_mod
+
+    for name in (
+        "test_atk_cs_01_tamper_corpus_renew_checksum_mismatch_zero_write",
+        "test_atk_cs_02_store_column_fn_not_activation_success",
+        "test_atk_cs_03_empty_claimed_nonzero_actual_blocks_write",
+        "test_atk_cs_04_renew_with_corpus_sha256_writes_basis",
+    ):
+        assert callable(getattr(renew_mod, name))
+
+    src = repo / "src/freshlatch"
+    hits = sorted(
+        p.relative_to(src).as_posix()
+        for p in src.rglob("*.py")
+        if "validity_basis" in p.read_text(encoding="utf-8")
+    )
+    assert set(hits) <= _BASIS_ALLOWED
+    assert "runner.py" not in hits
+    assert "roles/lead.py" not in hits
+    assert "tools.py" not in hits
+
+    runner_src = (src / "runner.py").read_text(encoding="utf-8")
+    start = runner_src.index("def _checksum_fn")
+    body = runner_src[start:]
+    nxt = body.find("\n    def ")
+    body = body[:nxt] if nxt != -1 else body
+    assert "return None" in body
+    assert "sha256" not in body
+    assert "get_chunk" not in body
+    assert "validity_basis" not in body
+
+
 # -- 红线:Agent 侧工具链无续命入口 ----------------------------------------------------
 
 

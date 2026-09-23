@@ -1,4 +1,7 @@
-"""ingestion 脚本:python scripts/ingest_corpus.py [--corpus data/corpus] [--db data/freshlatch.db]"""
+"""ingestion 脚本:python scripts/ingest_corpus.py [--corpus ...] [--db ...]
+
+默认路径来自 active_pack(未设置环境变量时为第一课题)。
+"""
 
 from __future__ import annotations
 
@@ -8,15 +11,21 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
+from freshlatch.packs import resolve_pack  # noqa: E402
 from freshlatch.store.ingest import ingest_into  # noqa: E402
 from freshlatch.store.sqlite_store import SQLiteStore  # noqa: E402
 
 
-def main() -> None:
+def build_parser() -> argparse.ArgumentParser:
+    pack = resolve_pack()
     ap = argparse.ArgumentParser()
-    ap.add_argument("--corpus", default="data/corpus")
-    ap.add_argument("--db", default="data/freshlatch.db")
-    args = ap.parse_args()
+    ap.add_argument("--corpus", default=str(pack.corpus))
+    ap.add_argument("--db", default=str(pack.sqlite))
+    return ap
+
+
+def main() -> None:
+    args = build_parser().parse_args()
 
     store = SQLiteStore(args.db)
     n = ingest_into(store, Path(args.corpus))
