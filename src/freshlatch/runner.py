@@ -96,7 +96,7 @@ class RunContext:
             return RETRIEVAL_EXHAUSTED
         self.retrieval_used += 1
         requested = self._active_retrieval_mode()
-        if requested in {"dense", "bm25_fallback"}:
+        if requested in {"dense", "hybrid", "bm25_fallback"}:
             self.store.bind_eval_retrieval_mode(requested)
         else:
             self.store.bind_eval_retrieval_mode(None)

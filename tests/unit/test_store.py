@@ -146,7 +146,7 @@ def test_production_cannot_force_retrieval_mode(memory_store):
 
     eval_ctx = RunContext(store=memory_store, mode="eval")
     with pytest.raises(ValueError):
-        eval_ctx.arm_eval_retrieval_mode("hybrid")
+        eval_ctx.arm_eval_retrieval_mode("hybrid+rerank")
 
 
 def test_retrieve_baseline_smoke(tmp_path):

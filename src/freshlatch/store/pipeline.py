@@ -71,8 +71,39 @@ def rank_dense(query_vec: list[float], pool: list[Chunk], *, top_k: int) -> list
     return [chunk for _score, _i, chunk in scored[:top_k]]
 
 
+# 预登记:RRF 常数取 Cormack 常用值,不按本轮指标回改。生产默认不走这条融合。
+RRF_K = 60
+
+
+def rrf_fuse(
+    left: list[Chunk],
+    right: list[Chunk],
+    *,
+    k: int = RRF_K,
+    top_k: int = 10,
+) -> list[Chunk]:
+    """名次倒数融合。不把两路分数做 α 加权。rank 从 1 起。"""
+    from freshlatch.store.base import chunk_evidence_id
+
+    scores: dict[str, float] = {}
+    seen: dict[str, Chunk] = {}
+    first_seen: dict[str, int] = {}
+    order = 0
+    for ranked in (left, right):
+        for rank, chunk in enumerate(ranked, start=1):
+            eid = chunk_evidence_id(chunk)
+            if eid not in seen:
+                seen[eid] = chunk
+                first_seen[eid] = order
+                order += 1
+                scores[eid] = 0.0
+            scores[eid] += 1.0 / (k + rank)
+    ranked_ids = sorted(scores, key=lambda eid: (-scores[eid], first_seen[eid]))
+    return [seen[eid] for eid in ranked_ids[:top_k]]
+
+
 def stage_vector_fuse(chunks: list[Chunk], *, top_k: int) -> list[Chunk]:
-    """第 2 级:生产默认仍透传。dense 臂走 rank_dense,不在这里把 BM25 结果改标成 dense。"""
+    """第 2 级:生产默认仍透传。dense 臂走 rank_dense,hybrid 臂走 rrf_fuse。"""
     return chunks[:top_k]
 
 

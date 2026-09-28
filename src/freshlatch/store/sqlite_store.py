@@ -222,7 +222,7 @@ class SQLiteStore(RetrievalStore):
         with self._conn() as conn:
             rows = conn.execute(sql, params).fetchall()
         pool = [self._row_to_chunk(r) for r in rows]
-        from freshlatch.store.pipeline import rank_dense, recall_bm25
+        from freshlatch.store.pipeline import RRF_K, rank_dense, recall_bm25, rrf_fuse
 
         requested = self._requested_retrieval_mode()
         if requested == "dense":
@@ -233,6 +233,16 @@ class SQLiteStore(RetrievalStore):
                 return recall_bm25(query, pool, top_k=top_k)
             self.last_retrieval_mode = "dense"
             return ranked
+        if requested == "hybrid":
+            depth = max(top_k, len(pool))
+            lexical = recall_bm25(query, pool, top_k=depth)
+            query_vec = self._embed_query(query)
+            dense = rank_dense(query_vec, pool, top_k=depth) if query_vec else None
+            if dense is None:
+                self.last_retrieval_mode = "bm25_fallback"
+                return recall_bm25(query, pool, top_k=top_k)
+            self.last_retrieval_mode = "hybrid"
+            return rrf_fuse(lexical, dense, k=RRF_K, top_k=top_k)
         if requested == "bm25_fallback":
             self.last_retrieval_mode = "bm25_fallback"
             return recall_bm25(query, pool, top_k=top_k)

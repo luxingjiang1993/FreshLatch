@@ -386,3 +386,141 @@ def run_transform_compare(
         "llm": _mean(llm_scores),
         "llm_record": record,
     }
+
+
+# 预登记(#162):确定性 BM25 相对已落档 A0 Recall@10 容差为 0。低于基线即 fail。
+A0_BM25_RECALL_TOLERANCE = 0.0
+
+
+def arm_pass_line(*, bm25: float, dense: float, hybrid: float, a0: float) -> dict:
+    """hybrid 不得低于两臂较差者;BM25 不得低于 A0。"""
+    bm25_ok = bm25 + 1e-9 >= a0 - A0_BM25_RECALL_TOLERANCE
+    hybrid_ok = hybrid + 1e-9 >= min(bm25, dense)
+    return {
+        "bm25_vs_a0": "pass" if bm25_ok else "fail",
+        "hybrid_vs_min": "pass" if hybrid_ok else "fail",
+        "pass": bm25_ok and hybrid_ok,
+    }
+
+
+def _load_a0_recall10(path: Path) -> float:
+    raw = _load_json(path)
+    return float(raw["metrics"]["recall"]["10"])
+
+
+def _attach_vecs(store: InMemoryStore, db_path: Path) -> int:
+    import sqlite3
+
+    conn = sqlite3.connect(db_path)
+    conn.row_factory = sqlite3.Row
+    try:
+        rows = conn.execute(
+            "SELECT doc_id, clause_id, as_of, vec FROM chunks"
+        ).fetchall()
+    finally:
+        conn.close()
+    index = {
+        (row["doc_id"], row["clause_id"], row["as_of"]): row["vec"]
+        for row in rows
+        if row["vec"]
+    }
+    attached = 0
+    for chunk in store._chunks:
+        vec = index.get((chunk.doc_id, chunk.clause_id, chunk.as_of))
+        if vec:
+            chunk.vec = vec
+            attached += 1
+    return attached
+
+
+def _cached_query_embedder(queries: list[str]):
+    from freshlatch.store.embeddings import embed_texts
+
+    cache: dict[str, list[float]] = {}
+    pending = [q for q in queries if q not in cache]
+    batch = 8
+    for start in range(0, len(pending), batch):
+        chunk = pending[start:start + batch]
+        vectors = embed_texts(chunk)
+        for text, vec in zip(chunk, vectors):
+            cache[text] = vec
+
+    def embed(query: str) -> list[float]:
+        return cache[query]
+
+    return embed
+
+
+def run_arm_compare(
+    *,
+    corpus: Path,
+    retrieve_gold_path: Path,
+    dense_db: Path,
+    a0_baseline_path: Path,
+    out_dir: Path,
+) -> dict:
+    """同语料同 query 的 BM25 / dense / hybrid 三列。不用 α 加权。"""
+    from freshlatch.store.pipeline import RRF_K
+
+    retrieve_gold = _load_json(retrieve_gold_path)
+    store = InMemoryStore()
+    ingest_into(store, corpus)
+    attached = _attach_vecs(store, dense_db)
+    if attached != len(store._chunks) or attached == 0:
+        raise ValueError("dense 索引未覆盖全部 chunk,拒绝把降级结果写成 dense/hybrid")
+    store.query_embedder = _cached_query_embedder(
+        [row["query"] for row in retrieve_gold["queries"]]
+    )
+    columns = {"bm25": [], "dense": [], "hybrid": []}
+    modes_seen = {"dense": set(), "hybrid": set()}
+    for row in retrieve_gold["queries"]:
+        for mode in ("bm25", "dense", "hybrid"):
+            store.bind_eval_retrieval_mode(mode if mode != "bm25" else None)
+            hits = store.retrieve(row["query"], as_of=row["as_of"], top_k=10)
+            got = getattr(store, "last_retrieval_mode", mode)
+            if mode in modes_seen:
+                modes_seen[mode].add(got)
+            ranked = [chunk_evidence_id(c) for c in hits]
+            columns[mode].append(recall_at_k(ranked, row["relevant"], 10))
+        store.bind_eval_retrieval_mode(None)
+    means = {mode: _mean(values) for mode, values in columns.items()}
+    dense_honest = modes_seen["dense"] == {"dense"}
+    hybrid_honest = modes_seen["hybrid"] == {"hybrid"}
+    a0 = _load_a0_recall10(a0_baseline_path)
+    verdict = arm_pass_line(
+        bm25=means["bm25"], dense=means["dense"], hybrid=means["hybrid"], a0=a0,
+    )
+    passed = bool(verdict["pass"] and dense_honest and hybrid_honest)
+    lines = [
+        "# BM25 / dense / hybrid 三列（冒烟）",
+        "",
+        f"- RRF k: {RRF_K}",
+        "- 融合: 名次倒数,不是 α 加权",
+        "- 模型: text-embedding-v4",
+        "- 解码: 向量为预计算嵌入,打分无 temperature/seed",
+        f"- n: {len(retrieve_gold['queries'])}（冒烟级,不声称统计显著,不报方差）",
+        f"- BM25 Recall@10: {means['bm25']:.4f}",
+        f"- dense Recall@10: {means['dense']:.4f}",
+        f"- hybrid Recall@10: {means['hybrid']:.4f}",
+        f"- A0 基线 Recall@10: {a0:.4f}",
+        f"- BM25 相对 A0 容差: {A0_BM25_RECALL_TOLERANCE}",
+        f"- BM25 相对 A0: {verdict['bm25_vs_a0']}",
+        f"- hybrid >= min(BM25, dense): {verdict['hybrid_vs_min']}",
+        f"- dense 列确为 dense: {'pass' if dense_honest else 'fail'}",
+        f"- hybrid 列确为 hybrid: {'pass' if hybrid_honest else 'fail'}",
+        f"- 通过线: {'pass' if passed else 'fail'}",
+        "",
+        "本页是冒烟对比,不是统计结论。生产默认仍是 BM25。",
+        "",
+    ]
+    out = Path(out_dir)
+    out.mkdir(parents=True, exist_ok=True)
+    path = out / "retrieve-arm-compare.md"
+    path.write_text("\n".join(lines), encoding="utf-8")
+    return {
+        "report_path": str(path),
+        "rrf_k": RRF_K,
+        "means": means,
+        "pass": passed,
+        "verdict": "pass" if passed else "fail",
+    }

@@ -20,6 +20,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 from freshlatch.eval.control import run_control, run_control_c  # noqa: E402
 from freshlatch.eval.report import console_summary, render_report, write_outputs  # noqa: E402
 from freshlatch.eval.retrieve_eval import (  # noqa: E402
+    run_arm_compare,
     run_retrieve_baseline,
     run_transform_compare,
     run_trap_eval,
@@ -122,6 +123,21 @@ def main() -> None:
             out_dir=Path(args.out),
         )
         print(f"变换对比: {compare['report_path']}")
+        dense_db = Path("data/dense/index.sqlite")
+        if dense_db.is_file():
+            arms = run_arm_compare(
+                corpus=Path(args.corpus),
+                retrieve_gold_path=Path(args.retrieve_gold),
+                dense_db=dense_db,
+                a0_baseline_path=Path(args.out) / "retrieve-bm25-baseline.json",
+                out_dir=Path(args.out),
+            )
+            print(
+                f"三列: {arms['report_path']} RRF k={arms['rrf_k']} "
+                f"通过线={arms['verdict']}"
+            )
+            if not arms["pass"]:
+                raise SystemExit(1)
         return
 
     store = SQLiteStore(args.db)
