@@ -1,259 +1,138 @@
 # FreshLatch（复验闩）
 
-> Reverify latch for signed claims: from "once true" to "still verifiable now."
+> Reverify latch for signed claims — from "once true" to "still verifiable now."
 
-把已签发主张从「曾经为真」变成「现在仍可复验」。过期、冲突、无 T1 原文支持的不得保持绿灯；人决定作废或续命。
+两周前那份判断，客户今天追问：**还成立吗？**
 
-**不是** AI 搜索、行业 GPT、卷宗换皮、记忆中台或通用助手。主界面是**复验单**，不是聊天框。
+FreshLatch 不做新摘要，也不替你做商业裁决。它对照签发时原文（T0）与复验时点原文（T1），给你一份能点回证据的**复验单**：哪些仍可复验、哪些已失效、缺口在哪；过期、冲突、无 T1 原文支持的主张**不得保持绿灯**——人决定作废或续命。
 
 仓库：[luxingjiang1993/FreshLatch](https://github.com/luxingjiang1993/FreshLatch)
 
 ---
 
-## 它是什么
+## 它解决什么问题
 
-一次复验对照 **T0**（签发时原文）与 **T1**（复验时点原文）。系统输出每条主张的：
+顾问、研究员、战略岗常常已经出过一版判断，附件看起来可辩护。两周后世界变了：竞品改价、监管口径更新、访谈对象改口。人仍可能把**旧绿灯**发给客户——做错一次是职业风险。
 
-| 状态 | 含义 |
-|------|------|
-| `fresh` | 仍可复验（须有可点回的 T1 证据；且满足双判一致等闸条件） |
-| `stale` | 已失效（须能指回 T1 反证；元陈述等不得当唯一反证） |
-| `unknown` | 证据不足 / 闸打回 |
-| `void` | 人已作废（≠ 机器 `stale`） |
+你真正需要的不是「再写一篇」，而是：
 
-成交句是「哪些主张已经死了、缺口是什么」，不是「再生成一篇摘要」。
+> 给我一份能指回 T0 与 T1 原文的复验单：哪些仍成立、哪些必须作废、缺口是什么。
 
-术语以根目录 [`CONTEXT.md`](CONTEXT.md) 为准。
+频率大约每 2–6 周一次「还成立吗」。FreshLatch 卖的就是这一次对照与收门。
 
 ---
 
-## 面向谁
+## 你得到什么
 
-- **日活 / 现金楔子（设计意图）**：独立顾问、产业研究员、战略岗——已经出过一版判断，客户追问「还成立吗」。
-- **买的是**：能指回 T0/T1 原文的复验单与作废/续命闭环。
-- **明确拒绝**：只要更快摘要；要自动商业裁决；要企业 SSO 全家桶；要把主仓做成通用记忆平台。
+主界面是**复验单**（不是聊天框）。每条已签发主张会落到四种状态之一：
 
-当前仓库以**合成课题与本地 demo**为主（界面标注 `SYNTHETIC`）。真实客户机密不进公开作品集。
+| 状态 | 含义（人话） |
+|------|----------------|
+| **fresh** | 仍可复验——须有可点回的 T1 证据 |
+| **stale** | 已失效——须能指回推翻它的 T1 原文 |
+| **unknown** | 证据不足，或闸打回——不得假装还绿 |
+| **void** | 人已作废——机器红灯之外的人决定 |
 
----
+成交物还包括：
 
-## 当前能力（诚实分层）
+- **点回原文**：判定要能指到证据，而不是模型「记得」
+- **HumanLatch（人闩）**：人对红/黄灯主张点「作废」或「续命」（续命必须带 T1 证据）；Agent **不得**自己把红灯改回绿灯
+- **客户向复验备忘（可选导出）**：可转发的三分栏（仍成立 / 已作废 / 缺口），不含「建议进入/不进入市场」类裁决
 
-工程上已有可运行的主链与大量**确定性（invariant）**闸测；统计层与若干「半激活」模块须按文档边界阅读，**不得跨层升格**为「产品已验证 / 一期测量闭合」。
-
-### 主链（已落地）
-
-- **Lead / Critic**：裸 OpenAI 兼容 tools 自写 ReAct 循环（图不是 Agent）
-- **Auditor**：短循环 structured-output；**无放行权**；`fresh` 唯一绿路 = Lead 与 Auditor **双判一致**（见 ADR-0009）
-- **规则闸**：`stale`/`unknown` 不得绿灯；无 `t1_evidence_ids` 不得 `fresh`；维度跨检 / 元陈述闸 / checksum 交界等
-- **HumanLatch**：人审作废（`discard`）或续命（`renew`，须带可点回 T1 evidence_id）；Agent 不得自绿
-- **检索**：SQLite + BM25（`vector`/`rerank` 管线留位、空透传）
-- **UI**：FastAPI + 手写 HTML 复验单；职人/审计视图；主张导入；T1 来源三卡；Client Memo / 复验单导出
-- **评测旁路**：`python -m freshlatch.eval`（金标对账、假绿对照仪器）；解码参数须显式入档
-
-### Batch / β+ 进度（摘要）
-
-| 批次 | 可引用层 | 诚实边界 |
-|------|----------|----------|
-| Batch 1（α） | invariant：Void→Stay-Red、Client Memo 字段契约 | demo/观测项不升格为 latch 证明 |
-| Batch 2（β） | renew↔checksum 交界 invariant（含 ATK-CS 主缝） | 不得写成「checksum 已证明 latch」；档 3a 未实装 |
-| Batch 3（γ） | 判定拉齐 invariant；假绿相关句为「仅表明」 | K3 多 seed **未执行**；消融实跑未做；γ 通过 ≠ 假绿已根治 |
-| Batch 4（δ） | 第二课题软 Port（`active_pack` / P1 课题包） | 合成数据默认**未释放**；P1 `run_gold` 本批未计入 Port 通过线 |
-| Batch 5（ε） | override 管道字段；读法源投影；对抗目录骨架 | 目录存在 ≠ 对抗仪器已过；不报 pass_rate |
-| β+ 档 3b | 跨轮 `basis_rot`：basis 不符 → `unknown`（双触发） | 无 basis 的 Agent fresh 不检（半激活诚实） |
-
-验收原文：`docs/evidence/batch*/`、`docs/evidence/beta-plus-3b/`。
-
-### W9–W12 / MemoryForensics
-
-- Forensic 角色、工具与独立 **demo 脚本**在仓。
-- **Lead 默认工具白名单未挂** `spawn_forensic`；记忆卫生侧栏 UI **未做**。
-- 官方可引用边界（见根目录 `W12_*.md` 改口）：**不得**写成「W12 已通过」或「一期测量已闭合」。闸层可复现；判定层冒烟未愈；K3 未执行；2026-09-21 假绿对照有独立「仅表明」句，勿与 W12 通过混写。
-
-### 已知缺口（与路线图一致）
-
-- Dense / hybrid / rerank 未填实；检索尚缺独立 Recall@K 等评测闭环
-- Memory 半激活：代码在盘、主链默认不可见
-- `web_search` 仅架构插座，无真搜索；联网采编未实现
-- 无 `LICENSE` 文件（见文末）
+一句话边界：**卖作废与缺口，不卖更快摘要，不卖自动决策。**
 
 ---
 
-## 架构快照
+## 给谁用 / 不给谁用
 
-```
-T0 docket + T0/T1 corpus
-        │
-   Runner（预算 / 作废名单 / 轨迹）
-        │
-   Lead（≤18 步）──spawn_critic──▶ Critic（≤8 步，只找已死）
-        │ retrieve / read_source
-        ▼
-   SQLite + BM25（as_of / source_type）
-        │
-   Auditor（判定，无放行权）
-        │
-   规则闸（绿灯唯一出口）
-        │
-   HumanLatch（LangGraph interrupt；人 discard / renew）
-        │
-   复验单 UI（FastAPI+HTML，非聊天框）
-```
+**适合：**
 
-纪律一句话：**prompt 管任务、白名单管禁止、规则闸管放行。** LangGraph 只做人审 checkpoint，不进 Agent 循环。
+- 独立顾问、产业研究员、战略岗——已经出过一版判断，要对自己上周附件负责
+- 需要「研究 / 提案诚信」预算的个人或小团队（设计意图上的现金楔子）
 
-详图与分层：[`docs/spec/00-架构总览.md`](docs/spec/00-架构总览.md)
+**明确不适合：**
+
+- 只要更快摘要的增长团队
+- 要企业 SSO / 全家桶采购一次到位
+- 要系统自动给出商业裁决的买方
+- 把本仓当成通用记忆平台 / Agent 中台的采购
+
+当前公开仓库以**合成课题与本地 demo**为主；真实客户机密不进作品集。
 
 ---
 
-## 如何运行
+## 它怎么工作（短版）
 
-### 环境
+一次复验大致是这条路径：
 
-- Python 3.11+（文档按 3.11 定稿）
-- Windows / macOS / Linux 均可；本仓大量路径与 PowerShell 示例按 Windows 本地开发写就
-- 需要跑 LLM 主链时：在仓库根配置 `.env`，至少 `DASHSCOPE_API_KEY`（OpenAI 兼容，默认模型 `qwen-flash`）
-- **确定性单测不依赖真实 API Key**
+1. **导入**已签发主张（T0 卷宗形状：主张 + 当时证据引用）
+2. **选定 T1 来源**（上传语料包、粘贴变更要点后确认入库、或使用内置合成评测包——界面会标明 synthetic）
+3. **对照**：系统按 T1 原文检索与阅读，找「仍成立」与「已死」的依据
+4. **判定落档**：`fresh` / `stale` / `unknown`；规则闸强制——无 T1 证据不得绿，`stale`/`unknown` 不得保持绿灯
+5. **人闩**：人作废或续命；作废名单进下一轮，该主张不得再绿
 
-控制台 UTF-8（Windows PowerShell）：
+技术上有 Lead / Critic / Auditor 等角色与规则闸，但对访客只需记住：**原文是真相，闸管放行，人管作废与续命。**
+
+默认 demo 课题（合成）：「两周前那份『是否进入东南亚中小企业 AI 客服市场』的判断，现在还成立吗？」
+
+---
+
+## Demo / 当前状态（诚实）
+
+- **可跑**：本地复验单 UI、主链复验、人审作废/续命、合成语料与闸层单测
+- **标明 synthetic**：demo 与评测材料是合成的，不是真实客户卷宗
+- **不是**：已上线 SaaS、已有付费客户、或「W12 已通过 / 一期测量已闭合」——请勿这样引用本仓
+- **已知半成品**（细节见路线图与证据目录）：检索仍以 BM25 为主；记忆卫生等模块有代码但未全部挂进默认主链；联网自动采编未做
+
+想看工程验收边界，请读 `docs/evidence/` 与根目录 `CONTEXT.md`，不要把 README 当成验收证书。
+
+---
+
+## 快速开始
+
+**环境：** Python 3.11+；跑 LLM 主链时在仓库根配置 `.env`（至少 `DASHSCOPE_API_KEY`，OpenAI 兼容）。确定性单测可不依赖真实 Key。
 
 ```powershell
+# Windows PowerShell：控制台 UTF-8
 $OutputEncoding = [Console]::OutputEncoding = [Text.UTF8Encoding]::new()
-```
 
-### 安装
-
-```bash
 cd <repo-root>
 python -m venv .venv
-# Windows: .\.venv\Scripts\Activate.ps1
-# Unix:    source .venv/bin/activate
+.\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
-```
 
-依赖见 [`requirements.txt`](requirements.txt)（含 `openai`、`pydantic`、`fastapi`、`uvicorn`、`rank-bm25`、`jieba`、`langgraph`、`pytest` 等；版本已 pin）。
-
-### 测试
-
-```bash
-# Windows PowerShell
 $env:PYTHONPATH = "src"
-python -m pytest -q
-
-# Unix
-PYTHONPATH=src python -m pytest -q
+python -m pytest -q          # 单测
+python -m freshlatch.ui.app  # 复验单 UI → http://127.0.0.1:8000
 ```
 
-类型粗检（权威命令，见 `AGENTS.md`）：
+Unix 等价：`source .venv/bin/activate`，`export PYTHONPATH=src`。主按钮文案是「开始复验」，不是「生成答案」。
 
-```bash
-python -m compileall -q src
-```
-
-### 复验单 UI
-
-```bash
-$env:PYTHONPATH = "src"   # Unix: export PYTHONPATH=src
-python -m freshlatch.ui.app
-# 或: uvicorn freshlatch.ui.app:app --host 127.0.0.1 --port 8000
-```
-
-浏览器打开 `http://127.0.0.1:8000`。主按钮文案为「开始复验」。
-
-切换第二课题包（Batch 4 软 Port）：
-
-```bash
-$env:FRESHLATCH_ACTIVE_PACK = "p1-quotettl"
-```
-
-### 评测 CLI（需 Key；解码参数请显式记录）
-
-```bash
-PYTHONPATH=src python -m freshlatch.eval --help
-# 例：run / control / control-c / report —— 见 src/freshlatch/eval/__main__.py
-```
-
-语料入库示例：
-
-```bash
-PYTHONPATH=src python scripts/ingest_corpus.py
-```
+语料入库示例：`PYTHONPATH=src python scripts/ingest_corpus.py`
 
 ---
 
-## 仓库布局
+## 更深的文档
 
-```
-├── AGENTS.md / CLAUDE.md / CONTEXT.md   # Agent 约定与领域词表
-├── src/freshlatch/                      # 核心包
-│   ├── roles/     # Lead / Critic / Auditor / Forensic
-│   ├── gates/     # 规则闸、HumanLatch、basis_rot、meta_gate
-│   ├── store/     # SQLite、BM25 管线、ingest、checksum
-│   ├── latch/     # LangGraph 人审管道
-│   ├── eval/      # 金标 runner / 假绿对照 / report
-│   ├── ui/        # FastAPI 复验单
-│   └── export/    # 导出
-├── skills/                              # reverify / devil_advocate / freshness_audit / memory_forensics
-├── data/corpus|eval|packs/              # 合成语料、gold、第二课题包
-├── tests/unit|eval/                     # 单测与闸测
-├── scripts/                             # 验收 / demo / 冒烟脚本
-├── docs/
-│   ├── product/   # 产品切片
-│   ├── spec/      # W1–W8 实施规格
-│   ├── adr/       # 架构决策记录
-│   ├── research/  # 评估与预登记（含 adversarial/）
-│   ├── evidence/  # 各 Batch / β+ 验收
-│   └── roadmap.md # 执行版路线图
-└── requirements.txt
-```
+| 想了解 | 去读 |
+|--------|------|
+| 产品立项与边界 | [`docs/product/FreshLatch-立项切片.md`](docs/product/FreshLatch-立项切片.md) |
+| 术语表（主张 / T0·T1 / 闸 / HumanLatch） | [`CONTEXT.md`](CONTEXT.md) |
+| 架构与规格 | [`docs/spec/00-架构总览.md`](docs/spec/00-架构总览.md)、[`docs/spec/README.md`](docs/spec/README.md) |
+| 整合路线图 | [`docs/roadmap.md`](docs/roadmap.md) |
+| 验收与证据 | [`docs/evidence/`](docs/evidence/) |
+| Agent / 贡献约定 | [`AGENTS.md`](AGENTS.md) |
 
 ---
 
-## 文档地图
+## 路线图（一瞥）
 
-| 想了解… | 从这里看 |
-|---------|----------|
-| 一句话定位与用户 | [`docs/product/FreshLatch.md`](docs/product/FreshLatch.md) |
-| 术语表 | [`CONTEXT.md`](CONTEXT.md) |
-| 架构与栈 | [`docs/spec/00-架构总览.md`](docs/spec/00-架构总览.md)、[`docs/spec/README.md`](docs/spec/README.md) |
-| 决策为什么 | [`docs/adr/`](docs/adr/)（0001–0025） |
-| 批次验收原文 | [`docs/evidence/`](docs/evidence/) |
-| W12 可引用边界 | 根目录 `W12_ACCEPTANCE_SUMMARY.md` 等（以改口框为准） |
-| 下一步做什么 | [`docs/roadmap.md`](docs/roadmap.md) |
-| Agent 日常链 | [`AGENTS.md`](AGENTS.md)、[`docs/agents/`](docs/agents/) |
+下一程大致是：**先把检索（RAG）做成可独立测量的子系统**，再补证据点回与契约口径，然后加固 Agent 评测与半激活模块的「接上或切除」。联网只允许「采编落盘成 T1 → 再复验」，不做开放问答主产品。完整条目见 [`docs/roadmap.md`](docs/roadmap.md)。
 
 ---
 
-## 协作与 Agent 工作流（轻量）
+## 许可与免责
 
-- 工单在本仓 **GitHub Issues**（`gh` CLI）；标签词表见 `.claude/rules/`。
-- 角色：人定目标与 Trust / 合并；Agent 探索→计划→实现，**不自批 Gate**。
-- 权威命令：`pip` + `requirements.txt`；`python -m compileall -q src`；`pytest`。
-- 日常链（详见 `AGENTS.md`）：grill → to-spec → to-tickets → enrich → before-implement → implement。
-- 每票须有可执行 Acceptance 与 Paths；触及现有代码须写 Provenance。
+本仓库暂无独立 `LICENSE` 文件；使用前请自行确认合规需求。
 
----
-
-## 路线图 / 下一步
-
-执行版见 [`docs/roadmap.md`](docs/roadmap.md)。约定：**先 RAG，后 Agent**；联网只允许「落盘成 T1 再复验」；不做开放问答主产品。
-
-```
-Phase A（检索可测子系统）→ 中间层 M（span 点回 / 契约）→ Phase B（Agent 测量与半激活闭合）→ Phase C（白名单采编 / 发前嵌入 / 主张资产库）
-```
-
-明确不做或长期后置：开放联网当场下判、通用助手主产品、为热度做的拓扑大改、把 QuoteTTL 等第二曲线抢主链资源。
-
-产品方向：垂直复验闸门 → 工作流嵌入 → 主张资产库；**不向全能助手发展**。
-
----
-
-## 许可
-
-本仓库根目录**尚无** `LICENSE` / `LICENSE.md`。使用、分发前请与维护者确认授权；合成语料默认按 C4 草稿视为**未对外释放**（见 Batch 4 验收与 `docs/research/C4-合成数据释放协议草稿.md`）。
-
----
-
-## 免责
-
-演示与合成数据**不是**法律意见或自动商业裁决。`void` ≠ `stale`。demo / smoke /「仅表明」句 ≠ 统计证明 ≠ 产品已验证。引用验收结论时请回到对应 `docs/evidence/**/ACCEPTANCE.md` 的预锁句，勿跨文件拼「总通过」。
+**免责：** FreshLatch 输出的是复验对照与人闩记录，**不是法律意见，不是自动商业决策**。合成 demo 仅用于说明产品形态；真实客户机密请勿写入公开作品集。
