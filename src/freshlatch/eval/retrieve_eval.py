@@ -194,7 +194,10 @@ def run_retrieve_baseline(
     metrics = evaluate_retrieve(store, retrieve_gold)
     claims = list(docket["claims"]) + list(distractor["claims"])
     failures = must_stale_replay_failures(store, gold, claims)
-    corpus_files = [p for p in corpus.rglob("*") if p.is_file()]
+    corpus_files = [
+        p for p in corpus.rglob("*")
+        if p.is_file() and "traps" not in p.relative_to(corpus).parts
+    ]
     data_root = corpus.parent
     payload = {
         "date": date.today().isoformat(),
@@ -228,3 +231,158 @@ def run_retrieve_baseline(
     json_path.write_text(json.dumps(public, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     payload["report_path"] = str(md_path)
     return payload
+
+
+def load_trap_corpus(root: Path) -> list:
+    from freshlatch.store.ingest import parse_document
+
+    out = []
+    for as_of_dir in ("t0", "t1"):
+        folder = Path(root) / as_of_dir
+        if not folder.is_dir():
+            continue
+        for path in sorted(folder.glob("*.md")):
+            out.append(parse_document(path))
+    return out
+
+
+def run_trap_eval(*, trap_root: Path, trap_gold_path: Path, out_dir: Path) -> dict:
+    """陷阱子集单独入库,不并进主指标 n,也不写入论文语料 data/corpus。"""
+    gold = _load_json(trap_gold_path)
+    store = InMemoryStore()
+    pairs = load_trap_corpus(trap_root)
+    for doc, chunks in pairs:
+        store.add_document(doc, chunks)
+    kinds = []
+    lines = [
+        "# 检索陷阱三类（与主金标分列）",
+        "",
+        "本页只报告陷阱子集,不顶替主张 must_* ,也不计入主指标 n。语料在 data/traps,不改论文语料 data/corpus。冒烟级,不声称统计显著。",
+        "",
+    ]
+    for row in gold["queries"]:
+        hits = store.retrieve(row["query"], as_of=row["as_of"], top_k=10)
+        ranked = [chunk_evidence_id(c) for c in hits]
+        hit = recall_at_k(ranked, row["relevant"], 10)
+        kinds.append(row["kind"])
+        lines.extend([
+            f"## {row['kind']} · {row['id']}",
+            "",
+            f"- query: {row['query']}",
+            f"- as_of: {row['as_of']}",
+            f"- 相关 evidence_id: {', '.join(row['relevant'])}",
+            f"- 干扰 evidence_id: {', '.join(row['distractors'])}",
+            f"- 评测意图: {row['eval_intent']}",
+            f"- Recall@10（陷阱子集）: {hit:.4f}",
+            f"- 命中序: {', '.join(ranked) if ranked else '(空)'}",
+            "",
+        ])
+    text = "\n".join(lines)
+    out = Path(out_dir)
+    out.mkdir(parents=True, exist_ok=True)
+    path = out / "retrieve-traps.md"
+    path.write_text(text, encoding="utf-8")
+    return {"kinds": kinds, "report_path": str(path), "n": len(gold["queries"])}
+
+
+def run_transform_compare(
+    *,
+    corpus: Path,
+    docket_path: Path,
+    distractor_path: Path,
+    gold_path: Path,
+    out_dir: Path,
+    llm_rewrite=None,
+    llm_record: dict | None = None,
+) -> dict:
+    """裸 statement / 模板变换 / 可选 LLM 臂。默认不调用 LLM。"""
+    docket = _load_json(docket_path)
+    distractor = _load_json(distractor_path)
+    gold = _load_json(gold_path)
+    claims = [
+        c for c in list(docket["claims"]) + list(distractor["claims"])
+        if c["claim_id"] in (gold.get("causal_chain") or {})
+    ]
+    claims.sort(key=lambda c: _cid_key(c["claim_id"]))
+    record = {
+        "enabled": llm_rewrite is not None,
+        "model": None,
+        "temperature": None,
+        "seed": None,
+        "on_failure": "statement",
+    }
+    if llm_record:
+        record.update(llm_record)
+    store = InMemoryStore()
+    ingest_into(store, corpus)
+
+    def score(query: str, relevant: list[str]) -> float:
+        hits = store.retrieve(query, as_of="T1", top_k=10)
+        ranked = [chunk_evidence_id(c) for c in hits]
+        return recall_at_k(ranked, relevant, 10)
+
+    rows = []
+    bare_scores = []
+    tmpl_scores = []
+    llm_scores = []
+    for claim in claims:
+        cid = claim["claim_id"]
+        chain = gold["causal_chain"][cid]
+        relevant = [f"{chain['t1_doc']}#{chain['anchor']}@T1"]
+        bare = transform_claim_query(claim["statement"])
+        templ = transform_claim_query(claim["statement"], dimension=claim.get("dimension"))
+        llm_q = bare
+        if llm_rewrite is not None:
+            try:
+                llm_q = llm_rewrite(
+                    claim["statement"],
+                    model=record.get("model"),
+                    temperature=record.get("temperature"),
+                    seed=record.get("seed"),
+                ) or bare
+            except Exception:
+                llm_q = bare
+        b, t, l = score(bare, relevant), score(templ, relevant), score(llm_q, relevant)
+        bare_scores.append(b)
+        tmpl_scores.append(t)
+        llm_scores.append(l)
+        rows.append((cid, b, t, l))
+
+    # 默认路径就是模板变换,不经 LLM。
+    lines = [
+        "# 主张查询变换前后 Recall 对比（冒烟）",
+        "",
+        f"- n: {len(rows)}（冒烟级,不声称统计显著,不报方差）",
+        "- 默认生产路径: 模板变换,不依赖 LLM 改写",
+        f"- LLM 臂启用: {record['enabled']}",
+        f"- 模型: {record['model']}",
+        f"- temperature: {record['temperature']}",
+        f"- seed: {record['seed']}",
+        "- 失败回落: statement",
+        "",
+        "| 主张 | 裸 statement Recall@10 | 模板变换 Recall@10 | LLM 臂 Recall@10 |",
+        "| --- | --- | --- | --- |",
+    ]
+    for cid, b, t, l in rows:
+        lines.append(f"| {cid} | {b:.4f} | {t:.4f} | {l:.4f} |")
+    lines.extend([
+        "",
+        f"- 裸 statement 宏平均 Recall@10: {_mean(bare_scores):.4f}",
+        f"- 模板变换 宏平均 Recall@10: {_mean(tmpl_scores):.4f}",
+        f"- LLM 臂 宏平均 Recall@10: {_mean(llm_scores):.4f}",
+        "",
+        "LLM 臂未启用时与裸 statement 相同,因为失败或未调用都回落 statement。",
+        "",
+    ])
+    out = Path(out_dir)
+    out.mkdir(parents=True, exist_ok=True)
+    path = out / "retrieve-transform-compare.md"
+    path.write_text("\n".join(lines), encoding="utf-8")
+    return {
+        "report_path": str(path),
+        "n": len(rows),
+        "bare": _mean(bare_scores),
+        "template": _mean(tmpl_scores),
+        "llm": _mean(llm_scores),
+        "llm_record": record,
+    }

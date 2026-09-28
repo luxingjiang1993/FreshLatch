@@ -19,7 +19,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
 from freshlatch.eval.control import run_control, run_control_c  # noqa: E402
 from freshlatch.eval.report import console_summary, render_report, write_outputs  # noqa: E402
-from freshlatch.eval.retrieve_eval import run_retrieve_baseline  # noqa: E402
+from freshlatch.eval.retrieve_eval import (  # noqa: E402
+    run_retrieve_baseline,
+    run_transform_compare,
+    run_trap_eval,
+)
 from freshlatch.eval.runner import run_gold  # noqa: E402
 from freshlatch.llm import DecodingParams  # noqa: E402
 from freshlatch.packs import PackPaths, resolve_pack  # noqa: E402
@@ -103,6 +107,21 @@ def main() -> None:
             f"MRR@10={payload['metrics']['mrr@10']:.4f} replay=pass"
         )
         print(f"报告: {payload['report_path']}")
+        trap_gold = Path(args.retrieve_gold).parent / "retrieve_traps.json"
+        trap_root = Path("data/traps")
+        if trap_gold.is_file() and trap_root.is_dir():
+            traps = run_trap_eval(
+                trap_root=trap_root, trap_gold_path=trap_gold, out_dir=Path(args.out),
+            )
+            print(f"陷阱: {traps['report_path']}")
+        compare = run_transform_compare(
+            corpus=Path(args.corpus),
+            docket_path=Path(args.docket),
+            distractor_path=Path(args.distractor_docket),
+            gold_path=Path(args.gold),
+            out_dir=Path(args.out),
+        )
+        print(f"变换对比: {compare['report_path']}")
         return
 
     store = SQLiteStore(args.db)
