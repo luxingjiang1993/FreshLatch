@@ -4,6 +4,7 @@ reports/trajectories/*.jsonl
 # 本地数据库(运行期生成)
 data/*.db
 data/packs/**/*.db
+data/dense/
 
 # Claude Code 会话配置
 .claude/
