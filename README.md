@@ -28,6 +28,8 @@ A **reverify latch**: signed claims go from "was true at T0" to "still verifiabl
 
 One-line boundary: **sell voiding and gaps — not faster summaries, not auto decisions.**
 
+**单一垂直 = 顾问报告**（V1 / ADR-0027）。近端只做已签发顾问/战略主张的发前复验；样例主包为 McKinsey State of AI 公开洞察摘录（T0≈2025-03 → T1≈2025-11），见 `data/packs/v1-mck-soai/`。thesis-1 与 QuoteTTL 可留回归，**不算**第二垂直。仓内不提交整本咨报 PDF。
+
 ---
 
 ## What you get

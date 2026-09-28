@@ -1,0 +1,29 @@
+{
+  "question": "基于 McKinsey State of AI 公开洞察签发的顾问报告主张，在 T1（约 2025-11）相对 T0（约 2025-03）是否仍可复验？",
+  "claims": [
+    {
+      "claim_id": "mck-1",
+      "statement": "组织在至少一项业务职能中常规使用 AI 的受访者比例约为 78%",
+      "t0_evidence_ids": ["mck-soai-rewiring-2025-03#p2"],
+      "dimension": "market_structure"
+    },
+    {
+      "claim_id": "mck-2",
+      "statement": "在报告使用 gen AI 的组织中，约 21% 已从根本上重新设计至少部分工作流",
+      "t0_evidence_ids": ["mck-soai-rewiring-2025-03#p3"],
+      "dimension": "tech_ecosystem"
+    },
+    {
+      "claim_id": "mck-3",
+      "statement": "不到五分之一的组织在为 gen AI 解决方案跟踪定义清晰的 KPI",
+      "t0_evidence_ids": ["mck-soai-rewiring-2025-03#p4"],
+      "dimension": "cost_model"
+    },
+    {
+      "claim_id": "mck-4",
+      "statement": "公开 State of AI 叙事尚未把 AI agents 规模化采用率写成主流调查发现",
+      "t0_evidence_ids": ["mck-soai-rewiring-2025-03#p5"],
+      "dimension": "tech_ecosystem"
+    }
+  ]
+}

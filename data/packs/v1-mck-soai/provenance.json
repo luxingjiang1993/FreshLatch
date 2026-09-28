@@ -1,0 +1,49 @@
+{
+  "pack_id": "v1-mck-soai",
+  "vertical": "顾问报告",
+  "note": "出处为 McKinsey 公开洞察页；仓内仅摘录，无整本 PDF。",
+  "sources": {
+    "mck-soai-2025-03": {
+      "title": "The state of AI: How organizations are rewiring to capture value",
+      "publisher": "McKinsey / QuantumBlack",
+      "url": "https://www.mckinsey.com/capabilities/quantumblack/our-insights/the-state-of-ai-how-organizations-are-rewiring-to-capture-value",
+      "as_of_date": "2025-03-12",
+      "wave": "T0",
+      "doc_id": "mck-soai-rewiring-2025-03"
+    },
+    "mck-soai-2025-11": {
+      "title": "The state of AI in 2025: Agents, innovation, and transformation",
+      "publisher": "McKinsey / QuantumBlack",
+      "url": "https://www.mckinsey.com/capabilities/quantumblack/our-insights/the-state-of-ai",
+      "as_of_date": "2025-11-05",
+      "wave": "T1",
+      "doc_id": "mck-soai-agents-2025-11"
+    }
+  },
+  "claims": {
+    "mck-1": {
+      "source_id": "mck-soai-2025-03",
+      "excerpt_wave": "T0",
+      "t0_evidence_ids": ["mck-soai-rewiring-2025-03#p2"],
+      "contrast_hint": "T1 洞察页将「至少一项业务职能常规使用 AI」更新为约 88%，对照 T0 约 78%"
+    },
+    "mck-2": {
+      "source_id": "mck-soai-2025-03",
+      "excerpt_wave": "T0",
+      "t0_evidence_ids": ["mck-soai-rewiring-2025-03#p3"],
+      "contrast_hint": "T1 仍强调重新设计工作流是高绩效关键成功因素，但人口基数与表述已随调查波次更新"
+    },
+    "mck-3": {
+      "source_id": "mck-soai-2025-03",
+      "excerpt_wave": "T0",
+      "t0_evidence_ids": ["mck-soai-rewiring-2025-03#p4"],
+      "contrast_hint": "T0 采纳与规模化实践仍早期；T1 另以 EBIT/创新指标描述价值捕获缺口"
+    },
+    "mck-4": {
+      "source_id": "mck-soai-2025-03",
+      "excerpt_wave": "T0",
+      "t0_evidence_ids": ["mck-soai-rewiring-2025-03#p5"],
+      "contrast_hint": "T1 明确写入 agents：约 23% 在规模化、另约 39% 已开始试验（合计约 62% 至少在试验）"
+    }
+  }
+}
