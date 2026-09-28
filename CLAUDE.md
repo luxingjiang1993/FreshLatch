@@ -52,3 +52,12 @@ Single-context: `CONTEXT.md` + `docs/adr/` at the repo root. See `.claude/rules/
 **Why**: 本仓全部决议以「Anthropic 级面试讲解」为判据,评审清单就是面试弹药的一部分;被动等用户提醒 = 纪律失效。
 
 **How to apply**: 决议类工单 resolve 流程中,grilling 每轮推荐后自问清单 1–7,有命中则在下一轮主动提出修正;评估文档「逐路线评估」一节必须包含被 Anthropic 清单否决的原推荐(写透理由)。
+
+## Agent Guards
+
+Thin overlay on Matt Pocock — not a second `/implement`. Config: `docs/agents/agent-guards.md`.
+
+- After `/to-tickets` → `/enrich-tickets`
+- Before coding → `/before-implement <id>` then fresh session `/implement`
+- Setup once: `/setup-agent-guards`
+
