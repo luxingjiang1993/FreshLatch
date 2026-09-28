@@ -149,6 +149,33 @@ def test_production_cannot_force_retrieval_mode(memory_store):
         eval_ctx.arm_eval_retrieval_mode("dense")
 
 
+def test_retrieve_baseline_smoke(tmp_path):
+    """#159:eval retrieve 复跑 Recall@10/MRR,报告标明冒烟且回放 pass。"""
+    from freshlatch.eval.retrieve_eval import build_retrieve_gold, run_retrieve_baseline
+
+    docket = json.loads(Path("data/t0_docket.json").read_text(encoding="utf-8"))
+    distractor = json.loads(Path("data/eval/distractor_docket.json").read_text(encoding="utf-8"))
+    gold = json.loads(Path("data/eval/gold.json").read_text(encoding="utf-8"))
+    built = build_retrieve_gold(docket, distractor, gold)
+    on_disk = json.loads(Path("data/eval/retrieve_gold.json").read_text(encoding="utf-8"))
+    assert 30 <= built["n"] <= 50
+    assert on_disk["queries"] == built["queries"]
+    payload = run_retrieve_baseline(
+        corpus=Path("data/corpus"),
+        gold_path=Path("data/eval/gold.json"),
+        docket_path=Path("data/t0_docket.json"),
+        distractor_path=Path("data/eval/distractor_docket.json"),
+        retrieve_gold_path=Path("data/eval/retrieve_gold.json"),
+        out_dir=tmp_path,
+    )
+    text = (tmp_path / "retrieve-bm25-baseline.md").read_text(encoding="utf-8")
+    assert payload["replay_pass"] is True
+    assert "Recall@10" in text and "MRR@10" in text
+    assert "K∈{5,10}" in text
+    assert "冒烟" in text and "不声称统计显著" in text
+    assert "aggregate_checksum" not in text or "checksum" in text
+
+
 def test_sqlite_store_roundtrip(tmp_path):
     store = SQLiteStore(tmp_path / "test.db")
     n = ingest_into(store, CORPUS)

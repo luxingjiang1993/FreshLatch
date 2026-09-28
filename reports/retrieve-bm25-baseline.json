@@ -1,0 +1,19 @@
+{
+  "date": "2026-09-28",
+  "file_count": 28,
+  "chunk_count": 84,
+  "replay_pass": true,
+  "replay_failures": [],
+  "corpus_checksum": "a1a35e9b55f48eaf4381a27855db987c3c5870fb6a43d4458829bcbacc5b0b04",
+  "retrieve_gold_checksum": "a62830b3c9e5b9fd10484ed06aa182d7a1ac25c0ca8cad739329230577f58255",
+  "aggregate_checksum": "00a43c88db4522a8d5bb2ebe821c0e22c81302a9ed1a117ed5b64932afc60bcb",
+  "metrics": {
+    "n": 36,
+    "retrieval_mode": "bm25",
+    "recall": {
+      "5": 1.0,
+      "10": 1.0
+    },
+    "mrr@10": 0.7324074074074074
+  }
+}

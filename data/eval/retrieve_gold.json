@@ -1,0 +1,332 @@
+{
+  "version": "v0",
+  "level": "smoke",
+  "note": "由主张金标派生,规则先于指标。冒烟级,不声称统计显著。",
+  "n": 36,
+  "queries": [
+    {
+      "id": "c1-t1-identity",
+      "claim_id": "c1",
+      "query": "竞品 SeaDesk 在该市场的客单价仍显著高于我方拟定的 59 美元/月/店定价",
+      "as_of": "T1",
+      "relevant": [
+        "t0-competitor-notes#p2@T1"
+      ]
+    },
+    {
+      "id": "c1-t1-dimension",
+      "claim_id": "c1",
+      "query": "竞品 SeaDesk 在该市场的客单价仍显著高于我方拟定的 59 美元/月/店定价 竞品价格",
+      "as_of": "T1",
+      "relevant": [
+        "t0-competitor-notes#p2@T1"
+      ]
+    },
+    {
+      "id": "c1-t1-prefix",
+      "claim_id": "c1",
+      "query": "竞品价格 竞品 SeaDesk 在该市场的客单价仍显著高于我方拟定的 59 美元/月/店定价",
+      "as_of": "T1",
+      "relevant": [
+        "t0-competitor-notes#p2@T1"
+      ]
+    },
+    {
+      "id": "c1-t0-identity",
+      "claim_id": "c1",
+      "query": "竞品 SeaDesk 在该市场的客单价仍显著高于我方拟定的 59 美元/月/店定价",
+      "as_of": "T0",
+      "relevant": [
+        "t0-competitor-notes#p2@T0"
+      ]
+    },
+    {
+      "id": "c2-t1-identity",
+      "claim_id": "c2",
+      "query": "印尼与泰国监管暂无客服数据本地化强制要求",
+      "as_of": "T1",
+      "relevant": [
+        "t0-regulatory-memo#p2@T1"
+      ]
+    },
+    {
+      "id": "c2-t1-dimension",
+      "claim_id": "c2",
+      "query": "印尼与泰国监管暂无客服数据本地化强制要求 监管口径",
+      "as_of": "T1",
+      "relevant": [
+        "t0-regulatory-memo#p2@T1"
+      ]
+    },
+    {
+      "id": "c2-t1-prefix",
+      "claim_id": "c2",
+      "query": "监管口径 印尼与泰国监管暂无客服数据本地化强制要求",
+      "as_of": "T1",
+      "relevant": [
+        "t0-regulatory-memo#p2@T1"
+      ]
+    },
+    {
+      "id": "c2-t0-identity",
+      "claim_id": "c2",
+      "query": "印尼与泰国监管暂无客服数据本地化强制要求",
+      "as_of": "T0",
+      "relevant": [
+        "t0-regulatory-memo#p2@T0"
+      ]
+    },
+    {
+      "id": "c3-t1-identity",
+      "claim_id": "c3",
+      "query": "3 家意向渠道伙伴接受 30% 销售分成比例",
+      "as_of": "T1",
+      "relevant": [
+        "t0-channel-interviews#p2@T1"
+      ]
+    },
+    {
+      "id": "c3-t1-dimension",
+      "claim_id": "c3",
+      "query": "3 家意向渠道伙伴接受 30% 销售分成比例 访谈改口",
+      "as_of": "T1",
+      "relevant": [
+        "t0-channel-interviews#p2@T1"
+      ]
+    },
+    {
+      "id": "c3-t1-prefix",
+      "claim_id": "c3",
+      "query": "访谈改口 3 家意向渠道伙伴接受 30% 销售分成比例",
+      "as_of": "T1",
+      "relevant": [
+        "t0-channel-interviews#p2@T1"
+      ]
+    },
+    {
+      "id": "c3-t0-identity",
+      "claim_id": "c3",
+      "query": "3 家意向渠道伙伴接受 30% 销售分成比例",
+      "as_of": "T0",
+      "relevant": [
+        "t0-channel-interviews#p2@T0"
+      ]
+    },
+    {
+      "id": "c4-t1-identity",
+      "claim_id": "c4",
+      "query": "目标市场(六国具备基础数字化条件的中小企业)不少于 800 万家",
+      "as_of": "T1",
+      "relevant": [
+        "t0-market-census#p2@T1"
+      ]
+    },
+    {
+      "id": "c4-t1-dimension",
+      "claim_id": "c4",
+      "query": "目标市场(六国具备基础数字化条件的中小企业)不少于 800 万家 市场结构",
+      "as_of": "T1",
+      "relevant": [
+        "t0-market-census#p2@T1"
+      ]
+    },
+    {
+      "id": "c4-t1-prefix",
+      "claim_id": "c4",
+      "query": "市场结构 目标市场(六国具备基础数字化条件的中小企业)不少于 800 万家",
+      "as_of": "T1",
+      "relevant": [
+        "t0-market-census#p2@T1"
+      ]
+    },
+    {
+      "id": "c4-t0-identity",
+      "claim_id": "c4",
+      "query": "目标市场(六国具备基础数字化条件的中小企业)不少于 800 万家",
+      "as_of": "T0",
+      "relevant": [
+        "t0-market-census#p2@T0"
+      ]
+    },
+    {
+      "id": "c5-t1-identity",
+      "claim_id": "c5",
+      "query": "我方单会话服务成本仍低于竞品",
+      "as_of": "T1",
+      "relevant": [
+        "t0-cost-model#p2@T1"
+      ]
+    },
+    {
+      "id": "c5-t1-dimension",
+      "claim_id": "c5",
+      "query": "我方单会话服务成本仍低于竞品 成本模型",
+      "as_of": "T1",
+      "relevant": [
+        "t0-cost-model#p2@T1"
+      ]
+    },
+    {
+      "id": "c5-t1-prefix",
+      "claim_id": "c5",
+      "query": "成本模型 我方单会话服务成本仍低于竞品",
+      "as_of": "T1",
+      "relevant": [
+        "t0-cost-model#p2@T1"
+      ]
+    },
+    {
+      "id": "c5-t0-identity",
+      "claim_id": "c5",
+      "query": "我方单会话服务成本仍低于竞品",
+      "as_of": "T0",
+      "relevant": [
+        "t0-cost-model#p2@T0"
+      ]
+    },
+    {
+      "id": "c6-t1-identity",
+      "claim_id": "c6",
+      "query": "竞品 SeaDesk 收缩东南亚免费版、聚焦付费商户,意味着市场窗口打开",
+      "as_of": "T1",
+      "relevant": [
+        "t0-competitor-news#p2@T1"
+      ]
+    },
+    {
+      "id": "c6-t1-dimension",
+      "claim_id": "c6",
+      "query": "竞品 SeaDesk 收缩东南亚免费版、聚焦付费商户,意味着市场窗口打开 竞品价格",
+      "as_of": "T1",
+      "relevant": [
+        "t0-competitor-news#p2@T1"
+      ]
+    },
+    {
+      "id": "c6-t1-prefix",
+      "claim_id": "c6",
+      "query": "竞品价格 竞品 SeaDesk 收缩东南亚免费版、聚焦付费商户,意味着市场窗口打开",
+      "as_of": "T1",
+      "relevant": [
+        "t0-competitor-news#p2@T1"
+      ]
+    },
+    {
+      "id": "c6-t0-identity",
+      "claim_id": "c6",
+      "query": "竞品 SeaDesk 收缩东南亚免费版、聚焦付费商户,意味着市场窗口打开",
+      "as_of": "T0",
+      "relevant": [
+        "t0-competitor-news#p2@T0"
+      ]
+    },
+    {
+      "id": "c7-t1-identity",
+      "claim_id": "c7",
+      "query": "行业媒体最新一期报道显示,竞品 SeaDesk 客单价仍为 99 美元/月,我方价格优势仍在",
+      "as_of": "T1",
+      "relevant": [
+        "t0-trade-press#p2@T1"
+      ]
+    },
+    {
+      "id": "c7-t1-dimension",
+      "claim_id": "c7",
+      "query": "行业媒体最新一期报道显示,竞品 SeaDesk 客单价仍为 99 美元/月,我方价格优势仍在 竞品价格",
+      "as_of": "T1",
+      "relevant": [
+        "t0-trade-press#p2@T1"
+      ]
+    },
+    {
+      "id": "c7-t1-prefix",
+      "claim_id": "c7",
+      "query": "竞品价格 行业媒体最新一期报道显示,竞品 SeaDesk 客单价仍为 99 美元/月,我方价格优势仍在",
+      "as_of": "T1",
+      "relevant": [
+        "t0-trade-press#p2@T1"
+      ]
+    },
+    {
+      "id": "c7-t0-identity",
+      "claim_id": "c7",
+      "query": "行业媒体最新一期报道显示,竞品 SeaDesk 客单价仍为 99 美元/月,我方价格优势仍在",
+      "as_of": "T0",
+      "relevant": [
+        "t0-trade-press#p2@T0"
+      ]
+    },
+    {
+      "id": "c8-t1-identity",
+      "claim_id": "c8",
+      "query": "东南亚本地语言小模型生态不成熟,核心对话能力需自研",
+      "as_of": "T1",
+      "relevant": [
+        "t0-tech-ecosystem#p2@T1"
+      ]
+    },
+    {
+      "id": "c8-t1-dimension",
+      "claim_id": "c8",
+      "query": "东南亚本地语言小模型生态不成熟,核心对话能力需自研 技术生态",
+      "as_of": "T1",
+      "relevant": [
+        "t0-tech-ecosystem#p2@T1"
+      ]
+    },
+    {
+      "id": "c8-t1-prefix",
+      "claim_id": "c8",
+      "query": "技术生态 东南亚本地语言小模型生态不成熟,核心对话能力需自研",
+      "as_of": "T1",
+      "relevant": [
+        "t0-tech-ecosystem#p2@T1"
+      ]
+    },
+    {
+      "id": "c8-t0-identity",
+      "claim_id": "c8",
+      "query": "东南亚本地语言小模型生态不成熟,核心对话能力需自研",
+      "as_of": "T0",
+      "relevant": [
+        "t0-tech-ecosystem#p2@T0"
+      ]
+    },
+    {
+      "id": "c13-t1-identity",
+      "claim_id": "c13",
+      "query": "竞品 SeaDesk 付费商户毛利率约 62%,高于东南亚 SaaS 同业平均水平",
+      "as_of": "T1",
+      "relevant": [
+        "t0-competitor-economics#p2@T1"
+      ]
+    },
+    {
+      "id": "c13-t0-identity",
+      "claim_id": "c13",
+      "query": "竞品 SeaDesk 付费商户毛利率约 62%,高于东南亚 SaaS 同业平均水平",
+      "as_of": "T0",
+      "relevant": [
+        "t0-competitor-economics#p2@T0"
+      ]
+    },
+    {
+      "id": "c14-t1-identity",
+      "claim_id": "c14",
+      "query": "目标市场头部三家分销商合计铺货覆盖率约 55%",
+      "as_of": "T1",
+      "relevant": [
+        "t0-channel-coverage#p2@T1"
+      ]
+    },
+    {
+      "id": "c14-t0-identity",
+      "claim_id": "c14",
+      "query": "目标市场头部三家分销商合计铺货覆盖率约 55%",
+      "as_of": "T0",
+      "relevant": [
+        "t0-channel-coverage#p2@T0"
+      ]
+    }
+  ]
+}
