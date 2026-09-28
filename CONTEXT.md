@@ -160,6 +160,10 @@ _Avoid_: 过时词匹配、记忆准确率
 
 ## 评测
 
+**retrieve 子系统评测**:
+与主张金标 `eval run --gold` **分轨**:入口为 `python -m freshlatch.eval retrieve`,产物在 `reports/retrieve-*.md`。I0 引用该轨数字时须遵守冒烟层预登记与 reports 为真相源(ADR-0026;`docs/accounting-card.md` / `docs/eval-retrieve.md`)。通过线与增益门正文在规格/评估文档,不在此扩写。
+_Avoid_: 把 retrieve 冒烟表与主张金标混报、把冒烟写成统计证明
+
 **假绿对照 (False-Green Control)**:
 无工具基线:同模型不带工具只读 T0 摘要,应把已死主张判「成立」(假绿)。本产品必须红,对照成立才说明复验真在起作用。
 
