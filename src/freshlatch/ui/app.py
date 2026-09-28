@@ -173,6 +173,12 @@ class PasteDraftRequest(BaseModel):
     text: str
 
 
+class ThinUrlRequest(BaseModel):
+    """薄 URL 入库请求:单条白名单 URL(ADR-0027 / #171)。"""
+
+    url: str
+
+
 class DraftImportRequest(BaseModel):
     text: str
     question: str | None = None
@@ -229,6 +235,16 @@ async def api_t1_upload(files: list[UploadFile] = File(...)) -> JSONResponse:
         return JSONResponse({"error": result.error}, status_code=400)
     return JSONResponse(_t1_session().snapshot())
 
+
+@app.post("/api/t1-source/url")
+def api_t1_url(req: ThinUrlRequest) -> JSONResponse:
+    """薄 URL 入库:仅 www.mckinsey.com;失败四态零写(ADR-0027 / #171)。"""
+    result = _t1_session().ingest_from_url(req.url)
+    if not result.ok:
+        body: dict = {"error": result.error, "error_code": result.error_code}
+        return JSONResponse(body, status_code=400)
+    snap = _t1_session().snapshot()
+    return JSONResponse(snap)
 
 @app.post("/api/import/draft")
 def api_import_draft(req: DraftImportRequest) -> JSONResponse:
@@ -431,6 +447,10 @@ HTML_PAGE = """<!DOCTYPE html>
  #t1-source button.primary{background:#1f883d;color:#fff;border-color:#1f883d}
  #t1-source .net{font-size:12px;color:#57606a;margin-top:8px}
  #t1-source .msg{font-size:12px;margin-top:6px;color:#0969da}
+ #t1-source .thin-url{margin-top:10px;padding-top:8px;border-top:1px dashed #d0d7de}
+ #t1-source .thin-url input[type=url]{width:100%;font-size:12px;padding:5px 8px;
+  border:1px solid #d0d7de;border-radius:6px;box-sizing:border-box}
+ #t1-source .thin-url .hint{margin-top:4px}
  /* DEM-5:检索零命中强提示(非判定闸;不改写 status) */
  #retrieve-zero-hit{background:#fff1f0;border:2px solid #cf222e;border-radius:6px;
    padding:10px 12px;margin-bottom:10px;color:#82071e}
@@ -629,7 +649,9 @@ async function refreshT1Source(){
 }
 function renderT1Source(){
   // T1 来源三卡(ADR-0016):合法入口全集;粘贴须确认入库;合成标明 synthetic
+  // 薄 URL(ADR-0027/#171):白名单增量入口,不进三卡 cards
   const sel = T1SRC.kind || 'none';
+  const host = T1SRC.allowed_url_host || 'www.mckinsey.com';
   let h = '<div id="t1-source"><h3>T1 来源三卡</h3>'
         + '<div class="hint">复验前须选定合法 T1 来源。未选定不得假装已有最新事实。</div>'
         + '<div class="cards">'
@@ -647,6 +669,13 @@ function renderT1Source(){
         + '<h4>内置合成评测包 <span class="syn-tag">synthetic</span></h4>'
         + '<button class="primary" onclick="selectSynthetic()">选用合成评测包</button></div>'
         + '</div>'
+        + '<div class="thin-url" id="t1-thin-url">'
+        + '<h4 style="margin:0 0 6px;font-size:13px">薄 URL(白名单)</h4>'
+        + '<input type="url" id="t1-url-input" placeholder="https://'+esc(host)+'/..." '
+        + 'aria-label="薄 URL 白名单入库">'
+        + '<button class="primary" onclick="ingestThinUrl()">抓取并入库</button>'
+        + '<div class="hint">仅主机名精确匹配 '+esc(host)
+        + '。失败不入库,可回落上方粘贴确认。开放联网插座仍默认关。</div></div>'
         + '<div class="net">联网插座:默认关闭(不进本批主路径)</div>'
         + '<div class="msg" id="t1-msg">'+esc(T1SRC.message||'')+'</div></div>';
   return h;
@@ -700,6 +729,26 @@ async function selectSynthetic(){
   if(j.error){ document.getElementById('status').textContent = j.error; return; }
   T1SRC = j; await reloadClaimsFromServer();
   document.getElementById('status').textContent = j.message || '已选用合成评测包';
+}
+async function ingestThinUrl(){
+  // ADR-0027:仅白名单 Host;失败四态零写,错误码/短中文上屏,可回落粘贴
+  const box = document.getElementById('t1-url-input');
+  const url = box ? box.value : '';
+  if(!url || !url.trim()){
+    document.getElementById('status').textContent = '请填写白名单薄 URL';
+    return;
+  }
+  const r = await fetch('/api/t1-source/url',{
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({url: url.trim()})});
+  const j = await r.json();
+  if(!r.ok || j.error){
+    const code = j.error_code ? ('['+j.error_code+'] ') : '';
+    document.getElementById('status').textContent = code + (j.error || '薄 URL 入库失败');
+    return;
+  }
+  T1SRC = j; await reloadClaimsFromServer();
+  document.getElementById('status').textContent = j.message || '薄 URL 已入库';
 }
 function toggleImportPanel(){
   IMPORT_PANEL_OPEN = !IMPORT_PANEL_OPEN;
