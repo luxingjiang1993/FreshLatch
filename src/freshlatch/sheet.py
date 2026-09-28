@@ -68,6 +68,13 @@ def project_claim(store: RetrievalStore, claim: Claim) -> dict[str, Any]:
     }
 
 
+def project_run_disposition(claims: list[Claim] | tuple[Claim, ...]) -> str:
+    """报告级包结论投影(#173):与发前列表/复验单包结论条同吃 disposition 纯函数。"""
+    from freshlatch.prepublish import disposition_for_claims
+
+    return disposition_for_claims(claims)
+
+
 def claim_from_dict(raw: dict[str, Any]) -> Claim:
     """快照 JSON 单条主张 → Claim(忽略未知键)。"""
     return Claim(
