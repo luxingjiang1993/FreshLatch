@@ -222,6 +222,21 @@ class SQLiteStore(RetrievalStore):
         with self._conn() as conn:
             rows = conn.execute(sql, params).fetchall()
         pool = [self._row_to_chunk(r) for r in rows]
+        from freshlatch.store.pipeline import rank_dense, recall_bm25
+
+        requested = self._requested_retrieval_mode()
+        if requested == "dense":
+            query_vec = self._embed_query(query)
+            ranked = rank_dense(query_vec, pool, top_k=top_k) if query_vec else None
+            if ranked is None:
+                self.last_retrieval_mode = "bm25_fallback"
+                return recall_bm25(query, pool, top_k=top_k)
+            self.last_retrieval_mode = "dense"
+            return ranked
+        if requested == "bm25_fallback":
+            self.last_retrieval_mode = "bm25_fallback"
+            return recall_bm25(query, pool, top_k=top_k)
+        self.last_retrieval_mode = "bm25"
         return run_pipeline(query, pool, top_k=top_k)
 
     def read_source(self, doc_id: str, *, as_of: AsOf) -> str | None:

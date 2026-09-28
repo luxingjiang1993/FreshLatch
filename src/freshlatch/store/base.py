@@ -13,7 +13,7 @@ PRODUCTION_RETRIEVAL_MODE = "bm25"
 RETRIEVAL_MODE_ENUM = frozenset(
     {"bm25", "dense", "hybrid", "hybrid+rerank", "bm25_fallback"}
 )
-EXECUTABLE_RETRIEVAL_MODES = frozenset({"bm25"})
+EXECUTABLE_RETRIEVAL_MODES = frozenset({"bm25", "dense", "bm25_fallback"})
 
 
 def chunk_evidence_id(chunk: "Chunk") -> str:
@@ -53,6 +53,26 @@ class Document:
 
 class RetrievalStore(ABC):
     """检索层抽象。as_of / source_type 过滤 = WHERE 语义(实装侧)。"""
+
+    def bind_eval_retrieval_mode(self, mode: str | None) -> None:
+        """评测夹具绑定检索臂。生产 retrieve 签名不含该参数,Agent 工具不调用。"""
+        self._eval_retrieval_mode = mode
+
+    def _requested_retrieval_mode(self) -> str | None:
+        return getattr(self, "_eval_retrieval_mode", None)
+
+    def _embed_query(self, query: str) -> list[float] | None:
+        """未注入 embedder 或调用失败 = 断 embed,调用方降级。不在这里打网。"""
+        embedder = getattr(self, "query_embedder", None)
+        if embedder is None:
+            return None
+        try:
+            vec = embedder(query)
+        except Exception:
+            return None
+        if not vec:
+            return None
+        return [float(x) for x in vec]
 
     @abstractmethod
     def retrieve(
@@ -119,6 +139,21 @@ class InMemoryStore(RetrievalStore):
             if (as_of is None or c.as_of == as_of)
             and (source_type is None or c.source_type == source_type)
         ]
+        from freshlatch.store.pipeline import rank_dense
+
+        requested = self._requested_retrieval_mode()
+        if requested == "dense":
+            query_vec = self._embed_query(query)
+            ranked = rank_dense(query_vec, pool, top_k=top_k) if query_vec else None
+            if ranked is None:
+                self.last_retrieval_mode = "bm25_fallback"
+                return recall_bm25(query, pool, top_k=top_k)
+            self.last_retrieval_mode = "dense"
+            return ranked
+        if requested == "bm25_fallback":
+            self.last_retrieval_mode = "bm25_fallback"
+            return recall_bm25(query, pool, top_k=top_k)
+        self.last_retrieval_mode = "bm25"
         return recall_bm25(query, pool, top_k=top_k)
 
     def read_source(self, doc_id: str, *, as_of: AsOf) -> str | None:

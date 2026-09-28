@@ -95,15 +95,22 @@ class RunContext:
                                 "used": self.retrieval_used})
             return RETRIEVAL_EXHAUSTED
         self.retrieval_used += 1
+        requested = self._active_retrieval_mode()
+        if requested in {"dense", "bm25_fallback"}:
+            self.store.bind_eval_retrieval_mode(requested)
+        else:
+            self.store.bind_eval_retrieval_mode(None)
         hits = self.store.retrieve(query, as_of=as_of, source_type=source_type, top_k=top_k)
+        self.store.bind_eval_retrieval_mode(None)
         evidence_ids = [chunk_evidence_id(c) for c in hits]
+        mode = getattr(self.store, "last_retrieval_mode", requested)
         self.events.append({
             "type": "retrieve",
             "query": query,
             "as_of": as_of,
             "filters": {"as_of": as_of, "source_type": source_type, "top_k": top_k},
             "evidence_ids": evidence_ids,
-            "retrieval_mode": self._active_retrieval_mode(),
+            "retrieval_mode": mode,
             "used": self.retrieval_used,
             "hits": len(hits),
         })
