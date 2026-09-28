@@ -1,0 +1,2 @@
+# patch_events JSONL 账本目录(ADR-0027)。
+# 运行期追加写入 events.jsonl;本目录入库以锁定路径约定。
