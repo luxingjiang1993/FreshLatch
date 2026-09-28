@@ -73,16 +73,107 @@ def test_anchor_lookup(memory_store):
 
 def test_gold_hit_replay(memory_store):
     """金标命中回放:每条 must_stale 的 causal_chain 致死段落,用其主张文本能在 T1 top10 召回。"""
+    from freshlatch.store.query_transform import transform_claim_query
+
     claim_by_id = {c["claim_id"]: c for c in DocketClaims}
     failures = []
     for cid in GOLD["must_stale"]:
         chain = GOLD["causal_chain"][cid]
         doc_id, anchor = chain["t1_doc"], chain["anchor"]
-        hits = memory_store.retrieve(claim_by_id[cid]["statement"], as_of="T1", top_k=10)
+        query = transform_claim_query(
+            claim_by_id[cid]["statement"],
+            dimension=claim_by_id[cid].get("dimension"),
+        )
+        hits = memory_store.retrieve(query, as_of="T1", top_k=10)
         got = {f"{c.doc_id}#{c.clause_id}" for c in hits}
         if f"{doc_id}#{anchor}" not in got:
             failures.append((cid, f"{doc_id}#{anchor}", sorted(got)))
     assert not failures, f"must_stale 证据块未进 top10: {failures}"
+
+
+def test_retrieve_trajectory_records_contract(memory_store):
+    """#157:一次 try_retrieve 的轨迹含 query、filters、有序 evidence_id、retrieval_mode。"""
+    from freshlatch.runner import RunContext
+    from freshlatch.store.base import PRODUCTION_RETRIEVAL_MODE, chunk_evidence_id
+
+    ctx = RunContext(store=memory_store, mode="online")
+    hits = ctx.try_retrieve("竞品 价格", source_type="private", as_of="T1", top_k=10)
+    ev = ctx.events[-1]
+    assert ev["type"] == "retrieve"
+    assert ev["query"] == "竞品 价格"
+    assert ev["filters"] == {"as_of": "T1", "source_type": "private", "top_k": 10}
+    assert ev["evidence_ids"] == [chunk_evidence_id(c) for c in hits]
+    assert ev["retrieval_mode"] == PRODUCTION_RETRIEVAL_MODE == "bm25"
+    assert ev["hits"] == len(hits)
+    assert all(eid.count("#") == 1 and "@" in eid for eid in ev["evidence_ids"])
+
+
+def test_eval_fixture_forces_bm25(memory_store):
+    """#157:评测夹具可强制 bm25,轨迹臂与标记一致。"""
+    from freshlatch.runner import RunContext
+
+    ctx = RunContext(store=memory_store, mode="eval")
+    ctx.arm_eval_retrieval_mode("bm25")
+    ctx.try_retrieve("竞品 价格", as_of="T1", top_k=10)
+    assert ctx.events[-1]["retrieval_mode"] == "bm25"
+    assert ctx.events[-1]["filters"]["top_k"] == 10
+
+
+def test_production_cannot_force_retrieval_mode(memory_store):
+    """#157:生产路径不可随意切臂;未实装臂不得误标。"""
+    import inspect
+
+    from freshlatch.models import Claim
+    from freshlatch.roles.lead import LeadReverifier
+    from freshlatch.runner import RunContext
+    from freshlatch.store.base import RetrievalStore
+    from freshlatch.tools import tool_specs
+
+    online = RunContext(store=memory_store, mode="online")
+    with pytest.raises(RuntimeError):
+        online.arm_eval_retrieval_mode("bm25")
+    assert "retrieval_mode" not in inspect.signature(RetrievalStore.retrieve).parameters
+    assert "retrieval_mode" not in inspect.signature(RunContext.try_retrieve).parameters
+    retrieve_spec = tool_specs(["retrieve"])[0]
+    assert "retrieval_mode" not in retrieve_spec["function"]["parameters"]["properties"]
+
+    lead = LeadReverifier(
+        online, Claim(claim_id="c-x", statement="探针"), llm=None,
+    )
+    rejected = lead._t_retrieve({"query": "竞品", "as_of": "T1", "retrieval_mode": "dense"})
+    assert "error" in rejected
+    assert not any(ev.get("type") == "retrieve" for ev in online.events)
+
+    eval_ctx = RunContext(store=memory_store, mode="eval")
+    with pytest.raises(ValueError):
+        eval_ctx.arm_eval_retrieval_mode("faiss")
+
+
+def test_retrieve_baseline_smoke(tmp_path):
+    """#159:eval retrieve 复跑 Recall@10/MRR,报告标明冒烟且回放 pass。"""
+    from freshlatch.eval.retrieve_eval import build_retrieve_gold, run_retrieve_baseline
+
+    docket = json.loads(Path("data/t0_docket.json").read_text(encoding="utf-8"))
+    distractor = json.loads(Path("data/eval/distractor_docket.json").read_text(encoding="utf-8"))
+    gold = json.loads(Path("data/eval/gold.json").read_text(encoding="utf-8"))
+    built = build_retrieve_gold(docket, distractor, gold)
+    on_disk = json.loads(Path("data/eval/retrieve_gold.json").read_text(encoding="utf-8"))
+    assert 30 <= built["n"] <= 50
+    assert on_disk["queries"] == built["queries"]
+    payload = run_retrieve_baseline(
+        corpus=Path("data/corpus"),
+        gold_path=Path("data/eval/gold.json"),
+        docket_path=Path("data/t0_docket.json"),
+        distractor_path=Path("data/eval/distractor_docket.json"),
+        retrieve_gold_path=Path("data/eval/retrieve_gold.json"),
+        out_dir=tmp_path,
+    )
+    text = (tmp_path / "retrieve-bm25-baseline.md").read_text(encoding="utf-8")
+    assert payload["replay_pass"] is True
+    assert "Recall@10" in text and "MRR@10" in text
+    assert "K∈{5,10}" in text
+    assert "冒烟" in text and "不声称统计显著" in text
+    assert "aggregate_checksum" not in text or "checksum" in text
 
 
 def test_sqlite_store_roundtrip(tmp_path):

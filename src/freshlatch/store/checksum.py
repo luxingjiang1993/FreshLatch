@@ -16,6 +16,19 @@ def sha256_hex(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
+def aggregate_checksum(files: list[Path], *, root: Path) -> str:
+    """目录内文件的聚合 checksum:按相对路径排序,逐文件 sha256 后再哈希。
+
+    不读库列。路径相对 root,避免绝对路径把机器名写进指纹。
+    """
+    root = Path(root)
+    lines: list[str] = []
+    for path in sorted((Path(p) for p in files), key=lambda p: p.as_posix()):
+        rel = path.resolve().relative_to(root.resolve()).as_posix()
+        lines.append(f"{rel} {sha256_hex(path.read_bytes())}")
+    return sha256_hex("\n".join(lines).encode("utf-8"))
+
+
 def corpus_doc_path(corpus_root: Path, doc_id: str, as_of: str) -> Path:
     """`data/corpus/{t0|t1}/{doc_id}.md`;as_of 接受 T0/T1 或 t0/t1。"""
     return Path(corpus_root) / str(as_of).lower() / f"{doc_id}.md"

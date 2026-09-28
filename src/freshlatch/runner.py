@@ -16,7 +16,13 @@ from freshlatch.llm import DecodingParams, LLMClient
 from freshlatch.models import AsOf, Claim
 from freshlatch.roles.auditor import EVIDENCE_PACKET_SCHEMA_VERSION
 from freshlatch.skills_loader import load_skill_body
-from freshlatch.store.base import RetrievalStore
+from freshlatch.store.base import (
+    EXECUTABLE_RETRIEVAL_MODES,
+    PRODUCTION_RETRIEVAL_MODE,
+    RETRIEVAL_MODE_ENUM,
+    RetrievalStore,
+    chunk_evidence_id,
+)
 from freshlatch.tools import FOCUS_DIMENSIONS
 
 RETRIEVAL_EXHAUSTED = {"budget_exhausted": True,
@@ -58,18 +64,56 @@ class RunContext:
     mode: str = "online"  # online | eval
     gaps: list[str] = field(default_factory=list)
     quarantine_list: set[str] = field(default_factory=set)  # 隔离名单(W9 记忆卫生;槽位本期为空)
+    # 仅 eval + arm_eval_retrieval_mode 可写入;online 忽略,Agent 工具签名也不接收该字段。
+    eval_retrieval_mode: str | None = None
+
+    def arm_eval_retrieval_mode(self, mode: str) -> None:
+        """评测夹具:强制检索臂。生产 online 拒绝;未实装的臂拒绝,避免误标。"""
+        if self.mode != "eval":
+            raise RuntimeError("生产路径不可强制 retrieval_mode")
+        if mode not in RETRIEVAL_MODE_ENUM:
+            raise ValueError(f"未知 retrieval_mode: {mode}")
+        if mode not in EXECUTABLE_RETRIEVAL_MODES:
+            raise ValueError(
+                f"retrieval_mode={mode} 本期未实装,拒绝把其它臂的结果标成该模式"
+            )
+        self.eval_retrieval_mode = mode
+
+    def _active_retrieval_mode(self) -> str:
+        if self.mode == "eval" and self.eval_retrieval_mode:
+            return self.eval_retrieval_mode
+        return PRODUCTION_RETRIEVAL_MODE
 
     def try_retrieve(self, query: str, *, source_type: str | None = None,
                      as_of: AsOf | None = None, top_k: int = 10) -> list | dict:
-        """retrieve 的预算闸门:Run 级共享计数,超限 fail-soft 返回结构化结果,不抛异常。"""
+        """retrieve 的预算闸门:Run 级共享计数,超限 fail-soft 返回结构化结果,不抛异常。
+
+        生产签名不含 retrieval_mode。轨迹补齐 query、filters、有序 evidence_id、retrieval_mode。
+        """
         if self.retrieval_used >= self.guardrails.retrieval_budget:
             self.events.append({"type": "budget", "kind": "retrieval_exhausted",
                                 "used": self.retrieval_used})
             return RETRIEVAL_EXHAUSTED
         self.retrieval_used += 1
+        requested = self._active_retrieval_mode()
+        if requested in {"dense", "hybrid", "hybrid+rerank", "bm25_fallback"}:
+            self.store.bind_eval_retrieval_mode(requested)
+        else:
+            self.store.bind_eval_retrieval_mode(None)
         hits = self.store.retrieve(query, as_of=as_of, source_type=source_type, top_k=top_k)
-        self.events.append({"type": "retrieve", "query": query, "as_of": as_of,
-                            "used": self.retrieval_used, "hits": len(hits)})
+        self.store.bind_eval_retrieval_mode(None)
+        evidence_ids = [chunk_evidence_id(c) for c in hits]
+        mode = getattr(self.store, "last_retrieval_mode", requested)
+        self.events.append({
+            "type": "retrieve",
+            "query": query,
+            "as_of": as_of,
+            "filters": {"as_of": as_of, "source_type": source_type, "top_k": top_k},
+            "evidence_ids": evidence_ids,
+            "retrieval_mode": mode,
+            "used": self.retrieval_used,
+            "hits": len(hits),
+        })
         return hits
 
     def emit(self, event: dict) -> None:

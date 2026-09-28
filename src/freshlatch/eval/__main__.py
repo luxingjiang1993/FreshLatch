@@ -19,6 +19,13 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
 from freshlatch.eval.control import run_control, run_control_c  # noqa: E402
 from freshlatch.eval.report import console_summary, render_report, write_outputs  # noqa: E402
+from freshlatch.eval.retrieve_eval import (  # noqa: E402
+    run_arm_compare,
+    run_rerank_compare,
+    run_retrieve_baseline,
+    run_transform_compare,
+    run_trap_eval,
+)
 from freshlatch.eval.runner import run_gold  # noqa: E402
 from freshlatch.llm import DecodingParams  # noqa: E402
 from freshlatch.packs import PackPaths, resolve_pack  # noqa: E402
@@ -62,6 +69,14 @@ def build_parser(pack: PackPaths | None = None) -> argparse.ArgumentParser:
     p_rep.add_argument("raw_json")
     p_rep.add_argument("--out", default="reports")
 
+    p_ret = sub.add_parser("retrieve", help="BM25 retrieve 冒烟基线(无 LLM)")
+    p_ret.add_argument("--corpus", default="data/corpus")
+    p_ret.add_argument("--gold", default="data/eval/gold.json")
+    p_ret.add_argument("--docket", default="data/t0_docket.json")
+    p_ret.add_argument("--distractor-docket", default="data/eval/distractor_docket.json")
+    p_ret.add_argument("--retrieve-gold", default="data/eval/retrieve_gold.json")
+    p_ret.add_argument("--out", default="reports")
+
     return ap
 
 
@@ -71,6 +86,66 @@ def main() -> None:
     if args.cmd == "report":
         raw = json.loads(Path(args.raw_json).read_text(encoding="utf-8"))
         print(render_report(raw))
+        return
+
+    if args.cmd == "retrieve":
+        try:
+            payload = run_retrieve_baseline(
+                corpus=Path(args.corpus),
+                gold_path=Path(args.gold),
+                docket_path=Path(args.docket),
+                distractor_path=Path(args.distractor_docket),
+                retrieve_gold_path=Path(args.retrieve_gold),
+                out_dir=Path(args.out),
+            )
+        except ValueError as exc:
+            print(str(exc), file=sys.stderr)
+            raise SystemExit(1) from exc
+        if not payload["replay_pass"]:
+            print("must_stale 回放 fail", file=sys.stderr)
+            raise SystemExit(1)
+        print(
+            f"n={payload['metrics']['n']} Recall@10={payload['metrics']['recall']['10']:.4f} "
+            f"MRR@10={payload['metrics']['mrr@10']:.4f} replay=pass"
+        )
+        print(f"报告: {payload['report_path']}")
+        trap_gold = Path(args.retrieve_gold).parent / "retrieve_traps.json"
+        trap_root = Path("data/traps")
+        if trap_gold.is_file() and trap_root.is_dir():
+            traps = run_trap_eval(
+                trap_root=trap_root, trap_gold_path=trap_gold, out_dir=Path(args.out),
+            )
+            print(f"陷阱: {traps['report_path']}")
+        compare = run_transform_compare(
+            corpus=Path(args.corpus),
+            docket_path=Path(args.docket),
+            distractor_path=Path(args.distractor_docket),
+            gold_path=Path(args.gold),
+            out_dir=Path(args.out),
+        )
+        print(f"变换对比: {compare['report_path']}")
+        dense_db = Path("data/dense/index.sqlite")
+        if dense_db.is_file():
+            arms = run_arm_compare(
+                corpus=Path(args.corpus),
+                retrieve_gold_path=Path(args.retrieve_gold),
+                dense_db=dense_db,
+                a0_baseline_path=Path(args.out) / "retrieve-bm25-baseline.json",
+                out_dir=Path(args.out),
+            )
+            print(
+                f"三列: {arms['report_path']} RRF k={arms['rrf_k']} "
+                f"通过线={arms['verdict']}"
+            )
+            if not arms["pass"]:
+                raise SystemExit(1)
+            rerank = run_rerank_compare(
+                corpus=Path(args.corpus),
+                retrieve_gold_path=Path(args.retrieve_gold),
+                dense_db=dense_db,
+                out_dir=Path(args.out),
+            )
+            print(f"rerank: {rerank['report_path']} {rerank['sentence']}")
         return
 
     store = SQLiteStore(args.db)

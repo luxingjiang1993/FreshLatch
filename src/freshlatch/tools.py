@@ -35,8 +35,9 @@ def _fn(name: str, description: str, properties: dict, required: list[str]) -> d
 
 _TOOL_DEFS: dict[str, dict] = {
     "retrieve": _fn(
-        "retrieve", "检索语料库,返回相关证据块(evidence_id 形如 doc_id#p2)",
-        {"query": {"type": "string", "description": "检索词"},
+        "retrieve", "检索语料库,返回相关证据块(evidence_id 形如 doc_id#p2)。"
+                    "检索串由主张查询变换产出;query 若传入会被忽略,调用方不得自由改写。",
+        {"query": {"type": "string", "description": "忽略。检索串由主张查询变换产出"},
          "source_type": {"type": "string", "description": "可选:private|public|internal"},
          "as_of": {"type": "string", "description": "可选:T0 签发时快照|T1 复验时刻快照"}}, ["query"]),
     "read_source": _fn(

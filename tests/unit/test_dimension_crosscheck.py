@@ -354,7 +354,8 @@ def test_runner_precheck_blocks_mismatch_end_to_end(tmp_path):
         _Msg(content="复验结束"),  # 打回后模型直接文本收尾(finish 被拒前的脚本形态)
     ])
     runner = Runner(_store(), llm)
-    claim = Claim(claim_id="c5", statement="s", t0_evidence_ids=[],
+    # 检索串来自主张查询变换,夹具主张须能召回后续引用的证据块。
+    claim = Claim(claim_id="c5", statement="竞品定价已变", t0_evidence_ids=[],
                   dimension="cost_model")
     runner.run([claim], trajectory_dir=tmp_path)
 
@@ -407,7 +408,8 @@ def test_runner_invariant8_skipped_when_unregistered(tmp_path):
         _Msg(content="复验结束"),
     ])
     runner = Runner(_store(), llm)
-    claim = Claim(claim_id="c5", statement="s", t0_evidence_ids=[])  # dimension=None
+    # 检索串来自主张查询变换,夹具主张须能召回后续引用的证据块。
+    claim = Claim(claim_id="c5", statement="竞品定价已变", t0_evidence_ids=[])  # dimension=None
     runner.run([claim], trajectory_dir=tmp_path)
 
     assert claim.status == "stale", "未登记主张回落不变量 7,真 stale 照常落档"

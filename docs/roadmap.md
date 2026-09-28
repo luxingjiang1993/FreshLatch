@@ -49,14 +49,14 @@ Phase A（RAG）→ 中间层 M → Phase B（Agent）→ 增强 C（采编 / �
 | **A4** | Rerank | 有增益才默认开启；延迟预算写入报告 |
 | **A5** | Query transform（检索入口 claim→query） | 改写前后 Recall 对比；**不**放进 Lead 自由发挥 |
 | **A6** | Ingestion：PDF 纯文本切块 | ≥1 份真实 PDF 进库可检索（表格/HTML/OCR 后置） |
-| **A7** | 时间–版本字段 + 检索时间窗 | 生效/失效/版本可过滤；与后续腐烂对齐 |
-| **A8** | 陷阱语料包 v0（过期 / 冲突 / 元陈述） | 检索评测与后续 Agent 对抗共用 |
+| **A7** | 版本字段 + 快照过滤（`as_of` / `source_type`） | 快照过滤可测；不做日历生效/失效窗；与后续腐烂对齐的是快照而非日历窗 |
+| **A8** | 检索陷阱三类 v0（快照取代 / 同快照冲突 / 元陈述） | 检索评测与后续 Agent 对抗共用；路线图旧称「过期」读作快照取代 |
 
 ### Phase A 关门条件
 
 1. 可复现的 retrieve 评测表（含基线对比）。
 2. `retrieve` 契约稳定；轨迹能记录 `chunk_id` 列表。
-3. 时间窗过滤可用；索引可重建步骤写清。
+3. 快照过滤可用；索引可重建步骤写清。
 4. **本阶段不做**：Memory 挂载、对抗套件、并发、跨 Provider、开放联网问答。
 
 ### 关键路径（现状）
@@ -194,7 +194,7 @@ Phase A（RAG）→ 中间层 M → Phase B（Agent）→ 增强 C（采编 / �
 
 ```
 A-α  契约 + BM25 基线 + retrieve dev set v0
-A-β  dense + hybrid + 时间窗；评测表齐全
+A-β  dense + hybrid + 快照过滤；评测表齐全
 A-γ  rerank 决策 + query transform + 陷阱语料；【A 关门】
 
 M    span 点回 + 系统契约 + 导出口径；【M 关门】

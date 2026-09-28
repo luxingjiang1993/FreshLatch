@@ -1,0 +1,34 @@
+{
+  "version": "v0",
+  "level": "smoke",
+  "note": "人工标注的检索陷阱三类。与主张 must_* 分列,禁止互相顶替。冒烟级,不声称统计显著。",
+  "queries": [
+    {
+      "id": "trap-supersede-1",
+      "kind": "快照取代",
+      "query": "席位标价",
+      "as_of": "T1",
+      "relevant": ["trap-supersede#p1@T1"],
+      "distractors": ["trap-supersede#p1@T0"],
+      "eval_intent": "相关块是 T1 已改写的标价;T0 旧标价是干扰,不是当前快照。"
+    },
+    {
+      "id": "trap-conflict-1",
+      "kind": "同快照冲突",
+      "query": "席位上限",
+      "as_of": "T1",
+      "relevant": ["trap-conflict#p1@T1", "trap-conflict#p2@T1"],
+      "distractors": ["trap-conflict#p3@T1"],
+      "eval_intent": "同一 T1 快照内两条上限互相冲突,两条都标为相关;无关旁注是干扰。"
+    },
+    {
+      "id": "trap-meta-1",
+      "kind": "元陈述",
+      "query": "席位月费实测",
+      "as_of": "T1",
+      "relevant": ["trap-meta#p2@T1"],
+      "distractors": ["trap-meta#p1@T1"],
+      "eval_intent": "元陈述块只作干扰,不标成必须当反证命中。"
+    }
+  ]
+}
