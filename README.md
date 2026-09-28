@@ -1,99 +1,109 @@
-# FreshLatch（复验闩）
+# FreshLatch
 
 > Reverify latch for signed claims — from "once true" to "still verifiable now."
 
-两周前那份判断，客户今天追问：**还成立吗？**
+Two weeks later, the client asks: **does that judgment still hold?**
 
-FreshLatch 不做新摘要，也不替你做商业裁决。它对照签发时原文（T0）与复验时点原文（T1），给你一份能点回证据的**复验单**：哪些仍可复验、哪些已失效、缺口在哪；过期、冲突、无 T1 原文支持的主张**不得保持绿灯**——人决定作废或续命。
+FreshLatch does not write a new brief. It does not make the commercial call. It diffs the signed corpus (T0) against the reverify-time corpus (T1) and returns a **Reverify Sheet** you can click back to evidence: what still holds, what must die, and where the gaps are. Expired, conflicting, or T1-unsupported claims **cannot stay green**. A human voids or renews them.
 
-仓库：[luxingjiang1993/FreshLatch](https://github.com/luxingjiang1993/FreshLatch)
-
----
-
-## 它解决什么问题
-
-顾问、研究员、战略岗常常已经出过一版判断，附件看起来可辩护。两周后世界变了：竞品改价、监管口径更新、访谈对象改口。人仍可能把**旧绿灯**发给客户——做错一次是职业风险。
-
-你真正需要的不是「再写一篇」，而是：
-
-> 给我一份能指回 T0 与 T1 原文的复验单：哪些仍成立、哪些必须作废、缺口是什么。
-
-频率大约每 2–6 周一次「还成立吗」。FreshLatch 卖的就是这一次对照与收门。
+Repo: [luxingjiang1993/FreshLatch](https://github.com/luxingjiang1993/FreshLatch)
 
 ---
 
-## 你得到什么
+## The problem
 
-主界面是**复验单**（不是聊天框）。每条已签发主张会落到四种状态之一：
+Consultants, researchers, and strategy leads ship a defensible judgment. Then the world moves: competitor pricing, regulatory stance, interview reversals. Someone still forwards the **old green** attachment. Getting that wrong once is career risk.
 
-| 状态 | 含义（人话） |
-|------|----------------|
-| **fresh** | 仍可复验——须有可点回的 T1 证据 |
-| **stale** | 已失效——须能指回推翻它的 T1 原文 |
-| **unknown** | 证据不足，或闸打回——不得假装还绿 |
-| **void** | 人已作废——机器红灯之外的人决定 |
+What you actually need is not "write another memo." It is:
 
-成交物还包括：
+> Give me a sheet that points back to T0 and T1 originals — what still holds, what must be voided, and what is missing.
 
-- **点回原文**：判定要能指到证据，而不是模型「记得」
-- **HumanLatch（人闩）**：人对红/黄灯主张点「作废」或「续命」（续命必须带 T1 证据）；Agent **不得**自己把红灯改回绿灯
-- **客户向复验备忘（可选导出）**：可转发的三分栏（仍成立 / 已作废 / 缺口），不含「建议进入/不进入市场」类裁决
-
-一句话边界：**卖作废与缺口，不卖更快摘要，不卖自动决策。**
+That ask lands about every 2–6 weeks. FreshLatch sells that one reverify and close.
 
 ---
 
-## 给谁用 / 不给谁用
+## What it is
 
-**适合：**
+A **reverify latch**: signed claims go from "was true at T0" to "still verifiable against T1." The primary UI is a Reverify Sheet, not a chat box. Ground truth is source text, not model memory.
 
-- 独立顾问、产业研究员、战略岗——已经出过一版判断，要对自己上周附件负责
-- 需要「研究 / 提案诚信」预算的个人或小团队（设计意图上的现金楔子）
-
-**明确不适合：**
-
-- 只要更快摘要的增长团队
-- 要企业 SSO / 全家桶采购一次到位
-- 要系统自动给出商业裁决的买方
-- 把本仓当成通用记忆平台 / Agent 中台的采购
-
-当前公开仓库以**合成课题与本地 demo**为主；真实客户机密不进作品集。
+One-line boundary: **sell voiding and gaps — not faster summaries, not auto decisions.**
 
 ---
 
-## 它怎么工作（短版）
+## What you get
 
-一次复验大致是这条路径：
+Each signed claim lands in one of four states:
 
-1. **导入**已签发主张（T0 卷宗形状：主张 + 当时证据引用）
-2. **选定 T1 来源**（上传语料包、粘贴变更要点后确认入库、或使用内置合成评测包——界面会标明 synthetic）
-3. **对照**：系统按 T1 原文检索与阅读，找「仍成立」与「已死」的依据
-4. **判定落档**：`fresh` / `stale` / `unknown`；规则闸强制——无 T1 证据不得绿，`stale`/`unknown` 不得保持绿灯
-5. **人闩**：人作废或续命；作废名单进下一轮，该主张不得再绿
+| Status | Meaning |
+|--------|---------|
+| **fresh** | Still verifiable — must cite clickable T1 evidence |
+| **stale** | Dead — must point to the T1 span that kills it |
+| **unknown** | Insufficient evidence, or gate bounce — cannot pretend green |
+| **void** | Human voided — machine red alone is not enough |
 
-技术上有 Lead / Critic / Auditor 等角色与规则闸，但对访客只需记住：**原文是真相，闸管放行，人管作废与续命。**
+Also included:
 
-默认 demo 课题（合成）：「两周前那份『是否进入东南亚中小企业 AI 客服市场』的判断，现在还成立吗？」
-
----
-
-## Demo / 当前状态（诚实）
-
-- **可跑**：本地复验单 UI、主链复验、人审作废/续命、合成语料与闸层单测
-- **标明 synthetic**：demo 与评测材料是合成的，不是真实客户卷宗
-- **不是**：已上线 SaaS、已有付费客户、或「W12 已通过 / 一期测量已闭合」——请勿这样引用本仓
-- **已知半成品**（细节见路线图与证据目录）：检索仍以 BM25 为主；记忆卫生等模块有代码但未全部挂进默认主链；联网自动采编未做
-
-想看工程验收边界，请读 `docs/evidence/` 与根目录 `CONTEXT.md`，不要把 README 当成验收证书。
+- **Click-back evidence** — verdicts must point to spans, not "the model remembers"
+- **HumanLatch** — a person voids or renews (renew requires T1 evidence); agents **cannot** turn red back to green
+- **Client Memo (optional export)** — forwardable three columns (still holds / voided / gaps); no "enter / don't enter market" advice
 
 ---
 
-## 快速开始
+## Who it's for
 
-**环境：** Python 3.11+；跑 LLM 主链时在仓库根配置 `.env`（至少 `DASHSCOPE_API_KEY`，OpenAI 兼容）。确定性单测可不依赖真实 Key。
+**Fit**
+
+- Independent consultants, industry researchers, strategy leads who already shipped a judgment and own last week's attachment
+- Individuals or small teams buying "research / proposal integrity," not another Copilot seat
+
+**Non-goals / not a fit**
+
+- Growth teams that only want faster summaries
+- Enterprise SSO / platform-bundle buyers
+- Buyers who want the system to auto-decide commercial outcomes
+- Treating this repo as a general memory platform or agent middleware
+
+The public repo is a **synthetic local demo**. Real client confidentials do not belong in a portfolio.
+
+---
+
+## How it works
+
+One reverify is roughly this path:
+
+1. **Import** signed claims (T0 docket shape: claim + evidence refs)
+2. **Pick T1** — upload a corpus pack, paste change notes (confirm before ingest), or use the built-in synthetic pack (UI labels it `synthetic`)
+3. **Contrast** — retrieve and read T1 originals; hunt "still holds" and "already dead"
+4. **Latch** — `fresh` / `stale` / `unknown`; rules gate force: no T1 evidence → not green; `stale` / `unknown` cannot stay green
+5. **HumanLatch** — void or renew; voided ids cannot go green again on rerun
+
+Under the hood: Lead / Critic / Auditor plus a rules gate. For visitors, remember three lines: **source text is truth, gates control release, humans control void and renew.**
+
+Default demo thesis (synthetic): *"Does the judgment on entering the Southeast Asia SMB AI customer-support market in the next 12 months still hold?"*
+
+---
+
+## Current status
+
+Honest snapshot of this public repo:
+
+| | |
+|--|--|
+| **Runs locally** | Reverify Sheet UI, main reverify chain, human void/renew, synthetic corpora, gate unit tests |
+| **Synthetic** | Demo and eval materials are labeled synthetic — not real client dockets |
+| **Not claimed** | Live SaaS, paying customers, "W12 passed," or closed Phase-1 measurement — do not cite this repo that way |
+| **Known gaps** | Retrieval is still BM25-first; some modules (e.g. memory hygiene) exist in code but are not all on the default main path; live web ingest is not built |
+
+For engineering acceptance boundaries, read `docs/evidence/` and root `CONTEXT.md`. This README is not a certification.
+
+---
+
+## Quick start
+
+**Requires:** Python 3.11+. For the LLM main chain, put at least `DASHSCOPE_API_KEY` (OpenAI-compatible) in a root `.env`. Deterministic unit tests do not need a real key.
 
 ```powershell
-# Windows PowerShell：控制台 UTF-8
+# Windows PowerShell — console UTF-8
 $OutputEncoding = [Console]::OutputEncoding = [Text.UTF8Encoding]::new()
 
 cd <repo-root>
@@ -102,37 +112,37 @@ python -m venv .venv
 pip install -r requirements.txt
 
 $env:PYTHONPATH = "src"
-python -m pytest -q          # 单测
-python -m freshlatch.ui.app  # 复验单 UI → http://127.0.0.1:8000
+python -m pytest -q          # unit tests
+python -m freshlatch.ui.app  # Reverify Sheet → http://127.0.0.1:8000
 ```
 
-Unix 等价：`source .venv/bin/activate`，`export PYTHONPATH=src`。主按钮文案是「开始复验」，不是「生成答案」。
+Unix equivalent: `source .venv/bin/activate`, `export PYTHONPATH=src`. The primary CTA is **Start reverify**, not "Generate answer."
 
-语料入库示例：`PYTHONPATH=src python scripts/ingest_corpus.py`
-
----
-
-## 更深的文档
-
-| 想了解 | 去读 |
-|--------|------|
-| 产品立项与边界 | [`docs/product/FreshLatch-立项切片.md`](docs/product/FreshLatch-立项切片.md) |
-| 术语表（主张 / T0·T1 / 闸 / HumanLatch） | [`CONTEXT.md`](CONTEXT.md) |
-| 架构与规格 | [`docs/spec/00-架构总览.md`](docs/spec/00-架构总览.md)、[`docs/spec/README.md`](docs/spec/README.md) |
-| 整合路线图 | [`docs/roadmap.md`](docs/roadmap.md) |
-| 验收与证据 | [`docs/evidence/`](docs/evidence/) |
-| Agent / 贡献约定 | [`AGENTS.md`](AGENTS.md) |
+Corpus ingest example: `PYTHONPATH=src python scripts/ingest_corpus.py`
 
 ---
 
-## 路线图（一瞥）
+## Docs
 
-下一程大致是：**先把检索（RAG）做成可独立测量的子系统**，再补证据点回与契约口径，然后加固 Agent 评测与半激活模块的「接上或切除」。联网只允许「采编落盘成 T1 → 再复验」，不做开放问答主产品。完整条目见 [`docs/roadmap.md`](docs/roadmap.md)。
+| Topic | Link |
+|-------|------|
+| Product brief & boundaries | [`docs/product/FreshLatch.md`](docs/product/FreshLatch.md) |
+| Charter slice (CN) | [`docs/product/FreshLatch-立项切片.md`](docs/product/FreshLatch-立项切片.md) |
+| Glossary (claim / T0·T1 / gate / HumanLatch) | [`CONTEXT.md`](CONTEXT.md) |
+| Architecture & specs | [`docs/spec/README.md`](docs/spec/README.md) |
+| Evidence & acceptance | [`docs/evidence/`](docs/evidence/) |
+| Agent / contributor norms | [`AGENTS.md`](AGENTS.md) |
 
 ---
 
-## 许可与免责
+## Roadmap
 
-本仓库暂无独立 `LICENSE` 文件；使用前请自行确认合规需求。
+Next: make retrieval (RAG) a measurable subsystem, tighten click-back evidence contracts, then either wire or cut half-activated modules. Live web, if any, is **ingest to T1 disk → then reverify** — not open-ended Q&A as the product. Details live in repo docs and ADRs under `docs/`.
 
-**免责：** FreshLatch 输出的是复验对照与人闩记录，**不是法律意见，不是自动商业决策**。合成 demo 仅用于说明产品形态；真实客户机密请勿写入公开作品集。
+---
+
+## License & disclaimer
+
+No standalone `LICENSE` file yet. Confirm your own compliance needs before use.
+
+**Disclaimer:** FreshLatch outputs reverify contrast and HumanLatch records. **Not legal advice. Not automated commercial decisions.** Synthetic demos explain product shape only; keep real client confidentials out of public portfolios.
