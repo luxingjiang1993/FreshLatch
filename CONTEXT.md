@@ -17,6 +17,14 @@ _Avoid_: 主张维度、维度标签
 T0 是主张签发时的原始文档快照;T1 是复验时刻的新文档快照。判定以 T1 原文为 ground truth。
 _Avoid_: 旧库/新库、源数据/目标数据
 
+**结构锚切块**:
+语料按文档内显式锚(现行约定 `## pN`)切成可点回块;块的对外身份是 `evidence_id` 中的 anchor。本期不改用纯字数窗切块作为主契约。
+_Avoid_: 滑窗切块(主契约)、token chunk(对外身份)
+
+**快照取代 (snapshot supersession)**:
+同一事实主题在 T0 仍成立、在 T1 已被改写或删除的跨快照关系;检索陷阱与后续腐烂叙事的「过期」若出现,本期特指此类,不是日历失效日。
+_Avoid_: 过期(含糊)、expires_at、日历过期
+
 **T1 来源三卡 (T1 Source Picker)**:
 复验前用户显式选择 T1 ground truth 来源的三种合法入口:上传 T1 语料包、粘贴变更要点(先成草稿,人点「确认入库」后才 ingest)、使用内置合成评测包(界面标明 synthetic)。未选定合法 T1 来源不得假装已有最新事实。联网插座若存在则默认关,不进 Batch 1 主路径(ADR-0016)。
 _Avoid_: T1 自动盯梢、联网默认同步、粘贴即入库
@@ -57,11 +65,19 @@ _Avoid_: T1 自动盯梢、联网默认同步
 _Avoid_: 自由散文抽主张、一键 LLM 切分(首版不做)
 
 **evidence_id 时点格式**:
-检索层返回的证据标识,格式 `doc_id#anchor@as_of`(如 `t0-competitor-notes#p2@T1`)。`@` 后缀标明快照时点;判 fresh/stale 引用的证据必须锚 T1。Lead 引用 evidence_id 必须逐字来自本会话 retrieve 返回(白名单校验),不得编造。
-_Avoid_: 证据链接、出处编号
+检索层对外契约的命中主键,格式 `doc_id#anchor@as_of`(如 `t0-competitor-notes#p2@T1`)。`@` 后缀标明快照时点;判 fresh/stale 引用的证据必须锚 T1。Lead 引用 evidence_id 必须逐字来自本会话 retrieve 返回(白名单校验),不得编造。库内 `chunk_id` 仅存储实现细节,不进工具返回、轨迹与评测金标。
+_Avoid_: 证据链接、出处编号、chunk_id(对外)
+
+**快照过滤 (snapshot filter)**:
+retrieve 按离散快照时点 `as_of ∈ {T0,T1}`(及可选 `source_type` / `doc_version`)收窄语料的过滤;不是日历生效/失效窗。日历时间窗不进本期检索契约。
+_Avoid_: 时间窗(含糊)、effective_from、expires_at、日历过滤
+
+**主张查询变换 (claim→query transform)**:
+检索入口把主张(及可选登记维度/`focus` 封闭枚举映射)变成 retrieve 的 `query` 的确定性/可配变换;评测可对比变换前后召回。Lead/Critic 等角色不得自由改写检索串。
+_Avoid_: Lead 改写查询、query rewrite(Agent 品味)、HyDE(未拍板前)
 
 **Lead Reverifier (Lead)**:
-真 Agent,自主规划复验:改写查询、按 `as_of=T0|T1` 换源、读原文、调 `reverify_claim` / `mark_stale` / `mark_gap`,并决定是否派驻 Critic / Auditor / Forensic。
+真 Agent,自主规划复验:调用 retrieve(查询串由主张查询变换产出,Lead 不得自由改写检索串)、按 `as_of=T0|T1` 换源、读原文、调 `reverify_claim` / `mark_stale` / `mark_gap`,并决定是否派驻 Critic / Auditor / Forensic。
 _Avoid_: 主 agent、调查员
 
 **Critic**:
@@ -109,6 +125,10 @@ _Avoid_: checksum 已启用(含糊全称)、开关已打开、档3a已启用、�
 **元陈述 (meta-statement)**:
 T1 中关于测量/跟踪行为本身的陈述(未复测/不再列入跟踪项/无新数据/待发布/未入账),不承载关于主张对象的实质事实。元陈述是证据缺口,不是推翻:stale 理由以纯元陈述为唯一依据由规则闸打回(`META_ONLY_DISPROOF`)并落 `unknown`。标记词表封闭枚举,增补走评审工单。
 _Avoid_: 状态说明、跟踪备注
+
+**检索陷阱三类 (retrieve trap kinds)**:
+供检索评测与后续 Agent 对抗共用的语料构造类别:快照取代、同快照冲突陈述、元陈述。不是主张金标 must_* 的别名;相关 evidence 须人工标进 retrieve 金标(主张金标可派生的除外)。
+_Avoid_: 过期/冲突/元陈述包(路线图旧称「过期」须读作快照取代)
 
 **HumanLatch**:
 人审工作流:人对每条红/黄灯主张点「作废」或「续命」(续命必须带 T1 evidence_id),并确认记忆隔离。Agent 不得自己把红灯改回绿灯。续命生效链次序(Batch 2):格式→点回→闸(含 checksum)→仅绿后写 validity_basis;失败零写;`error_code`+短中文透传(见 docs/research/β-checksum与HumanLatch-renew交界设计评估.md)。跨轮腐烂重检(ADR-0025)不得自动 void、不得篡改人审 L0;机器仅可将带 basis 的 fresh 机械落 unknown。

@@ -22,6 +22,7 @@ W4 开工前决策完备的实施规格:复验主链(W1–W2)、Critic 与评测
 | 7 | [07-验收-W1-W4.md](07-验收-W1-W4.md) | W1–W2 验收清单、W3 预检、W4 终审锁定判据与分级止损预案 |
 | 8 | [08-拆单建议.md](08-拆单建议.md) | W1–W4 实施工单切分建议(供 to-tickets 或实施会话用) |
 | 9 | [09-验收-W5-W8.md](09-验收-W5-W8.md) | W5–W8 验收判据 pre-registration 锁定版(K1–K7;统计层首次入判据) |
+| 10 | [10-PhaseA-RAG.md](10-PhaseA-RAG.md) | Phase A RAG 子系统规格(retrieve 主缝;grilling→to-spec;Issue 见 tracker) |
 
 ## 决议来源索引(本规格各节的权威出处)
 
