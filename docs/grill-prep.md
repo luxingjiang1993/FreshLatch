@@ -67,8 +67,8 @@
 
 **推荐：** 选你最容易自用、能稳定产出「已签发主张」的那一个；默认倾向 **合规对外口径** 或 **顾问报告**（二者谁已有真实文档就选谁）。研报若样本难搞可后置。
 
-- [ ] 已钉：________  
-- [ ] ADR/glossary 已记  
+- [x] 已钉（2026-09-29）：**顾问报告**；样例主包 = McKinsey State of AI（**T0≈2025-03 rewiring** → **T1≈2025-11 agents**）；仓内只存主张+摘录+出处，不整本镜像 PDF  
+- [x] ADR/glossary 已记（ADR-0027 · CONTEXT · 评估文档）  
 
 ---
 
@@ -80,8 +80,8 @@
 - 列表：标题/来源、包结论、更新时间、Run 状态  
 - 详情：原文摘要、T1 checksum 列表、逐条闸结果、包级 disposition、人审作废/续命、轨迹链接  
 
-- [ ] 已钉（可附草图/bullet）  
-- [ ] 与现有 UI 关系：增量 / 新建  
+- [x] 已钉（2026-09-29）：列表新建；详情 = 现有复验单 + 包结论条（增量，非三套 UI）  
+- [x] 与现有 UI 关系：**增量**（复验单改造成 Run 详情）
 
 ---
 
@@ -91,8 +91,8 @@
 
 **推荐：** **新层聚合，底层枚举不改名**；写一张映射表进 ADR，禁止 V1 UI 发明第四套状态词。
 
-- [ ] 映射表已写  
-- [ ] 金标用例抽 1 条验证映射  
+- [x] 已钉：新层聚合；边界见 §2d Round 2 Q15；**ADR-0027 已落**  
+- [ ] 金标用例抽 1 条验证映射（to-spec / 实现时）  
 
 ---
 
@@ -102,8 +102,8 @@
 
 **推荐：** V1 最小 = **本地文件（md/txt/pdf 择已有解析能力）+ 可选单个 URL**；冲突 → 待人审，不自动绿灯。
 
-- [ ] 已钉源类型列表  
-- [ ] 失败态已列  
+- [x] 已钉源类型列表（2026-09-29）：现有三卡（md 上传 / 粘贴确认 / 合成）+ **(c′) 薄 URL**，白名单域名 **仅** `www.mckinsey.com`；失败显式错误并可回落粘贴；**不做**开放爬虫 / 多源平台  
+- [x] 失败态已列：非白名单 / 超时或网络错 / 非文本或空正文 / 落盘前校验失败 → 不入库，可回落粘贴（Round 2）  
 
 ---
 
@@ -117,7 +117,7 @@
 
 人手补丁走同一 schema，`arm` 先标 `C` 或手工 `T`。
 
-- [ ] schema 文件路径：________  
+- [x] schema 约定路径：`data/patch_events/`（JSONL；文件随 to-spec/实现提交）  
 - [ ] 示例一行已提交  
 
 ---
@@ -128,7 +128,7 @@
 
 **推荐：** **文档任务可并行**；V1 **合并/对外 demo 前** I0 必须 Exit（表在仓且你能闭卷算）。编码 agent 可先搭 V1 骨架，但不得宣称发前主叙事完成。
 
-- [x] 已钉：文档/骨架可并行；**V1 merge 或对外 demo 叙事前**必须 I0 Exit（2026-09-29 I0 grill Round 1）
+- [x] 已钉：文档/骨架可并行；**V1 merge 或对外 demo 叙事前**必须 I0 Exit（2026-09-29 I0 grill Round 1；I0 已 DONE）
 
 ---
 
@@ -138,7 +138,72 @@
 
 **推荐：** V1 **只后台记账**；C vs T 切换不进正式发前 UX（避免产品变成实验台）。实验脚本读写同一 JSONL。
 
-- [ ] 已钉  
+- [x] 已钉（2026-09-29 Round 2）：V1 **只后台记账**；C vs T 不进正式发前 UX  
+
+
+> 用途：回答「能不能找网上可用材料」；**未**自动下载进仓（版权/体积/二次分发另决）。  
+> 优先可公开打开的洞察页/PDF 链接作 T0/T1 来源登记；仓内只保留摘录+出处，不整本镜像侵权分发。
+
+### 档 A · MBB / 顶咨（顾问报告垂直 · 用户点名档）
+
+| ID | 机构 | 材料 | 入口 |
+|----|------|------|------|
+| **McK-SoAI-2025** | McKinsey | *The state of AI in 2025: Agents, innovation, and transformation*（2025-11） | [洞察页](https://www.mckinsey.com/capabilities/quantumblack/our-insights/the-state-of-ai) · [PDF](https://www.mckinsey.com/~/media/mckinsey/business%20functions/quantumblack/our%20insights/the%20state%20of%20ai/november%202025/the-state-of-ai-2025-agents-innovation_cmyk-v1.pdf) |
+| **McK-SoAI-Mar2025** | McKinsey | *How organizations are rewiring to capture value*（2025-03；同系列前一波） | [洞察页](https://www.mckinsey.com/capabilities/quantumblack/our%20insights/the-state-of-ai-how-organizations-are-rewiring-to-capture-value) · [PDF](https://www.mckinsey.com/~/media/mckinsey/business%20functions/quantumblack/our%20insights/the%20state%20of%20ai/2025/the-state-of-ai-how-organizations-are-rewiring-to-capture-value_final.pdf) |
+| **McK-Agentic** | McKinsey | *Seizing the agentic AI advantage*（2025-06） | [PDF](https://www.mckinsey.com/~/media/mckinsey/business%20functions/quantumblack/our%20insights/seizing%20the%20agentic%20ai%20advantage/seizing-the-agentic-ai-advantage-june-2025.pdf) |
+| **McK-GenAI-Frontier** | McKinsey / MGI | *The economic potential of generative AI*（经典生产力边界数字，易过期） | [PDF](https://www.mckinsey.com/~/media/mckinsey/business%20functions/mckinsey%20digital/our%20insights/the%20economic%20potential%20of%20generative%20ai%20the%20next%20productivity%20frontier/the-economic-potential-of-generative-ai-the-next-productivity-frontier.pdf) |
+| **BCG-AI-Value** | BCG | AI Adoption 2024（74% struggle to scale value）等 | [例](https://www.bcg.com/press/24october2024-ai-adoption-in-2024-74-of-companies-struggle-to-achieve-and-scale-value) · [AI at Work 2025](https://www.bcg.com/publications/2025/ai-at-work-momentum-builds-but-gaps-remain) |
+| **Bain-Tech-2025** | Bain | Technology Report 2025 专题页 | [入口](https://www.bain.com/insights/topics/technology-report) |
+
+### 档 B · 同「高大上」邻档（非 MBB 但面试够硬）
+
+| ID | 机构 | 材料 | 入口 |
+|----|------|------|------|
+| **HAI-2025** | Stanford HAI | *AI Index Report 2025*（引用 McKinsey survey 数字，开源友好） | [PDF](https://hai-production.s3.amazonaws.com/files/hai_ai_index_report_2025.pdf) |
+| **WEF / IMF 类** | 多边 | 年度 AI/数字经济报告（按需再钉单份） | 官方站点检索 |
+
+### 档 C · 合规官方（上一轮；可作辅包，非用户本轮主诉求）
+
+BOI / GenAI 暂行办法 / 个保审计办法 — 见会话记录；适合 `regulatory_stance`，档次是「监管原文」不是「顶咨品牌」。
+
+### 与 Q4（c′）耦合 — **已钉 2026-09-29**
+
+| 语料策略 | Q4 | 状态 |
+|----------|-----|------|
+| **顾问报告 + McKinsey State of AI（T0=2025-03 → T1=2025-11）** | **(c′) 白名单仅 `www.mckinsey.com`** | **已钉**；失败→显式错+粘贴回落；不扩第二生产域名 |
+
+**版权纪律：** V1 仓内只存「已签发主张清单 + 摘录块 + 来源 URL/日期」；禁止把整本 McKinsey PDF 当开源数据集再分发。
+
+---
+
+## 2d. V1 grill Round 1 已钉摘要（2026-09-29）
+
+| # | 拍板 |
+|---|------|
+| Q1 | 垂直=顾问报告；主包 McK SoAI T0=2025-03 / T1=2025-11 |
+| Q2 | 发前列表新建；Run 详情=复验单+包结论条 |
+| Q3 | 包结论=新层聚合；底层 fresh/stale/unknown/void 不改名 |
+| Q4 | 三卡 + c′ URL；白名单 `www.mckinsey.com` |
+| Q5 | JSONL `data/patch_events/` + roadmap 字段 + ts/actor |
+| Q6 | I0 已 DONE，不挡 V1 |
+
+### Round 2（2026-09-29 · 认推荐）
+
+| # | 拍板 |
+|---|------|
+| Q7 | C vs T **只后台 JSONL**；发前 UI 无开关 |
+| Q15 | 包映射：未收口 stale→勿发；有 unknown→需补丁；**全 fresh 无人审→可发**；红灯人审收口且无未处理 unknown→可发 |
+| Q16 | URL 失败四态：非白名单 / 超时网络 / 非文本或空 / 落盘前校验失败 → 不入库，可回落粘贴；PDF URL 另票 |
+| Q17 | V1 **不做**薄对话（留 V1.5）；禁对话改 disposition |
+| Q18 | **开 ADR-0027**（垂直+包结论新层+薄 URL 白名单，一条短 ADR） |
+
+**待共享理解确认后落盘：** ~~ADR-0027 · 评估 · CONTEXT~~ → **已落盘（2026-09-29 共享理解确认）**
+
+**已落盘（V1 决议）:**  
+`docs/adr/0027-v1-顾问报告垂直包结论与薄URL.md` · `docs/research/V1-发前闭环垂直与包结论设计评估.md` · CONTEXT 词条
+
+**下一跳:** `/to-tickets`（基于 [#168](https://github.com/luxingjiang1993/FreshLatch/issues/168) / `docs/spec/11-PhaseV1-PrePublish.md`）→ enrich → before-implement → implement。  
+**主缝：** 发前 Run 边界（**已确认 2026-09-29**）。
 
 ---
 
@@ -171,20 +236,22 @@
 **已落盘:**  
 `docs/accounting-card.md` · `docs/eval-retrieve.md` · `docs/contribution-boundary.md` · `docs/adr/0026-i0-冒烟层与reports为数字真相源.md` · `docs/research/I0-冒烟层与数字真相源设计评估.md` · `docs/evidence/i0/ACCEPTANCE.md`  
 
-**I0 Exit:** **DONE**（2026-09-29；证据见 ACCEPTANCE）。下一跳：V1 grill（§2 Q1–Q5）。
-
+**I0 Exit:** **DONE**（2026-09-29；证据见 ACCEPTANCE）。  
+**V1 Round 1–2:** 已钉（见 §2d）。**共享理解已确认**；ADR-0027 / 评估 / CONTEXT 已落。下一跳 **to-spec**。
 ---
 
 ## 3. 后续轮（依赖 §2 部分答案）
 
 | 题 | 依赖 | 内容 |
 |----|------|------|
-| Q8 薄对话范围 | Q2 | 允许哪些意图；禁止改裁决的强制点 |
-| Q9 Evidence-bound 补丁 UX | Q5, Q3 | 引用如何展示；人确认控件 |
-| Q10 I1 样本来源 | Q1 | 真实误判从哪来；≥3 条计划 |
-| Q11 #8 政策规则最早切片 | V1 Exit | 规则语言子集；挂 Gate 何处 |
-| Q12 #4 与 I2 样例池 | I1 三分法 | 互不替代的具体攻击故事 |
-| Q13 Studio 工作站名单 | 解冻决议 | 仍冻结则本轮跳过 |
+| **V1-R2 Q7** | Q5 | 论文 C vs T 是否进 UX |
+| **V1-R2 映射边界** | Q3 | 「全 fresh 无人审」等边界；ADR 映射表 |
+| **V1-R2 URL 失败态** | Q4 | 超时/非白名单/非 HTML/空正文 |
+| **V1-R2 薄对话** | Q2 | 允许意图；禁改裁决点（原 Q8） |
+| **V1-R2 ADR** | Q1/Q3/Q4 | 是否开垂直+disposition+薄 URL ADR |
+| Q9 Evidence-bound 补丁 UX | Q5, Q3 | **V1.5**；本轮可跳过或只留位 |
+| Q10 I1 样本来源 | Q1 | I1 轮再开 |
+| Q11–Q13 | 更后 | 见原表 |
 
 ### I0 Round 2（依赖 §2b；见本会话）
 
@@ -215,6 +282,8 @@
 | **Hard-Gold** | 另票；过增益门才讨论改生产默认臂 |
 | **冒烟层评测（I0）** | Phase A retrieve 对比表的诚实档：n 小、可复跑、**禁止**升格为统计显著/方差结论；文首必须声明（评测文档纪律，不进产品词表正文） |
 | **retrieve 子系统评测** | `python -m freshlatch.eval retrieve` 轨；与主张金标 `eval run --gold` **分轨**，不得混报 |
+| **V1 垂直（顾问报告）** | 近端唯一垂直：已签发顾问/战略主张的发前复验；样例主包 McKinsey State of AI（T0≈2025-03 / T1≈2025-11）；非研报、非合规主包 |
+| **薄 URL（c′）** | T1 合法入口之一：仅白名单域名单条抓取→落盘；失败显式错误并可回落粘贴确认入库；非开放爬虫 |
 
 定稿后迁到正式 `docs/` glossary 或 ADR；此处仅种子。
 
@@ -239,3 +308,5 @@
 | 2026-09-29 | I0 grill Round 1 认推荐：§2b 已钉；§2 Q6 勾选；glossary 增冒烟层/retrieve 子系统评测种子 |
 | 2026-09-29 | I0 grill Round 2 认推荐：大纲/命令/黑名单/Exit/Hard-Gold/ADR-0026；I0 frontier 清空待共享理解确认 |
 | 2026-09-29 | 共享理解确认；I0 三件套+ADR-0026+评估文档落盘；CONTEXT 增 retrieve 子系统评测词条 |
+| 2026-09-29 | V1 grill Round 1–2 认推荐：顾问报告+McK SoAI；两屏增量；包结论新层；c′=`www.mckinsey.com`；patch_events JSONL；Q7/Q15–Q18 已钉；待共享理解后 ADR-0027 |
+| 2026-09-29 | V1 共享理解确认；ADR-0027+评估+CONTEXT 落盘；下一跳 to-spec |

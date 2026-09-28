@@ -14,9 +14,9 @@
 **代理:** 仓库变更按 L0/L1/L2（Ronin 可代 L1；**人终收类如历史 #166 不代批/代关**）；超时或证据不足 fail-closed。
 
 ```
-DONE: Phase A · Phase I0
+DONE: Phase A · Phase I0 · V1 grill
 NOW → NEXT:
-  Phase V1 → Phase I1 → Phase V1.5 → Phase I2
+  Phase V1 (to-spec → tickets → implement) → Phase I1 → Phase V1.5 → Phase I2
   → Phase B′ (on-demand) → Phase V2
 BACKLOG: Hard-Gold ticket | Policy-as-code (#8) | Studio (frozen)
 ```
@@ -60,22 +60,23 @@ BACKLOG: Hard-Gold ticket | Policy-as-code (#8) | Studio (frozen)
 
 ---
 
-## Phase V1 — Pre-publish loop · **PRODUCT SKELETON**
+## Phase V1 — Pre-publish loop · **GRILL DONE · NEXT = to-spec**
 
 **Goal:** 一条可演示的发前路径：入库 → Gate → 包结论 → 人审 → 两屏。  
-**Track:** V · **Depends on:** I0 建议先过（无表则 V1 易成壳）
+**Track:** V · **Depends on:** I0 DONE  
+**决议:** ADR-0027；评估见 `docs/research/V1-发前闭环垂直与包结论设计评估.md`
 
 | | |
 |--|--|
-| **In** | **锁定单一垂直**（顾问 / 研报 / 合规择一）；T1 落盘（checksum）；Gate 三态；包结论（可发/需补丁/勿发）；作废/续命；两屏 UI；**开始记账 `patch_events`**（人手补丁也算，为 V1.5/论文蓄数据） |
-| **Out** | **多垂直并行**；难金标；High-Recall 改默认；Studio；厚对话改裁决 |
+| **In** | **单一垂直=顾问报告**（McK SoAI 03→11 样例包）；T1 落盘（checksum）；三卡+薄 URL（`www.mckinsey.com`）；Gate；包结论新层；作废/续命；两屏（列表新建+复验单详情）；**`patch_events` JSONL 起记**（后台 C/T） |
+| **Out** | **多垂直并行**；难金标；High-Recall 改默认；Studio；薄对话/厚对话改裁决；开放爬虫 |
 | **Exit** | 真实发前路径可 demo；轨迹追到 T1 checksum；包结论与金标/闸口径一致 |
 
 **Definition of Done**
 - [ ] 未归档不得定论  
 - [ ] 报告级 disposition 可追责  
 - [ ] 人审路径走通  
-- [ ] 单一垂直已写进文档/README  
+- [ ] 单一垂直已写进文档/README（决议已钉；README 随 to-spec/实现勾）  
 - [ ] `patch_events` schema 已落并开始记账  
 
 ---
@@ -293,3 +294,5 @@ Findings ≈ 顶会正规次主赛道；Industry ≈ 同会落地轨；对 mid �
 | 2026-09-28 | **v3**：阶段 In/Out/Exit；Verify+/差异化/论文；补丁（默认 V1→I1→V1.5、#8 earliest、I2≠#4、Legacy map、单垂直、L0–L2） |
 | 2026-09-29 | **v3.1**：锁定论文路线 A（Evidence-bound/attested patch）；Papers↔模块（venue/贡献口径/预实验/8–12 周锚点/翻车点）；对外少用 proof-carrying |
 | 2026-09-29 | **I0 DONE**：三件套+ADR-0026+评估；ACCEPTANCE 见 `docs/evidence/i0/ACCEPTANCE.md`；评估见 `docs/research/I0-冒烟层与数字真相源设计评估.md` |
+| 2026-09-29 | **V1 grill DONE**：顾问报告+McK SoAI；包结论新层；薄 URL=`www.mckinsey.com`；评估见 `docs/research/V1-发前闭环垂直与包结论设计评估.md`；ADR-0027；下一跳 to-spec |
+| 2026-09-29 | **V1 to-spec**：`docs/spec/11-PhaseV1-PrePublish.md`；GitHub [#168](https://github.com/luxingjiang1993/FreshLatch/issues/168) `ready-for-agent` |
