@@ -123,6 +123,49 @@ def append_human_patch(
     )
 
 
+def record_human_review_events(
+    results: Iterable[Mapping[str, Any]],
+    *,
+    before_disp: str,
+    t1_ids: list | None = None,
+    arm: str = "C",
+    actor: str = "human",
+    minutes: float = 0.0,
+    events_dir: Path | None = None,
+    filename: str = DEFAULT_FILENAME,
+) -> list[dict[str, Any]]:
+    """人审落档后追加 patch_events(发前主缝记账)。
+
+    仅对 ok=True 的决定写一行;arm 由后台固定传入(默认 C),不进发前 UX 开关。
+    before_disp 须为人审前提交的包结论快照。
+    """
+    ids = list(t1_ids or [])
+    written: list[dict[str, Any]] = []
+    for row in results:
+        if not row.get("ok"):
+            continue
+        claim_id = str(row.get("claim_id") or "")
+        if not claim_id:
+            continue
+        action = str(row.get("action") or "human")
+        written.append(
+            append_human_patch(
+                claim_id=claim_id,
+                before_disp=before_disp,
+                patch_span=f"人审{action}",
+                t1_ids=ids,
+                human_confirm=True,
+                reverify=False,
+                minutes=minutes,
+                arm=arm,
+                actor=actor,
+                events_dir=events_dir,
+                filename=filename,
+            )
+        )
+    return written
+
+
 def iter_events(
     *,
     events_dir: Path | None = None,

@@ -28,6 +28,7 @@ from freshlatch.prepublish import (  # noqa: E402
     project_gate_results,
 )
 import uuid  # noqa: E402
+from freshlatch.patch_events import record_human_review_events  # noqa: E402
 from freshlatch.runner import RunContext, Runner, load_docket  # noqa: E402
 from freshlatch.sheet import project_claim  # noqa: E402
 from freshlatch.store.checksum import make_checksum_fn  # noqa: E402
@@ -35,6 +36,9 @@ from freshlatch.gates.basis_rot import rot_claims  # noqa: E402
 from freshlatch.store.ingest import parse_document  # noqa: E402
 from freshlatch.store.sqlite_store import SQLiteStore  # noqa: E402
 from freshlatch.t1_source import T1SourceSession  # noqa: E402
+
+# 测试可 monkeypatch 指向 tmp;生产默认 None → data/patch_events/
+_PATCH_EVENTS_DIR = None
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent.parent
 # 占位与切换前第一课题路径一致;import 末尾 bind_active_pack 按 active_pack 覆盖
@@ -409,17 +413,36 @@ class DecideRequest(BaseModel):
 
 @app.post("/api/latch/decide")
 def api_latch_decide(req: DecideRequest) -> JSONResponse:
-    """人审批量提交(同步 def):Command(resume=整个决定列表)恢复 interrupt,execute 落档。"""
+    """人审批量提交(同步 def):Command(resume=整个决定列表)恢复 interrupt,execute 落档。
+
+    成功决定追加 patch_events(ADR-0027 / #174 主缝记账);arm 后台固定,不进发前 UX。
+    """
     if _state["latch"].get("thread_id") != req.thread_id:
         return JSONResponse({"error": "该轮人审不存在或已提交(刷新复验单查看最新状态)"}, status_code=409)
+    # 人审前包结论快照(写入 patch_events.before_disp)
+    before_disp = disposition_for_claims(list(_state["claims"]))
+    store = _store()
+    t1_ids = [
+        f"{row['doc_id']}#{row.get('checksum') or ''}@T1"
+        for row in list_t1_checksums(store)
+        if row.get("doc_id")
+    ]
     try:
         latch = _latch()
         results = latch.decide(req.thread_id, req.decisions, claims=list(_state["claims"]))
         latch.prune_rounds()  # 轮次 checkpoint 留最近 5 个(ADR-0006 §9,业务侧删行)
     except HumanLatchError as e:
         return JSONResponse({"error": str(e)}, status_code=400)
+    # 贯通记账:至少一条人审相关事件可读(#174)
+    patch_rows = record_human_review_events(
+        results,
+        before_disp=before_disp,
+        t1_ids=t1_ids,
+        arm="C",
+        actor="human",
+        events_dir=_PATCH_EVENTS_DIR,
+    )
     _state["latch"] = dict(EMPTY_LATCH)
-    store = _store()
     run_row = _sync_prepublish(new_run=False)
     extras = _detail_extras(store)
     return JSONResponse({
@@ -427,6 +450,7 @@ def api_latch_decide(req: DecideRequest) -> JSONResponse:
         "claims": [_claim_to_dict(store, c) for c in _state["claims"]],
         "latch": _state["latch"],
         "run": run_row,
+        "patch_events_written": len(patch_rows),
         **extras,
     })
 

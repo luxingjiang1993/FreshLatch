@@ -20,6 +20,8 @@ def client(tmp_path, monkeypatch):
     store = appmod.SQLiteStore(tmp_path / "t.db")
     monkeypatch.setattr(appmod, "_store", lambda: store)
     monkeypatch.setattr(appmod, "CHECKPOINTS", tmp_path / "cp.db")
+    # 人审成功后写 patch_events;单测落到临时目录
+    monkeypatch.setattr(appmod, "_PATCH_EVENTS_DIR", tmp_path / "patch_events")
     appmod._state.update({"claims": [], "question": "", "trajectory": None,
                           "running": False, "latch": dict(appmod.EMPTY_LATCH)})
     return TestClient(appmod.app)

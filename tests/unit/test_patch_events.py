@@ -101,6 +101,31 @@ def test_default_repo_dir_is_data_patch_events():
     assert pe.default_events_dir().parent.name == "data"
 
 
+def test_record_human_review_events_writes_ok_only(tmp_path: Path):
+    """人审结果批量记账:仅 ok 行落盘,before_disp 保留人审前快照。"""
+    events_dir = tmp_path / "patch_events"
+    written = pe.record_human_review_events(
+        [
+            {"claim_id": "mck-1", "ok": True, "action": "discard"},
+            {"claim_id": "mck-x", "ok": False, "action": "discard"},
+            {"claim_id": "", "ok": True, "action": "discard"},
+        ],
+        before_disp="勿发",
+        t1_ids=["doc-a#abc@T1"],
+        arm="C",
+        events_dir=events_dir,
+    )
+    assert len(written) == 1
+    rows = pe.read_events(events_dir=events_dir)
+    assert len(rows) == 1
+    assert rows[0]["claim_id"] == "mck-1"
+    assert rows[0]["before_disp"] == "勿发"
+    assert rows[0]["patch_span"] == "人审discard"
+    assert rows[0]["t1_ids"] == ["doc-a#abc@T1"]
+    assert rows[0]["human_confirm"] is True
+    assert rows[0]["arm"] == "C"
+
+
 def test_prepublish_surface_has_no_ct_arm_switch():
     """发前相关 UI/API 不得出现 arm=C|T 实验开关控件或路由。"""
     repo = Path(__file__).resolve().parents[2]
