@@ -8,6 +8,18 @@ from typing import List, Optional
 
 from freshlatch.models import AsOf
 
+# 生产默认臂。评测可强制其它枚举值,但未实装的臂不得把 BM25 结果误标过去(后续票再放开)。
+PRODUCTION_RETRIEVAL_MODE = "bm25"
+RETRIEVAL_MODE_ENUM = frozenset(
+    {"bm25", "dense", "hybrid", "hybrid+rerank", "bm25_fallback"}
+)
+EXECUTABLE_RETRIEVAL_MODES = frozenset({"bm25"})
+
+
+def chunk_evidence_id(chunk: "Chunk") -> str:
+    """对外主键:doc_id#anchor@as_of。chunk_id 不进轨迹。"""
+    return f"{chunk.doc_id}#{chunk.clause_id}@{chunk.as_of}"
+
 
 @dataclass
 class Chunk:

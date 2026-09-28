@@ -11,6 +11,7 @@ W3 起白名单含 spawn_critic:动态派驻 Critic 专找反证(§6.3),Critic �
 from __future__ import annotations
 
 from freshlatch.evidence import check_evidence_ids, valid_as_of
+from freshlatch.store.base import chunk_evidence_id
 from freshlatch.gates.meta_gate import META_ONLY_MESSAGE, is_meta_only_disproof
 from freshlatch.gates.rule_gate import (ERR_DIMENSION_CROSSCHECK_MISMATCH,
                                         dimension_crosscheck_mismatch)
@@ -224,6 +225,9 @@ class LeadReverifier:
         return handler(args)
 
     def _t_retrieve(self, args: dict) -> dict:
+        # 生产工具不暴露检索臂;模型多传 retrieval_mode 也不得切臂。
+        if "retrieval_mode" in args:
+            return {"error": "生产路径不可指定 retrieval_mode"}
         try:
             as_of = valid_as_of(args.get("as_of"))
         except ValueError as e:
@@ -237,7 +241,7 @@ class LeadReverifier:
         if isinstance(hits, dict):  # 预算已尽,fail-soft
             return hits
         blocks = [
-            {"evidence_id": f"{c.doc_id}#{c.clause_id}@{c.as_of}", "as_of": c.as_of,
+            {"evidence_id": chunk_evidence_id(c), "as_of": c.as_of,
              "source_type": c.source_type, "text": c.text}
             for c in hits
         ]

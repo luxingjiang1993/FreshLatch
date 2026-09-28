@@ -85,6 +85,64 @@ def test_gold_hit_replay(memory_store):
     assert not failures, f"must_stale 证据块未进 top10: {failures}"
 
 
+def test_retrieve_trajectory_records_contract(memory_store):
+    """#157:一次 try_retrieve 的轨迹含 query、filters、有序 evidence_id、retrieval_mode。"""
+    from freshlatch.runner import RunContext
+    from freshlatch.store.base import PRODUCTION_RETRIEVAL_MODE, chunk_evidence_id
+
+    ctx = RunContext(store=memory_store, mode="online")
+    hits = ctx.try_retrieve("竞品 价格", source_type="private", as_of="T1", top_k=10)
+    ev = ctx.events[-1]
+    assert ev["type"] == "retrieve"
+    assert ev["query"] == "竞品 价格"
+    assert ev["filters"] == {"as_of": "T1", "source_type": "private", "top_k": 10}
+    assert ev["evidence_ids"] == [chunk_evidence_id(c) for c in hits]
+    assert ev["retrieval_mode"] == PRODUCTION_RETRIEVAL_MODE == "bm25"
+    assert ev["hits"] == len(hits)
+    assert all(eid.count("#") == 1 and "@" in eid for eid in ev["evidence_ids"])
+
+
+def test_eval_fixture_forces_bm25(memory_store):
+    """#157:评测夹具可强制 bm25,轨迹臂与标记一致。"""
+    from freshlatch.runner import RunContext
+
+    ctx = RunContext(store=memory_store, mode="eval")
+    ctx.arm_eval_retrieval_mode("bm25")
+    ctx.try_retrieve("竞品 价格", as_of="T1", top_k=10)
+    assert ctx.events[-1]["retrieval_mode"] == "bm25"
+    assert ctx.events[-1]["filters"]["top_k"] == 10
+
+
+def test_production_cannot_force_retrieval_mode(memory_store):
+    """#157:生产路径不可随意切臂;未实装臂不得误标。"""
+    import inspect
+
+    from freshlatch.models import Claim
+    from freshlatch.roles.lead import LeadReverifier
+    from freshlatch.runner import RunContext
+    from freshlatch.store.base import RetrievalStore
+    from freshlatch.tools import tool_specs
+
+    online = RunContext(store=memory_store, mode="online")
+    with pytest.raises(RuntimeError):
+        online.arm_eval_retrieval_mode("bm25")
+    assert "retrieval_mode" not in inspect.signature(RetrievalStore.retrieve).parameters
+    assert "retrieval_mode" not in inspect.signature(RunContext.try_retrieve).parameters
+    retrieve_spec = tool_specs(["retrieve"])[0]
+    assert "retrieval_mode" not in retrieve_spec["function"]["parameters"]["properties"]
+
+    lead = LeadReverifier(
+        online, Claim(claim_id="c-x", statement="探针"), llm=None,
+    )
+    rejected = lead._t_retrieve({"query": "竞品", "as_of": "T1", "retrieval_mode": "dense"})
+    assert "error" in rejected
+    assert not any(ev.get("type") == "retrieve" for ev in online.events)
+
+    eval_ctx = RunContext(store=memory_store, mode="eval")
+    with pytest.raises(ValueError):
+        eval_ctx.arm_eval_retrieval_mode("dense")
+
+
 def test_sqlite_store_roundtrip(tmp_path):
     store = SQLiteStore(tmp_path / "test.db")
     n = ingest_into(store, CORPUS)

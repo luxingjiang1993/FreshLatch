@@ -1,7 +1,7 @@
 """多 stage 打分管线:recall(BM25+jieba) → [vector 融合,空实现] → [rerank,空实现]。
 
-后两级本期空实现(§1.4):vec 列已在 schema,熔断条件命中后才在对应工单启用
-vector stage(ingestion 期预计算、运行时本地余弦,不出网)。
+后两级本期空实现(透传):vec 列已在 schema。生产默认仍是 BM25;
+评测可跑 dense/hybrid/rerank 由后续票填实,无增益不得改生产默认(ADR-0003 修订 #156)。
 """
 
 from __future__ import annotations
