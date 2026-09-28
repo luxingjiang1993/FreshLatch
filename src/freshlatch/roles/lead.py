@@ -12,6 +12,7 @@ from __future__ import annotations
 
 from freshlatch.evidence import check_evidence_ids, valid_as_of
 from freshlatch.store.base import chunk_evidence_id
+from freshlatch.store.query_transform import transform_claim_query
 from freshlatch.gates.meta_gate import META_ONLY_MESSAGE, is_meta_only_disproof
 from freshlatch.gates.rule_gate import (ERR_DIMENSION_CROSSCHECK_MISMATCH,
                                         dimension_crosscheck_mismatch)
@@ -25,7 +26,7 @@ from freshlatch.tools import FOCUS_DIMENSIONS, LEAD_TOOLS_W3, tool_specs
 LEAD_PERSONA = """你是 Lead Reverifier,FreshLatch 的复验主官。你的任务是把一条已签发主张从「曾经为真」改成「现在仍可复验」。
 
 工作方式(裸 ReAct,逐轮决策,无全程计划):
-1. 先用 retrieve 在 T1(复验时刻快照)检索与主张相关的证据块;必要时 read_source 读原文全文兜底。
+1. 先用 retrieve 在 T1(复验时刻快照)检索与主张相关的证据块;检索串由主张查询变换根据主张原文与登记维度产出,不要自拟检索词(传入的 query 不会被采用)。必要时 read_source 读原文全文兜底。
 2. 如需对照签发时口径,可再查 T0,但判定 ground truth 永远是 T1 原文。
 3. T1 的复测/核实内容直接支持主张的每个前提 → reverify_claim(claim_id, "fresh", [t1 evidence_id...])。
    注意:判 fresh 必须给出 T1 证据 id(形如 doc#p2@T1),从 retrieve 结果里逐字引用,否则会被规则闸打回。
@@ -232,8 +233,14 @@ class LeadReverifier:
             as_of = valid_as_of(args.get("as_of"))
         except ValueError as e:
             return {"error": str(e)}
+        try:
+            query = transform_claim_query(
+                self.claim.statement, dimension=self.claim.dimension,
+            )
+        except ValueError as e:
+            return {"error": str(e)}
         hits = self.ctx.try_retrieve(
-            args["query"],
+            query,
             source_type=args.get("source_type") or None,
             as_of=as_of,
             top_k=10,  # §8.5:top_k 放宽到 10 缓释同义改写漏召回

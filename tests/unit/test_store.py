@@ -73,12 +73,18 @@ def test_anchor_lookup(memory_store):
 
 def test_gold_hit_replay(memory_store):
     """金标命中回放:每条 must_stale 的 causal_chain 致死段落,用其主张文本能在 T1 top10 召回。"""
+    from freshlatch.store.query_transform import transform_claim_query
+
     claim_by_id = {c["claim_id"]: c for c in DocketClaims}
     failures = []
     for cid in GOLD["must_stale"]:
         chain = GOLD["causal_chain"][cid]
         doc_id, anchor = chain["t1_doc"], chain["anchor"]
-        hits = memory_store.retrieve(claim_by_id[cid]["statement"], as_of="T1", top_k=10)
+        query = transform_claim_query(
+            claim_by_id[cid]["statement"],
+            dimension=claim_by_id[cid].get("dimension"),
+        )
+        hits = memory_store.retrieve(query, as_of="T1", top_k=10)
         got = {f"{c.doc_id}#{c.clause_id}" for c in hits}
         if f"{doc_id}#{anchor}" not in got:
             failures.append((cid, f"{doc_id}#{anchor}", sorted(got)))

@@ -14,20 +14,19 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from freshlatch.evidence import check_evidence_ids, valid_as_of
+from freshlatch.store.base import chunk_evidence_id
+from freshlatch.store.query_transform import DIMENSION_ZH, transform_claim_query
 from freshlatch.gates.meta_gate import is_meta_only_disproof
 from freshlatch.models import Claim
 from freshlatch.roles.loop import run_loop
 from freshlatch.tools import CRITIC_TOOLS, FOCUS_DIMENSIONS, tool_specs
 
-FOCUS_ZH: dict[str, str] = dict(zip(
-    FOCUS_DIMENSIONS,
-    ("竞品价格", "监管口径", "访谈改口", "成本模型", "市场结构", "技术生态"),
-))
+FOCUS_ZH: dict[str, str] = DIMENSION_ZH
 
 CRITIC_PERSONA = """你是 Critic,FreshLatch 的反对派复验员,唯一任务是找出「这条主张已经死了」的反证。
 
 工作方式(裸 ReAct,逐轮决策,无全程计划):
-1. 用 retrieve 在 T1(复验时刻快照)按给定 focus 方向检索;必要时 read_source 读原文全文兜底。ground truth 永远是 T1 原文,不是 chunk。
+1. 用 retrieve 在 T1(复验时刻快照)检索;检索串由主张查询变换根据主张原文与本次 focus 产出,不要自拟检索词(传入的 query 不会被采用)。必要时 read_source 读原文全文兜底。ground truth 永远是 T1 原文,不是 chunk。
 2. 找到推翻性证据 → mark_stale(reason, [t1 evidence_id...], dimension):reason 必须含显式因果句,指出 T1 原文哪一句推翻了主张的哪个前提,不得只写「与最新文档不符」;evidence_id 逐字引用本会话 retrieve 返回、以 @T1 结尾的 id,不得编造;dimension 必填,填本反证自身攻击的维度(6 枚举之一,非法值整 call 拒绝并回列词表)。
    注意:dimension 问法 = 本反证所攻击之主张前提的证据出处类型,不是反证内容的主题词。判法:问『原主张凭什么为真?』——答所依赖的证据类型即维度。
    interview_reversal 是机制维度:凡证据出自访谈/纪要/口头口径,无论其内容谈的是定价、成本还是监管,一律填 interview_reversal。
@@ -131,8 +130,12 @@ class Critic:
             as_of = valid_as_of(args.get("as_of"))
         except ValueError as e:
             return {"error": str(e)}
+        try:
+            query = transform_claim_query(self.claim.statement, focus=self.focus)
+        except ValueError as e:
+            return {"error": str(e)}
         hits = self.ctx.try_retrieve(
-            args["query"],
+            query,
             source_type=args.get("source_type") or None,
             as_of=as_of or None,
             top_k=10,
@@ -140,7 +143,7 @@ class Critic:
         if isinstance(hits, dict):  # 预算已尽,fail-soft(与 Lead 共享 Run 级预算)
             return hits
         blocks = [
-            {"evidence_id": f"{c.doc_id}#{c.clause_id}@{c.as_of}", "as_of": c.as_of,
+            {"evidence_id": chunk_evidence_id(c), "as_of": c.as_of,
              "source_type": c.source_type, "text": c.text}
             for c in hits
         ]
