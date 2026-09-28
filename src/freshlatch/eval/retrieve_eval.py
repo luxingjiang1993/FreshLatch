@@ -524,3 +524,102 @@ def run_arm_compare(
         "pass": passed,
         "verdict": "pass" if passed else "fail",
     }
+
+
+# 预登记(#163):Recall@10 必须严格高于 hybrid,且单次 retrieve 含 rerank 的 p95≤800ms,才可写生产默认开。
+RERANK_P95_BUDGET_MS = 800.0
+
+
+def rerank_default_verdict(*, hybrid: float, rerank: float, p95_ms: float) -> str:
+    if rerank > hybrid and p95_ms <= RERANK_P95_BUDGET_MS:
+        return "生产默认开"
+    return "生产默认关"
+
+
+def _p95_ms(samples: list[float]) -> float:
+    import math
+
+    if not samples:
+        return 0.0
+    ordered = sorted(samples)
+    index = max(0, math.ceil(0.95 * len(ordered)) - 1)
+    return ordered[index] * 1000.0
+
+
+def run_rerank_compare(
+    *,
+    corpus: Path,
+    retrieve_gold_path: Path,
+    dense_db: Path,
+    out_dir: Path,
+) -> dict:
+    """hybrid 与 hybrid+rerank 的 Recall@10 和 p95。未过线则生产默认关。"""
+    import time
+
+    from freshlatch.store.base import PRODUCTION_RETRIEVAL_MODE
+
+    retrieve_gold = _load_json(retrieve_gold_path)
+    store = InMemoryStore()
+    ingest_into(store, corpus)
+    attached = _attach_vecs(store, dense_db)
+    if attached != len(store._chunks) or attached == 0:
+        raise ValueError("dense 索引未覆盖全部 chunk,拒绝把降级结果写成 rerank 成绩")
+    store.query_embedder = _cached_query_embedder(
+        [row["query"] for row in retrieve_gold["queries"]]
+    )
+    recalls = {"hybrid": [], "hybrid+rerank": []}
+    latencies = []
+    modes = set()
+    for row in retrieve_gold["queries"]:
+        store.bind_eval_retrieval_mode("hybrid")
+        hybrid_hits = store.retrieve(row["query"], as_of=row["as_of"], top_k=10)
+        recalls["hybrid"].append(
+            recall_at_k([chunk_evidence_id(c) for c in hybrid_hits], row["relevant"], 10)
+        )
+        store.bind_eval_retrieval_mode("hybrid+rerank")
+        started = time.perf_counter()
+        rerank_hits = store.retrieve(row["query"], as_of=row["as_of"], top_k=10)
+        latencies.append(time.perf_counter() - started)
+        modes.add(getattr(store, "last_retrieval_mode", ""))
+        recalls["hybrid+rerank"].append(
+            recall_at_k([chunk_evidence_id(c) for c in rerank_hits], row["relevant"], 10)
+        )
+        store.bind_eval_retrieval_mode(None)
+    hybrid_mean = _mean(recalls["hybrid"])
+    rerank_mean = _mean(recalls["hybrid+rerank"])
+    p95 = _p95_ms(latencies)
+    honest = modes == {"hybrid+rerank"}
+    sentence = rerank_default_verdict(
+        hybrid=hybrid_mean, rerank=rerank_mean, p95_ms=p95,
+    )
+    if not honest:
+        sentence = "生产默认关"
+    lines = [
+        "# hybrid 与 hybrid+rerank 对比（冒烟）",
+        "",
+        "- 对比臂: 本地词重叠精排,不是 bge,不是 α 加权",
+        "- 解码: 无 LLM temperature/seed;延迟在本机 perf_counter 上测量",
+        f"- n: {len(retrieve_gold['queries'])}（冒烟级,不声称统计显著,不报方差）",
+        f"- hybrid Recall@10: {hybrid_mean:.4f}",
+        f"- hybrid+rerank Recall@10: {rerank_mean:.4f}",
+        f"- p95: {p95:.1f} ms",
+        f"- 门槛: Recall@10 严格更好且 p95≤{RERANK_P95_BUDGET_MS:.0f}ms",
+        f"- rerank 列确为 hybrid+rerank: {'pass' if honest else 'fail'}",
+        f"- 判决: {sentence}",
+        f"- 代码生产默认: {PRODUCTION_RETRIEVAL_MODE}",
+        "",
+        "未同时满足两条门槛时生产默认保持关。本页不是统计结论。",
+        "",
+    ]
+    out = Path(out_dir)
+    out.mkdir(parents=True, exist_ok=True)
+    path = out / "retrieve-rerank-compare.md"
+    path.write_text("\n".join(lines), encoding="utf-8")
+    return {
+        "report_path": str(path),
+        "sentence": sentence,
+        "hybrid": hybrid_mean,
+        "rerank": rerank_mean,
+        "p95_ms": p95,
+        "production_mode": PRODUCTION_RETRIEVAL_MODE,
+    }

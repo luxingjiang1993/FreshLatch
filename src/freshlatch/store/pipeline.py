@@ -108,8 +108,19 @@ def stage_vector_fuse(chunks: list[Chunk], *, top_k: int) -> list[Chunk]:
 
 
 def stage_rerank(chunks: list[Chunk], *, top_k: int) -> list[Chunk]:
-    """第 3 级:rerank,本期空实现(透传)。"""
+    """第 3 级:生产默认仍透传。对比臂走 rerank_lexical,无增益不改这里。"""
     return chunks[:top_k]
+
+
+def rerank_lexical(query: str, chunks: list[Chunk], *, top_k: int) -> list[Chunk]:
+    """本地词重叠精排,只重排已有候选。不是 bge,也不做 α 加权。"""
+    query_tokens = set(tokenize(query))
+    scored: list[tuple[int, int, Chunk]] = []
+    for index, chunk in enumerate(chunks):
+        overlap = len(query_tokens & set(tokenize(chunk.text))) if query_tokens else 0
+        scored.append((overlap, -index, chunk))
+    scored.sort(reverse=True)
+    return [chunk for _overlap, _index, chunk in scored[:top_k]]
 
 
 def run_pipeline(query: str, pool: list[Chunk], *, top_k: int = 10) -> list[Chunk]:

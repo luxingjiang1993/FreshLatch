@@ -62,3 +62,19 @@ def test_pass_line_is_explicit():
     assert low_hybrid["pass"] is False
     regressed = arm_pass_line(bm25=0.9, dense=0.9, hybrid=0.9, a0=1.0)
     assert regressed["bm25_vs_a0"] == "fail"
+
+
+def test_rerank_default_stays_off_unless_both_gates_pass():
+    from freshlatch.eval.retrieve_eval import RERANK_P95_BUDGET_MS, rerank_default_verdict
+    from freshlatch.store.base import PRODUCTION_RETRIEVAL_MODE
+    from freshlatch.store.pipeline import rerank_lexical
+
+    assert PRODUCTION_RETRIEVAL_MODE == "bm25"
+    assert RERANK_P95_BUDGET_MS == 800.0
+    assert rerank_default_verdict(hybrid=1.0, rerank=1.0, p95_ms=10) == "生产默认关"
+    assert rerank_default_verdict(hybrid=0.5, rerank=0.8, p95_ms=900) == "生产默认关"
+    assert rerank_default_verdict(hybrid=0.5, rerank=0.8, p95_ms=100) == "生产默认开"
+    head = _chunk("head", "席位标价已经改写", [1.0, 0.0])
+    tail = _chunk("tail", "无关旁注", [0.2, 0.8])
+    ranked = rerank_lexical("席位标价", [tail, head], top_k=2)
+    assert chunk_evidence_id(ranked[0]) == "head#p1@T1"

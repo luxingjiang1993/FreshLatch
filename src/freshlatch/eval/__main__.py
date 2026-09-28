@@ -21,6 +21,7 @@ from freshlatch.eval.control import run_control, run_control_c  # noqa: E402
 from freshlatch.eval.report import console_summary, render_report, write_outputs  # noqa: E402
 from freshlatch.eval.retrieve_eval import (  # noqa: E402
     run_arm_compare,
+    run_rerank_compare,
     run_retrieve_baseline,
     run_transform_compare,
     run_trap_eval,
@@ -138,6 +139,13 @@ def main() -> None:
             )
             if not arms["pass"]:
                 raise SystemExit(1)
+            rerank = run_rerank_compare(
+                corpus=Path(args.corpus),
+                retrieve_gold_path=Path(args.retrieve_gold),
+                dense_db=dense_db,
+                out_dir=Path(args.out),
+            )
+            print(f"rerank: {rerank['report_path']} {rerank['sentence']}")
         return
 
     store = SQLiteStore(args.db)
