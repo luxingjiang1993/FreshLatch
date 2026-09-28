@@ -94,7 +94,7 @@ Honest snapshot of this public repo:
 | **Runs locally** | Reverify Sheet UI, main reverify chain, human void/renew, synthetic corpora, gate unit tests |
 | **Synthetic** | Demo and eval materials are labeled synthetic — not real client dockets |
 | **Not claimed** | Live SaaS, paying customers, "W12 passed," or closed Phase-1 measurement — do not cite this repo that way |
-| **Known gaps** | Retrieval is still BM25-first; some modules (e.g. memory hygiene) exist in code but are not all on the default main path; live web ingest is not built |
+| **Known gaps** | Retrieval is still BM25-first (production default `bm25`). Some modules (e.g. memory hygiene) exist in code but are not all on the default main path. A whitelist thin URL (`www.mckinsey.com`) exists for the T1 ingest demo; open-ended live web and an open crawler are still not built. |
 
 For engineering acceptance boundaries, read `docs/evidence/` and root `CONTEXT.md`. This README is not a certification.
 
