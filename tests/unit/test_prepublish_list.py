@@ -39,6 +39,8 @@ def client(tmp_path, monkeypatch):
         "retrieve_zero_hits": [], "active_run_id": None,
     })
     appmod._reset_t1_source(store)
+    # 人审记账落到临时目录,避免污染仓内 data/patch_events/
+    monkeypatch.setattr(appmod, "_PATCH_EVENTS_DIR", tmp_path / "patch_events")
     return TestClient(appmod.app)
 
 
