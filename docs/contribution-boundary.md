@@ -42,6 +42,8 @@ Related Work 祖先（RARR / PAVE / 事实检查等）可承认；边界话术�
 | V1.5 | Evidence-bound / attested patch（人确认 + 强制再验）；论文主投实验 |
 | I2 | ACL + 注入/投毒可复现 demo（≠ idea #4） |
 
+- **V1 已落地（冒烟，2026-09-29）：** 发前闭环主缝在仓（顾问样例包 `v1-mck-soai`、白名单薄 URL、包结论、人审、`patch_events` 起记）。证据见 `docs/evidence/v1/V1-DoD-CLOSE.md`。档=冒烟；生产默认臂仍 `bm25`；本条不是 Hard-Gold，也不是检索臂评测升格。
+
 整协议口径（已入库 T1 才能裁定；`web→落盘→再验`；补丁 ⊆ T1；人确认；对话不改正式裁决）以 roadmap「贡献口径」为准，**随阶段追加进本文件**，不在 v0 写成已交付。
 
 ---

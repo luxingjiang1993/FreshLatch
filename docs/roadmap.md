@@ -14,9 +14,9 @@
 **代理:** 仓库变更按 L0/L1/L2（Ronin 可代 L1；**人终收类如历史 #166 不代批/代关**）；超时或证据不足 fail-closed。
 
 ```
-DONE: Phase A · Phase I0 · V1 grill
+DONE: Phase A · Phase I0 · Phase V1
 NOW → NEXT:
-  Phase V1 (to-spec → tickets → implement) → Phase I1 → Phase V1.5 → Phase I2
+  Phase I1 → Phase V1.5 → Phase I2
   → Phase B′ (on-demand) → Phase V2
 BACKLOG: Hard-Gold ticket | Policy-as-code (#8) | Studio (frozen)
 ```
@@ -60,7 +60,7 @@ BACKLOG: Hard-Gold ticket | Policy-as-code (#8) | Studio (frozen)
 
 ---
 
-## Phase V1 — Pre-publish loop · **GRILL DONE · NEXT = to-spec**
+## Phase V1 — Pre-publish loop · **DONE**
 
 **Goal:** 一条可演示的发前路径：入库 → Gate → 包结论 → 人审 → 两屏。  
 **Track:** V · **Depends on:** I0 DONE  
@@ -68,16 +68,16 @@ BACKLOG: Hard-Gold ticket | Policy-as-code (#8) | Studio (frozen)
 
 | | |
 |--|--|
-| **In** | **单一垂直=顾问报告**（McK SoAI 03→11 样例包）；T1 落盘（checksum）；三卡+薄 URL（`www.mckinsey.com`）；Gate；包结论新层；作废/续命；两屏（列表新建+复验单详情）；**`patch_events` JSONL 起记**（后台 C/T） |
+| **In** | **单一垂直=顾问报告**（McK SoAI 03→11 样例包）；T1 落盘（checksum）；三卡+薄 URL（`www.mckinsey.com`）；Gate；包结论新层（**可发 / 需补丁 / 勿发**）；作废/续命；两屏（列表新建+复验单详情）；**`patch_events` JSONL 起记**（后台 C/T） |
 | **Out** | **多垂直并行**；难金标；High-Recall 改默认；Studio；薄对话/厚对话改裁决；开放爬虫 |
-| **Exit** | 真实发前路径可 demo；轨迹追到 T1 checksum；包结论与金标/闸口径一致 |
+| **Exit** | **已齐（冒烟级，2026-09-29）**：发前路径可 demo；轨迹追到 T1 checksum；包结论与预登记映射/闸口径一致。证据 `docs/evidence/v1/V1-DoD-CLOSE.md`。非 Hard-Gold；生产默认臂仍 `bm25`。 |
 
-**Definition of Done**
-- [ ] 未归档不得定论  
-- [ ] 报告级 disposition 可追责  
-- [ ] 人审路径走通  
-- [ ] 单一垂直已写进文档/README（决议已钉；README 随 to-spec/实现勾）  
-- [ ] `patch_events` schema 已落并开始记账  
+**Definition of Done**（冒烟级勾选；证据见 `docs/evidence/v1/V1-DoD-CLOSE.md`。grill / to-spec 历史留在文末修订记录）
+- [x] 未归档不得定论  
+- [x] 报告级 disposition 可追责  
+- [x] 人审路径走通  
+- [x] 单一垂直已写进文档/README  
+- [x] `patch_events` schema 已落并开始记账  
 
 ---
 
@@ -269,7 +269,7 @@ Findings ≈ 顶会正规次主赛道；Industry ≈ 同会落地轨；对 mid �
 | Phase | You are building | Done when |
 |-------|------------------|-----------|
 | **I0** | 数字与表 | **DONE**（`docs/evidence/i0/ACCEPTANCE.md`） |
-| **V1** | 发前闭环（单垂直） | 一条路径可追责 demo |
+| **V1** | 发前闭环（单垂直） | **DONE**（冒烟；`docs/evidence/v1/V1-DoD-CLOSE.md`） |
 | **I1** | 失败证据 | 样本讲清分层 |
 | **V1.5** | Evidence-bound 补丁 | 改→确认→再验 |
 | **I2** | ACL + 注入/投毒 | 两 demo 可复现（≠ #4） |
@@ -296,3 +296,4 @@ Findings ≈ 顶会正规次主赛道；Industry ≈ 同会落地轨；对 mid �
 | 2026-09-29 | **I0 DONE**：三件套+ADR-0026+评估；ACCEPTANCE 见 `docs/evidence/i0/ACCEPTANCE.md`；评估见 `docs/research/I0-冒烟层与数字真相源设计评估.md` |
 | 2026-09-29 | **V1 grill DONE**：顾问报告+McK SoAI；包结论新层；薄 URL=`www.mckinsey.com`；评估见 `docs/research/V1-发前闭环垂直与包结论设计评估.md`；ADR-0027；下一跳 to-spec |
 | 2026-09-29 | **V1 to-spec**：`docs/spec/11-PhaseV1-PrePublish.md`；GitHub [#168](https://github.com/luxingjiang1993/FreshLatch/issues/168) `ready-for-agent` |
+| 2026-09-29 | **V1 DoD close（#175）**：五项 DoD 勾选；冒烟级关门摘要见 `docs/evidence/v1/V1-DoD-CLOSE.md`。不升格检索臂、不宣称 Hard-Gold。人终收 issue 未在本行代关。 |
