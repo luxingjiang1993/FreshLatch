@@ -20,6 +20,14 @@ from freshlatch.claim_import import ClaimImportError, parse_claim_import_draft  
 from freshlatch.guardrails import Guardrails  # noqa: E402
 from freshlatch.packs import PackPaths, resolve_pack  # noqa: E402
 from freshlatch.latch import HumanLatch, HumanLatchError  # noqa: E402
+from freshlatch.prepublish import (  # noqa: E402
+    PrepublishRegistry,
+    derive_run_status,
+    disposition_for_claims,
+    list_t1_checksums,
+    project_gate_results,
+)
+import uuid  # noqa: E402
 from freshlatch.runner import RunContext, Runner, load_docket  # noqa: E402
 from freshlatch.sheet import project_claim  # noqa: E402
 from freshlatch.store.checksum import make_checksum_fn  # noqa: E402
@@ -60,7 +68,9 @@ _state: dict = {"claims": [], "question": "", "trajectory": None, "running": Fal
                 "latch": dict(EMPTY_LATCH),
                 "budget": dict(EMPTY_BUDGET),
                 "run_ctx": None,
-                "retrieve_zero_hits": []}  # DEM-5:本轮 retrieve 空命中;仅提示,不改写判定
+                "retrieve_zero_hits": [],  # DEM-5:本轮 retrieve 空命中;仅提示,不改写判定
+                "active_run_id": None}  # 发前列表当前绑定 Run(#173)
+_prepublish = PrepublishRegistry()
 _t1: T1SourceSession | None = None
 ACTIVE_PACK: PackPaths
 
@@ -140,12 +150,66 @@ def _claim_to_dict(store: SQLiteStore, c) -> dict:
     return project_claim(store, c)
 
 
+def _source_label() -> str:
+    """发前来源短标签(包 id + T1 入口;非编排角色名)。"""
+    pack = ACTIVE_PACK
+    bits = [pack.pack_id]
+    if pack.label:
+        bits.append(pack.label)
+    t1 = _t1_session().snapshot()
+    kind = t1.get("kind") or "none"
+    if kind and kind != "none":
+        bits.append(f"T1:{kind}")
+    return " · ".join(bits)
+
+
+def _sync_prepublish(*, new_run: bool = False) -> dict:
+    """把当前会话投影进发前列表注册表;详情仍是既有复验单。"""
+    claims = list(_state["claims"])
+    running = bool(_state["running"])
+    latch = _state.get("latch") or EMPTY_LATCH
+    status = derive_run_status(running=running, latch=latch)
+    if status == "已落档" and not claims and not _state.get("trajectory"):
+        status = "未复验"
+    if new_run:
+        run_id = f"run-{uuid.uuid4().hex[:10]}"
+        _state["active_run_id"] = run_id
+    else:
+        run_id = _state.get("active_run_id")
+    traj = str(_state["trajectory"]) if _state.get("trajectory") else None
+    summary = _prepublish.upsert(
+        run_id=run_id,
+        title=_state["question"] or ACTIVE_PACK.question or ACTIVE_PACK.label,
+        source=_source_label(),
+        claims=claims,
+        status=status,
+        pack_id=ACTIVE_PACK.pack_id,
+        trajectory=traj,
+    )
+    _state["active_run_id"] = summary.run_id
+    return summary.to_dict()
+
+
+def _detail_extras(store: SQLiteStore) -> dict:
+    """复验单增量包:包结论条 + T1 checksum + 逐条闸结果(#173)。"""
+    claims = list(_state["claims"])
+    return {
+        "disposition": disposition_for_claims(claims),
+        "run_status": derive_run_status(
+            running=bool(_state["running"]), latch=_state.get("latch")),
+        "active_run_id": _state.get("active_run_id"),
+        "t1_checksums": list_t1_checksums(store),
+        "gate_results": project_gate_results(claims),
+    }
+
+
 @app.get("/api/claims")
 def api_claims() -> dict:
     """拉复验单:对可见 fresh∧basis 主张跑与复验入口同一腐烂路径并真写库(ADR-0025)。"""
     store = _store()
     # 档 3b UI 触发:禁止只改展示;与 Runner 共用 check_basis/apply_rot
     rot_claims(store, list(_state["claims"]), make_checksum_fn(CORPUS))
+    extras = _detail_extras(store)
     return {
         "question": _state["question"],
         "claims": [_claim_to_dict(store, c) for c in _state["claims"]],
@@ -156,7 +220,25 @@ def api_claims() -> dict:
         "retrieve_zero_hits": list(_state.get("retrieve_zero_hits") or []),
         "budget": _current_budget(),  # DEM-4:复验中/完成后可见
         "pack": _pack_payload(),
+        **extras,
     }
+
+
+@app.get("/api/prepublish/runs")
+def api_prepublish_runs() -> dict:
+    """发前列表:标题/来源、disposition、更新时间、Run 状态(#173)。"""
+    if _state.get("claims") or _state.get("trajectory") or _state.get("active_run_id"):
+        _sync_prepublish(new_run=False)
+    return {"runs": _prepublish.list_runs(), "active_run_id": _state.get("active_run_id")}
+
+
+@app.get("/api/prepublish/runs/{run_id}")
+def api_prepublish_run(run_id: str) -> JSONResponse:
+    """发前 Run 摘要;详情 UI 仍走既有复验单(增量包结论条)。"""
+    row = _prepublish.get(run_id)
+    if row is None:
+        return JSONResponse({"error": f"未找到 Run {run_id}"}, status_code=404)
+    return JSONResponse({"run": row.to_dict(), "detail_path": "/"})
 
 
 @app.post("/api/import")
@@ -166,7 +248,10 @@ def api_import() -> dict:
     _state["claims"] = docket.claims
     _state["question"] = docket.question  # 单一真相:当前课题包 docket
     _state["latch"] = dict(EMPTY_LATCH)
-    return {"imported": len(docket.claims)}
+    _state["trajectory"] = None
+    _state["active_run_id"] = None
+    row = _sync_prepublish(new_run=True)
+    return {"imported": len(docket.claims), "run": row}
 
 
 class PasteDraftRequest(BaseModel):
@@ -240,11 +325,15 @@ def api_import_draft(req: DraftImportRequest) -> JSONResponse:
     _state["claims"] = docket.claims
     _state["question"] = docket.question
     _state["latch"] = dict(EMPTY_LATCH)
+    _state["trajectory"] = None
+    _state["active_run_id"] = None
+    row = _sync_prepublish(new_run=True)
     return JSONResponse({
         "imported": len(docket.claims),
         "assigned_ids": assigned,
         "question": docket.question,
         "claim_ids": [c.claim_id for c in docket.claims],
+        "run": row,
     })
 
 
@@ -269,6 +358,7 @@ def api_reverify() -> JSONResponse:
         runner = Runner(_store(), checksum_fn=make_checksum_fn(CORPUS))
         _state["run_ctx"] = runner.ctx
         _state["budget"] = _budget_from_ctx(runner.ctx)
+        _sync_prepublish(new_run=True)  # 新 Run 进发前列表;状态=复验中
         result = runner.run(list(_state["claims"]))
         _state["trajectory"] = result.trajectory_path
         _state["budget"] = _budget_from_ctx(runner.ctx)  # 会话内保留用量摘要(DEM-4)
@@ -276,11 +366,14 @@ def api_reverify() -> JSONResponse:
         _state["retrieve_zero_hits"] = list(result.retrieve_zero_hits)
         rnd = _latch().enter_round(_state["claims"])  # 无红/黄灯则 thread_id=None 直接完成
         _state["latch"] = {"thread_id": rnd.thread_id, "pending": rnd.pending}
+        run_row = _sync_prepublish(new_run=False)
     finally:
         _state["running"] = False
         _state["run_ctx"] = None
+    store = _store()
+    extras = _detail_extras(store)
     return JSONResponse({
-        "claims": [_claim_to_dict(_store(), c) for c in _state["claims"]],
+        "claims": [_claim_to_dict(store, c) for c in _state["claims"]],
         "trajectory": str(result.trajectory_path),
         "retrieval_used": result.retrieval_used,
         "steps_by_claim": result.steps_by_claim,
@@ -288,6 +381,8 @@ def api_reverify() -> JSONResponse:
         "latch": _state["latch"],
         "retrieve_zero_hits": list(_state["retrieve_zero_hits"]),
         "budget": dict(_state["budget"]),
+        "run": run_row,
+        **extras,
     })
 
 
@@ -308,8 +403,16 @@ def api_latch_decide(req: DecideRequest) -> JSONResponse:
     except HumanLatchError as e:
         return JSONResponse({"error": str(e)}, status_code=400)
     _state["latch"] = dict(EMPTY_LATCH)
-    return JSONResponse({"results": results, "claims": [_claim_to_dict(_store(), c) for c in _state["claims"]],
-                         "latch": _state["latch"]})
+    store = _store()
+    run_row = _sync_prepublish(new_run=False)
+    extras = _detail_extras(store)
+    return JSONResponse({
+        "results": results,
+        "claims": [_claim_to_dict(store, c) for c in _state["claims"]],
+        "latch": _state["latch"],
+        "run": run_row,
+        **extras,
+    })
 
 
 class RerunRequest(BaseModel):
@@ -454,6 +557,20 @@ HTML_PAGE = """<!DOCTYPE html>
  .budget-track{flex:1;height:6px;background:rgba(255,255,255,.25);border-radius:3px;overflow:hidden}
  .budget-fill{height:100%;background:#3fb950;width:0%;transition:width .2s linear}
  .budget-text{font-variant-numeric:tabular-nums;min-width:3.5em;text-align:right;opacity:.95}
+ /* #173 发前增量:包结论条 + checksum/闸可见(不造第三套详情) */
+ #disposition-bar{margin:0 16px 10px;background:#fff;border:1px solid #d0d7de;border-radius:6px;
+                  padding:10px 14px;display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+ #disposition-bar .disp{font-size:18px;font-weight:700}
+ #disposition-bar .meta{font-size:12px;color:#57606a}
+ #disposition-bar .disp.ok{color:#1a7f37}
+ #disposition-bar .disp.patch{color:#9a6700}
+ #disposition-bar .disp.block{color:#cf222e}
+ #t1-checksums,#gate-results{margin:0 16px 10px;background:#fff;border:1px solid #d0d7de;
+                             border-radius:6px;padding:8px 12px;font-size:12px;color:#57606a}
+ #t1-checksums code,#gate-results code{word-break:break-all}
+ #t1-checksums.craftsman-hide,#gate-results.craftsman-hide{display:none}
+ #t1-checksums.craftsman-soft{display:block}
+ a.nav-prepublish{color:#fff;font-size:13px;margin-left:8px}
 </style>
 </head>
 <body>
@@ -461,6 +578,7 @@ HTML_PAGE = """<!DOCTYPE html>
  <strong>FreshLatch 复验单</strong>
  <span class="syn">SYNTHETIC · 合成语料,非真实客户数据</span>
  <span id="pack-badge" class="syn"></span>
+ <a class="nav-prepublish" href="/prepublish">发前列表</a>
  <span class="view-toggle" role="group" aria-label="视图密度">
   <button type="button" id="view-craftsman" class="on" onclick="setViewMode(&quot;craftsman&quot;)">职人视图</button>
   <button type="button" id="view-audit" onclick="setViewMode(&quot;audit&quot;)">审计视图</button>
@@ -495,6 +613,18 @@ HTML_PAGE = """<!DOCTYPE html>
  <strong>如何读</strong>
  <p>如何读本复验单:【身份】卖作废。【机器】fresh/stale/unknown 是机器判定。【人】void 是人的决定,void≠stale。【边界】非法律意见、非自动决策。</p>
 </aside>
+<div id="disposition-bar" aria-live="polite">
+ <span>包结论 · <span id="disp-value" class="disp">—</span></span>
+ <span class="meta" id="disp-run-meta"></span>
+</div>
+<div id="t1-checksums" class="craftsman-soft" aria-live="polite">
+ <b>T1 checksum</b>
+ <div id="t1-checksums-body">尚无 T1 文档指纹。</div>
+</div>
+<div id="gate-results" class="craftsman-soft" aria-live="polite">
+ <b>逐条闸结果</b>
+ <div id="gate-results-body">尚无闸结果。</div>
+</div>
 <main>
  <section id="claims"><p style="color:#57606a">加载中……</p></section>
  <section id="pane"><p style="color:#57606a">← 点击主张的证据 id,这里显示 T0/T1 原文并高亮锚点段落</p></section>
@@ -522,7 +652,8 @@ HTML_PAGE = """<!DOCTYPE html>
 let STATE = {claims: [], question: "", latch: {thread_id: null, pending: []},
              retrieve_zero_hits: [],
              trajectory: null, retrieval_used: null, decoding: null,
-             budget: null};
+             budget: null, disposition: null, run_status: null,
+             active_run_id: null, t1_checksums: [], gate_results: []};
 let T1SRC = {kind:'none', ready:false, paste_status:'none', synthetic:false,
              network_enabled:false, message:'', cards:[]};
 let PASTE_DRAFT_TEXT = '';  // 重绘三卡时保留粘贴框内容
@@ -570,6 +701,7 @@ async function reloadClaimsFromServer(){
   if(j.claims) STATE.claims = j.claims;
   if(j.latch) STATE.latch = j.latch;
   if(j.budget) renderBudget(j.budget);
+  absorbDetailExtras(j);
   renderClaims();
 }
 
@@ -619,6 +751,7 @@ async function boot(){
   const j = await (await fetch('/api/claims')).json();
   STATE = Object.assign(STATE, j);
   if(!STATE.retrieve_zero_hits) STATE.retrieve_zero_hits = [];
+  absorbDetailExtras(j);
   if(j.budget) renderBudget(j.budget);
   await refreshT1Source();
   renderViewChrome();
@@ -807,12 +940,71 @@ function renderPackBadge(){
   if(p.synthetic) bits.push('synthetic');
   el.textContent = bits.join(' · ');
 }
+function renderDispositionBar(){
+  // #173:包结论条增量注入既有复验单;职人只看三值,不堆工程词
+  const val = document.getElementById('disp-value');
+  const meta = document.getElementById('disp-run-meta');
+  if(!val || !meta) return;
+  const d = STATE.disposition || '—';
+  val.textContent = d;
+  val.className = 'disp' + (d==='可发'?' ok':(d==='需补丁'?' patch':(d==='勿发'?' block':'')));
+  const bits = [];
+  if(STATE.run_status) bits.push('Run 状态 '+STATE.run_status);
+  if(STATE.active_run_id) bits.push('id '+STATE.active_run_id);
+  meta.textContent = bits.join(' · ');
+}
+function renderT1Checksums(){
+  const box = document.getElementById('t1-checksums');
+  const body = document.getElementById('t1-checksums-body');
+  if(!box || !body) return;
+  // 职人视图保留短列表(可追责);审计视图同数据,不另造栈
+  const rows = STATE.t1_checksums || [];
+  if(!rows.length){ body.textContent = '尚无 T1 文档指纹。'; return; }
+  let h = '<ul style="margin:6px 0 0;padding-left:18px">';
+  for(const r of rows){
+    h += '<li>'+esc(r.doc_id||'')
+       + (r.title?(' · '+esc(r.title)):'')
+       + ' · <code>'+esc(r.checksum||'(空)')+'</code></li>';
+  }
+  h += '</ul>';
+  body.innerHTML = h;
+}
+function renderGateResults(){
+  const body = document.getElementById('gate-results-body');
+  if(!body) return;
+  const rows = STATE.gate_results || [];
+  if(!rows.length){ body.textContent = '尚无闸结果。'; return; }
+  let h = '<ul style="margin:6px 0 0;padding-left:18px">';
+  for(const r of rows){
+    h += '<li><b>'+esc(r.claim_id||'')+'</b> · '+esc(r.status||'')
+       + (r.gate_rejected?(' · 闸打回 <code>'+esc(r.error_code||'')+'</code>'):' · 闸侧已落档')
+       + (r.reason?(' — '+esc(r.reason)):'')
+       + '</li>';
+  }
+  h += '</ul>';
+  // 审计视图可链轨迹(既有 audit-panel);此处只挂闸摘要
+  if(STATE.trajectory && VIEW_MODE === 'audit'){
+    h += '<div style="margin-top:6px">轨迹:<code>'+esc(String(STATE.trajectory))+'</code></div>';
+  }
+  body.innerHTML = h;
+}
+function absorbDetailExtras(j){
+  if(!j) return;
+  if(j.disposition != null) STATE.disposition = j.disposition;
+  if(j.run_status != null) STATE.run_status = j.run_status;
+  if(j.active_run_id != null) STATE.active_run_id = j.active_run_id;
+  if(j.t1_checksums) STATE.t1_checksums = j.t1_checksums;
+  if(j.gate_results) STATE.gate_results = j.gate_results;
+}
 function overrideFilterOn(){
   const box = document.getElementById('filter-override');
   return VIEW_MODE === 'audit' && !!(box && box.checked);
 }
 function renderClaims(){
   renderPackBadge();
+  renderDispositionBar();
+  renderT1Checksums();
+  renderGateResults();
   const el = document.getElementById('claims');
   if(!el) return;
   let h = '<div id="import-panel" class="'+(IMPORT_PANEL_OPEN?'open':'')+'">'
@@ -920,6 +1112,7 @@ async function runReverify(){
     STATE.retrieve_zero_hits = j.retrieve_zero_hits || [];
     STATE.trajectory = j.trajectory; STATE.retrieval_used = j.retrieval_used;
     STATE.decoding = j.decoding;
+    absorbDetailExtras(j);
     if(j.budget) renderBudget(j.budget);
     renderViewChrome();
     renderClaims();
@@ -988,6 +1181,7 @@ async function submitDecisions(settleAll){
     body: JSON.stringify({thread_id: STATE.latch.thread_id, decisions: decisions})})).json();
   if(j.error){ document.getElementById('status').textContent = j.error; return; }
   STATE.claims = j.claims; STATE.latch = j.latch; PENDING_DECISIONS = [];
+  absorbDetailExtras(j);
   renderClaims();
   // 单条被闸打回不拖垮其余(apply_decisions 语义);打回项带 error_code 如实上屏
   const bad = (j.results||[]).filter(r=>!r.ok);
@@ -1023,6 +1217,81 @@ def index() -> str:
         html = html.replace('id="view-craftsman" class="on"', 'id="view-craftsman"')
         html = html.replace('id="view-audit"', 'id="view-audit" class="on"', 1)
     return html
+
+
+# 发前列表壳:改编 mission_control 列表→详情 IA;字段换 Run/disposition(#173)
+PREPUBLISH_HTML = """<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>FreshLatch 发前列表</title>
+<style>
+ body{font-family:system-ui,"Microsoft YaHei",sans-serif;margin:0;background:#f6f8fa;color:#24292f}
+ header{background:#0a2540;color:#fff;padding:14px 24px;display:flex;gap:16px;align-items:center}
+ header a{color:#fff;font-size:13px}
+ main{max-width:960px;margin:24px auto;padding:0 16px}
+ h1{font-size:22px;margin:0 0 8px}
+ .hint{font-size:13px;color:#57606a;margin-bottom:16px}
+ table{width:100%;border-collapse:collapse;background:#fff;border:1px solid #d0d7de;border-radius:6px;overflow:hidden}
+ th,td{padding:10px 12px;text-align:left;border-bottom:1px solid #d0d7de;font-size:14px}
+ th{background:#f6f8fa;font-weight:600;color:#57606a}
+ tr:last-child td{border-bottom:0}
+ .disp{font-weight:700}
+ .disp.ok{color:#1a7f37}.disp.patch{color:#9a6700}.disp.block{color:#cf222e}
+ .empty{padding:24px;color:#57606a;background:#fff;border:1px solid #d0d7de;border-radius:6px}
+ a.open{color:#0969da;text-decoration:none}
+ a.open:hover{text-decoration:underline}
+ .syn{background:#b45309;color:#fff;font-size:12px;padding:2px 10px;border-radius:10px}
+</style>
+</head>
+<body>
+<header>
+ <strong>FreshLatch 发前列表</strong>
+ <span class="syn">SYNTHETIC</span>
+ <span style="flex:1"></span>
+ <a href="/">打开复验单详情</a>
+</header>
+<main>
+ <h1>发前 Run</h1>
+ <p class="hint">列表壳只投影标题/来源、包结论、更新时间、Run 状态。点「打开」进入既有复验单(增量包结论条);不另造第三套详情 UI。</p>
+ <div id="list"><p class="empty">加载中……</p></div>
+</main>
+<script>
+function esc(s){return String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}
+function dispCls(d){return d==='可发'?'ok':(d==='需补丁'?'patch':(d==='勿发'?'block':''))}
+async function loadList(){
+  const j = await (await fetch('/api/prepublish/runs')).json();
+  const runs = j.runs || [];
+  const el = document.getElementById('list');
+  if(!runs.length){
+    el.innerHTML = '<p class="empty">暂无发前 Run。请先在<a href="/">复验单</a>导入主张并复验。</p>';
+    return;
+  }
+  let h = '<table><thead><tr>'
+        + '<th>标题 / 来源</th><th>包结论</th><th>更新时间</th><th>Run 状态</th><th></th>'
+        + '</tr></thead><tbody>';
+  for(const r of runs){
+    h += '<tr>'
+       + '<td><b>'+esc(r.title||'')+'</b><div style="font-size:12px;color:#57606a">'
+       + esc(r.source||'')+'</div></td>'
+       + '<td><span class="disp '+dispCls(r.disposition)+'">'+esc(r.disposition||'')+'</span></td>'
+       + '<td>'+esc(r.updated_at||'')+'</td>'
+       + '<td>'+esc(r.status||'')+'</td>'
+       + '<td><a class="open" href="/">打开详情</a></td>'
+       + '</tr>';
+  }
+  h += '</tbody></table>';
+  el.innerHTML = h;
+}
+loadList();
+</script>
+</body></html>"""
+
+
+@app.get("/prepublish", response_class=HTMLResponse)
+def prepublish_index() -> str:
+    """发前列表页(#173):mission_control 列表壳改编,业务字段换 Run/disposition。"""
+    return PREPUBLISH_HTML
 
 
 if __name__ == "__main__":
