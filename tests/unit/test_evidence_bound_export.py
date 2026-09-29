@@ -30,6 +30,11 @@ from freshlatch.sheet import render_client_memo_markdown
 ARCHIVED_EID = "mck-soai-2025-11#p3@T1"
 
 
+def _noop_reverify(claim: Claim) -> tuple[str, str]:
+    """#199 后 confirm 须注入再验钩子;导出测用确定性 no-op。"""
+    return claim.status, "export-test-noop"
+
+
 def _claim(
     claim_id: str,
     *,
@@ -88,6 +93,7 @@ def test_confirm_returns_json_and_markdown_payload(tmp_path: Path):
         events_dir=events_dir,
         claim_list=claims,
         actor="顾问甲",
+        reverify_fn=_noop_reverify,
     )
     assert result.ok
     assert result.export is not None
@@ -129,6 +135,7 @@ def test_write_patch_export_writes_both_files(tmp_path: Path):
         events_dir=events_dir,
         claim_list=claims,
         actor="human",
+        reverify_fn=_noop_reverify,
     )
     assert result.ok and result.export is not None
     out = tmp_path / "bundle"
@@ -180,6 +187,7 @@ def test_export_from_confirm_result_allows_after_override(tmp_path: Path):
         minutes=1.0,
         events_dir=events_dir,
         claim_list=claims,
+        reverify_fn=_noop_reverify,
     )
     refreshed = export_from_confirm_result(result, disposition_after="勿发")
     assert refreshed.json_payload["disposition_before"] == result.event["before_disp"]
