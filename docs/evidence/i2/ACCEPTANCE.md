@@ -62,9 +62,9 @@ pytest tests/unit/test_i2_retrieve_trust.py tests/unit/test_i2_injection_gate.py
 
 > I2（本地 ACCEPTANCE）：越权召回 / 间接注入 / 检索投毒三例确定性硬勾 pass；注入 1× Lead→Auditor 冒烟 fail-closed（本记录终态 stale）。档=冒烟。不是渗透认证，不是安全通过率，不是 Hard-Gold，不改生产默认臂。
 
-## 7. 非本票 / 仍开
+## 7. 非本票 / 指针
 
-- 不关 #218（等 Ronin `GROK-PROXY-APPROVED #218`）
-- 不开始 #219（等 #218 CLOSED）
 - 不做安全平台 / RBAC / 租户管理面
 - 三威胁不全绑 LLM；ACL/poison 保持确定性硬门
+- DoD 关门摘要：`docs/evidence/i2/I2-DoD-CLOSE.md`（[#219](https://github.com/luxingjiang1993/FreshLatch/issues/219)；本 ACCEPTANCE 不代关 DoD）
+- #218 CLOSED（`GROK-PROXY-APPROVED #218` · PR #224）；父规格 #213 等 #219 代 Exit 后收口
