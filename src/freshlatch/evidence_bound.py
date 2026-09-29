@@ -1,9 +1,11 @@
-"""Evidence-bound / attested patch API(ADR-0029 / #198)。
+"""Evidence-bound / attested patch API(ADR-0029 / #198+#199+#201)。
 
 独立 Verify+ 补丁缝:propose 暂存、confirm 应用。不扩展 HumanLatch VALID_ACTIONS。
 产品路径记账走 patch_events.append_product_confirm(arm=T, before/after)。
 
-再验真接线属 #199;本票成功 confirm 只置 reverify_requested 钩子,不触发 runner。
+#199:confirm 成功路径强制单条再验(同构 latch rerun 粒度)→ 重算 disposition;
+正式事件 reverify=true;禁止整包全量再验作为唯一/默认路径。
+#201:成功 confirm 附带同次 JSON+短 MD 导出载荷;与 Client Memo 分轨。
 """
 
 from __future__ import annotations
@@ -11,8 +13,9 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Collection, Iterable, Mapping, MutableSequence, Sequence
+from typing import Any, Callable, Collection, Iterable, Mapping, MutableSequence, Sequence
 
+from freshlatch.evidence_bound_export import PatchExportBundle, build_patch_export
 from freshlatch.models import Claim
 from freshlatch.patch_events import append_product_confirm
 from freshlatch.prepublish import disposition_for_claims
@@ -24,9 +27,13 @@ PATCH_EMPTY_AFTER = "PATCH_EMPTY_AFTER"
 PATCH_EMPTY_T1 = "PATCH_EMPTY_T1"
 PATCH_T1_NOT_ARCHIVED = "PATCH_T1_NOT_ARCHIVED"
 PATCH_NO_DRAFT = "PATCH_NO_DRAFT"
+PATCH_REVERIFY_UNAVAILABLE = "PATCH_REVERIFY_UNAVAILABLE"
 
 # 可提案资格:未 discard 的 unknown|stale(ADR-0029)
 _ELIGIBLE_STATUSES: frozenset[str] = frozenset({"unknown", "stale"})
+
+# 单主张再验回调:(verdict, note);可原地改 claim.status(同构 latch reverify_fn)
+ClaimReverifyFn = Callable[[Claim], tuple[str, str]]
 
 
 def _utc_now() -> str:
@@ -122,9 +129,14 @@ class ConfirmPatchResult:
     disposition: str | None = None
     before_text: str | None = None
     after_text: str | None = None
-    # #199 真接线钩子:成功确认置 True;本票不触发 runner/reverify
+    # 成功确认后必跑单条再验(#199);钩子与真触发合一
     reverify_requested: bool = False
+    reverify_triggered: bool = False
+    reverify_verdict: str | None = None
+    reverify_note: str = ""
     event: dict[str, Any] | None = None
+    # #201:成功确认附带同次导出包(JSON+短 MD);失败为 None
+    export: PatchExportBundle | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -136,7 +148,11 @@ class ConfirmPatchResult:
             "before_text": self.before_text,
             "after_text": self.after_text,
             "reverify_requested": self.reverify_requested,
+            "reverify_triggered": self.reverify_triggered,
+            "reverify_verdict": self.reverify_verdict,
+            "reverify_note": self.reverify_note,
             "event": self.event,
+            "export": self.export.to_dict() if self.export else None,
         }
 
 
@@ -221,6 +237,7 @@ def _reject_confirm(
         error_code=error_code,
         detail=detail,
         reverify_requested=False,
+        reverify_triggered=False,
     )
 
 
@@ -242,6 +259,28 @@ def _validate_t1_ids(
     return None, ""
 
 
+def single_claim_reverify(
+    claim: Claim,
+    *,
+    store: Any,
+    checksum_fn: Callable[..., Any] | None = None,
+) -> tuple[str, str]:
+    """单条强制再验:与 HumanLatch._default_reverify 同构粒度。
+
+    只把该主张交给 Runner.run([claim]),禁止默认跑整包 claims。
+    返回 (verdict, note);Runner._finalize 可能已原地改 claim.status。
+    """
+    from freshlatch.runner import Runner  # 延迟导入避免环
+
+    runner = Runner(store, checksum_fn=checksum_fn)
+    result = runner.run([claim])
+    lead_decision = result.decisions[claim.claim_id]
+    note = ""
+    if lead_decision.status == "fresh" and claim.status != "fresh":
+        note = "Lead 判 fresh,规则闸打回"
+    return claim.status, note
+
+
 def confirm_patch(
     *,
     claim_id: str,
@@ -256,11 +295,15 @@ def confirm_patch(
     events_dir: Path | None = None,
     actor: str = "human",
     claim_list: MutableSequence[Claim] | None = None,
+    reverify_fn: ClaimReverifyFn | None = None,
+    store: Any | None = None,
+    checksum_fn: Callable[..., Any] | None = None,
 ) -> ConfirmPatchResult:
-    """确认应用:资格闸 + T1 硬闸 → 覆盖 statement → 写正式 T 行 → 返回 disposition。
+    """确认应用:资格闸 + T1 硬闸 → 覆盖 statement → 单条再验 → 重算 disposition → 写 T 行。
 
     无证/非法 t1 → 拒绝且零改正文、零写正式账本。
-    成功路径置 reverify_requested=True(钩子;#199 真接线)。
+    成功路径强制对该 claim 单条再验(注入 reverify_fn,或 store→single_claim_reverify);
+    缺再验依赖则拒确认(零改正文)。正式事件 reverify=true。
     claim_list 若给出则用其重算包结论(否则用 claims 映射的值列表)。
     """
     claim = _find_claim(claims, claim_id)
@@ -293,6 +336,21 @@ def confirm_patch(
     if err:
         return _reject_confirm(claim_id, err, detail)
 
+    # 再验依赖前置闸:成功路径必须能触发单条再验(fail-closed,避免半提交)
+    if reverify_fn is not None:
+        effective_fn: ClaimReverifyFn = reverify_fn
+    elif store is not None:
+        def _store_backed_reverify(c: Claim) -> tuple[str, str]:
+            return single_claim_reverify(c, store=store, checksum_fn=checksum_fn)
+
+        effective_fn = _store_backed_reverify
+    else:
+        return _reject_confirm(
+            claim_id,
+            PATCH_REVERIFY_UNAVAILABLE,
+            "confirm 成功路径须注入 reverify_fn 或 store 以触发单条再验",
+        )
+
     # 包结论快照(记账 before_disp);确认前取
     pack_claims: Iterable[Claim]
     if claim_list is not None:
@@ -307,6 +365,9 @@ def confirm_patch(
     # 硬闸已过:原地覆盖正文 + 挂载确认用 t1
     claim.statement = resolved_after
     claim.t1_evidence_ids = list(resolved_t1)
+
+    # 单条强制再验(同构 latch rerun 粒度;仅目标 claim,非整包)
+    verdict, note = effective_fn(claim)
 
     span = (patch_span or "").strip() or default_patch_span(claim_id)
     event = append_product_confirm(
@@ -326,7 +387,25 @@ def confirm_patch(
     if drafts is not None:
         drafts.discard(run_id, claim_id)
 
+    # 再验后重算包结论(与主张态聚合一致)
     new_disp = disposition_for_claims(pack_claims)
+    # #201:同次导出;再验前=记账 before_disp,再验后=当前重算包结论
+    # (#199 真接线后再验若改结论,可再调 export_from_confirm_result 覆盖 after)
+    export_bundle = build_patch_export(
+        claim_id=claim_id,
+        before_text=before_text,
+        after_text=resolved_after,
+        t1_ids=list(resolved_t1),
+        confirmer=actor,
+        disposition_before=before_disp,
+        disposition_after=new_disp,
+        minutes=float(minutes),
+        patch_span=span,
+        arm=str(event.get("arm") or "T"),
+        ts=str(event.get("ts") or ""),
+        reverify=bool(event.get("reverify", True)),
+        human_confirm=bool(event.get("human_confirm", True)),
+    )
     return ConfirmPatchResult(
         ok=True,
         claim_id=claim_id,
@@ -334,5 +413,9 @@ def confirm_patch(
         before_text=before_text,
         after_text=resolved_after,
         reverify_requested=True,
+        reverify_triggered=True,
+        reverify_verdict=verdict,
+        reverify_note=note or "",
         event=event,
+        export=export_bundle,
     )
