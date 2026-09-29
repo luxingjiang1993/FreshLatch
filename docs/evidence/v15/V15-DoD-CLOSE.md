@@ -2,11 +2,11 @@
 
 > **档：** 冒烟 / 对客 demo 层（零 LLM CI）。不报方差；不作统计升格；**不是** Hard-Gold；**不是** C vs T 显著。  
 > **日期：** 2026-09-29  
-> **Refs：** [#203](https://github.com/luxingjiang1993/FreshLatch/issues/203)（DoD；本文件不代关） / parent [#196](https://github.com/luxingjiang1993/FreshLatch/issues/196) / blocked-by [#202](https://github.com/luxingjiang1993/FreshLatch/issues/202) closed via [PR #210](https://github.com/luxingjiang1993/FreshLatch/pull/210)  
+> **Refs：** [#203](https://github.com/luxingjiang1993/FreshLatch/issues/203) CLOSED（`GROK-PROXY-APPROVED #203`） / parent [#196](https://github.com/luxingjiang1993/FreshLatch/issues/196) / blocked-by [#202](https://github.com/luxingjiang1993/FreshLatch/issues/202) closed via [PR #210](https://github.com/luxingjiang1993/FreshLatch/pull/210)  
 > **规格 / 决议：** `docs/spec/12-PhaseV1.5-EvidenceBound.md` · ADR-0029 · 评估 `docs/research/V1.5-Evidence-bound补丁设计评估.md`  
 > **硬 Exit 权威：** `docs/evidence/v15/ACCEPTANCE.md`（文首冒烟声明；硬条四勾；升「可发」仅加分）
 
-本页是 V1.5 Exit 的可引用关门摘要。Exit 代批走 Ronin（`GROK-PROXY-APPROVED #203`）；Cloud 只交包，不 close issue。
+本页是 V1.5 Exit 的可引用关门摘要。Exit 已由 Ronin 代批（`GROK-PROXY-APPROVED #203`）；实现 PR [#211](https://github.com/luxingjiang1993/FreshLatch/pull/211)。
 
 ## Demo path
 
@@ -35,8 +35,8 @@
 | 主缝测试 | `tests/unit/test_evidence_bound_e2e.py` |
 | V1 发前回归 | `tests/unit/test_prepublish_e2e.py`（不红） |
 | 实现 PR | [#205](https://github.com/luxingjiang1993/FreshLatch/pull/205) before/after · [#206](https://github.com/luxingjiang1993/FreshLatch/pull/206) propose/confirm · [#208](https://github.com/luxingjiang1993/FreshLatch/pull/208) 再验 · [#209](https://github.com/luxingjiang1993/FreshLatch/pull/209) UI · [#207](https://github.com/luxingjiang1993/FreshLatch/pull/207) 导出 · [#210](https://github.com/luxingjiang1993/FreshLatch/pull/210) e2e+ACCEPTANCE |
-| 已关子票 | [#197](https://github.com/luxingjiang1993/FreshLatch/issues/197)–[#202](https://github.com/luxingjiang1993/FreshLatch/issues/202) closed（Ronin 代批） |
-| 仍开 | [#203](https://github.com/luxingjiang1993/FreshLatch/issues/203) 本 DoD · [#196](https://github.com/luxingjiang1993/FreshLatch/issues/196) 父规格（等 #203 代 Exit 后编排器收口） |
+| 已关子票 | [#197](https://github.com/luxingjiang1993/FreshLatch/issues/197)–[#203](https://github.com/luxingjiang1993/FreshLatch/issues/203) closed（Ronin 代批；#203 = Exit） |
+| 父规格 | [#196](https://github.com/luxingjiang1993/FreshLatch/issues/196) 由编排器在 Exit 代批后收口 |
 
 ## Out of Scope（确认未偷渡）
 

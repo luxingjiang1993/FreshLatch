@@ -303,7 +303,7 @@ Findings ≈ 顶会正规次主赛道；Industry ≈ 同会落地轨；对 mid �
 
 ## 一句话
 
-**I0 钉数字 → V1 发前闭环 → ① bare-pytest 卫生（DONE）→ 本地 V1 ACCEPTANCE → I1 失败样本（DONE）→ V1.5 Evidence-bound 补丁 → I2 安全两例 → B′/V2 按需；#8 薄挂且不早于 V1；#4 只做可选 demo；Studio 冻死；难金标另票；论文挂同一条发前闭环。**
+**I0 钉数字 → V1 发前闭环 → ① bare-pytest 卫生（DONE）→ 本地 V1 ACCEPTANCE → I1 失败样本（DONE）→ V1.5 Evidence-bound 补丁（DONE · 冒烟）→ I2 安全两例 → B′/V2 按需；#8 薄挂且不早于 V1；#4 只做可选 demo；Studio 冻死；难金标另票；论文挂同一条发前闭环。**
 
 ---
 
@@ -328,4 +328,5 @@ Findings ≈ 顶会正规次主赛道；Industry ≈ 同会落地轨；对 mid �
 | 2026-09-29 | **V1.5 to-tickets**：#197–#203 `ready-for-agent`（#204 重复已关）；enrich 齐；清单 `.scratch/v15-tickets/INDEX.md` |
 | 2026-09-29 | **V1.5 云端派工待 Ronin**：`docs/agents/phase-v15-cloud-dispatch.md`；须 #196 `GROK-PROXY-APPROVED V1.5-DISPATCH` 后启 Cloud |
 | 2026-09-29 | **V1.5 实现波 #197–#202**：patch_events before/after · propose/confirm · 再验 · UI 条带 · 导出 · e2e+ACCEPTANCE；PR #205–#210 合 main；Ronin 代批齐关 |
-| 2026-09-29 | **V1.5 DoD close（#203）**：冒烟级关门摘要见 `docs/evidence/v15/V15-DoD-CLOSE.md`；硬 Exit 引用 ACCEPTANCE；Out 未偷渡（薄对话/扩 latch/C\|T UX/Exit 硬绑可发）；不升格 Hard-Gold。本行不代关 #203/#196 |
+| 2026-09-29 | **V1.5 DoD close（#203）**：冒烟级关门摘要见 `docs/evidence/v15/V15-DoD-CLOSE.md`；硬 Exit 引用 ACCEPTANCE；Out 未偷渡（薄对话/扩 latch/C\|T UX/Exit 硬绑可发）；不升格 Hard-Gold；`GROK-PROXY-APPROVED #203`；#203 CLOSED |
+| 2026-09-29 | **V1.5 DONE（冒烟）**：#197–#203 CLOSED（Ronin 代批）；PR #205–#211 合 main；父规格 #196 收口；下一主烤 **I2** |

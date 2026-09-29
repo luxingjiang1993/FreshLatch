@@ -204,7 +204,7 @@ BOI / GenAI 暂行办法 / 个保审计办法 — 见会话记录；适合 `regu
 
 **共享理解再确认（2026-09-29）：** V1 决议枝全部仍成立。  
 **纠偏（2026-09-29）：** 本期主烤 **Phase I1**（已 grill DONE · corpus/Exit 已齐）。  
-**下一跳:** Phase V1.5（Evidence-bound）；I1 证据见 `docs/evidence/i1/ACCEPTANCE.md`。  
+**下一跳:** Phase I2（安全两例）；V1.5 Exit 已齐见 `docs/evidence/v15/ACCEPTANCE.md` · `V15-DoD-CLOSE.md`。  
 **主缝（I1）：** 失败三分法 ↔ 闸层 ↔ 可复盘样本（ADR-0028）。
 
 ---
@@ -250,7 +250,7 @@ BOI / GenAI 暂行办法 / 个保审计办法 — 见会话记录；适合 `regu
 **已落盘:**  
 `docs/research/I1-失败三分法与HumanLatch语料设计评估.md` · `docs/adr/0028-i1-失败三分法评测标签与语料.md` · CONTEXT 评测区指针  
 
-**下一跳:** Phase V1.5（I1 Exit 已齐：`docs/evidence/i1/ACCEPTANCE.md`；父规格 #183 CLOSED）。
+**下一跳:** Phase I2（V1.5 Exit 已齐：`docs/evidence/v15/ACCEPTANCE.md`；父规格 #196 CLOSED）。
 
 ---
 
@@ -301,9 +301,9 @@ BOI / GenAI 暂行办法 / 个保审计办法 — 见会话记录；适合 `regu
 **共享理解:** 已确认（2026-09-29）。  
 
 **已落盘:**  
-`docs/research/V1.5-Evidence-bound补丁设计评估.md` · `docs/adr/0029-v1.5-evidence-bound补丁与独立确认API.md` · CONTEXT（Evidence-bound / propose·confirm / Verify+）· roadmap V1.5 In/Out/Exit · GitHub [#195](https://github.com/luxingjiang1993/FreshLatch/issues/195) CLOSED  
+`docs/research/V1.5-Evidence-bound补丁设计评估.md` · `docs/adr/0029-v1.5-evidence-bound补丁与独立确认API.md` · CONTEXT（Evidence-bound / propose·confirm / Verify+）· roadmap V1.5 In/Out/Exit · GitHub [#195](https://github.com/luxingjiang1993/FreshLatch/issues/195) CLOSED · 实现 [#196](https://github.com/luxingjiang1993/FreshLatch/issues/196)–[#203](https://github.com/luxingjiang1993/FreshLatch/issues/203) CLOSED（冒烟 Exit）  
 
-**下一跳:** to-spec（Phase V1.5）→ enrich → before-implement / implement。
+**下一跳:** Phase I2 grill / to-spec。
 
 ---
 
@@ -347,7 +347,7 @@ BOI / GenAI 暂行办法 / 个保审计办法 — 见会话记录；适合 `regu
 |----|------|------|
 | **V1-R2 Q7** | Q5 | ~~论文 C vs T 是否进 UX~~ **已钉** |
 | **V1-R2 映射边界** | Q3 | ~~「全 fresh 无人审」等边界~~ **已钉** |
-| Q9 Evidence-bound 补丁 UX | Q5, Q3 | **V1.5 主烤中**（§2f Round 1 已钉；Round 2 进行中） |
+| Q9 Evidence-bound 补丁 UX | Q5, Q3 | **V1.5 DONE（冒烟）**（§2f；#196–#203 CLOSED） |
 | **I1-R2** 三分法 ↔ 层映射表 | I1-Q2/Q3 | 找不到/找错/没用上 × retrieve/Lead/Critic/Gate/HumanLatch |
 | **I1-R2** 漏拦 vs 误拦操作定义 | I1-Q2/Q4 | 与假绿对照 / must_* 金标如何对齐 |
 | **I1-R2** Exit 闭卷口述稿 | I1-Q4/Q5 | 指着哪 3 条讲清层级 |
@@ -401,7 +401,7 @@ BOI / GenAI 暂行办法 / 个保审计办法 — 见会话记录；适合 `regu
 | **本期①卫生未 Exit** | 只修 pytest path / 导入 / `pythonpath` | 开写 #169+ 产品票 |
 | V1 Exit | 演示发前路径；开始稳定记 `patch_events` | 难金标改默认；Studio |
 | I1 Exit 前 | — | 用 V1.5/论文叙事替代 mid 铁证 |
-| **V1.5 grill 已确认** | to-spec / 实现 Evidence-bound 表单闭环（ADR-0029） | 薄对话；扩 HumanLatch；Exit 硬绑可发；改生产默认臂 |
+| **V1.5 grill 已确认 · Exit 已齐** | I2 / 论文预实验簿记 | 薄对话；扩 HumanLatch；Exit 硬绑可发；改生产默认臂；用 V1.5 替代 I1 |
 
 ---
 
@@ -425,3 +425,4 @@ BOI / GenAI 暂行办法 / 个保审计办法 — 见会话记录；适合 `regu
 | 2026-09-29 | **V1.5 Round 2** 全认：薄对话 Out；单条再验；unknown+stale 可提案；T1 多选；before/after 进账本；mck 脚本；ADR-0029；v15 ACCEPTANCE；minutes 手填 |
 | 2026-09-29 | **V1.5 Round 3** 全认：JSON+MD 导出；草案暂存；Exit 不硬要可发；roadmap In 去薄对话；patch_span 保留；frontier 空待共享理解确认 |
 | 2026-09-29 | **V1.5 共享理解确认**；评估+ADR-0029+CONTEXT+roadmap 落盘；下一跳 to-spec |
+| 2026-09-29 | **V1.5 DONE（冒烟）**：#196–#203 CLOSED（Ronin Exit）；证据 `docs/evidence/v15/`；下一跳 I2 |
