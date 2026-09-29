@@ -554,6 +554,7 @@ def api_patch_confirm(req: ConfirmPatchRequest) -> JSONResponse:
     """确认改稿(#200):confirm_patch 硬闸;产品路径恒 arm=T;发前无 C|T 开关。"""
     store = _store()
     archived = list_archived_t1_evidence_ids(store)
+    # #199 后 confirm 须能单条再验:产品路径注入 store→single_claim_reverify
     result = confirm_patch(
         claim_id=req.claim_id,
         claims={c.claim_id: c for c in _state["claims"]},
@@ -567,6 +568,7 @@ def api_patch_confirm(req: ConfirmPatchRequest) -> JSONResponse:
         run_id=_patch_run_id(),
         events_dir=_PATCH_EVENTS_DIR,
         actor="human",
+        store=store,
     )
     if not result.ok:
         return JSONResponse(result.to_dict(), status_code=400)
