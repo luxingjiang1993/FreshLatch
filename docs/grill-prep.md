@@ -354,7 +354,44 @@ BOI / GenAI 暂行办法 / 个保审计办法 — 见会话记录；适合 `regu
 **已落盘:**  
 `docs/research/I2-安全三例设计评估.md` · `docs/adr/0030-i2-薄ACL与注入投毒冒烟.md` · CONTEXT（`tenant_id` / `poison`/`untrusted` / I2 评测指针）· roadmap Phase I2 完整对齐三例  
 
-**下一跳:** to-tickets → enrich（规格 [#213](https://github.com/luxingjiang1993/FreshLatch/issues/213) · `docs/spec/13-PhaseI2-SecurityDemos.md`）。
+**下一跳:** I2 implement 已齐；**V2 grill DONE**（§2h）。
+
+---
+
+## 2h. V2 grill · 发前钩子 + 主张台账 · ADOPTION（2026-09-30）
+
+### Round 1–3 已钉（混选后收束）
+
+| # | 拍板 |
+|---|------|
+| **V2-Q2** | 闸 = 只读 disposition + checksum/`run_id`；**不**整包再验 |
+| **V2-Q3** | 台账 = `invalidation_list` ∪ `latch_log` **只读投影**；零新写表 |
+| **V2-Q4** | Exit = 冒烟采用层 + `docs/evidence/v2/ACCEPTANCE.md`；不报采用率；不硬绑可发 |
+| **V2-Q5** | 词 = **发前钩子** + **主张台账**（≠检索 embed） |
+| **V2-Q7** | 多出口同闸（仓内）：Memo UI+CLI + 发前按钮；sheet/补丁同闸=加分另票 |
+| **V2-Q8** | 插件平台/图谱 → Backlog；Memo 商业裁决、扩 latch、改默认臂、Studio、双写表 → **弃** |
+| **V2-Q9** | V2 冒烟关 + Backlog 备选行（C′ / 图谱·CMS） |
+| **V2-Q10** | **(c)** 本期真做 1 个**入站** HTTP check |
+| **V2-Q11** | Memo UI+CLI +「导出客户备忘」按钮 |
+| **V2-Q12** | 台账挂 Run 详情旁路 + CLI/MD 导出 |
+| **V2-Q13** | Out 保留大图谱/采编；Backlog 补 C′ 与图谱·CMS |
+| **V2-Q14** | 开 **ADR-0031** |
+| **V2-Q15** | 外部形态 = 入站 POST check（非出站通知、非目录 drop） |
+| **V2-Q16** | 默认 `127.0.0.1` + 可选 hook token |
+| **V2-Q17** | 必填 `run_id`；无 Run fail-closed |
+| **V2-Q18** | deny = 403/409 + JSON；不落 Memo；`ack_needs_patch` 放行需补丁 |
+| **V2-Q19** | Exit 硬条 1–5 预锁（含 curl allow/deny） |
+| **V2-Q20** | roadmap/CONTEXT/评估四件套对齐 |
+
+**Anthropic 合入：** Exit=冒烟采用层；curl≠平台已交付；确定性闸；词表进 CONTEXT、平台规格进 Backlog；硬条预锁禁 HARKing。
+
+**Frontier：** 已空。  
+**共享理解:** 已确认（2026-09-30）。  
+
+**已落盘:**  
+`docs/research/V2-发前钩子与主张台账设计评估.md` · `docs/adr/0031-v2-发前钩子与主张台账.md` · CONTEXT（发前钩子 / 主张台账 / Verify+ 增量）· roadmap Phase V2 对齐  
+
+**下一跳:** before-implement（Frontier [#227](https://github.com/luxingjiang1993/FreshLatch/issues/227) · [#228](https://github.com/luxingjiang1993/FreshLatch/issues/228)；enrich 齐 · `.scratch/v2-tickets/INDEX.md`）。
 
 ---
 
@@ -440,6 +477,7 @@ BOI / GenAI 暂行办法 / 个保审计办法 — 见会话记录；适合 `regu
 | **retrieve 子系统评测** | `python -m freshlatch.eval retrieve` 轨；与主张金标 `eval run --gold` **分轨**，不得混报 |
 | **V1 垂直（顾问报告）** | 近端唯一垂直：已签发顾问/战略主张的发前复验；样例主包 McKinsey State of AI（T0≈2025-03 / T1≈2025-11）；非研报、非合规主包 |
 | **薄 URL（c′）** | T1 合法入口之一：仅白名单域名单条抓取→落盘；失败显式错误并可回落粘贴确认入库；非开放爬虫 |
+| **发前钩子 / 主张台账** | V2 Adoption → **已迁 CONTEXT / ADR-0031** |
 
 定稿后迁到正式 `docs/` glossary 或 ADR；此处仅种子。
 
@@ -455,7 +493,8 @@ BOI / GenAI 暂行办法 / 个保审计办法 — 见会话记录；适合 `regu
 | V1 Exit | 演示发前路径；开始稳定记 `patch_events` | 难金标改默认；Studio |
 | I1 Exit 前 | — | 用 V1.5/论文叙事替代 mid 铁证 |
 | **V1.5 grill 已确认 · Exit 已齐** | I2 / 论文预实验簿记 | 薄对话；扩 HumanLatch；Exit 硬绑可发；改生产默认臂；用 V1.5 替代 I1 |
-| **I2 grill 已确认 · 待 implement** | to-spec / 薄 ACL·注入·投毒冒烟 | 安全平台；#4 顶替 I2；取消确定性硬门；不改 roadmap 却宣称三例 |
+| **I2 grill 已确认 · Exit 已齐** | — | 安全平台；#4 顶替 I2；取消确定性硬门 |
+| **V2 grill 已确认 · 待 to-spec** | to-spec / 发前钩子+台账冒烟 | 插件平台当 V2 Exit；整包再验挂钩子；双写作废表；Memo 商业裁决；检索 embed 冒充本阶段 |
 
 ---
 
@@ -484,3 +523,5 @@ BOI / GenAI 暂行办法 / 个保审计办法 — 见会话记录；适合 `regu
 | 2026-09-29 | **I2 Round 2** 混选：Q7=c（暂不改 roadmap）·Q12=c（硬 e2e LLM）；其余认推荐；Round 3 止损 |
 | 2026-09-29 | **I2 Round 3**：Q15=完整改写 roadmap（作废 Q7c）；Q16–Q20 认推荐；frontier 空待共享理解确认 |
 | 2026-09-29 | **I2 共享理解确认**；评估+ADR-0030+CONTEXT+roadmap 完整对齐三例落盘；下一跳 to-spec |
+| 2026-09-30 | **V2 Round 1–3**：发前钩子+台账；入站 check；Memo UI+CLI；冒烟 Exit；C′/图谱 Backlog；§2h |
+| 2026-09-30 | **V2 共享理解确认**；评估+ADR-0031+CONTEXT+roadmap 落盘；下一跳 to-spec |

@@ -16,13 +16,13 @@
 ```
 DONE: Phase A · Phase I0 · Phase V1（冒烟 + 本地 ACCEPTANCE）· Phase I1（冒烟 corpus）· Phase V1.5（冒烟 Evidence-bound）· Phase I2（冒烟安全三例）· ① bare-pytest 卫生
 NOW → NEXT:
-  Phase B′ (on-demand) → Phase V2
-BACKLOG: Hard-Gold ticket | Policy-as-code (#8) | Studio (frozen)
+  Phase V2（grill DONE · 下一跳 to-spec）
+BACKLOG: Phase B′ (on-demand · 延后) | C′ 外部嵌入平台化 | 图谱/采编 CMS | Hard-Gold ticket | Policy-as-code (#8) | Studio (frozen)
 ```
 
 **默认阶段序（钉死）：** `V1 → I1 → V1.5`。  
 **唯一例外：** 自用痛点明确是「改稿再验」时，允许 V1 后先开 V1.5；**冲 mid 仍以 I1 为准**，不得用 V1.5 替代 I1。  
-**本期：** V1.5 Exit **已齐**；**I2 Exit 已齐（冒烟级）**（[#213](https://github.com/luxingjiang1993/FreshLatch/issues/213) · #214–#219；证据 `docs/evidence/i2/ACCEPTANCE.md` · 关门 `docs/evidence/i2/I2-DoD-CLOSE.md`）；下一跳 **B′（按需）/ V2**。
+**本期：** V1.5 Exit **已齐**；**I2 Exit 已齐（冒烟级）**（[#213](https://github.com/luxingjiang1993/FreshLatch/issues/213) · #214–#219；证据 `docs/evidence/i2/ACCEPTANCE.md` · 关门 `docs/evidence/i2/I2-DoD-CLOSE.md`）；**V2 grill DONE**（ADR-0031）；下一跳 **V2 to-spec**；**B′ 延后**（按需待命，不挡后续开发）。
 
 ---
 
@@ -150,8 +150,9 @@ BACKLOG: Hard-Gold ticket | Policy-as-code (#8) | Studio (frozen)
 
 ---
 
-## Phase B′ — Agent hardening · **ON-DEMAND ONLY**
+## Phase B′ — Agent hardening · **ON-DEMAND ONLY · 延后（2026-09-30）**
 
+**Status:** **DEFERRED** — 后续还有开发优先；无真痛点不开。**不挡 V2 / 后续阶段**。演示卡死、人审重放翻车或讲不清闸分布时再开对应 Trigger 薄票。  
 **Goal:** 修真实演示/人审事故，不为「像生产」空转。  
 **Depends on:** V1 + I1 之后出现痛点
 
@@ -165,16 +166,18 @@ BACKLOG: Hard-Gold ticket | Policy-as-code (#8) | Studio (frozen)
 
 ---
 
-## Phase V2 — Embed + ledger · **ADOPTION**
+## Phase V2 — 发前钩子 + 主张台账 · **ADOPTION**（历史别名 Embed + ledger）
 
-**Goal:** 「要发了」多一步被采用；主张历史可查。  
-**Track:** V · **Depends on:** V1 可信 · **不与** I0–I2 抢带宽
+**Goal:** 「要发了」多一步被采用；主张作废/续命历史可查。  
+**Track:** V · **Depends on:** V1 可信 · I2 Exit 已齐 · **不与** I0–I2 抢带宽  
+**决议:** ADR-0031；评估见 `docs/research/V2-发前钩子与主张台账设计评估.md`  
+**共享理解:** 2026-09-30 已确认（发前钩子闸 · Memo UI+CLI · 入站 check · 台账只读投影 · 冒烟 Exit）
 
 | | |
 |--|--|
-| **In** | ≥1 嵌入钩子（导出/打包前复验）；主张 ID 作废/续命列表 |
-| **Out** | 大图谱；全量采编平台（旧 Phase C） |
-| **Exit** | 钩子被真实工作流点到一次以上（自用也算） |
+| **In** | **发前钩子（publish hook）**：只读包结论 + T1 checksum/`run_id` 机械新鲜度（**不**整包再验）；硬出口 = Client Memo **UI+CLI** 同闸 + **入站** HTTP check（本机默认 + 可选 token）；**主张台账** = 作废名单 ∪ 续命 `latch_log` **只读投影**（详情旁路 + 可导出 MD）；`需补丁` 默认拒干净导出，`ack_needs_patch` 才放行并强制页眉 |
+| **Out** | 大图谱；全量采编平台（旧 Phase C）；Word/Notion/开放 webhook **平台化**（→ Backlog C′）；Memo 商业裁决；扩 HumanLatch / renew 改正文；新表双写作废；改生产默认臂；解冻 Studio；把检索 embed 称作本阶段交付 |
+| **Exit** | **冒烟 · 采用层**（文首声明；不报采用率）：Memo 闸动作正确 + `curl` 入站 hook allow/deny 各 ≥1 + 台账可见本次 discard/renew + `docs/evidence/v2/ACCEPTANCE.md`。sheet/补丁同闸 = 加分另票。自用脚本点到也算；**不**硬绑「可发」。 |
 
 ---
 
@@ -191,6 +194,14 @@ BACKLOG: Hard-Gold ticket | Policy-as-code (#8) | Studio (frozen)
 禁区规则进 Gate；挂 Verify+ 旁路；**勿**单独立项做大平台。  
 **Earliest:** **不得早于 V1 Exit**。  
 **默认挂点:** I1 之后，或与 V1.5 **并行薄切片**；**不抢 V1**。
+
+### Ticket: C′ 外部嵌入平台化（备选 · 非 V2 Exit）
+Word / PPT / Notion 插件、开放公网 webhook 等 Adoption **后期**嵌入面。  
+**最早:** **不得早于 V2 冒烟 Exit**（仓内发前钩子闸已立）。  
+**不等于** V2 入站 check 已交付即平台完成；**不**替代大图谱/采编 CMS。
+
+### Ticket: 图谱 / 全量采编 CMS（备选 · 非近端）
+旧 Phase C 资产库叙事；仍标产品 Out 近端不做。另票评估前 **不**开实现。
 
 ### Frozen: Studio
 | Lock | Rule |
@@ -282,7 +293,7 @@ Findings ≈ 顶会正规次主赛道；Industry ≈ 同会落地轨；对 mid �
 | Phase A | **Phase A · DONE** |
 | Phase M（span/契约/导出等） | **并入 V1** 验收与文档，不单开 |
 | Phase B 大部 | **B′ 按需** + **I1** 样本；Memory/多 Agent 不做主线 |
-| Phase C 采编平台化 | **V2** 嵌入/台账；全量平台后置 |
+| Phase C 采编平台化 | **V2** 发前钩子/台账；全量平台与 C′ 插件 → Backlog |
 | 旧「四周」日历 | **作废**（非物理约束） |
 
 ---
@@ -297,15 +308,15 @@ Findings ≈ 顶会正规次主赛道；Industry ≈ 同会落地轨；对 mid �
 | **I1** | 失败证据 | **DONE**（冒烟；`docs/evidence/i1/ACCEPTANCE.md`） |
 | **V1.5** | Evidence-bound 补丁（表单） | **DONE**（冒烟；`docs/evidence/v15/ACCEPTANCE.md` · `V15-DoD-CLOSE.md`） |
 | **I2** | 安全三例（ACL·注入·投毒） | **DONE**（冒烟；`docs/evidence/i2/ACCEPTANCE.md` · `I2-DoD-CLOSE.md`；≠ #4；ADR-0030） |
-| **B′** | 修真痛点 | 触发条件消失 |
-| **V2** | 嵌入+台账 | 钩子进工作流 |
-| **Backlog** | 金标 / #8 / Studio | 另票或冻结 |
+| **B′** | 修真痛点 | **延后**（按需待命；触发条件消失才关） |
+| **V2** | 发前钩子+主张台账 | grill DONE · ADR-0031 · **下一跳 to-spec** |
+| **Backlog** | B′ / 金标 / #8 / C′ 嵌入平台 / 图谱·CMS / Studio | 另票或冻结 |
 
 ---
 
 ## 一句话
 
-**I0 钉数字 → V1 发前闭环 → ① bare-pytest 卫生（DONE）→ 本地 V1 ACCEPTANCE → I1 失败样本（DONE）→ V1.5 Evidence-bound 补丁（DONE · 冒烟）→ I2 安全三例（DONE · 冒烟 · [#213](https://github.com/luxingjiang1993/FreshLatch/issues/213)）→ B′/V2 按需；#8 薄挂且不早于 V1；#4 只做可选 demo；Studio 冻死；难金标另票；论文挂同一条发前闭环。**
+**I0 钉数字 → V1 发前闭环 → ① bare-pytest 卫生（DONE）→ 本地 V1 ACCEPTANCE → I1 失败样本（DONE）→ V1.5 Evidence-bound 补丁（DONE · 冒烟）→ I2 安全三例（DONE · 冒烟 · [#213](https://github.com/luxingjiang1993/FreshLatch/issues/213)）→ **V2 grill DONE（发前钩子+主张台账 · ADR-0031）→ 下一跳 to-spec**；**B′ 延后按需**；C′ 插件平台与图谱/CMS 仅 Backlog；#8 薄挂且不早于 V1；#4 只做可选 demo；Studio 冻死；难金标另票；论文挂同一条发前闭环。**
 
 ---
 
@@ -339,3 +350,8 @@ Findings ≈ 顶会正规次主赛道；Industry ≈ 同会落地轨；对 mid �
 | 2026-09-29 | **I2 云端派工**：`docs/agents/phase-i2-cloud-dispatch.md` + `phase-i2-cloud-prompts.md`；人审全权 **Ronin**；启动闸=`GROK-PROXY-APPROVED I2-DISPATCH` @ #213 |
 | 2026-09-29 | **I2 实现波 #214–#218**：ACL+poison · 注入 Gate · security.md · 注入 1× e2e+ACCEPTANCE；PR #220/#221/#223/#224 合 main；Ronin 代批齐关（#216 可选） |
 | 2026-09-29 | **I2 DoD close（#219）**：冒烟级关门摘要见 `docs/evidence/i2/I2-DoD-CLOSE.md`；硬 Exit 引用 ACCEPTANCE+security.md；Out 未偷渡；不升格渗透认证/Hard-Gold |
+| 2026-09-30 | **B′ 延后**：无真痛点先不做；挂 BACKLOG（on-demand 待命）；**不挡 V2**；下一跳改为 **V2** |
+| 2026-09-30 | **V2 grill DONE**：发前钩子（Memo UI+CLI + 入站 check）+ 主张台账只读投影；冒烟 Exit 预锁；评估见 `docs/research/V2-发前钩子与主张台账设计评估.md`；ADR-0031；Backlog 补 C′/图谱·CMS；下一跳 to-spec |
+| 2026-09-30 | **V2 to-spec**：`docs/spec/14-PhaseV2-PublishHook.md`；GitHub [#226](https://github.com/luxingjiang1993/FreshLatch/issues/226) `ready-for-agent`；主缝=发前钩子放行边界 |
+| 2026-09-30 | **V2 to-tickets**：#227–#232 `ready-for-agent`；清单 `.scratch/v2-tickets/INDEX.md`；Frontier #227/#228 |
+| 2026-09-30 | **V2 enrich-tickets**：#227–#232 Agent Guards 齐（Paths/Provenance pass）；Frontier 同上 |

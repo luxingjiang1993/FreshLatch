@@ -54,8 +54,16 @@ Verify+ 独立补丁 API:提案暂存与人确认应用。不是 HumanLatch 动�
 _Avoid_: apply_patch 作人闩第三按钮、用 renew 顺带改正文
 
 **Verify+**:
-发前产品形:Gate + T1 入库 + 包结论 + Evidence-bound 补丁(人确认改稿)。薄对话留位未实装;Studio 冻结。形状关系:`Gate ⊂ Verify+ ⊂ Studio`。
-_Avoid_: 把未做薄对话称作 Verify+ 已完备、Studio 已解冻
+发前产品形:Gate + T1 入库 + 包结论 + Evidence-bound 补丁(人确认改稿) + 发前钩子(采用闸,ADR-0031)。薄对话留位未实装;Studio 冻结。形状关系:`Gate ⊂ Verify+ ⊂ Studio`。
+_Avoid_: 把未做薄对话称作 Verify+ 已完备、Studio 已解冻、把入站 check 称作插件平台已交付
+
+**发前钩子（publish hook）**:
+导出/打包前的确定性采用闸:读发前 Run 的包结论与 T1 checksum/`run_id` 机械新鲜度,决定是否允许 Client Memo(及同闸出口)放出。本期硬出口=Memo UI+CLI + 入站 HTTP check;不是检索向量 embed,不在钩子路径强制整包再验(ADR-0031)。
+_Avoid_: Embed(向量)、embedding 钩子、导出即自动 Lead 再跑、无闸导出、把 curl 冒烟称作 webhook 平台
+
+**主张台账（claim ledger）**:
+作废名单(`invalidation_list`)与续命人审日志(`latch_log` 的 discard/renew)的只读投影;挂复验单/Run 详情旁路并可导出 Markdown。不是新写表,不是 `patch_events`(ADR-0031)。
+_Avoid_: claim_ledger 双写表、把补丁账当人审台账、第三套主导航「资产库」
 
 **tenant_id**:
 召回 ACL 上下文:块/文档所属合成租户标识;缺省 `default`。带 `tenant_id` 的 retrieve 只返回同租户块(ADR-0030)。不是多租户产品或 SSO。
