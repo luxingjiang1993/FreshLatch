@@ -1,0 +1,42 @@
+{
+  "question": "基于 McKinsey State of AI 公开洞察签发的顾问报告主张，在 T1（约 2025-11）相对 T0（约 2025-03）是否仍可复验？",
+  "pack_id": "v1-mck-soai",
+  "note": "I1 评测金标（答辩/冒烟）。对齐 V1 PREREG_MAPPING / provenance contrast_hint；不改生产枚举，不作 Hard-Gold。",
+  "must_stale": ["mck-1", "mck-4"],
+  "must_fresh": ["mck-2"],
+  "must_unknown": ["mck-3"],
+  "must_quarantine": [],
+  "must_fresh_distractor": [],
+  "causal_chain": {
+    "mck-1": {
+      "t1_doc": "mck-soai-agents-2025-11",
+      "anchor": "p2",
+      "change": "T1 将「至少一项业务职能常规使用 AI」更新为约 88%，对照 T0 约 78%",
+      "why_stale": "签发口径 78% 已被 T1 同题更新数字推翻"
+    },
+    "mck-2": {
+      "t1_doc": "mck-soai-agents-2025-11",
+      "anchor": "p4",
+      "change": "T1 仍强调重新设计工作流是高绩效关键成功因素",
+      "why_fresh": "工作流重设计作为成功因素的主张方向未被推翻"
+    },
+    "mck-3": {
+      "t1_doc": "mck-soai-agents-2025-11",
+      "anchor": "p4",
+      "change": "T1 另以 EBIT/创新指标描述价值捕获缺口，未同口径更新 KPI 跟踪比例",
+      "why_unknown": "T0「不到五分之一跟踪 KPI」在 T1 无同口径可点回更新，应落 unknown"
+    },
+    "mck-4": {
+      "t1_doc": "mck-soai-agents-2025-11",
+      "anchor": "p3",
+      "change": "T1 明确写入 agents：约 23% 在规模化、另约 39% 已开始试验",
+      "why_stale": "T0「尚未把 agents 规模化率写成主流调查发现」被 T1 新事实推翻"
+    }
+  },
+  "meta": {
+    "seed": null,
+    "temperature": 0,
+    "layer": "答辩/冒烟",
+    "note": "托管端点会漂移，跨会话复现只能近似。"
+  }
+}

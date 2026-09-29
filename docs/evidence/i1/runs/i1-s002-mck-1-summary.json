@@ -1,0 +1,26 @@
+{
+  "kind": "i1_mck_runnable_gold",
+  "layer": "答辩/冒烟",
+  "pack_id": "v1-mck-soai",
+  "claim_id": "mck-1",
+  "statement": "组织在至少一项业务职能中常规使用 AI 的受访者比例约为 78%",
+  "corpus_mode": "full",
+  "ingested_chunks": 10,
+  "gold_expected": "stale",
+  "machine_status": "unknown",
+  "gold_hit": false,
+  "err_kind_vs_gold": "漏拦",
+  "reason": "证据不足,未下结论(unknown)",
+  "t1_evidence_ids": [],
+  "decoding": {
+    "model": "qwen-flash",
+    "temperature": 0.0,
+    "seed": null,
+    "recorded_at": "2026-09-29T06:53:12.374870+00:00",
+    "date": "2026-09-29"
+  },
+  "trajectory_path": "reports/i1-mck-runnable-full/trajectories/run-20260929-065352.jsonl",
+  "db_path": "reports/i1-mck-runnable-full/mck-run.sqlite",
+  "repro_note": "托管端点会漂移，跨会话复现只能近似。temp=0 时 seed 无采样意义。",
+  "repro_command": "PYTHONPATH=src python3 scripts/i1_mck_runnable_gold.py --claim-id mck-1 --corpus-mode full --model qwen-flash --temperature 0.0 --out reports/i1-mck-runnable-full"
+}
