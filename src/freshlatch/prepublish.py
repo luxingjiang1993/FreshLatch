@@ -93,6 +93,48 @@ def list_t1_checksums(store: Any) -> list[dict[str, str]]:
     return out
 
 
+def list_archived_t1_evidence_ids(store: Any) -> list[str]:
+    """本库已入库 T1 证据 id(形如 doc_id#clause@T1),供 confirm_patch ⊆ 硬闸。
+
+    SQLite:读 chunks 表;InMemoryStore:读内存 _chunks。空 store → []。
+    """
+    if store is None:
+        return []
+    from freshlatch.store.base import chunk_evidence_id
+
+    conn_factory = getattr(store, "_conn", None)
+    if conn_factory is not None:
+        with conn_factory() as conn:
+            rows = conn.execute(
+                "SELECT doc_id, clause_id, as_of FROM chunks WHERE as_of = 'T1' "
+                "ORDER BY doc_id, clause_id"
+            ).fetchall()
+        out: list[str] = []
+        seen: set[str] = set()
+        for r in rows:
+            eid = f"{r['doc_id']}#{r['clause_id']}@{r['as_of']}"
+            if eid in seen:
+                continue
+            seen.add(eid)
+            out.append(eid)
+        return out
+
+    chunks = getattr(store, "_chunks", None)
+    if chunks is None:
+        return []
+    out = []
+    seen = set()
+    for c in chunks:
+        if getattr(c, "as_of", None) != "T1":
+            continue
+        eid = chunk_evidence_id(c)
+        if eid in seen:
+            continue
+        seen.add(eid)
+        out.append(eid)
+    return out
+
+
 def derive_run_status(*, running: bool, latch: dict | None) -> RunStatus:
     """由会话态推导 Run 状态(与 latch 线程对齐,不发明第四套处置词)。"""
     if running:
