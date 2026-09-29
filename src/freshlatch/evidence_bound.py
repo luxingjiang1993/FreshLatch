@@ -1,9 +1,10 @@
-"""Evidence-bound / attested patch API(ADR-0029 / #198)。
+"""Evidence-bound / attested patch API(ADR-0029 / #198 · #201 导出载荷)。
 
 独立 Verify+ 补丁缝:propose 暂存、confirm 应用。不扩展 HumanLatch VALID_ACTIONS。
 产品路径记账走 patch_events.append_product_confirm(arm=T, before/after)。
 
 再验真接线属 #199;本票成功 confirm 只置 reverify_requested 钩子,不触发 runner。
+成功 confirm 附带同次 JSON+短 MD 导出载荷(#201);与 Client Memo 分轨。
 """
 
 from __future__ import annotations
@@ -13,6 +14,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Collection, Iterable, Mapping, MutableSequence, Sequence
 
+from freshlatch.evidence_bound_export import PatchExportBundle, build_patch_export
 from freshlatch.models import Claim
 from freshlatch.patch_events import append_product_confirm
 from freshlatch.prepublish import disposition_for_claims
@@ -121,6 +123,8 @@ class ConfirmPatchResult:
     # #199 真接线钩子:成功确认置 True;本票不触发 runner/reverify
     reverify_requested: bool = False
     event: dict[str, Any] | None = None
+    # #201:成功确认附带同次导出包(JSON+短 MD);失败为 None
+    export: PatchExportBundle | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -133,6 +137,7 @@ class ConfirmPatchResult:
             "after_text": self.after_text,
             "reverify_requested": self.reverify_requested,
             "event": self.event,
+            "export": self.export.to_dict() if self.export else None,
         }
 
 
@@ -323,6 +328,23 @@ def confirm_patch(
         drafts.discard(run_id, claim_id)
 
     new_disp = disposition_for_claims(pack_claims)
+    # #201:同次导出;再验前=记账 before_disp,再验后=当前重算包结论
+    # (#199 真接线后再验若改结论,可再调 export_from_confirm_result 覆盖 after)
+    export_bundle = build_patch_export(
+        claim_id=claim_id,
+        before_text=before_text,
+        after_text=resolved_after,
+        t1_ids=list(resolved_t1),
+        confirmer=actor,
+        disposition_before=before_disp,
+        disposition_after=new_disp,
+        minutes=float(minutes),
+        patch_span=span,
+        arm=str(event.get("arm") or "T"),
+        ts=str(event.get("ts") or ""),
+        reverify=bool(event.get("reverify", True)),
+        human_confirm=bool(event.get("human_confirm", True)),
+    )
     return ConfirmPatchResult(
         ok=True,
         claim_id=claim_id,
@@ -331,4 +353,5 @@ def confirm_patch(
         after_text=resolved_after,
         reverify_requested=True,
         event=event,
+        export=export_bundle,
     )
