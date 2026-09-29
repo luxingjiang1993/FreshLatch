@@ -12,3 +12,4 @@
 | `i1-s004` | c8 | 误拦 × 没用上 | [i1-s004-c8-误拦-没用上.md](./i1-s004-c8-误拦-没用上.md) | `reports/w5w8_acceptance/gold_n1/trajectories/run-20260922-033202.jsonl` |
 
 **计数（机读）**：同时含 `err_kind` 与 `fail_bucket` 的 JSONL 行 ≥3（本索引列 4 条）。
+| i1-s005 | 漏拦 | 没用上 | true | McK SoAI mck-1 可复跑金样 |
