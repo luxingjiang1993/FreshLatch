@@ -11,7 +11,7 @@
 | 间接注入 | `inj-t001` | `rule_gate` + `Runner._finalize` | `pytest tests/unit/test_rule_gate.py tests/unit/test_i2_injection_gate.py -q` | 污染 T1 不得给出 `fresh` 绿灯 | 冒烟 · 零 LLM · 不挂 `meta_gate` |
 | 检索投毒 | `poison-t001` | `retrieve` 按 `poison`/`untrusted` 元数据剔除 | `pytest tests/unit/test_i2_retrieve_trust.py -q -k poison_t001` | 高分毒块不进入结果集 | 冒烟 · 确定性 · 不靠无标签启发式 |
 
-短索引：`docs/evidence/i2/INDEX.md`。
+短索引：`docs/evidence/i2/INDEX.md`。验收硬勾：`docs/evidence/i2/ACCEPTANCE.md`。
 
 ## 可选（不计入 I2 Exit）
 

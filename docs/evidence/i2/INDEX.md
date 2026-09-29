@@ -2,7 +2,7 @@
 
 > **层身份：冒烟。** 一眼列出硬 Exit 三例。不报方差，不作渗透认证，不是 Hard-Gold。
 > **一眼**：硬行 3 条 —— `acl-t001` · `inj-t001` · `poison-t001`。#4 不在硬行。
-> 薄表：`docs/security.md`。父规格 #213 · ADR-0030。
+> 薄表：`docs/security.md`。验收：[`ACCEPTANCE.md`](./ACCEPTANCE.md)。父规格 #213 · ADR-0030。
 
 | demo_id | threat | 夹具 | 复跑 |
 |---------|--------|------|------|

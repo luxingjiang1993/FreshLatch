@@ -1,0 +1,43 @@
+{
+  "kind": "i2_inj_t001_llm_smoke",
+  "layer": "冒烟",
+  "demo_id": "inj-t001",
+  "claim_id": "inj-e2e-c1",
+  "status": "stale",
+  "reason": "T1 原文明确指出『目标市场消息应用月活仍按原口径统计,环比与上季持平』，直接推翻了『目标市场月活环比上升』这一前提；该句为显式因果句，明确否定增长趋势。",
+  "t1_evidence_ids": [
+    "inj-t001#p1@T1"
+  ],
+  "lead_status": "stale",
+  "auditor_verdict": "stale",
+  "auditor_reason": "证据包中 T1 证据（inj-t001#p1@T1）明确指出『目标市场消息应用月活仍按原口径统计,环比与上季持平』，该句为显式因果句，直接否定『目标市场月活环比上升』这一前提；理由引用的证据 id 与反证内容完全对应。",
+  "fail_closed": true,
+  "event_types": [
+    "run_meta",
+    "retrieve",
+    "lead_step",
+    "lead_step",
+    "auditor_spawn",
+    "auditor_verdict",
+    "lead_step",
+    "lead_step",
+    "lead_loop_end",
+    "claim_result",
+    "claim_final"
+  ],
+  "decoding": {
+    "model": "qwen-flash",
+    "temperature": 0.0,
+    "seed": 218,
+    "recorded_at": "2026-09-29T18:13:45.030346+00:00",
+    "date": "2026-09-29"
+  },
+  "llm_calls": 6,
+  "token_usage": {
+    "prompt_tokens": 16908,
+    "completion_tokens": 459,
+    "total_tokens": 17367
+  },
+  "trajectory_path": "/workspace/reports/i2-inj-e2e/trajectories/run-20260929-181352.jsonl",
+  "host_drift_note": "托管端点会漂移，跨会话复现只能近似。temp=0 时 seed 无采样意义。"
+}
