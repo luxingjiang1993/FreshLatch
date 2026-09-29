@@ -3,22 +3,41 @@
 > 父规格：#168 · `docs/spec/11-PhaseV1-PrePublish.md` · ADR-0027  
 > enrich 已完成（各票 `## Agent Guards`）  
 > **人闸**：仅 **#175** 必须真人终收；**#171 / #174** 由 **Ronin 代理人**（Grok）代审。  
-> 链：`before-implement <ID>` → **新会话** `/implement`（勿在同一会话连写，除非明示「门过了继续开写」）
+> 链：`before-implement <ID>` → **新会话** `/implement`（勿在同一会话连写，除非明示「门过了继续开写」）  
+> **本期序（2026-09-29）：** ① bare-pytest 卫生 **DONE**；本地 V1 ACCEPTANCE **DONE**。主烤 **Phase I1 云端派工** → 见 `docs/agents/phase-i1-cloud-dispatch.md`（#184–#188 · Ronin 代审）。详见 `docs/roadmap.md`。
 
 ---
 
-## 1) 交给 Cloud Agent 的票（实现；Watch 可自关）
+## 0) 本期优先 ① — bare-pytest path 卫生 · **DONE**
 
-编排器只派 **无 open blocker** 的票；一票一云端会话。
+| | |
+|--|--|
+| **Exit** | **已齐**：清空 `PYTHONPATH` 后裸 `pytest tests/` collection 0 errors |
+| **实装** | 仓库根 `pytest.ini`：`pythonpath = .` |
+
+## 0b) 本地 V1 ACCEPTANCE · **DONE**
+
+| | |
+|--|--|
+| **Exit** | **已齐**：`docs/evidence/v1/ACCEPTANCE.md`（映射抽检 · patch_events 一行 · bm25 · 人审主缝；本机 46 passed） |
+| **关后** | I1 to-spec / 落 corpus 硬挡解除（仍遵守 ADR-0028 Out） |
+
+---
+
+## 1) Phase V1 云端票（#169–#175 · 状态：远程 CLOSED · 本期不主派）
+
+编排器本期**不以** V1 子票为前沿。下表仅作历史派工参考；重开须人明示。
 
 | 顺序提示 | Issue | Cloud Agent 职责 |
 |----------|-------|------------------|
-| 前沿 | #169 | 顾问样例包 + README 钉垂直；绿即 close |
-| 前沿 | #170 | disposition 纯函数表驱动；绿即 close |
-| 前沿 | #171 | 薄 URL（白名单/四失败态/checksum）；实现后 → **Ronin 代审** 再 close |
-| 前沿 | #172 | patch_events JSONL；绿即 close |
-| #170 后 | #173 | 发前两屏（列表+详情包结论条）；绿即 close |
-| #169–#173 后 | #174 | 主缝贯通冒烟；实现后 → **Ronin 代审** 再 close |
+| （史） | #169 | 顾问样例包 + README 钉垂直 |
+| （史） | #170 | disposition 纯函数表驱动 |
+| （史） | #171 | 薄 URL；Ronin 代审 |
+| （史） | #172 | patch_events JSONL |
+| （史） | #173 | 发前两屏 |
+| （史） | #174 | 主缝贯通冒烟；Ronin 代审 |
+
+> V1 若需补洞，卫生已不再挡。
 
 **每票固定提示词骨架（贴进 Cloud Agent）：**
 
