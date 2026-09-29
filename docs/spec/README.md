@@ -24,6 +24,8 @@ W4 开工前决策完备的实施规格:复验主链(W1–W2)、Critic 与评测
 | 9 | [09-验收-W5-W8.md](09-验收-W5-W8.md) | W5–W8 验收判据 pre-registration 锁定版(K1–K7;统计层首次入判据) |
 | 10 | [10-PhaseA-RAG.md](10-PhaseA-RAG.md) | Phase A RAG 子系统规格(retrieve 主缝;grilling→to-spec;Issue 见 tracker) |
 | 11 | [11-PhaseV1-PrePublish.md](11-PhaseV1-PrePublish.md) | Phase V1 发前闭环(主缝=发前 Run 边界;ADR-0027;[#168](https://github.com/luxingjiang1993/FreshLatch/issues/168)) |
+| 12 | [12-PhaseV1.5-EvidenceBound.md](12-PhaseV1.5-EvidenceBound.md) | Phase V1.5 Evidence-bound 补丁(主缝=确认边界;ADR-0029) |
+| 13 | [13-PhaseI2-SecurityDemos.md](13-PhaseI2-SecurityDemos.md) | Phase I2 安全三例(主缝=召回信任边界+绿灯出口;ADR-0030;[#213](https://github.com/luxingjiang1993/FreshLatch/issues/213)) |
 
 ## 决议来源索引(本规格各节的权威出处)
 

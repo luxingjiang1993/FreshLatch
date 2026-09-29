@@ -40,7 +40,7 @@ Related Work 祖先（RARR / PAVE / 事实检查等）可承认；边界话术�
 | V1 | 单垂直发前路径；T1 落盘；包结论；`patch_events` 起记 |
 | I1 | 失败三分法 + 可复盘误判样本（冒烟层口径：不报方差，不作统计显著） |
 | V1.5 | Evidence-bound / attested patch（人确认 + 强制再验）；论文主投实验 |
-| I2 | ACL + 注入/投毒可复现 demo（≠ idea #4） |
+| I2 | 安全三例可复现 demo：越权召回 · 间接注入 · 检索投毒（≠ idea #4；ADR-0030） |
 
 - **V1 已落地（冒烟，2026-09-29）：** 发前闭环主缝在仓（顾问样例包 `v1-mck-soai`、白名单薄 URL、包结论、人审、`patch_events` 起记）。证据见 `docs/evidence/v1/V1-DoD-CLOSE.md`。档=冒烟；生产默认臂仍 `bm25`；本条不是 Hard-Gold，也不是检索臂评测升格。
 - **I1 已落地（冒烟，2026-09-29）：** 失败三分法 + 可复盘误判样本已在仓。短索引 `docs/evidence/i1/INDEX.md` 一眼：漏拦/误拦 ≥3，且 ≥1 条 `runnable=true`（金样 `i1-s005`）。证据见 `docs/evidence/i1/ACCEPTANCE.md`。档=冒烟；不报方差；生产 Gate / disposition / HumanLatch 枚举未扩；本条不是 Hard-Gold。

@@ -204,7 +204,7 @@ BOI / GenAI 暂行办法 / 个保审计办法 — 见会话记录；适合 `regu
 
 **共享理解再确认（2026-09-29）：** V1 决议枝全部仍成立。  
 **纠偏（2026-09-29）：** 本期主烤 **Phase I1**（已 grill DONE · corpus/Exit 已齐）。  
-**下一跳:** Phase I2（安全两例）；V1.5 Exit 已齐见 `docs/evidence/v15/ACCEPTANCE.md` · `V15-DoD-CLOSE.md`。  
+**下一跳:** I2 to-spec（grill DONE · ADR-0030；V1.5 Exit 见 `docs/evidence/v15/`）。  
 **主缝（I1）：** 失败三分法 ↔ 闸层 ↔ 可复盘样本（ADR-0028）。
 
 ---
@@ -250,7 +250,7 @@ BOI / GenAI 暂行办法 / 个保审计办法 — 见会话记录；适合 `regu
 **已落盘:**  
 `docs/research/I1-失败三分法与HumanLatch语料设计评估.md` · `docs/adr/0028-i1-失败三分法评测标签与语料.md` · CONTEXT 评测区指针  
 
-**下一跳:** Phase I2（V1.5 Exit 已齐：`docs/evidence/v15/ACCEPTANCE.md`；父规格 #196 CLOSED）。
+**下一跳:** I2 to-spec（grill DONE · ADR-0030；父规格待开；#196 CLOSED）。
 
 ---
 
@@ -303,7 +303,58 @@ BOI / GenAI 暂行办法 / 个保审计办法 — 见会话记录；适合 `regu
 **已落盘:**  
 `docs/research/V1.5-Evidence-bound补丁设计评估.md` · `docs/adr/0029-v1.5-evidence-bound补丁与独立确认API.md` · CONTEXT（Evidence-bound / propose·confirm / Verify+）· roadmap V1.5 In/Out/Exit · GitHub [#195](https://github.com/luxingjiang1993/FreshLatch/issues/195) CLOSED · 实现 [#196](https://github.com/luxingjiang1993/FreshLatch/issues/196)–[#203](https://github.com/luxingjiang1993/FreshLatch/issues/203) CLOSED（冒烟 Exit）  
 
-**下一跳:** Phase I2 grill / to-spec。
+**下一跳:** I2 to-spec（grill DONE · ADR-0030）。
+
+---
+
+## 2g. I2 grill · Security demos · INTERVIEW SAFETY ROUND（2026-09-29）
+
+### Round 1（混选）
+
+| # | 拍板 |
+|---|------|
+| **I2-Q1** | **(a)** 合成多租户：chunk/`tenant_id`；以 B 身份 retrieve 不得返回 A 的块（真 `retrieve` 路径） |
+| **I2-Q2** | **(d)** Exit **扩成三例**：越权召回 + 间接注入 + 检索投毒（各一例可复现）；**不等于**安全平台 |
+| **I2-Q3** | **(b)** `pytest` 点名绿 + `docs/security.md` 一行表 + `docs/evidence/i2/ACCEPTANCE.md`；无 UI；文首冒烟声明 |
+| **I2-Q4** | **(a)** 薄实装进真路径（可选 ACL 上下文 + Gate/retrieve 防护）；禁租户管理面/正式多租户平台 |
+| **I2-Q5** | **(a)+(b)** I2 新开 ACL/INJ/POISON 样例族挂 `docs/evidence/i2/`，**不**扩 ATK-FG/CS 作 I2 Exit；**另**允许本期顺手 **1** 个 #4（过期伪装）样例作面试弹药——**不计入 I2 Exit** |
+| **I2-Q6** | **(a)** CONTEXT 仅产品可判指针；评测标签/冒烟声明进评估与 `security.md`；ADR 待 Round 2/共享理解后钉 |
+
+**Anthropic 预告（Round 2 必收）：** Q2(d) 易撞 Out「多攻击面大而全」——须预锁「每面恰好 1 fixture + 确定性断言优先」；#4 样例与 I2 Exit 勾选分离，禁 HARKing 事后把 #4 算进 I2。
+
+### Round 2（混选 · 2026-09-29）
+
+| # | 拍板 |
+|---|------|
+| **I2-Q7** | **(c)** 三例都做但**暂不改** roadmap In/Exit 文案（文档漂移；Round 3 须 Anthropic 止损） |
+| **I2-Q8** | **(a)** 注入 → 规则闸 fail-closed；确定性 Gate/夹具断言；ingest 扫描加分非硬门 |
+| **I2-Q9** | **(a)** 投毒 = 显式 `poison`/`untrusted` 元数据；高分块不得进可引用证据集 |
+| **I2-Q10** | **(a)** 可选 `tenant_id`（缺省 `default`）；`retrieve(..., tenant_id=)` 硬过滤；无参行为兼容 |
+| **I2-Q11** | **(a)** #4 同波可交；ACCEPTANCE 分节；**不计入** I2 Exit；`security.md` 主表不含 #4 |
+| **I2-Q12** | **(c)** Exit **硬要** Lead+Critic+LLM 端到端（与「确定性优先」张力；Round 3 止损） |
+| **I2-Q13** | **(a)** `security.md` 薄表：threat / demo_id / layer / repro_cmd / expected / smoke_note |
+| **I2-Q14** | **(a)** 开 ADR-0030（共享理解确认后落） |
+
+### Round 3（认推荐 + Q15 加严 · 2026-09-29）
+
+| # | 拍板 |
+|---|------|
+| **I2-Q15** | **完整改写** roadmap I2（Goal/In/Out/Exit/cheat-sheet/一句话/阶段咬合等凡写「两条」处）对齐 **三例**；**作废** Q7(c)；**不做**「最小补丁」妥协 |
+| **I2-Q16** | **(a)** 分层硬门：确定性三断言（ACL/poison/Gate 注入拒）+ 注入场景 **1×** Lead+Critic+LLM 冒烟（显式 decoding；禁报方差）；ACL/投毒不硬绑 LLM |
+| **I2-Q17** | **(a)** `docs/evidence/i2/`：`acl-t001` / `inj-t001` / `poison-t001`（+#4 `adv-fresh-t001`）；测码 `tests/unit/test_i2_*.py` 或 `tests/security/` |
+| **I2-Q18** | **(a)** CONTEXT：`tenant_id`、`poison`/`untrusted`；评测标签仅指针 |
+| **I2-Q19** | **(a)** #4 一条合成过期伪装；ACCEPTANCE 可选勾；≠ I2 Exit |
+| **I2-Q20** | **(a)** 共享理解确认后四件套：评估 · ADR-0030 · CONTEXT · roadmap 完整对齐 + §2g 收口 |
+
+**Anthropic 合入：** Exit=冒烟层；每威胁恰好 1 fixture；#4 分节禁 HARKing；e2e LLM 仅注入冒烟且文首声明。
+
+**Frontier：** 已空。  
+**共享理解:** 已确认（2026-09-29）。  
+
+**已落盘:**  
+`docs/research/I2-安全三例设计评估.md` · `docs/adr/0030-i2-薄ACL与注入投毒冒烟.md` · CONTEXT（`tenant_id` / `poison`/`untrusted` / I2 评测指针）· roadmap Phase I2 完整对齐三例  
+
+**下一跳:** to-tickets → enrich（规格 [#213](https://github.com/luxingjiang1993/FreshLatch/issues/213) · `docs/spec/13-PhaseI2-SecurityDemos.md`）。
 
 ---
 
@@ -381,6 +432,8 @@ BOI / GenAI 暂行办法 / 个保审计办法 — 见会话记录；适合 `regu
 | **失败三分法 / 漏拦·误拦** | **评测·答辩标签**（非生产 Gate 枚举）；定义与映射见 I1 ADR/评估；corpus 在 `docs/evidence/i1/` |
 | **Evidence-bound patch** | 引用 ⊆ 已入库 T1 的**整条主张正文替换**；人确认才应用；强制再验；产品路径恒 `arm=T`（对外少用 proof-carrying）→ **已迁 CONTEXT / ADR-0029** |
 | **propose_patch / confirm_patch** | Verify+ 独立 API（≠ HumanLatch discard/renew）→ **已迁 CONTEXT / ADR-0029** |
+| **I2 安全三例** | 面试安全轮：越权召回 / 间接注入 / 检索投毒各 1 fixture；≠ #4；ADR-0030 → **已迁 CONTEXT** |
+| **tenant_id / poison** | 召回 ACL 上下文；不可引用元数据标签 → **已迁 CONTEXT** |
 | **patch_events** | 改稿对照实验与产品审计共用事件账 |
 | **Hard-Gold** | 另票；过增益门才讨论改生产默认臂 |
 | **冒烟层评测（I0）** | Phase A retrieve 对比表的诚实档：n 小、可复跑、**禁止**升格为统计显著/方差结论；文首必须声明（评测文档纪律，不进产品词表正文） |
@@ -402,6 +455,7 @@ BOI / GenAI 暂行办法 / 个保审计办法 — 见会话记录；适合 `regu
 | V1 Exit | 演示发前路径；开始稳定记 `patch_events` | 难金标改默认；Studio |
 | I1 Exit 前 | — | 用 V1.5/论文叙事替代 mid 铁证 |
 | **V1.5 grill 已确认 · Exit 已齐** | I2 / 论文预实验簿记 | 薄对话；扩 HumanLatch；Exit 硬绑可发；改生产默认臂；用 V1.5 替代 I1 |
+| **I2 grill 已确认 · 待 implement** | to-spec / 薄 ACL·注入·投毒冒烟 | 安全平台；#4 顶替 I2；取消确定性硬门；不改 roadmap 却宣称三例 |
 
 ---
 
@@ -426,3 +480,7 @@ BOI / GenAI 暂行办法 / 个保审计办法 — 见会话记录；适合 `regu
 | 2026-09-29 | **V1.5 Round 3** 全认：JSON+MD 导出；草案暂存；Exit 不硬要可发；roadmap In 去薄对话；patch_span 保留；frontier 空待共享理解确认 |
 | 2026-09-29 | **V1.5 共享理解确认**；评估+ADR-0029+CONTEXT+roadmap 落盘；下一跳 to-spec |
 | 2026-09-29 | **V1.5 DONE（冒烟）**：#196–#203 CLOSED（Ronin Exit）；证据 `docs/evidence/v15/`；下一跳 I2 |
+| 2026-09-29 | **I2 Round 1** 混选：ACL=合成多租户；Exit=三例（越权+注入+投毒）；pytest+security.md+i2 ACCEPTANCE；真路径薄实装；#4 顺手 1 样例≠Exit；§2g |
+| 2026-09-29 | **I2 Round 2** 混选：Q7=c（暂不改 roadmap）·Q12=c（硬 e2e LLM）；其余认推荐；Round 3 止损 |
+| 2026-09-29 | **I2 Round 3**：Q15=完整改写 roadmap（作废 Q7c）；Q16–Q20 认推荐；frontier 空待共享理解确认 |
+| 2026-09-29 | **I2 共享理解确认**；评估+ADR-0030+CONTEXT+roadmap 完整对齐三例落盘；下一跳 to-spec |

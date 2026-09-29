@@ -57,6 +57,14 @@ _Avoid_: apply_patch 作人闩第三按钮、用 renew 顺带改正文
 发前产品形:Gate + T1 入库 + 包结论 + Evidence-bound 补丁(人确认改稿)。薄对话留位未实装;Studio 冻结。形状关系:`Gate ⊂ Verify+ ⊂ Studio`。
 _Avoid_: 把未做薄对话称作 Verify+ 已完备、Studio 已解冻
 
+**tenant_id**:
+召回 ACL 上下文:块/文档所属合成租户标识;缺省 `default`。带 `tenant_id` 的 retrieve 只返回同租户块(ADR-0030)。不是多租户产品或 SSO。
+_Avoid_: 租户管理面、RBAC 平台、把会话 evidence 白名单称作 ACL 已交付
+
+**poison / untrusted**:
+块级不可引用元数据标签。带此标签的块即使检索得分高也不得进入可引用证据集(ADR-0030)。
+_Avoid_: 无标签内容启发式冒充投毒防护硬门、把 quarantine 记忆卫生等同投毒标签
+
 **must_stale**:
 金标中必须被判定为 stale 的主张,任何 harness 不得对其放行,用于锁住评测可复现性。
 
@@ -194,6 +202,10 @@ _Avoid_: 把 retrieve 冒烟表与主张金标混报、把冒烟写成统计证�
 **I1 失败复盘（评测标签）**:
 答辩/冒烟用语,不是生产 Gate 或 disposition 枚举。桶名(找不到/找错/没用上)与漏拦/误拦的操作定义、corpus 路径见 ADR-0028 与 `docs/research/I1-失败三分法与HumanLatch语料设计评估.md`;语料落 `docs/evidence/i1/`。
 _Avoid_: 把三分法写成生产 status、无轨迹编造样本、远程 V1 关单冒充本地 Exit 后宣称 I1 完成
+
+**I2 安全三例（评测/答辩）**:
+面试安全轮冒烟用语,不是安全认证或生产枚举。三例=越权召回 / 间接注入 / 检索投毒;操作定义与 Exit 分层见 ADR-0030 与 `docs/research/I2-安全三例设计评估.md`;证据落 `docs/evidence/i2/` 与 `docs/security.md`。idea #4 过期伪装不计入本 Exit。
+_Avoid_: 安全平台已交付、用 #4 顶替 I2、单次 LLM 报安全通过率
 
 **假绿对照 (False-Green Control)**:
 无工具基线:同模型不带工具只读 T0 摘要,应把已死主张判「成立」(假绿)。本产品必须红,对照成立才说明复验真在起作用。
