@@ -27,6 +27,12 @@ def client(tmp_path, monkeypatch):
     monkeypatch.setattr(appmod, "_store", lambda: store)
     monkeypatch.setattr(appmod, "CHECKPOINTS", tmp_path / "cp.db")
     monkeypatch.setattr(appmod, "_PATCH_EVENTS_DIR", tmp_path / "patch_events")
+    # 零 LLM:confirm 再验钩子不进 Runner/托管端点(CI 无合法 key)
+    monkeypatch.setattr(
+        appmod,
+        "_confirm_patch_reverify",
+        lambda claim: (claim.status, "ui-test-noop"),
+    )
     appmod._PATCH_DRAFTS = PatchDraftStore()
     appmod._state.update({
         "claims": [],

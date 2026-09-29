@@ -22,7 +22,9 @@ from freshlatch.evidence_bound import (  # noqa: E402
     confirm_patch,
     discard_patch_draft,
     propose_patch,
+    single_claim_reverify,
 )
+from freshlatch.models import Claim  # noqa: E402
 from freshlatch.guardrails import Guardrails  # noqa: E402
 from freshlatch.packs import PackPaths, resolve_pack  # noqa: E402
 from freshlatch.latch import HumanLatch, HumanLatchError  # noqa: E402
@@ -549,12 +551,21 @@ def api_patch_propose(req: ProposePatchRequest) -> JSONResponse:
     })
 
 
+def _confirm_patch_reverify(claim: Claim) -> tuple[str, str]:
+    """产品路径单条再验(#199);测试可 monkeypatch 为确定性 noop 以保持零 LLM。"""
+    return single_claim_reverify(
+        claim,
+        store=_store(),
+        checksum_fn=make_checksum_fn(CORPUS),
+    )
+
+
 @app.post("/api/patch/confirm")
 def api_patch_confirm(req: ConfirmPatchRequest) -> JSONResponse:
     """确认改稿(#200):confirm_patch 硬闸;产品路径恒 arm=T;发前无 C|T 开关。"""
     store = _store()
     archived = list_archived_t1_evidence_ids(store)
-    # #199 后 confirm 须能单条再验:产品路径注入 store→single_claim_reverify
+    # #199 后 confirm 须触发单条再验;经可测钩子注入(CI 零 LLM 可 monkeypatch)
     result = confirm_patch(
         claim_id=req.claim_id,
         claims={c.claim_id: c for c in _state["claims"]},
@@ -568,7 +579,7 @@ def api_patch_confirm(req: ConfirmPatchRequest) -> JSONResponse:
         run_id=_patch_run_id(),
         events_dir=_PATCH_EVENTS_DIR,
         actor="human",
-        store=store,
+        reverify_fn=_confirm_patch_reverify,
     )
     if not result.ok:
         return JSONResponse(result.to_dict(), status_code=400)
