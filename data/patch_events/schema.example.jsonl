@@ -1,1 +1,2 @@
-{"claim_id":"c-mck-share-01","before_disp":"需补丁","patch_span":"定价段·份额主张改写","t1_ids":["mck-soai-2025-11#p3@T1"],"human_confirm":true,"reverify":true,"minutes":12.5,"arm":"T","ts":"2026-09-28T17:00:00+00:00","actor":"script"}
+{"claim_id":"c-mck-share-01","before_disp":"需补丁","patch_span":"定价段·份额主张改写","t1_ids":["mck-soai-2025-11#p3@T1"],"human_confirm":true,"reverify":true,"minutes":12.5,"arm":"T","ts":"2026-09-28T17:00:00+00:00","actor":"script","before_text":"旧份额主张句","after_text":"经 T1 核后的份额主张句"}
+{"claim_id":"mck-1","before_disp":"勿发","patch_span":"人审discard","t1_ids":[],"human_confirm":true,"reverify":false,"minutes":0.0,"arm":"C","ts":"2026-09-28T16:00:00+00:00","actor":"human"}

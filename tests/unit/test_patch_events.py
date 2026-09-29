@@ -1,4 +1,4 @@
-"""#172 patch_events JSONL:写后读、人手补丁同 schema、发前 UX 无 C/T 开关。
+"""#172/#197 patch_events JSONL:写后读、before/after、产品写 T、发前 UX 无 C/T 开关。
 
 零 LLM、零网络;只测 data/patch_events 账本缝与发前表面约束。
 """
@@ -58,6 +58,85 @@ def test_append_then_read_roundtrip_fields_complete(tmp_path: Path):
     assert row["t1_ids"] == ["mck-soai-2025-11#p3@T1"]
 
 
+def test_append_with_before_after_text_roundtrip(tmp_path: Path):
+    """Given 含 before_text/after_text 的合法 append,When 读账本,Then 两字段与写入一致且 arm 可为 T。"""
+    events_dir = tmp_path / "patch_events"
+    written = pe.append_event(
+        _sample_event(
+            before_text="旧份额主张句",
+            after_text="经 T1 核后的份额主张句",
+            arm="T",
+        ),
+        events_dir=events_dir,
+    )
+    rows = pe.read_events(events_dir=events_dir)
+    assert len(rows) == 1
+    row = rows[0]
+    assert row["before_text"] == "旧份额主张句"
+    assert row["after_text"] == "经 T1 核后的份额主张句"
+    assert row["before_text"] == written["before_text"]
+    assert row["after_text"] == written["after_text"]
+    assert row["arm"] == "T"
+
+
+def test_read_legacy_row_without_before_after_ok(tmp_path: Path):
+    """Given 仅含 V1 旧字段的历史行,When 读账本,Then 不抛错。"""
+    events_dir = tmp_path / "patch_events"
+    events_dir.mkdir(parents=True)
+    legacy = {
+        "claim_id": "mck-1",
+        "before_disp": "勿发",
+        "patch_span": "人审discard",
+        "t1_ids": [],
+        "human_confirm": True,
+        "reverify": False,
+        "minutes": 0.0,
+        "arm": "C",
+        "ts": "2026-09-28T16:00:00+00:00",
+        "actor": "human",
+    }
+    path = events_dir / pe.DEFAULT_FILENAME
+    path.write_text(json.dumps(legacy, ensure_ascii=False) + "\n", encoding="utf-8")
+
+    rows = pe.read_events(events_dir=events_dir)
+    assert len(rows) == 1
+    assert rows[0]["claim_id"] == "mck-1"
+    assert "before_text" not in rows[0]
+    assert "after_text" not in rows[0]
+
+
+def test_append_rejects_partial_before_after(tmp_path: Path):
+    """before_text 与 after_text 须成对出现。"""
+    with pytest.raises(pe.PatchEventError, match="成对"):
+        pe.append_event(_sample_event(before_text="仅有 before"), events_dir=tmp_path)
+
+
+def test_append_product_confirm_forces_arm_t(tmp_path: Path):
+    """产品确认路径恒写 arm=T,且正式行含 before/after。"""
+    events_dir = tmp_path / "patch_events"
+    assert pe.PRODUCT_ARM == "T"
+    written = pe.append_product_confirm(
+        claim_id="c-mck-3",
+        before_disp="需补丁",
+        patch_span="mck-3 主张改写",
+        t1_ids=["mck-soai-2025-11#p3@T1"],
+        minutes=5.0,
+        before_text="旧正文",
+        after_text="新正文",
+        ts="2026-09-29T08:00:00+00:00",
+        events_dir=events_dir,
+    )
+    assert written["arm"] == "T"
+    assert written["before_text"] == "旧正文"
+    assert written["after_text"] == "新正文"
+    assert written["human_confirm"] is True
+    assert written["reverify"] is True
+    rows = pe.read_events(events_dir=events_dir)
+    assert rows[0]["arm"] == pe.PRODUCT_ARM
+    assert rows[0]["before_text"] == "旧正文"
+    assert rows[0]["after_text"] == "新正文"
+
+
 def test_human_patch_uses_same_schema(tmp_path: Path):
     """人手补丁经同一 schema 写入(arm 由后台/脚本显式传入,非 UX 开关)。"""
     events_dir = tmp_path / "patch_events"
@@ -81,6 +160,7 @@ def test_human_patch_uses_same_schema(tmp_path: Path):
     assert rows[0]["arm"] == "C"
     assert rows[0]["actor"] == "human"
     assert rows[0]["t1_ids"] == []
+    assert "before_text" not in rows[0]
 
 
 def test_append_rejects_invalid_arm(tmp_path: Path):
@@ -124,6 +204,7 @@ def test_record_human_review_events_writes_ok_only(tmp_path: Path):
     assert rows[0]["t1_ids"] == ["doc-a#abc@T1"]
     assert rows[0]["human_confirm"] is True
     assert rows[0]["arm"] == "C"
+    assert "before_text" not in rows[0]
 
 
 def test_prepublish_surface_has_no_ct_arm_switch():
