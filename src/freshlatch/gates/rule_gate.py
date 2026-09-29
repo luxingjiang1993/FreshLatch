@@ -20,6 +20,48 @@ GREEN_STATUSES = ("fresh", "renew")
 # ADR-0011 不变量 8 / ADR-0012 受理层预检共用的 error_code(单一真相,两处不得各写字面量)。
 ERR_DIMENSION_CROSSCHECK_MISMATCH = "DIMENSION_CROSSCHECK_MISMATCH"
 
+# I2 inj-t001(ADR-0030):间接注入诱绿。单一真相在本闸,不挂 meta_gate。
+ERR_INDIRECT_INJECTION = "INDIRECT_INJECTION"
+
+# 「忽略指令 → 标 fresh」两段都要命中,避免业务正文里单独出现 fresh 被误杀。
+_INJECTION_IGNORE_MARKERS = (
+    "忽略指令",
+    "忽略之前的指令",
+    "ignore previous instructions",
+    "ignore all previous instructions",
+    "ignore instructions",
+)
+_INJECTION_FRESH_MARKERS = (
+    "标为 fresh",
+    "标为fresh",
+    "标记为 fresh",
+    "标记为fresh",
+    "标 fresh",
+    "mark as fresh",
+    "mark this claim fresh",
+    "mark the claim as fresh",
+)
+
+
+def is_indirect_injection(text: str) -> bool:
+    """T1 正文是否含「忽略指令→标 fresh」类间接注入。
+
+    机械子串,零模型。空文本不算注入:旧调用点未带正文时行为与改前一致。
+    """
+    if not text or not text.strip():
+        return False
+    folded = text.lower()
+    compact = folded.replace(" ", "").replace("\u3000", "")
+    has_ignore = any(
+        marker in folded or marker.replace(" ", "") in compact
+        for marker in _INJECTION_IGNORE_MARKERS
+    )
+    has_fresh = any(
+        marker in folded or marker.replace(" ", "") in compact
+        for marker in _INJECTION_FRESH_MARKERS
+    )
+    return has_ignore and has_fresh
+
 
 def dimension_crosscheck_mismatch(registered_dimension: str | None,
                                   stale_dimension: str | None) -> bool:
@@ -43,6 +85,7 @@ class GateDecision:
     auditor_dimension_match: bool | None = None  # ADR-0010 不变量 7:False = Auditor 维度异议
     registered_dimension: str | None = None  # ADR-0011 不变量 8:签发登记维度(claim.dimension)
     stale_dimension: str | None = None  # ADR-0011 不变量 8:反证自标维度(mark_stale 必填字段)
+    t1_evidence_texts: list[str] = field(default_factory=list)  # I2:已引用 T1 正文;空=不启用注入拒绿
 
 
 @dataclass
@@ -149,6 +192,8 @@ def rule_gate(claim: Claim, decision: GateDecision, ctx: GateContext) -> GateRes
      10. renew 专用机械校验路径(#23 / ADR-0006 §4):必须带 ≥1 个锚 T1 的
          evidence_id;checksum 对不上不得续命;作废名单内不得续命
          (与 fresh 共用不变量 4)。违例打回附结构化原因,零写。
+     11. fresh/renew 引用的 T1 正文含「忽略指令→标 fresh」类间接注入时不得发绿
+         (I2 inj-t001 / ADR-0030)。无正文不拦。判定在本闸,不挂 meta_gate。
     """
     # 5. stale 无反证打回(独立于非绿放行:stale 落档也要带可点回反证)
     if decision.status == "stale" and not decision.t1_evidence_ids:
@@ -227,5 +272,12 @@ def rule_gate(claim: Claim, decision: GateDecision, ctx: GateContext) -> GateRes
         if actual and claimed != actual:
             return GateResult(allowed=False, green=False, error_code="CHECKSUM_MISMATCH",
                               reason=f"checksum 对不上: {doc_id} 声称 {claimed!r},实际 {actual!r}")
+
+    # 11. I2 inj-t001:语料指令翻不动绿灯。其它不变量已通过仍不得仅因正文诱绿。
+    for text in decision.t1_evidence_texts:
+        if is_indirect_injection(text):
+            return GateResult(allowed=False, green=False, error_code=ERR_INDIRECT_INJECTION,
+                              reason="T1 正文含间接注入(忽略指令并标为 fresh),"
+                                     "语料文字不得诱绿(ADR-0030 inj-t001)")
 
     return GateResult(allowed=True, green=True, reason="过闸:绿灯")
