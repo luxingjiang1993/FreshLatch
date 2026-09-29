@@ -66,5 +66,6 @@ pytest tests/unit/test_i2_retrieve_trust.py tests/unit/test_i2_injection_gate.py
 
 - 不做安全平台 / RBAC / 租户管理面
 - 三威胁不全绑 LLM；ACL/poison 保持确定性硬门
+- 对照参考仓划界（PoisonedRAG / TRIM / rag-redteam / ogx / SafeRAG）与 inj 双标记诚实边界：见 [`docs/security.md`](../../security.md)「对照参考仓划界」节；**不升格**为本页新硬勾
 - DoD 关门摘要：`docs/evidence/i2/I2-DoD-CLOSE.md`（[#219](https://github.com/luxingjiang1993/FreshLatch/issues/219)；本 ACCEPTANCE 不代关 DoD）
 - #218 CLOSED（`GROK-PROXY-APPROVED #218` · PR #224）；父规格 #213 等 #219 代 Exit 后收口
