@@ -11,12 +11,16 @@ import sys
 from pathlib import Path
 
 from fastapi import FastAPI, File, Query, UploadFile
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, Response
 from pydantic import BaseModel
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
 from freshlatch.claim_import import ClaimImportError, parse_claim_import_draft  # noqa: E402
+from freshlatch.claim_ledger import (  # noqa: E402
+    export_claim_ledger_md,
+    get_claim_ledger,
+)
 from freshlatch.evidence_bound import (  # noqa: E402
     PatchDraftStore,
     confirm_patch,
@@ -219,8 +223,10 @@ def _patch_drafts_payload() -> dict[str, dict]:
 
 
 def _detail_extras(store: SQLiteStore) -> dict:
-    """复验单增量包:包结论条 + T1 checksum + 逐条闸结果(#173) + 补丁条带(#200)。"""
+    """复验单增量包:包结论条 + T1 checksum + 逐条闸结果(#173) + 补丁条带(#200) + 主张台账(#228)。"""
     claims = list(_state["claims"])
+    # 台账旁路:全库只读投影(作废名单跨 Run);不按发前 run_id 截断作废名单语义
+    ledger = get_claim_ledger(store, run_id=None)
     return {
         "disposition": disposition_for_claims(claims),
         "run_status": derive_run_status(
@@ -231,6 +237,8 @@ def _detail_extras(store: SQLiteStore) -> dict:
         # #200:本 Run 已入库 evidence_id 多选源 + 暂存草案(无 C|T / 无薄对话)
         "archived_t1_ids": list_archived_t1_evidence_ids(store),
         "patch_drafts": _patch_drafts_payload(),
+        # #228:主张台账旁路(invalidation_list ∪ latch_log discard/renew);与 patch_events 分缝
+        "claim_ledger": ledger,
     }
 
 
@@ -253,6 +261,23 @@ def api_claims() -> dict:
         "pack": _pack_payload(),
         **extras,
     }
+
+
+@app.get("/api/claim-ledger")
+def api_claim_ledger(run_id: str | None = Query(default=None)) -> dict:
+    """#228 主张台账只读投影 API:discard ∪ renew;renew∉作废名单。"""
+    return get_claim_ledger(_store(), run_id=run_id or None)
+
+
+@app.get("/api/claim-ledger/export.md")
+def api_claim_ledger_export(run_id: str | None = Query(default=None)) -> Response:
+    """#228 主张台账 Markdown 导出(只读;零新写表)。"""
+    md = export_claim_ledger_md(_store(), run_id=run_id or None)
+    return Response(
+        content=md,
+        media_type="text/markdown; charset=utf-8",
+        headers={"Content-Disposition": 'attachment; filename="claim-ledger.md"'},
+    )
 
 
 @app.get("/api/prepublish/runs")
@@ -747,6 +772,14 @@ HTML_PAGE = """<!DOCTYPE html>
                              border-radius:6px;padding:8px 12px;font-size:12px;color:#57606a}
  #t1-checksums code,#gate-results code{word-break:break-all}
  #t1-checksums.craftsman-hide,#gate-results.craftsman-hide{display:none}
+ /* #228 主张台账旁路:默认可折叠;与 patch_events 分缝 */
+ #claim-ledger{margin:0 16px 10px;background:#fff;border:1px solid #d0d7de;border-radius:6px;
+               padding:8px 12px;font-size:13px;color:#57606a}
+ #claim-ledger summary{cursor:pointer;font-weight:600;color:#0a2540}
+ #claim-ledger .hint{font-size:12px;margin:6px 0;color:#57606a}
+ #claim-ledger ul{margin:6px 0 0;padding-left:18px}
+ #claim-ledger button.export-md{margin-top:8px;padding:5px 12px;border-radius:6px;
+                               border:1px solid #d0d7de;cursor:pointer;background:#fff;font-size:13px}
  #t1-checksums.craftsman-soft{display:block}
  a.nav-prepublish{color:#fff;font-size:13px;margin-left:8px}
  /* #200 Evidence-bound 改稿条带:挂在主张卡内增量区(表单闭环) */
@@ -825,6 +858,12 @@ HTML_PAGE = """<!DOCTYPE html>
  <b>逐条闸结果</b>
  <div id="gate-results-body">尚无闸结果。</div>
 </div>
+<details id="claim-ledger" aria-live="polite">
+ <summary>主张台账(作废 / 续命)</summary>
+ <p class="hint">只读投影:invalidation_list ∪ latch_log(discard/renew)。renew 不进作废名单。与 patch_events 分缝。写路径仍唯一经 HumanLatch。</p>
+ <div id="claim-ledger-body">尚无人审作废/续命记录。</div>
+ <button type="button" class="export-md" onclick="exportClaimLedgerMd()">导出台账 Markdown</button>
+</details>
 <main>
  <section id="claims"><p style="color:#57606a">加载中……</p></section>
  <section id="pane"><p style="color:#57606a">← 点击主张的证据 id,这里显示 T0/T1 原文并高亮锚点段落</p></section>
@@ -1220,6 +1259,51 @@ function renderGateResults(){
   }
   body.innerHTML = h;
 }
+function renderClaimLedger(){
+  // #228:Run 详情旁路;默认可折叠(<details>);只读展示 discard/renew
+  const body = document.getElementById('claim-ledger-body');
+  if(!body) return;
+  const ledger = STATE.claim_ledger || {};
+  const entries = ledger.entries || [];
+  const discardIds = ledger.discard_claim_ids || [];
+  const renewIds = ledger.renew_claim_ids || [];
+  const voidIds = ledger.invalidation_claim_ids || [];
+  if(!entries.length && !voidIds.length){
+    body.textContent = '尚无人审作废/续命记录。';
+    return;
+  }
+  let h = '<div>作废 claim_id: '
+        + (discardIds.length ? discardIds.map(c=>'<code>'+esc(c)+'</code>').join(' ') : '(无)')
+        + '</div>';
+  h += '<div>续命 claim_id: '
+     + (renewIds.length ? renewIds.map(c=>'<code>'+esc(c)+'</code>').join(' ') : '(无)')
+     + '</div>';
+  h += '<div>作废名单(renew 不在此列): '
+     + (voidIds.length ? voidIds.map(c=>'<code>'+esc(c)+'</code>').join(' ') : '(无)')
+     + '</div>';
+  if(entries.length){
+    h += '<ul>';
+    for(const e of entries){
+      h += '<li><code>'+esc(e.claim_id||'')+'</code> · '+esc(e.label||e.action||'')
+         + (e.ts?(' · '+esc(e.ts)):'')
+         + (e.evidence_id?(' · evidence <code>'+esc(e.evidence_id)+'</code>'):'')
+         + '</li>';
+    }
+    h += '</ul>';
+  }
+  body.innerHTML = h;
+}
+async function exportClaimLedgerMd(){
+  // #228:旁路导出 Markdown;只读,不写库
+  const r = await fetch('/api/claim-ledger/export.md');
+  const text = await r.text();
+  const blob = new Blob([text], {type: 'text/markdown;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'claim-ledger.md';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
 function absorbDetailExtras(j){
   if(!j) return;
   if(j.disposition != null) STATE.disposition = j.disposition;
@@ -1229,6 +1313,7 @@ function absorbDetailExtras(j){
   if(j.gate_results) STATE.gate_results = j.gate_results;
   if(j.archived_t1_ids) STATE.archived_t1_ids = j.archived_t1_ids;
   if(j.patch_drafts) STATE.patch_drafts = j.patch_drafts;
+  if(j.claim_ledger) STATE.claim_ledger = j.claim_ledger;
 }
 function overrideFilterOn(){
   const box = document.getElementById('filter-override');
@@ -1377,6 +1462,7 @@ function renderClaims(){
   renderDispositionBar();
   renderT1Checksums();
   renderGateResults();
+  renderClaimLedger();
   const el = document.getElementById('claims');
   if(!el) return;
   let h = '<div id="import-panel" class="'+(IMPORT_PANEL_OPEN?'open':'')+'">'
