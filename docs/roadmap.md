@@ -14,15 +14,15 @@
 **代理:** 仓库变更按 L0/L1/L2（Ronin 可代 L1；**人终收类如历史 #166 不代批/代关**）；超时或证据不足 fail-closed。
 
 ```
-DONE: Phase A · Phase I0 · Phase V1（冒烟 + 本地 ACCEPTANCE）· Phase I1（冒烟 corpus）· ① bare-pytest 卫生
+DONE: Phase A · Phase I0 · Phase V1（冒烟 + 本地 ACCEPTANCE）· Phase I1（冒烟 corpus）· Phase V1.5（冒烟 Evidence-bound）· ① bare-pytest 卫生
 NOW → NEXT:
-  Phase V1.5 → Phase I2 → Phase B′ (on-demand) → Phase V2
+  Phase I2 → Phase B′ (on-demand) → Phase V2
 BACKLOG: Hard-Gold ticket | Policy-as-code (#8) | Studio (frozen)
 ```
 
 **默认阶段序（钉死）：** `V1 → I1 → V1.5`。  
 **唯一例外：** 自用痛点明确是「改稿再验」时，允许 V1 后先开 V1.5；**冲 mid 仍以 I1 为准**，不得用 V1.5 替代 I1。  
-**本期：** I1 Exit **已齐**（`docs/evidence/i1/ACCEPTANCE.md`）；下一主烤 **V1.5**。
+**本期：** V1.5 Exit **已齐（冒烟级）**（`docs/evidence/v15/ACCEPTANCE.md` · 关门 `docs/evidence/v15/V15-DoD-CLOSE.md`）；下一主烤 **I2**。
 
 ---
 
@@ -127,7 +127,7 @@ BACKLOG: Hard-Gold ticket | Policy-as-code (#8) | Studio (frozen)
 |--|--|
 | **In** | **表单闭环**：主张正文替换 + 必填 `t1_ids`（⊆ 本 Run 已入库 T1）+ 人确认才应用 + 强制单条再验；复验单/Run 详情增量 UX；`propose_patch`/`confirm_patch`（不扩 HumanLatch）；正式 `patch_events` 含 before/after；导出 JSON+短 MD |
 | **Out** | **薄对话**（本期不实装、不 stub）；开放问答；对话改正式裁决；编辑器秀 / span 级 diff 台；产品路径无证 C；#8 并行；Exit 硬绑「可发」 |
-| **Exit** | 冒烟：硬闸拒无证 + 有证 confirm + 再验触发 + 导出可演示；证据 `docs/evidence/v15/ACCEPTANCE.md`；升「可发」=加分非硬条；**n≥30 不挡** |
+| **Exit** | **已齐（冒烟级，2026-09-29）**：硬闸拒无证 + 有证 confirm + 再验触发 + 导出可演示；证据 `docs/evidence/v15/ACCEPTANCE.md`；关门摘要 `docs/evidence/v15/V15-DoD-CLOSE.md`。升「可发」=加分非硬条；**n≥30 不挡**。非 Hard-Gold；生产默认臂仍 `bm25`；HumanLatch 未扩；薄对话未进主链。 |
 
 **Note:** 不定 mid 生死；冲 mid 仍靠 I0+V1+I1+I2，**不得用本阶段替代 I1**。对客尖刀 + 论文主投实验在本阶段。
 
@@ -293,7 +293,7 @@ Findings ≈ 顶会正规次主赛道；Industry ≈ 同会落地轨；对 mid �
 | **I0** | 数字与表 | **DONE**（`docs/evidence/i0/ACCEPTANCE.md`） |
 | **V1** | 发前闭环（单垂直） | **DONE**（冒烟；`docs/evidence/v1/ACCEPTANCE.md`） |
 | **I1** | 失败证据 | **DONE**（冒烟；`docs/evidence/i1/ACCEPTANCE.md`） |
-| **V1.5** | Evidence-bound 补丁（表单） | 硬闸+confirm+再验+导出（冒烟；ADR-0029） |
+| **V1.5** | Evidence-bound 补丁（表单） | **DONE**（冒烟；`docs/evidence/v15/ACCEPTANCE.md` · `V15-DoD-CLOSE.md`） |
 | **I2** | ACL + 注入/投毒 | 两 demo 可复现（≠ #4） |
 | **B′** | 修真痛点 | 触发条件消失 |
 | **V2** | 嵌入+台账 | 钩子进工作流 |
@@ -327,3 +327,5 @@ Findings ≈ 顶会正规次主赛道；Industry ≈ 同会落地轨；对 mid �
 | 2026-09-29 | **V1.5 to-spec**：`docs/spec/12-PhaseV1.5-EvidenceBound.md`；GitHub [#196](https://github.com/luxingjiang1993/FreshLatch/issues/196) `ready-for-agent` |
 | 2026-09-29 | **V1.5 to-tickets**：#197–#203 `ready-for-agent`（#204 重复已关）；enrich 齐；清单 `.scratch/v15-tickets/INDEX.md` |
 | 2026-09-29 | **V1.5 云端派工待 Ronin**：`docs/agents/phase-v15-cloud-dispatch.md`；须 #196 `GROK-PROXY-APPROVED V1.5-DISPATCH` 后启 Cloud |
+| 2026-09-29 | **V1.5 实现波 #197–#202**：patch_events before/after · propose/confirm · 再验 · UI 条带 · 导出 · e2e+ACCEPTANCE；PR #205–#210 合 main；Ronin 代批齐关 |
+| 2026-09-29 | **V1.5 DoD close（#203）**：冒烟级关门摘要见 `docs/evidence/v15/V15-DoD-CLOSE.md`；硬 Exit 引用 ACCEPTANCE；Out 未偷渡（薄对话/扩 latch/C\|T UX/Exit 硬绑可发）；不升格 Hard-Gold。本行不代关 #203/#196 |

@@ -30,6 +30,8 @@ One-line boundary: **sell voiding and gaps — not faster summaries, not auto de
 
 **单一垂直 = 顾问报告**（V1 / ADR-0027）。近端只做已签发顾问/战略主张的发前复验；样例主包为 McKinsey State of AI 公开洞察摘录（T0≈2025-03 → T1≈2025-11），见 `data/packs/v1-mck-soai/`。thesis-1 与 QuoteTTL 可留回归，**不算**第二垂直。仓内不提交整本咨报 PDF。
 
+**V1.5 = Evidence-bound 表单补丁**（ADR-0029 · 冒烟）。对「需补丁」主张：正文替换 + 必填已入库 T1 + 人确认才应用 + 强制单条再验；独立 `propose_patch` / `confirm_patch`（**不**扩 HumanLatch）。**薄对话本期 Out**（不实装、不 stub；对话不改正式裁决）。发前 UX **无** C|T 开关。硬 Exit 见 `docs/evidence/v15/ACCEPTANCE.md`；关门摘要见 `docs/evidence/v15/V15-DoD-CLOSE.md`。档=冒烟；不升格 Hard-Gold。
+
 ---
 
 ## What you get
@@ -94,7 +96,8 @@ Honest snapshot of this public repo:
 | **Runs locally** | Reverify Sheet UI, main reverify chain, human void/renew, synthetic corpora, gate unit tests |
 | **Synthetic** | Demo and eval materials are labeled synthetic — not real client dockets |
 | **Not claimed** | Live SaaS, paying customers, "W12 passed," or closed Phase-1 measurement — do not cite this repo that way |
-| **Known gaps** | Retrieval is still BM25-first (production default `bm25`). Some modules (e.g. memory hygiene) exist in code but are not all on the default main path. A whitelist thin URL (`www.mckinsey.com`) exists for the T1 ingest demo; open-ended live web and an open crawler are still not built. |
+| **V1.5 (smoke)** | Evidence-bound form patch seam is in-repo（propose/confirm + reverify + export）. See `docs/evidence/v15/`. **薄对话** remains Out. Not Hard-Gold. |
+| **Known gaps** | Retrieval is still BM25-first (production default `bm25`). Some modules (e.g. memory hygiene) exist in code but are not all on the default main path. A whitelist thin URL (`www.mckinsey.com`) exists for the T1 ingest demo; open-ended live web and an open crawler are still not built. Thin dialogue / chat-as-verdict is deliberately not shipped in V1.5. |
 
 For engineering acceptance boundaries, read `docs/evidence/` and root `CONTEXT.md`. This README is not a certification.
 

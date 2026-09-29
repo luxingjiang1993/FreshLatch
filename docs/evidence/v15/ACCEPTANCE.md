@@ -76,5 +76,5 @@ HTTP 主缝：`test_v15_prelock_main_seam_hard_bars`（夹具薄 URL + latch dec
 - 扩 HumanLatch 第三动词 / renew 改正文  
 - Exit 硬绑「可发」或改生产默认臂  
 - #8 Policy-as-code 并行；论文 n≥30  
-- GitHub [#203](https://github.com/luxingjiang1993/FreshLatch/issues/203) DoD 关门摘要（依赖本票代审通过后）  
-- 本票 **勿自关**；等 Ronin `GROK-PROXY-APPROVED #202`
+- DoD 关门摘要：`docs/evidence/v15/V15-DoD-CLOSE.md`（[#203](https://github.com/luxingjiang1993/FreshLatch/issues/203)；本 ACCEPTANCE 不代关 DoD）  
+- 本票 #202 已 CLOSED（`GROK-PROXY-APPROVED #202`）；父规格 #196 等 #203 代 Exit 后由编排器收口
