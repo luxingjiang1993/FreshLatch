@@ -90,6 +90,10 @@ class PatchDraftStore:
     def clear_run(self, run_id: str) -> None:
         self._by_run.pop(run_id, None)
 
+    def list_for_run(self, run_id: str) -> dict[str, PatchDraft]:
+        """本 Run 全部暂存草案(只读拷贝;供 UI 投影)。"""
+        return dict(self._by_run.get(run_id, {}))
+
 
 @dataclass(frozen=True)
 class ProposePatchResult:
