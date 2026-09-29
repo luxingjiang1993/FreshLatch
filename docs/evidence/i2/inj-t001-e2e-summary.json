@@ -38,6 +38,6 @@
     "completion_tokens": 459,
     "total_tokens": 17367
   },
-  "trajectory_path": "/workspace/reports/i2-inj-e2e/trajectories/run-20260929-181352.jsonl",
+  "trajectory_path": "docs/evidence/i2/trajectories/inj-t001-e2e-20260929.jsonl",
   "host_drift_note": "托管端点会漂移，跨会话复现只能近似。temp=0 时 seed 无采样意义。"
 }
