@@ -3,6 +3,10 @@
 每主张 × 每遍独立 Runner 实例(独立 RunContext:检索预算 24 不跨遍共享),轨迹 JSONL 逐遍落盘。
 统计纪律(决策七):--runs N 每条主张跑 N 遍,报 per-claim 命中次数/N;N=1 退化为单列。
 W4 的 3 遍 × 3 seed 验收冒烟按 §4.4 不走本 runner(独立拍板,显式非零温度 + 换 seed 重跑)。
+
+I1 评测挂标(#186):detail / 轨迹可经 `label_eval_detail` /
+`freshlatch.eval.i1_labels` 挂上与 JSONL 同名的 fail_bucket/err_kind；
+标签 = 答辩/冒烟层，不改 claim_final 生产终态语义。
 """
 
 from __future__ import annotations
@@ -11,8 +15,13 @@ import json
 from dataclasses import replace
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Any, Mapping
 
 from freshlatch.eval.checks import check_counterevidence, expected_evidence_id
+from freshlatch.eval.i1_labels import (
+    append_i1_labels_to_trajectory,
+    attach_i1_labels_to_detail,
+)
 from freshlatch.eval.matrix import BUCKETS, EXPECTED_VERDICT, confusion_matrix
 from freshlatch.llm import DecodingParams, LLMClient, TokenUsage
 from freshlatch.roles.auditor import EVIDENCE_PACKET_SCHEMA_VERSION
@@ -61,7 +70,10 @@ def gold_claims(gold: dict, docket_path: str | Path) -> list:
 
 
 def _detail(result, claim) -> dict:
-    """单主张运行明细(主矩阵与干扰项附表共用;#22 起带双判留档字段)。"""
+    """单主张运行明细(主矩阵与干扰项附表共用;#22 起带双判留档字段)。
+
+    不含 I1 三分法挂标；挂标请用 label_eval_detail（评测层，非生产 status）。
+    """
     dec = result.decisions[claim.claim_id]
     return {
         "status": claim.status,
@@ -74,6 +86,40 @@ def _detail(result, claim) -> dict:
         "auditor_verdict": dec.auditor_verdict,
         "dissent": claim.dissent,
     }
+
+
+def label_eval_detail(
+    detail: Mapping[str, Any],
+    *,
+    fail_bucket: str,
+    err_kind: str,
+    extra: Mapping[str, Any] | None = None,
+    also_write_trajectory: bool = False,
+    claim_id: str | None = None,
+) -> dict[str, Any]:
+    """在 eval 明细上挂与 I1 JSONL 同名的 fail_bucket/err_kind。
+
+    标签 = 评测/答辩层，不改 status/evidence_ids 等生产终态键。
+    also_write_trajectory=True 时，向 detail['trajectory'] 指向的 JSONL
+    **追加** i1_eval_labels 行（不改写 claim_final）；须同时给 claim_id。
+    """
+    labeled = attach_i1_labels_to_detail(
+        detail, fail_bucket=fail_bucket, err_kind=err_kind, extra=extra
+    )
+    if also_write_trajectory:
+        traj = detail.get("trajectory")
+        if not traj:
+            raise ValueError("detail 无 trajectory，无法追加挂标")
+        if not claim_id:
+            raise ValueError("also_write_trajectory 须提供 claim_id")
+        append_i1_labels_to_trajectory(
+            traj,
+            claim_id,
+            fail_bucket=fail_bucket,
+            err_kind=err_kind,
+            extra=extra,
+        )
+    return labeled
 
 
 def run_gold(store: RetrievalStore, llm: LLMClient | None, *, gold_path: str | Path,

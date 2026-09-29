@@ -392,7 +392,19 @@ class Runner:
             return self._injected_checksum_fn(doc_id, as_of)
         return None
 
-    def _dump_trajectory(self, claims: list[Claim], decisions: dict[str, ClaimDecision]) -> None:
+    def _dump_trajectory(
+        self,
+        claims: list[Claim],
+        decisions: dict[str, ClaimDecision],
+        *,
+        i1_labels: dict[str, dict] | None = None,
+    ) -> None:
+        """落盘轨迹 JSONL。
+
+        claim_final 生产终态字段集保持不变。若传入 i1_labels（评测挂标），
+        在 claim_final **之后**追加 type=i1_eval_labels 行（字段名对齐 I1 JSONL），
+        不把三分法写入 claim_final / 生产 status。
+        """
         assert self._trajectory_path is not None
         with self._trajectory_path.open("w", encoding="utf-8") as f:
             f.write(json.dumps({"type": "run_meta", "mode": self.ctx.mode,
@@ -405,6 +417,7 @@ class Runner:
                 f.write(json.dumps(ev, ensure_ascii=False, default=str) + "\n")
             for c in claims:
                 d = decisions[c.claim_id]
+                # 生产终态：字段集与语义不得因 I1 挂标漂移
                 f.write(json.dumps({"type": "claim_final", "claim_id": c.claim_id,
                                     "statement": c.statement, "status": c.status,
                                     "reason": d.reason, "evidence_ids": d.evidence_ids,
@@ -412,3 +425,43 @@ class Runner:
                                     "dissent": c.dissent,
                                     "schema_version": EVIDENCE_PACKET_SCHEMA_VERSION},
                                    ensure_ascii=False) + "\n")
+            # 评测挂标面（#186）：独立事件行，非生产 status
+            if i1_labels:
+                from freshlatch.eval.i1_labels import build_trajectory_label_event
+
+                for claim_id, lab in i1_labels.items():
+                    event = build_trajectory_label_event(
+                        claim_id,
+                        fail_bucket=lab["fail_bucket"],
+                        err_kind=lab["err_kind"],
+                        extra={k: v for k, v in lab.items()
+                               if k not in ("fail_bucket", "err_kind")},
+                    )
+                    f.write(json.dumps(event, ensure_ascii=False) + "\n")
+
+    def dump_i1_eval_labels(
+        self,
+        i1_labels: dict[str, dict],
+    ) -> list[dict]:
+        """对最近一次 run 的轨迹追加 I1 评测挂标（不改写既有 claim_final）。
+
+        i1_labels: claim_id → {fail_bucket, err_kind, ...可选同名对齐字段}
+        返回写入的挂标事件列表。无轨迹路径时拒绝。
+        """
+        if self._trajectory_path is None:
+            raise RuntimeError("尚无轨迹路径：请先 run() 再挂标")
+        from freshlatch.eval.i1_labels import append_i1_labels_to_trajectory
+
+        written: list[dict] = []
+        for claim_id, lab in i1_labels.items():
+            written.append(
+                append_i1_labels_to_trajectory(
+                    self._trajectory_path,
+                    claim_id,
+                    fail_bucket=lab["fail_bucket"],
+                    err_kind=lab["err_kind"],
+                    extra={k: v for k, v in lab.items()
+                           if k not in ("fail_bucket", "err_kind")},
+                )
+            )
+        return written
