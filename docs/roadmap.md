@@ -325,3 +325,5 @@ Findings ≈ 顶会正规次主赛道；Industry ≈ 同会落地轨；对 mid �
 | 2026-09-29 | **I1 DONE（冒烟）**：corpus `docs/evidence/i1/`（s001–s005）；`ACCEPTANCE.md`；#184–#188 CLOSED（Ronin 代批）；评估见 `docs/research/I1-失败三分法与HumanLatch语料设计评估.md`；ADR-0028；父规格 #183 收口 |
 | 2026-09-29 | **V1.5 grill DONE**：表单 Evidence-bound；独立 propose/confirm；薄对话 Out；冒烟 Exit 预锁；评估见 `docs/research/V1.5-Evidence-bound补丁设计评估.md`；ADR-0029；[#195](https://github.com/luxingjiang1993/FreshLatch/issues/195) CLOSED；下一跳 to-spec |
 | 2026-09-29 | **V1.5 to-spec**：`docs/spec/12-PhaseV1.5-EvidenceBound.md`；GitHub [#196](https://github.com/luxingjiang1993/FreshLatch/issues/196) `ready-for-agent` |
+| 2026-09-29 | **V1.5 to-tickets**：#197–#203 `ready-for-agent`（#204 重复已关）；enrich 齐；清单 `.scratch/v15-tickets/INDEX.md` |
+| 2026-09-29 | **V1.5 云端派工待 Ronin**：`docs/agents/phase-v15-cloud-dispatch.md`；须 #196 `GROK-PROXY-APPROVED V1.5-DISPATCH` 后启 Cloud |
