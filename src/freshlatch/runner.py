@@ -29,6 +29,19 @@ RETRIEVAL_EXHAUSTED = {"budget_exhausted": True,
                        "message": "检索预算已尽(24/Run)。请改用 read_source 直读原文,或基于现有证据下结论。"}
 
 
+def _split_evidence_id(evidence_id: str) -> tuple[str, str, str] | None:
+    """拆 `doc_id#clause_id@as_of`。对不上形状则无法点回原文。"""
+    if "#" not in evidence_id or "@" not in evidence_id:
+        return None
+    body, as_of = evidence_id.rsplit("@", 1)
+    if as_of not in ("T0", "T1") or "#" not in body:
+        return None
+    doc_id, clause_id = body.split("#", 1)
+    if not doc_id or not clause_id:
+        return None
+    return doc_id, clause_id, as_of
+
+
 def list_retrieve_zero_hits(events: list[dict]) -> list[dict]:
     """从轨迹事件抽出 retrieve 空命中(DEM-5 真源)。
 
@@ -287,12 +300,14 @@ class Runner:
         def _gate_decision(status: str, *, stale_reason: str = "") -> GateDecision:
             # auditor 三字段随判定包一次搬运(双判一致的闸输入,ADR-0009/0010);
             # 维度两字段(ADR-0011):登记维度来自签发卷宗,反证维度来自 mark_stale 必填字段
+            # I2:把已引用 T1 正文交给规则闸,污染正文不得诱绿(inj-t001)
             return GateDecision(status=status, t1_evidence_ids=decision.evidence_ids,
                                 stale_reason=stale_reason,
                                 auditor_verdict=decision.auditor_verdict,
                                 auditor_dimension_match=decision.auditor_dimension_match,
                                 registered_dimension=claim.dimension,
-                                stale_dimension=decision.stale_dimension)
+                                stale_dimension=decision.stale_dimension,
+                                t1_evidence_texts=self._cited_t1_texts(decision.evidence_ids))
 
         def _gate_back(reason_text: str) -> None:
             claim.status = "unknown"
@@ -396,6 +411,33 @@ class Runner:
         self.ctx.emit({"type": "claim_result", "claim_id": claim.claim_id,
                        "status": claim.status, "reason": claim.reason,
                        "auditor_verdict": decision.auditor_verdict})
+
+    def _cited_t1_texts(self, evidence_ids: list[str]) -> list[str]:
+        """把证据 id 解成已入库 T1 正文,供规则闸 inj-t001 机械拒绿。
+
+        非 RetrievalStore(测试桩)没有原文口,返回空,旧落档路径不误伤。
+        """
+        store = self.ctx.store
+        if not isinstance(store, RetrievalStore):
+            return []
+        texts: list[str] = []
+        seen: set[str] = set()
+        for eid in evidence_ids:
+            parsed = _split_evidence_id(eid)
+            if parsed is None:
+                continue
+            doc_id, clause_id, as_of = parsed
+            if as_of != "T1":
+                continue
+            chunk = store.get_chunk(doc_id, clause_id, as_of="T1")
+            if chunk is not None and chunk.text and chunk.text not in seen:
+                seen.add(chunk.text)
+                texts.append(chunk.text)
+            full = store.read_source(doc_id, as_of="T1")
+            if full and full not in seen:
+                seen.add(full)
+                texts.append(full)
+        return texts
 
     def _checksum_fn(self, doc_id: str, as_of: AsOf) -> str | None:
         """checksum 注入点:有注入则用语料现算 fn;否则 None=未启用(不误杀)。"""
