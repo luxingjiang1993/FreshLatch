@@ -168,7 +168,7 @@ def append_product_confirm(
 ) -> dict[str, Any]:
     """产品确认路径记账:arm 固定为 PRODUCT_ARM(T),正式行必含 before/after。
 
-    供后续 confirm_patch(#198) 调用;本票只落账本契约,不交付完整闭环。
+    供 evidence_bound.confirm_patch(#198) 调用;产品路径恒 arm=T。
     """
     return append_human_patch(
         claim_id=claim_id,
