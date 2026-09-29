@@ -17,6 +17,14 @@ from pydantic import BaseModel
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
 from freshlatch.claim_import import ClaimImportError, parse_claim_import_draft  # noqa: E402
+from freshlatch.evidence_bound import (  # noqa: E402
+    PatchDraftStore,
+    confirm_patch,
+    discard_patch_draft,
+    propose_patch,
+    single_claim_reverify,
+)
+from freshlatch.models import Claim  # noqa: E402
 from freshlatch.guardrails import Guardrails  # noqa: E402
 from freshlatch.packs import PackPaths, resolve_pack  # noqa: E402
 from freshlatch.latch import HumanLatch, HumanLatchError  # noqa: E402
@@ -24,6 +32,7 @@ from freshlatch.prepublish import (  # noqa: E402
     PrepublishRegistry,
     derive_run_status,
     disposition_for_claims,
+    list_archived_t1_evidence_ids,
     list_t1_checksums,
     project_gate_results,
 )
@@ -39,6 +48,8 @@ from freshlatch.t1_source import T1SourceSession  # noqa: E402
 
 # 测试可 monkeypatch 指向 tmp;生产默认 None → data/patch_events/
 _PATCH_EVENTS_DIR = None
+# #200:Evidence-bound 草案暂存(按 Run 隔离;未 confirm 不改正文/不写正式账本)
+_PATCH_DRAFTS = PatchDraftStore()
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent.parent
 # 占位与切换前第一课题路径一致;import 末尾 bind_active_pack 按 active_pack 覆盖
@@ -194,8 +205,21 @@ def _sync_prepublish(*, new_run: bool = False) -> dict:
     return summary.to_dict()
 
 
+def _patch_run_id() -> str:
+    """补丁草案隔离键:优先当前发前 Run,否则 session。"""
+    return str(_state.get("active_run_id") or "session")
+
+
+def _patch_drafts_payload() -> dict[str, dict]:
+    """本 Run 暂存草案投影(claim_id → draft dict)。"""
+    return {
+        cid: d.to_dict()
+        for cid, d in _PATCH_DRAFTS.list_for_run(_patch_run_id()).items()
+    }
+
+
 def _detail_extras(store: SQLiteStore) -> dict:
-    """复验单增量包:包结论条 + T1 checksum + 逐条闸结果(#173)。"""
+    """复验单增量包:包结论条 + T1 checksum + 逐条闸结果(#173) + 补丁条带(#200)。"""
     claims = list(_state["claims"])
     return {
         "disposition": disposition_for_claims(claims),
@@ -204,6 +228,9 @@ def _detail_extras(store: SQLiteStore) -> dict:
         "active_run_id": _state.get("active_run_id"),
         "t1_checksums": list_t1_checksums(store),
         "gate_results": project_gate_results(claims),
+        # #200:本 Run 已入库 evidence_id 多选源 + 暂存草案(无 C|T / 无薄对话)
+        "archived_t1_ids": list_archived_t1_evidence_ids(store),
+        "patch_drafts": _patch_drafts_payload(),
     }
 
 
@@ -478,6 +505,113 @@ def api_latch_status() -> dict:
     return {"latch": _state["latch"]}
 
 
+class ProposePatchRequest(BaseModel):
+    """#200 改稿暂存:after_text + 可选 t1 草案;不改正文、不写正式账本。"""
+
+    claim_id: str
+    after_text: str
+    t1_ids: list[str] = []
+
+
+class ConfirmPatchRequest(BaseModel):
+    """#200 确认改稿:资格闸+T1硬闸→覆盖正文→T臂账本;职人用语「确认」。"""
+
+    claim_id: str
+    after_text: str | None = None
+    t1_ids: list[str] | None = None
+    minutes: float = 0.0
+    patch_span: str | None = None
+
+
+class DiscardPatchDraftRequest(BaseModel):
+    """#200 丢弃未确认草案。"""
+
+    claim_id: str
+
+
+@app.post("/api/patch/propose")
+def api_patch_propose(req: ProposePatchRequest) -> JSONResponse:
+    """提案暂存(ADR-0029 / #200):走 propose_patch;零改正文、零写正式账本。"""
+    result = propose_patch(
+        claim_id=req.claim_id,
+        after_text=req.after_text,
+        t1_ids=req.t1_ids,
+        claims=list(_state["claims"]),
+        drafts=_PATCH_DRAFTS,
+        run_id=_patch_run_id(),
+    )
+    if not result.ok:
+        return JSONResponse(result.to_dict(), status_code=400)
+    store = _store()
+    extras = _detail_extras(store)
+    return JSONResponse({
+        **result.to_dict(),
+        "claims": [_claim_to_dict(store, c) for c in _state["claims"]],
+        **extras,
+    })
+
+
+def _confirm_patch_reverify(claim: Claim) -> tuple[str, str]:
+    """产品路径单条再验(#199);测试可 monkeypatch 为确定性 noop 以保持零 LLM。"""
+    return single_claim_reverify(
+        claim,
+        store=_store(),
+        checksum_fn=make_checksum_fn(CORPUS),
+    )
+
+
+@app.post("/api/patch/confirm")
+def api_patch_confirm(req: ConfirmPatchRequest) -> JSONResponse:
+    """确认改稿(#200):confirm_patch 硬闸;产品路径恒 arm=T;发前无 C|T 开关。"""
+    store = _store()
+    archived = list_archived_t1_evidence_ids(store)
+    # #199 后 confirm 须触发单条再验;经可测钩子注入(CI 零 LLM 可 monkeypatch)
+    result = confirm_patch(
+        claim_id=req.claim_id,
+        claims={c.claim_id: c for c in _state["claims"]},
+        claim_list=_state["claims"],
+        archived_t1_ids=archived,
+        minutes=req.minutes,
+        after_text=req.after_text,
+        t1_ids=req.t1_ids,
+        patch_span=req.patch_span,
+        drafts=_PATCH_DRAFTS,
+        run_id=_patch_run_id(),
+        events_dir=_PATCH_EVENTS_DIR,
+        actor="human",
+        reverify_fn=_confirm_patch_reverify,
+    )
+    if not result.ok:
+        return JSONResponse(result.to_dict(), status_code=400)
+    run_row = _sync_prepublish(new_run=False)
+    extras = _detail_extras(store)
+    return JSONResponse({
+        **result.to_dict(),
+        "claims": [_claim_to_dict(store, c) for c in _state["claims"]],
+        "run": run_row,
+        **extras,
+    })
+
+
+@app.post("/api/patch/discard-draft")
+def api_patch_discard_draft(req: DiscardPatchDraftRequest) -> JSONResponse:
+    """丢弃未确认改稿草案(#200);不影响主张正文与正式账本。"""
+    discarded = discard_patch_draft(
+        claim_id=req.claim_id,
+        drafts=_PATCH_DRAFTS,
+        run_id=_patch_run_id(),
+    )
+    store = _store()
+    extras = _detail_extras(store)
+    return JSONResponse({
+        "ok": True,
+        "claim_id": req.claim_id,
+        "discarded": discarded,
+        "claims": [_claim_to_dict(store, c) for c in _state["claims"]],
+        **extras,
+    })
+
+
 @app.get("/api/source/{doc_id}")
 def api_source(doc_id: str, as_of: str = Query("T1", pattern="^(T0|T1)$")) -> dict:
     """点回原文:返回条款级锚点段落,前端定位 + 高亮。"""
@@ -615,6 +749,28 @@ HTML_PAGE = """<!DOCTYPE html>
  #t1-checksums.craftsman-hide,#gate-results.craftsman-hide{display:none}
  #t1-checksums.craftsman-soft{display:block}
  a.nav-prepublish{color:#fff;font-size:13px;margin-left:8px}
+ /* #200 Evidence-bound 改稿条带:挂在主张卡内增量区(表单闭环) */
+ .patch-strip{margin-top:8px;padding:8px 10px;border:1px dashed #d0d7de;border-radius:6px;
+              background:#f6f8fa;font-size:13px}
+ .patch-strip .patch-title{font-weight:600;color:#0a2540;margin-bottom:6px}
+ .patch-strip .patch-hint{font-size:12px;color:#57606a;margin:0 0 8px}
+ .patch-strip label{display:block;font-size:12px;color:#57606a;margin:6px 0 2px}
+ .patch-strip textarea{width:100%;min-height:56px;font-family:ui-monospace,Consolas,monospace;
+                       font-size:12px;padding:6px 8px;border:1px solid #d0d7de;border-radius:4px;
+                       box-sizing:border-box;resize:vertical}
+ .patch-strip .t1-multi{max-height:110px;overflow-y:auto;border:1px solid #d0d7de;border-radius:4px;
+                        background:#fff;padding:4px 8px}
+ .patch-strip .t1-multi label{display:block;margin:3px 0;color:#24292f;font-size:12px;
+                              font-family:ui-monospace,Consolas,monospace}
+ .patch-strip input[type=number]{width:100px;padding:4px 6px;border:1px solid #d0d7de;
+                                 border-radius:4px;font-size:12px}
+ .patch-strip .actions{margin-top:8px}
+ .patch-strip button{margin-right:8px;padding:5px 12px;border-radius:6px;border:1px solid #d0d7de;
+                     cursor:pointer;background:#fff;font-size:13px}
+ .patch-strip button.confirm{background:#0969da;color:#fff;border-color:#0969da}
+ .patch-strip button.draft{background:#fff;color:#0969da;border-color:#0969da}
+ .patch-strip .draft-note{font-size:12px;color:#9a6700;margin-top:4px}
+ .latch button.patch-open{background:#0969da;color:#fff;border-color:#0969da}
 </style>
 </head>
 <body>
@@ -697,7 +853,8 @@ let STATE = {claims: [], question: "", latch: {thread_id: null, pending: []},
              retrieve_zero_hits: [],
              trajectory: null, retrieval_used: null, decoding: null,
              budget: null, disposition: null, run_status: null,
-             active_run_id: null, t1_checksums: [], gate_results: []};
+             active_run_id: null, t1_checksums: [], gate_results: [],
+             archived_t1_ids: [], patch_drafts: {}};
 let T1SRC = {kind:'none', ready:false, paste_status:'none', synthetic:false,
              network_enabled:false, message:'', cards:[]};
 let PASTE_DRAFT_TEXT = '';  // 重绘三卡时保留粘贴框内容
@@ -706,6 +863,8 @@ let PENDING_DECISIONS = []; // 本轮已选的人审决定(批量提交)
 let MODAL_CLAIM = null;
 let RENEW_CLAIM = null;
 let IMPORT_PANEL_OPEN = false;  // 主张导入稿面板展开态(跨 renderClaims 保留)
+let PATCH_OPEN = {};  // #200:主张级改稿条带展开态(跨重绘保留表单)
+let PATCH_FORM = {};  // claim_id → {after_text, t1_ids, minutes}
 let budgetPoll = null;  // DEM-4:复验中轮询预算
 // DEM-6:同一复验单两密度;默认职人;切换只改呈现,不碰 Latch/Gate
 let VIEW_MODE = "__VIEW_MODE_DEFAULT__";
@@ -1068,10 +1227,150 @@ function absorbDetailExtras(j){
   if(j.active_run_id != null) STATE.active_run_id = j.active_run_id;
   if(j.t1_checksums) STATE.t1_checksums = j.t1_checksums;
   if(j.gate_results) STATE.gate_results = j.gate_results;
+  if(j.archived_t1_ids) STATE.archived_t1_ids = j.archived_t1_ids;
+  if(j.patch_drafts) STATE.patch_drafts = j.patch_drafts;
 }
 function overrideFilterOn(){
   const box = document.getElementById('filter-override');
   return VIEW_MODE === 'audit' && !!(box && box.checked);
+}
+function patchFormState(cid){
+  // 跨重绘保留表单;若服务端有草案则首次灌入
+  if(!PATCH_FORM[cid]){
+    const d = (STATE.patch_drafts || {})[cid];
+    PATCH_FORM[cid] = {
+      after_text: d ? (d.after_text || '') : '',
+      t1_ids: d ? (d.t1_ids || []).slice() : [],
+      minutes: '0'
+    };
+  }
+  return PATCH_FORM[cid];
+}
+function isPatchEligible(c){
+  // 与后端 is_patch_eligible 同口径:未 discard 的 unknown|stale
+  if(c.patch_eligible != null) return !!c.patch_eligible;
+  return !c.voided && (c.status==='unknown' || c.status==='stale');
+}
+function togglePatchStrip(cid){
+  PATCH_OPEN[cid] = !PATCH_OPEN[cid];
+  patchFormState(cid);
+  renderClaims();
+}
+function readPatchInputs(cid){
+  const ta = document.getElementById('patch-after-'+cid);
+  const mins = document.getElementById('patch-minutes-'+cid);
+  const boxes = document.querySelectorAll('input.patch-t1-'+cid+':checked');
+  const form = patchFormState(cid);
+  form.after_text = ta ? ta.value : form.after_text;
+  form.minutes = mins ? mins.value : form.minutes;
+  form.t1_ids = Array.from(boxes).map(b=>b.value);
+  return form;
+}
+function renderPatchOpenButton(c){
+  // #200:仅可提案主张显示「改稿」入口(与 discard/renew 并存)
+  if(!isPatchEligible(c)) return '';
+  const cid = c.claim_id;
+  const open = !!PATCH_OPEN[cid];
+  return '<button class="patch-open" type="button" '
+       + 'onclick="event.stopPropagation();togglePatchStrip(&quot;'+cid+'&quot;)">'
+       + (open?'收起改稿':'改稿')+'</button>';
+}
+function renderPatchStrip(c){
+  // #200:职人用语改稿/确认/再验;挂在主张卡内增量区;表单闭环(无臂开关)
+  if(!isPatchEligible(c) || !PATCH_OPEN[c.claim_id]) return '';
+  const cid = c.claim_id;
+  const form = patchFormState(cid);
+  const archived = STATE.archived_t1_ids || [];
+  const draft = (STATE.patch_drafts || {})[cid];
+  let h = '<div class="patch-strip" id="patch-strip-'+cid+'" onclick="event.stopPropagation()">'
+        + '<div class="patch-title">改稿 · 确认 · 再验</div>'
+        + '<p class="patch-hint">须勾选本 Run 已入库 T1;确认后覆盖主张正文并记账(attested)。'
+        + '不作废/续命语义;无臂开关。</p>'
+        + '<label for="patch-after-'+cid+'">改稿正文(after_text)</label>'
+        + '<textarea id="patch-after-'+cid+'" aria-label="改稿正文">'
+        + esc(form.after_text||'')+'</textarea>'
+        + '<label>本 Run 已入库 T1(多选)</label>'
+        + '<div class="t1-multi">';
+  if(!archived.length){
+    h += '<div style="color:#57606a;font-size:12px">尚无已入库 T1 evidence_id。</div>';
+  } else {
+    for(const eid of archived){
+      const checked = (form.t1_ids||[]).indexOf(eid)>=0 ? ' checked' : '';
+      h += '<label><input type="checkbox" class="patch-t1-'+cid+'" value="'+esc(eid)+'"'
+         + checked+'> '+esc(eid)+'</label>';
+    }
+  }
+  h += '</div>'
+     + '<label for="patch-minutes-'+cid+'">工时 minutes</label>'
+     + '<input type="number" id="patch-minutes-'+cid+'" min="0" step="0.1" '
+     + 'value="'+esc(String(form.minutes||'0'))+'">'
+     + '<div class="actions">'
+     + '<button type="button" class="draft" onclick="proposePatchDraft(&quot;'+cid+'&quot;)">暂存草案</button>'
+     + '<button type="button" class="confirm" onclick="confirmPatchClaim(&quot;'+cid+'&quot;)">确认改稿</button>'
+     + '<button type="button" onclick="discardPatchDraft(&quot;'+cid+'&quot;)">丢弃草案</button>'
+     + '</div>';
+  if(draft){
+    h += '<div class="draft-note">已有暂存草案 · '+esc(draft.proposed_at||'')+'</div>';
+  }
+  h += '</div>';
+  return h;
+}
+async function proposePatchDraft(cid){
+  const form = readPatchInputs(cid);
+  const r = await fetch('/api/patch/propose',{
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({claim_id: cid, after_text: form.after_text,
+                          t1_ids: form.t1_ids})});
+  const j = await r.json();
+  if(!r.ok || j.ok === false){
+    document.getElementById('status').textContent =
+      (j.error_code?('['+j.error_code+'] '):'') + (j.detail || j.error || '暂存草案失败');
+    return;
+  }
+  if(j.claims) STATE.claims = j.claims;
+  absorbDetailExtras(j);
+  renderClaims();
+  document.getElementById('status').textContent = '改稿草案已暂存(未改正文、未写正式账本): '+cid;
+}
+async function confirmPatchClaim(cid){
+  const form = readPatchInputs(cid);
+  const minutes = parseFloat(form.minutes);
+  const r = await fetch('/api/patch/confirm',{
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({claim_id: cid, after_text: form.after_text,
+                          t1_ids: form.t1_ids,
+                          minutes: isNaN(minutes)?0:minutes})});
+  const j = await r.json();
+  if(!r.ok || j.ok === false){
+    document.getElementById('status').textContent =
+      (j.error_code?('['+j.error_code+'] '):'') + (j.detail || j.error || '确认改稿失败');
+    return;
+  }
+  if(j.claims) STATE.claims = j.claims;
+  absorbDetailExtras(j);
+  delete PATCH_FORM[cid];
+  PATCH_OPEN[cid] = false;
+  renderClaims();
+  let msg = '改稿已确认 · '+cid;
+  if(j.disposition) msg += ' · 包结论 '+j.disposition;
+  if(j.reverify_requested) msg += ' · 再验已请求';
+  document.getElementById('status').textContent = msg;
+}
+async function discardPatchDraft(cid){
+  readPatchInputs(cid);
+  const r = await fetch('/api/patch/discard-draft',{
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({claim_id: cid})});
+  const j = await r.json();
+  if(!r.ok){
+    document.getElementById('status').textContent = j.error || '丢弃草案失败';
+    return;
+  }
+  if(j.claims) STATE.claims = j.claims;
+  absorbDetailExtras(j);
+  delete PATCH_FORM[cid];
+  renderClaims();
+  document.getElementById('status').textContent = '已丢弃改稿草案: '+cid;
 }
 function renderClaims(){
   renderPackBadge();
@@ -1123,8 +1422,10 @@ function renderClaims(){
       h += '<button class="rerun" onclick="event.stopPropagation();rerunClaim(&quot;'+c.claim_id+'&quot;)">重跑作废主张</button>';
     } else if(c.status==='stale' || c.status==='unknown'){
       h += renewButton(c.claim_id);  // 续命只对人审范围内的红/黄灯主张(fresh 无需续命)
+      h += ' ' + renderPatchOpenButton(c);  // #200:改稿入口与 discard/renew 并存
     }
     h += '</div>';
+    h += renderPatchStrip(c);  // 条带挂在 latch 区外,仍在主张卡内
     if(c.timeline && c.timeline.length){
       h += '<div class="timeline">';
       for(const t of c.timeline){

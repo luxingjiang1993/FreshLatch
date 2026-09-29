@@ -12,6 +12,7 @@ import re
 from pathlib import Path
 from typing import Any
 
+from freshlatch.evidence_bound import is_patch_eligible
 from freshlatch.latch import HumanLatch
 from freshlatch.models import Claim
 from freshlatch.reading_source import BYPASS_TEXT, MEMO_NOTE
@@ -65,6 +66,8 @@ def project_claim(store: RetrievalStore, claim: Claim) -> dict[str, Any]:
         "last_confirmed_at": claim.last_confirmed_at,  # 续命时间戳(§5.4)
         "validity_basis": claim.validity_basis,  # 续命写的新有效性依据(§5.4)
         "timeline": events,
+        # #200:补丁条带入口闸(与 evidence_bound.is_patch_eligible 同口径)
+        "patch_eligible": is_patch_eligible(claim),
     }
 
 

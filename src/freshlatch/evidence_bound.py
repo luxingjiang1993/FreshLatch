@@ -97,6 +97,10 @@ class PatchDraftStore:
     def clear_run(self, run_id: str) -> None:
         self._by_run.pop(run_id, None)
 
+    def list_for_run(self, run_id: str) -> dict[str, PatchDraft]:
+        """本 Run 全部暂存草案(只读拷贝;供 UI 投影)。"""
+        return dict(self._by_run.get(run_id, {}))
+
 
 @dataclass(frozen=True)
 class ProposePatchResult:
@@ -364,6 +368,10 @@ def confirm_patch(
 
     # 单条强制再验(同构 latch rerun 粒度;仅目标 claim,非整包)
     verdict, note = effective_fn(claim)
+    # 确认绑定的 attested t1 不得被再验检索空结果抹掉(与 renew 并集语义同构)
+    claim.t1_evidence_ids = list(
+        dict.fromkeys([*resolved_t1, *list(claim.t1_evidence_ids or [])])
+    )
 
     span = (patch_span or "").strip() or default_patch_span(claim_id)
     event = append_product_confirm(
