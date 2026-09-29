@@ -1,0 +1,68 @@
+{
+  "demo_id": "acl-t001",
+  "layer": "smoke",
+  "query": "aclmarker 共享预算",
+  "note": "合成两租户同查询可命中。显式 tenant_id=B 不得返回 A。无参不启租户过滤。不是租户管理面。",
+  "chunks": [
+    {
+      "doc_id": "acl-tenant-a",
+      "clause_id": "p1",
+      "as_of": "T1",
+      "source_type": "private",
+      "tenant_id": "A",
+      "poison": false,
+      "untrusted": false,
+      "text": "aclmarker 共享预算 租户A专属条款"
+    },
+    {
+      "doc_id": "acl-tenant-a-noise-1",
+      "clause_id": "p1",
+      "as_of": "T1",
+      "source_type": "private",
+      "tenant_id": "A",
+      "poison": false,
+      "untrusted": false,
+      "text": "noisea1 租户A其他条款"
+    },
+    {
+      "doc_id": "acl-tenant-a-noise-2",
+      "clause_id": "p1",
+      "as_of": "T1",
+      "source_type": "private",
+      "tenant_id": "A",
+      "poison": false,
+      "untrusted": false,
+      "text": "noisea2 租户A旁支条款"
+    },
+    {
+      "doc_id": "acl-tenant-b",
+      "clause_id": "p1",
+      "as_of": "T1",
+      "source_type": "private",
+      "tenant_id": "B",
+      "poison": false,
+      "untrusted": false,
+      "text": "aclmarker 共享预算 租户B专属条款"
+    },
+    {
+      "doc_id": "acl-tenant-b-noise-1",
+      "clause_id": "p1",
+      "as_of": "T1",
+      "source_type": "private",
+      "tenant_id": "B",
+      "poison": false,
+      "untrusted": false,
+      "text": "noiseb1 租户B其他条款"
+    },
+    {
+      "doc_id": "acl-tenant-b-noise-2",
+      "clause_id": "p1",
+      "as_of": "T1",
+      "source_type": "private",
+      "tenant_id": "B",
+      "poison": false,
+      "untrusted": false,
+      "text": "noiseb2 租户B旁支条款"
+    }
+  ]
+}

@@ -8,7 +8,7 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-from freshlatch.store.base import Chunk, Document
+from freshlatch.store.base import Chunk, Document, normalize_tenant_id
 from freshlatch.store.checksum import sha256_hex
 from freshlatch.store.pipeline import tokenize
 
@@ -20,6 +20,13 @@ AS_OF_DIR = {"t0": "T0", "t1": "T1"}
 
 def _normalize_newlines(text: str) -> str:
     return text.replace("\r\n", "\n").replace("\r", "\n")
+
+
+def _meta_flag(value: str | None) -> bool:
+    """frontmatter 显式布尔。缺省或非真值视为未标记,不扫描正文。"""
+    if value is None:
+        return False
+    return value.strip().lower() in {"1", "true", "yes", "y"}
 
 
 def parse_document_text(
@@ -49,6 +56,9 @@ def parse_document_text(
     as_of = meta["as_of"]  # 目录即 as_of 维度,下方断言兜底一致性
     source_type = meta["source_type"]
     title = meta.get("title", doc_id)
+    tenant_id = normalize_tenant_id(meta.get("tenant_id"))
+    poison = _meta_flag(meta.get("poison"))
+    untrusted = _meta_flag(meta.get("untrusted"))
 
     # 按二级标题切分,锚点 = 标题文本(p2 等);引言(首个 ## 之前)不入块
     parts = CLAUSE_RE.split(body)
@@ -69,12 +79,16 @@ def parse_document_text(
                 doc_version="1.0",
                 checksum=checksum,
                 tokens=len(tokenize(full)),
+                tenant_id=tenant_id,
+                poison=poison,
+                untrusted=untrusted,
             )
         )
 
     doc = Document(
         doc_id=doc_id, as_of=as_of, source_type=source_type, title=title,
         doc_version="1.0", checksum=checksum, full_text=text,
+        tenant_id=tenant_id, poison=poison, untrusted=untrusted,
     )
     return doc, chunks
 

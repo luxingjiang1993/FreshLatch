@@ -31,15 +31,23 @@ def create_forensic_tools(store: SQLiteStore) -> Dict[str, Callable[..., Awaitab
                 "message": f"获取记忆条目失败: {str(e)}"
             }
 
-    async def retrieve(query: str, as_of: str = "T1", source_type: str = None, top_k: int = 10) -> Dict[str, Any]:
-        """按 as_of 检索语料,供 Forensic 对照 T1。"""
+    async def retrieve(
+        query: str,
+        as_of: str = "T1",
+        source_type: str = None,
+        top_k: int = 10,
+        tenant_id: str | None = None,
+    ) -> Dict[str, Any]:
+        """按 as_of 检索语料,供 Forensic 对照 T1。过滤与 store.retrieve 同一实现。"""
         try:
-            hits = store.retrieve(
-                query,
-                as_of=as_of if as_of in ("T0", "T1") else "T1",
-                source_type=source_type or None,
-                top_k=top_k,
-            )
+            kwargs = {
+                "as_of": as_of if as_of in ("T0", "T1") else "T1",
+                "source_type": source_type or None,
+                "top_k": top_k,
+            }
+            if tenant_id:
+                kwargs["tenant_id"] = tenant_id
+            hits = store.retrieve(query, **kwargs)
             blocks = [
                 {
                     "evidence_id": f"{c.doc_id}#{c.clause_id}@{c.as_of}",

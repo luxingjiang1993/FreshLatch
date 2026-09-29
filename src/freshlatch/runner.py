@@ -85,7 +85,8 @@ class RunContext:
         return PRODUCTION_RETRIEVAL_MODE
 
     def try_retrieve(self, query: str, *, source_type: str | None = None,
-                     as_of: AsOf | None = None, top_k: int = 10) -> list | dict:
+                     as_of: AsOf | None = None, top_k: int = 10,
+                     tenant_id: str | None = None) -> list | dict:
         """retrieve 的预算闸门:Run 级共享计数,超限 fail-soft 返回结构化结果,不抛异常。
 
         生产签名不含 retrieval_mode。轨迹补齐 query、filters、有序 evidence_id、retrieval_mode。
@@ -100,15 +101,25 @@ class RunContext:
             self.store.bind_eval_retrieval_mode(requested)
         else:
             self.store.bind_eval_retrieval_mode(None)
-        hits = self.store.retrieve(query, as_of=as_of, source_type=source_type, top_k=top_k)
+        retrieve_kwargs = {
+            "as_of": as_of,
+            "source_type": source_type,
+            "top_k": top_k,
+        }
+        if tenant_id is not None:
+            retrieve_kwargs["tenant_id"] = tenant_id
+        hits = self.store.retrieve(query, **retrieve_kwargs)
         self.store.bind_eval_retrieval_mode(None)
         evidence_ids = [chunk_evidence_id(c) for c in hits]
         mode = getattr(self.store, "last_retrieval_mode", requested)
+        filters = {"as_of": as_of, "source_type": source_type, "top_k": top_k}
+        if tenant_id is not None:
+            filters["tenant_id"] = tenant_id
         self.events.append({
             "type": "retrieve",
             "query": query,
             "as_of": as_of,
-            "filters": {"as_of": as_of, "source_type": source_type, "top_k": top_k},
+            "filters": filters,
             "evidence_ids": evidence_ids,
             "retrieval_mode": mode,
             "used": self.retrieval_used,

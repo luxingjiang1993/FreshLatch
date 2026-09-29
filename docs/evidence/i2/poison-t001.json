@@ -1,0 +1,38 @@
+{
+  "demo_id": "poison-t001",
+  "layer": "smoke",
+  "query": "poisonmarker 高分预算",
+  "note": "高分块靠显式 poison 或 untrusted 元数据剔除。正文出现这些词但未打标的块仍可引用。不是内容启发式硬门,也不是记忆 quarantine。",
+  "chunks": [
+    {
+      "doc_id": "poison-bad",
+      "clause_id": "p1",
+      "as_of": "T1",
+      "source_type": "private",
+      "tenant_id": "default",
+      "poison": true,
+      "untrusted": false,
+      "text": "poisonmarker 高分预算 poisonmarker 高分预算 poisonmarker 高分预算 poisonmarker 高分预算"
+    },
+    {
+      "doc_id": "untrusted-bad",
+      "clause_id": "p1",
+      "as_of": "T1",
+      "source_type": "private",
+      "tenant_id": "default",
+      "poison": false,
+      "untrusted": true,
+      "text": "poisonmarker 高分预算 poisonmarker 高分预算 poisonmarker 高分预算"
+    },
+    {
+      "doc_id": "poison-good",
+      "clause_id": "p1",
+      "as_of": "T1",
+      "source_type": "private",
+      "tenant_id": "default",
+      "poison": false,
+      "untrusted": false,
+      "text": "poisonmarker 高分预算 正常可引用条款"
+    }
+  ]
+}

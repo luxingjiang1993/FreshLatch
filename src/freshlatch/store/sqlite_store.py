@@ -11,7 +11,13 @@ import sqlite3
 from pathlib import Path
 
 from freshlatch.models import AsOf
-from freshlatch.store.base import Chunk, Document, RetrievalStore
+from freshlatch.store.base import (
+    Chunk,
+    Document,
+    RetrievalStore,
+    filter_retrieve_pool,
+    normalize_tenant_id,
+)
 from freshlatch.store.pipeline import run_pipeline
 
 SCHEMA = """
@@ -23,6 +29,9 @@ CREATE TABLE IF NOT EXISTS documents (
     doc_version TEXT NOT NULL DEFAULT '1.0',
     checksum TEXT NOT NULL DEFAULT '',   -- 三处留位之二,本期为空
     full_text TEXT NOT NULL,
+    tenant_id TEXT NOT NULL DEFAULT 'default',  -- I2 可选;缺省 default
+    poison INTEGER NOT NULL DEFAULT 0,          -- I2 显式投毒标签,非启发式
+    untrusted INTEGER NOT NULL DEFAULT 0,
     PRIMARY KEY (doc_id, as_of)
 );
 CREATE TABLE IF NOT EXISTS chunks (
@@ -39,6 +48,9 @@ CREATE TABLE IF NOT EXISTS chunks (
     parent_id TEXT,        -- 留位
     hypo_questions TEXT,     -- 留位
     vec BLOB,                -- 留位
+    tenant_id TEXT NOT NULL DEFAULT 'default',  -- I2 可选;缺省 default
+    poison INTEGER NOT NULL DEFAULT 0,          -- I2 显式投毒标签
+    untrusted INTEGER NOT NULL DEFAULT 0,
     PRIMARY KEY (chunk_id)
 );
 CREATE INDEX IF NOT EXISTS idx_chunks_filter ON chunks (as_of, source_type, doc_id);
@@ -115,6 +127,13 @@ _LATCH_LOG_ADDED_COLUMNS = (
     ("reviewer_note", "TEXT"),
 )
 
+# 旧库缺 I2 信任列时补齐。已有行走列默认:tenant_id=default,poison/untrusted=0。
+_TRUST_ADDED_COLUMNS = (
+    ("tenant_id", "TEXT NOT NULL DEFAULT 'default'"),
+    ("poison", "INTEGER NOT NULL DEFAULT 0"),
+    ("untrusted", "INTEGER NOT NULL DEFAULT 0"),
+)
+
 
 class SQLiteStore(RetrievalStore):
     def __init__(self, path: str | Path) -> None:
@@ -123,6 +142,7 @@ class SQLiteStore(RetrievalStore):
         with self._conn() as conn:
             conn.executescript(SCHEMA)
             self._ensure_latch_log_columns(conn)
+            self._ensure_trust_columns(conn)
 
     @staticmethod
     def _ensure_latch_log_columns(conn: sqlite3.Connection) -> None:
@@ -130,6 +150,14 @@ class SQLiteStore(RetrievalStore):
         for name, decl in _LATCH_LOG_ADDED_COLUMNS:
             if name not in existing:
                 conn.execute(f"ALTER TABLE latch_log ADD COLUMN {name} {decl}")
+
+    @staticmethod
+    def _ensure_trust_columns(conn: sqlite3.Connection) -> None:
+        for table in ("documents", "chunks"):
+            existing = {row[1] for row in conn.execute(f"PRAGMA table_info({table})")}
+            for name, decl in _TRUST_ADDED_COLUMNS:
+                if name not in existing:
+                    conn.execute(f"ALTER TABLE {table} ADD COLUMN {name} {decl}")
 
     def _conn(self) -> sqlite3.Connection:
         conn = sqlite3.connect(self.path)
@@ -142,17 +170,26 @@ class SQLiteStore(RetrievalStore):
         with self._conn() as conn:
             conn.execute(
                 "INSERT OR REPLACE INTO documents "
-                "(doc_id, as_of, source_type, title, doc_version, checksum, full_text) "
-                "VALUES (?,?,?,?,?,?,?)",
+                "(doc_id, as_of, source_type, title, doc_version, checksum, full_text, "
+                "tenant_id, poison, untrusted) "
+                "VALUES (?,?,?,?,?,?,?,?,?,?)",
                 (doc.doc_id, doc.as_of, doc.source_type, doc.title,
-                 doc.doc_version, doc.checksum, doc.full_text),
+                 doc.doc_version, doc.checksum, doc.full_text,
+                 normalize_tenant_id(doc.tenant_id), int(bool(doc.poison)),
+                 int(bool(doc.untrusted))),
             )
             conn.executemany(
-                "INSERT OR REPLACE INTO chunks VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                "INSERT OR REPLACE INTO chunks ("
+                "doc_id, chunk_id, clause_id, title, text, source_type, as_of, "
+                "doc_version, checksum, tokens, parent_id, hypo_questions, vec, "
+                "tenant_id, poison, untrusted) "
+                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                 [
                     (c.doc_id, c.chunk_id, c.clause_id, c.title, c.text,
                      c.source_type, c.as_of, c.doc_version, c.checksum,
-                     c.tokens, c.parent_id, c.hypo_questions, c.vec)
+                     c.tokens, c.parent_id, c.hypo_questions, c.vec,
+                     normalize_tenant_id(c.tenant_id), int(bool(c.poison)),
+                     int(bool(c.untrusted)))
                     for c in chunks
                 ],
             )
@@ -211,6 +248,7 @@ class SQLiteStore(RetrievalStore):
         as_of: AsOf | None = None,
         source_type: str | None = None,
         top_k: int = 10,
+        tenant_id: str | None = None,
     ) -> list[Chunk]:
         sql, params = "SELECT * FROM chunks", []
         if as_of is not None:
@@ -221,7 +259,10 @@ class SQLiteStore(RetrievalStore):
             params.append(source_type)
         with self._conn() as conn:
             rows = conn.execute(sql, params).fetchall()
-        pool = [self._row_to_chunk(r) for r in rows]
+        pool = filter_retrieve_pool(
+            [self._row_to_chunk(r) for r in rows],
+            tenant_id=tenant_id,
+        )
         from freshlatch.store.pipeline import RRF_K, rank_dense, recall_bm25, rerank_lexical, rrf_fuse
 
         requested = self._requested_retrieval_mode()
@@ -462,4 +503,7 @@ class SQLiteStore(RetrievalStore):
             as_of=r["as_of"], doc_version=r["doc_version"], checksum=r["checksum"],
             tokens=r["tokens"], parent_id=r["parent_id"],
             hypo_questions=r["hypo_questions"], vec=r["vec"],
+            tenant_id=normalize_tenant_id(r["tenant_id"]),
+            poison=bool(r["poison"]),
+            untrusted=bool(r["untrusted"]),
         )
