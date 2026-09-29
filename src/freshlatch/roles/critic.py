@@ -19,7 +19,7 @@ from freshlatch.store.query_transform import DIMENSION_ZH, transform_claim_query
 from freshlatch.gates.meta_gate import is_meta_only_disproof
 from freshlatch.models import Claim
 from freshlatch.roles.loop import run_loop
-from freshlatch.tools import CRITIC_TOOLS, FOCUS_DIMENSIONS, tool_specs
+from freshlatch.tools import CRITIC_TOOLS, FOCUS_DIMENSIONS, optional_tenant_id, tool_specs
 
 FOCUS_ZH: dict[str, str] = DIMENSION_ZH
 
@@ -139,6 +139,7 @@ class Critic:
             source_type=args.get("source_type") or None,
             as_of=as_of or None,
             top_k=10,
+            tenant_id=optional_tenant_id(args),
         )
         if isinstance(hits, dict):  # 预算已尽,fail-soft(与 Lead 共享 Run 级预算)
             return hits

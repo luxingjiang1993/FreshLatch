@@ -39,7 +39,8 @@ _TOOL_DEFS: dict[str, dict] = {
                     "检索串由主张查询变换产出;query 若传入会被忽略,调用方不得自由改写。",
         {"query": {"type": "string", "description": "忽略。检索串由主张查询变换产出"},
          "source_type": {"type": "string", "description": "可选:private|public|internal"},
-         "as_of": {"type": "string", "description": "可选:T0 签发时快照|T1 复验时刻快照"}}, ["query"]),
+         "as_of": {"type": "string", "description": "可选:T0 签发时快照|T1 复验时刻快照"},
+         "tenant_id": {"type": "string", "description": "可选:显式传入才按租户硬过滤;不传则不过滤租户"}}, ["query"]),
     "read_source": _fn(
         "read_source", "按 doc_id 读原文全文(ground truth 是原文,不是 chunk)",
         {"doc_id": {"type": "string"}, "as_of": {"type": "string", "description": "T0|T1,默认 T1"}}, ["doc_id"]),
@@ -116,6 +117,15 @@ _TOOL_DEFS: dict[str, dict] = {
 # 架构插座:web_search 仅插座,不进任何角色白名单(§0.4.2/§4.6:评测期代码级禁联网)。
 # eval 模式运行时纯本地;本期未挂载 = 模型物理上不可见,联网破坏 must_stale 可复现性。
 WEB_SEARCH_SOCKET_NOTE = "web_search 为架构插座,W5–W8 再议;W1–W4 不在任何白名单"
+
+
+def optional_tenant_id(args: dict) -> str | None:
+    """工具参数里的可选租户。未传或空白表示不启租户过滤。"""
+    raw = args.get("tenant_id") if isinstance(args, dict) else None
+    if not isinstance(raw, str):
+        return None
+    text = raw.strip()
+    return text or None
 
 
 def tool_specs(names: list[str]) -> list[dict]:

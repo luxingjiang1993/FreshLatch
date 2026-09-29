@@ -25,7 +25,10 @@ def chunk_evidence_id(chunk: "Chunk") -> str:
 
 @dataclass
 class Chunk:
-    """chunk schema 定稿 13 列(§2.5):parent_id / hypo_questions / vec 本期留位。"""
+    """chunk schema 定稿 13 列(§2.5):parent_id / hypo_questions / vec 本期留位。
+
+    I2 可选信任列(ADR-0030):tenant_id 缺省 default;poison/untrusted 为真则不可引用。
+    """
 
     doc_id: str
     chunk_id: str
@@ -40,6 +43,9 @@ class Chunk:
     parent_id: str | None = None
     hypo_questions: str | None = None
     vec: bytes | None = None
+    tenant_id: str = "default"
+    poison: bool = False
+    untrusted: bool = False
 
 
 @dataclass
@@ -51,6 +57,33 @@ class Document:
     doc_version: str
     checksum: str
     full_text: str
+    tenant_id: str = "default"
+    poison: bool = False
+    untrusted: bool = False
+
+
+def normalize_tenant_id(value: str | None) -> str:
+    """缺省与空白都视为 default,供显式 tenant 过滤比较。"""
+    if value is None:
+        return "default"
+    text = str(value).strip()
+    return text or "default"
+
+
+def filter_retrieve_pool(chunks: list[Chunk], *, tenant_id: str | None) -> list[Chunk]:
+    """召回信任边界:poison/untrusted 永远剔除;仅显式 tenant_id 时硬过滤异租户。
+
+    tenant_id is None 表示调用方未传该参数,不启租户过滤(无参兼容)。
+    不看正文是否出现 poison 字样。
+    """
+    kept: list[Chunk] = []
+    for chunk in chunks:
+        if chunk.poison or chunk.untrusted:
+            continue
+        if tenant_id is not None and normalize_tenant_id(chunk.tenant_id) != tenant_id:
+            continue
+        kept.append(chunk)
+    return kept
 
 
 class RetrievalStore(ABC):
@@ -84,6 +117,7 @@ class RetrievalStore(ABC):
         as_of: AsOf | None = None,
         source_type: str | None = None,
         top_k: int = 10,
+        tenant_id: str | None = None,
     ) -> list[Chunk]: ...
 
     @abstractmethod
@@ -132,6 +166,7 @@ class InMemoryStore(RetrievalStore):
         as_of: AsOf | None = None,
         source_type: str | None = None,
         top_k: int = 10,
+        tenant_id: str | None = None,
     ) -> list[Chunk]:
         from freshlatch.store.pipeline import recall_bm25
 
@@ -141,6 +176,7 @@ class InMemoryStore(RetrievalStore):
             if (as_of is None or c.as_of == as_of)
             and (source_type is None or c.source_type == source_type)
         ]
+        pool = filter_retrieve_pool(pool, tenant_id=tenant_id)
         from freshlatch.store.pipeline import RRF_K, rank_dense, rerank_lexical, rrf_fuse
 
         requested = self._requested_retrieval_mode()

@@ -21,7 +21,7 @@ from freshlatch.roles.auditor import Auditor
 from freshlatch.roles.critic import Critic
 from freshlatch.roles.loop import LoopResult, run_loop
 from freshlatch.runner import ClaimDecision, RunContext
-from freshlatch.tools import FOCUS_DIMENSIONS, LEAD_TOOLS_W3, tool_specs
+from freshlatch.tools import FOCUS_DIMENSIONS, LEAD_TOOLS_W3, optional_tenant_id, tool_specs
 
 LEAD_PERSONA = """你是 Lead Reverifier,FreshLatch 的复验主官。你的任务是把一条已签发主张从「曾经为真」改成「现在仍可复验」。
 
@@ -244,6 +244,7 @@ class LeadReverifier:
             source_type=args.get("source_type") or None,
             as_of=as_of,
             top_k=10,  # §8.5:top_k 放宽到 10 缓释同义改写漏召回
+            tenant_id=optional_tenant_id(args),
         )
         if isinstance(hits, dict):  # 预算已尽,fail-soft
             return hits

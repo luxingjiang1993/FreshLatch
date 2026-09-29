@@ -71,10 +71,12 @@ CLAIM_FIELDS = {
 SQLITE_COLUMNS = {
     "documents": {
         "doc_id", "as_of", "source_type", "title", "doc_version", "checksum", "full_text",
+        "tenant_id", "poison", "untrusted",
     },
     "chunks": {
         "doc_id", "chunk_id", "clause_id", "title", "text", "source_type", "as_of",
         "doc_version", "checksum", "tokens", "parent_id", "hypo_questions", "vec",
+        "tenant_id", "poison", "untrusted",
     },
     "invalidation_list": {"claim_id", "voided_at", "actor", "reason"},
     "latch_log": {"ts", "claim_id", "action", "evidence_id", "actor", "machine_status_before", "override", "run_id", "reviewer_note"},
