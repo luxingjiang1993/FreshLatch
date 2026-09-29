@@ -1,7 +1,7 @@
-"""#198 Evidence-bound propose/confirm API 核心验收。
+"""#198+#199 Evidence-bound propose/confirm + 单条再验验收。
 
-零 LLM、零网络;只测资格闸、T1 硬闸、暂存零写、有证覆盖+T 行、VALID_ACTIONS 未扩。
-再验真接线属 #199:本票只断言 reverify_requested 钩子与事件 reverify=True。
+零 LLM、零网络;资格闸、T1 硬闸、暂存零写、有证覆盖+T 行、单条再验触发、
+disposition 再验后重算、VALID_ACTIONS 未扩、非整包默认路径。
 """
 
 from __future__ import annotations
@@ -15,6 +15,7 @@ from freshlatch.disposition import aggregate_disposition, ClaimDispositionInput
 from freshlatch.evidence_bound import (
     PATCH_EMPTY_T1,
     PATCH_INELIGIBLE,
+    PATCH_REVERIFY_UNAVAILABLE,
     PATCH_T1_NOT_ARCHIVED,
     PatchDraftStore,
     confirm_patch,
@@ -55,6 +56,18 @@ def _pack_unknown_stale() -> list[Claim]:
         _claim("mck-3", status="unknown", statement="缺口主张原文"),
         _claim("mck-2", status="fresh", statement="仍支持主张"),
     ]
+
+
+def _noop_reverify(claim: Claim) -> tuple[str, str]:
+    """夹具:不改主张态,只证明再验回调被调用。"""
+    return claim.status, "fixture-noop"
+
+
+def _fresh_reverify(claim: Claim) -> tuple[str, str]:
+    """夹具:确定性把目标主张打成 fresh(零 LLM)。"""
+    claim.status = "fresh"
+    claim.reason = "fixture single-claim reverify"
+    return "fresh", "fixture-to-fresh"
 
 
 # ---------------------------------------------------------------------------
@@ -165,12 +178,14 @@ def test_confirm_empty_t1_rejects_zero_mutation(tmp_path: Path):
         t1_ids=[],
         minutes=5.0,
         events_dir=events_dir,
+        reverify_fn=_noop_reverify,
     )
     assert not result.ok
     assert result.error_code == PATCH_EMPTY_T1
     assert claims[0].statement == before
     assert len(pe.read_events(events_dir=events_dir)) == before_n
     assert result.reverify_requested is False
+    assert result.reverify_triggered is False
 
 
 def test_confirm_non_archived_t1_rejects_zero_mutation(tmp_path: Path):
@@ -187,6 +202,7 @@ def test_confirm_non_archived_t1_rejects_zero_mutation(tmp_path: Path):
         t1_ids=[OTHER_EID],
         minutes=3.0,
         events_dir=events_dir,
+        reverify_fn=_noop_reverify,
     )
     assert not result.ok
     assert result.error_code == PATCH_T1_NOT_ARCHIVED
@@ -194,14 +210,35 @@ def test_confirm_non_archived_t1_rejects_zero_mutation(tmp_path: Path):
     assert pe.read_events(events_dir=events_dir) == []
 
 
+def test_confirm_without_reverify_dependency_rejects_zero_mutation(tmp_path: Path):
+    """Given 合法 t1 但无 reverify_fn/store,When confirm,Then 拒确认且零改正文。"""
+    claims = _pack_unknown_stale()
+    before = claims[0].statement
+    events_dir = tmp_path / "patch_events"
+    result = confirm_patch(
+        claim_id="mck-3",
+        claims=claims,
+        archived_t1_ids={ARCHIVED_EID},
+        after_text="有证但缺再验依赖",
+        t1_ids=[ARCHIVED_EID],
+        minutes=1.0,
+        events_dir=events_dir,
+    )
+    assert not result.ok
+    assert result.error_code == PATCH_REVERIFY_UNAVAILABLE
+    assert claims[0].statement == before
+    assert pe.read_events(events_dir=events_dir) == []
+    assert result.reverify_triggered is False
+
+
 # ---------------------------------------------------------------------------
-# confirm 有证 → 覆盖 + T 行 + disposition + 再验钩子
+# confirm 有证 → 覆盖 + 单条再验 + T 行 + disposition
 # ---------------------------------------------------------------------------
 
 
 def test_confirm_with_valid_t1_overwrites_and_writes_T_row(tmp_path: Path):
     """Given 未 discard 的 unknown 与合法 t1_ids,When confirm_patch,
-    Then statement=after_text,patch_events 追加 arm=T 含 before/after,返回 disposition。
+    Then statement=after_text,单条再验触发,patch_events 追加 arm=T 含 before/after。
     """
     claims = _pack_unknown_stale()
     before_text = claims[0].statement
@@ -227,6 +264,7 @@ def test_confirm_with_valid_t1_overwrites_and_writes_T_row(tmp_path: Path):
         run_id="run-c",
         events_dir=events_dir,
         claim_list=claims,
+        reverify_fn=_noop_reverify,
     )
     assert result.ok
     assert claims[0].statement == "经 T1 核后的主张句"
@@ -235,6 +273,8 @@ def test_confirm_with_valid_t1_overwrites_and_writes_T_row(tmp_path: Path):
     assert result.disposition in ("可发", "需补丁", "勿发")
     assert result.disposition == disposition_for_claims(claims)
     assert result.reverify_requested is True
+    assert result.reverify_triggered is True
+    assert result.reverify_verdict == "unknown"  # noop 未改态
     assert drafts.get("run-c", "mck-3") is None  # 确认后清草案
 
     rows = pe.read_events(events_dir=events_dir)
@@ -248,6 +288,67 @@ def test_confirm_with_valid_t1_overwrites_and_writes_T_row(tmp_path: Path):
     assert row["reverify"] is True
     assert row["claim_id"] == "mck-3"
     assert row["minutes"] == 12.5
+
+
+def test_confirm_triggers_single_claim_reverify_only(tmp_path: Path):
+    """Given 合法 confirm,When 观察再验钩子,Then 仅目标 claim 被再验且事件 reverify=true。"""
+    claims = _pack_unknown_stale()
+    seen: list[str] = []
+
+    def spy(claim: Claim) -> tuple[str, str]:
+        seen.append(claim.claim_id)
+        claim.status = "fresh"
+        claim.reason = "spy-reverify"
+        return "fresh", "spy"
+
+    events_dir = tmp_path / "patch_events"
+    result = confirm_patch(
+        claim_id="mck-3",
+        claims=claims,
+        archived_t1_ids={ARCHIVED_EID},
+        after_text="经核主张",
+        t1_ids=[ARCHIVED_EID],
+        minutes=4.0,
+        events_dir=events_dir,
+        claim_list=claims,
+        reverify_fn=spy,
+    )
+    assert result.ok
+    assert result.reverify_triggered is True
+    assert seen == ["mck-3"]  # 非整包:mck-2 未被再验
+    assert claims[0].status == "fresh"
+    assert claims[1].status == "fresh"  # 原本就是 fresh,未被回调
+    assert pe.read_events(events_dir=events_dir)[0]["reverify"] is True
+
+
+def test_confirm_disposition_matches_aggregate_after_reverify(tmp_path: Path):
+    """Given 确认后主张态向量,When 聚合 disposition,Then 与发前投影一致。"""
+    claims = [
+        _claim("mck-3", status="unknown", statement="缺口"),
+        _claim("mck-2", status="fresh", statement="绿"),
+    ]
+    # 确认前:未收口 unknown → 需补丁
+    assert disposition_for_claims(claims) == "需补丁"
+
+    events_dir = tmp_path / "patch_events"
+    result = confirm_patch(
+        claim_id="mck-3",
+        claims=claims,
+        archived_t1_ids={ARCHIVED_EID},
+        after_text="改写后缺口主张",
+        t1_ids=[ARCHIVED_EID],
+        minutes=6.0,
+        events_dir=events_dir,
+        claim_list=claims,
+        reverify_fn=_fresh_reverify,
+    )
+    assert result.ok
+    assert claims[0].status == "fresh"
+    expected = aggregate_disposition(
+        ClaimDispositionInput(status=c.status, human_action=None) for c in claims
+    )
+    assert result.disposition == expected == disposition_for_claims(claims) == "可发"
+    assert result.reverify_verdict == "fresh"
 
 
 def test_confirm_stale_eligible_with_explicit_args(tmp_path: Path):
@@ -266,13 +367,16 @@ def test_confirm_stale_eligible_with_explicit_args(tmp_path: Path):
         minutes=8.0,
         events_dir=events_dir,
         claim_list=claims,
+        reverify_fn=_noop_reverify,
     )
     assert result.ok
     assert claims[0].statement == "改写后的过期主张"
+    assert result.reverify_triggered is True
     rows = pe.read_events(events_dir=events_dir)
     assert len(rows) == 1
     assert rows[0]["arm"] == "T"
     assert rows[0]["before_text"] == "过期主张"
+    assert rows[0]["reverify"] is True
 
 
 def test_confirm_rejects_fresh_without_writing(tmp_path: Path):
@@ -286,6 +390,7 @@ def test_confirm_rejects_fresh_without_writing(tmp_path: Path):
         t1_ids=[ARCHIVED_EID],
         minutes=1.0,
         events_dir=events_dir,
+        reverify_fn=_noop_reverify,
     )
     assert not result.ok
     assert result.error_code == PATCH_INELIGIBLE
