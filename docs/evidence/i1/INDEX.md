@@ -1,6 +1,7 @@
-# I1 失败复盘短索引（#185 + #187）
+# I1 失败复盘短索引（#185 + #187 · #188 Exit）
 
 > **层身份：答辩 / 冒烟**。一眼列出已重标漏拦/误拦样本；不报方差，不作统计升格。
+> **一眼（#188 Exit）**：漏拦/误拦 **5** 条（门槛 ≥3）；`runnable=true` **1** 条（`i1-s005`，门槛 ≥1）。
 > 账本：`docs/evidence/i1/events.jsonl` · API：`src/freshlatch/i1_events.py`
 > 作废假绿（`docs/evidence/w4/false-green-control.md` 2026-09-21 格子）**不得**当有效对照读数；`i1-s001` 仅借该页作 `replay_trace_only` 挂标锚。
 
