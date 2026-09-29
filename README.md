@@ -32,6 +32,8 @@ One-line boundary: **sell voiding and gaps — not faster summaries, not auto de
 
 **V1.5 = Evidence-bound 表单补丁**（ADR-0029 · 冒烟）。对「需补丁」主张：正文替换 + 必填已入库 T1 + 人确认才应用 + 强制单条再验；独立 `propose_patch` / `confirm_patch`（**不**扩 HumanLatch）。**薄对话本期 Out**（不实装、不 stub；对话不改正式裁决）。发前 UX **无** C|T 开关。硬 Exit 见 `docs/evidence/v15/ACCEPTANCE.md`；关门摘要见 `docs/evidence/v15/V15-DoD-CLOSE.md`。档=冒烟；不升格 Hard-Gold。
 
+**I2 = 安全三例**（ADR-0030 · 冒烟 / 面试安全轮）。越权召回 · 间接注入 · 检索投毒各一例可复现（确定性硬门；注入另 1× Lead→Auditor 冒烟）。薄表 `docs/security.md`；硬 Exit `docs/evidence/i2/ACCEPTANCE.md`；关门摘要 `docs/evidence/i2/I2-DoD-CLOSE.md`。**≠ idea #4**。档=冒烟；不是渗透认证，不报安全通过率/方差，不升格 Hard-Gold。
+
 ---
 
 ## What you get
@@ -97,6 +99,7 @@ Honest snapshot of this public repo:
 | **Synthetic** | Demo and eval materials are labeled synthetic — not real client dockets |
 | **Not claimed** | Live SaaS, paying customers, "W12 passed," or closed Phase-1 measurement — do not cite this repo that way |
 | **V1.5 (smoke)** | Evidence-bound form patch seam is in-repo（propose/confirm + reverify + export）. See `docs/evidence/v15/`. **薄对话** remains Out. Not Hard-Gold. |
+| **I2 (smoke)** | Security demos in-repo：ACL tenant filter · injection fail-closed · poison metadata drop. See `docs/evidence/i2/` + `docs/security.md`. ≠ #4. Not penetration cert / Hard-Gold. |
 | **Known gaps** | Retrieval is still BM25-first (production default `bm25`). Some modules (e.g. memory hygiene) exist in code but are not all on the default main path. A whitelist thin URL (`www.mckinsey.com`) exists for the T1 ingest demo; open-ended live web and an open crawler are still not built. Thin dialogue / chat-as-verdict is deliberately not shipped in V1.5. |
 
 For engineering acceptance boundaries, read `docs/evidence/` and root `CONTEXT.md`. This README is not a certification.

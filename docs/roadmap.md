@@ -14,15 +14,15 @@
 **代理:** 仓库变更按 L0/L1/L2（Ronin 可代 L1；**人终收类如历史 #166 不代批/代关**）；超时或证据不足 fail-closed。
 
 ```
-DONE: Phase A · Phase I0 · Phase V1（冒烟 + 本地 ACCEPTANCE）· Phase I1（冒烟 corpus）· Phase V1.5（冒烟 Evidence-bound）· ① bare-pytest 卫生
+DONE: Phase A · Phase I0 · Phase V1（冒烟 + 本地 ACCEPTANCE）· Phase I1（冒烟 corpus）· Phase V1.5（冒烟 Evidence-bound）· Phase I2（冒烟安全三例）· ① bare-pytest 卫生
 NOW → NEXT:
-  Phase I2 → Phase B′ (on-demand) → Phase V2
+  Phase B′ (on-demand) → Phase V2
 BACKLOG: Hard-Gold ticket | Policy-as-code (#8) | Studio (frozen)
 ```
 
 **默认阶段序（钉死）：** `V1 → I1 → V1.5`。  
 **唯一例外：** 自用痛点明确是「改稿再验」时，允许 V1 后先开 V1.5；**冲 mid 仍以 I1 为准**，不得用 V1.5 替代 I1。  
-**本期：** V1.5 Exit **已齐**；**I2 grill+to-spec+tickets+enrich DONE**（[#213](https://github.com/luxingjiang1993/FreshLatch/issues/213) · #214–#219）；下一跳 **before-implement / implement**（Frontier #214/#215/#216）。
+**本期：** V1.5 Exit **已齐**；**I2 Exit 已齐（冒烟级）**（[#213](https://github.com/luxingjiang1993/FreshLatch/issues/213) · #214–#219；证据 `docs/evidence/i2/ACCEPTANCE.md` · 关门 `docs/evidence/i2/I2-DoD-CLOSE.md`）；下一跳 **B′（按需）/ V2**。
 
 ---
 
@@ -144,7 +144,7 @@ BACKLOG: Hard-Gold ticket | Policy-as-code (#8) | Studio (frozen)
 |--|--|
 | **In** | **三例**：① 合成 `tenant_id` 越权召回失败测例（真 `retrieve` 硬过滤）；② 污染 T1 间接注入 + 规则闸 fail-closed；③ 显式 `poison`/`untrusted` 高分块不得进可引用集；`docs/security.md` 薄表（每威胁一行）；`docs/evidence/i2/ACCEPTANCE.md`；确定性 pytest 硬门 + 注入场景 **1×** Lead+Critic+LLM 冒烟（显式 decoding） |
 | **Out** | 安全平台；多攻击面大而全；完整 RBAC/租户管理面；无标签投毒启发式作硬门；三威胁全绑 LLM 判生死；**用 #4 对抗出版人替代本阶段**；UI 硬门 |
-| **Exit** | 上述 **三例** demo 可复现（口头不算）；证据 `docs/evidence/i2/ACCEPTANCE.md` + `docs/security.md`。文首冒烟声明；**不**报安全通过率/方差。非渗透认证。 |
+| **Exit** | **已齐（冒烟级，2026-09-29）**：三例 demo 可复现；证据 `docs/evidence/i2/ACCEPTANCE.md` + `docs/security.md`；关门摘要 `docs/evidence/i2/I2-DoD-CLOSE.md`。文首冒烟声明；**不**报安全通过率/方差。非渗透认证。#4 可选≠Exit。 |
 
 **I2 ≠ #4：** Idea **#4**（过期伪装 / 出版对抗）可同波交 **1** 条可选样例（ACCEPTANCE 分节）；**不计入 I2 Exit**，二者互不替代。
 
@@ -296,7 +296,7 @@ Findings ≈ 顶会正规次主赛道；Industry ≈ 同会落地轨；对 mid �
 | **V1** | 发前闭环（单垂直） | **DONE**（冒烟；`docs/evidence/v1/ACCEPTANCE.md`） |
 | **I1** | 失败证据 | **DONE**（冒烟；`docs/evidence/i1/ACCEPTANCE.md`） |
 | **V1.5** | Evidence-bound 补丁（表单） | **DONE**（冒烟；`docs/evidence/v15/ACCEPTANCE.md` · `V15-DoD-CLOSE.md`） |
-| **I2** | 安全三例（ACL·注入·投毒） | 三例可复现 + security.md（≠ #4；ADR-0030） |
+| **I2** | 安全三例（ACL·注入·投毒） | **DONE**（冒烟；`docs/evidence/i2/ACCEPTANCE.md` · `I2-DoD-CLOSE.md`；≠ #4；ADR-0030） |
 | **B′** | 修真痛点 | 触发条件消失 |
 | **V2** | 嵌入+台账 | 钩子进工作流 |
 | **Backlog** | 金标 / #8 / Studio | 另票或冻结 |
@@ -305,7 +305,7 @@ Findings ≈ 顶会正规次主赛道；Industry ≈ 同会落地轨；对 mid �
 
 ## 一句话
 
-**I0 钉数字 → V1 发前闭环 → ① bare-pytest 卫生（DONE）→ 本地 V1 ACCEPTANCE → I1 失败样本（DONE）→ V1.5 Evidence-bound 补丁（DONE · 冒烟）→ I2 安全三例（grill+to-spec DONE · [#213](https://github.com/luxingjiang1993/FreshLatch/issues/213)）→ B′/V2 按需；#8 薄挂且不早于 V1；#4 只做可选 demo；Studio 冻死；难金标另票；论文挂同一条发前闭环。**
+**I0 钉数字 → V1 发前闭环 → ① bare-pytest 卫生（DONE）→ 本地 V1 ACCEPTANCE → I1 失败样本（DONE）→ V1.5 Evidence-bound 补丁（DONE · 冒烟）→ I2 安全三例（DONE · 冒烟 · [#213](https://github.com/luxingjiang1993/FreshLatch/issues/213)）→ B′/V2 按需；#8 薄挂且不早于 V1；#4 只做可选 demo；Studio 冻死；难金标另票；论文挂同一条发前闭环。**
 
 ---
 
@@ -337,3 +337,5 @@ Findings ≈ 顶会正规次主赛道；Industry ≈ 同会落地轨；对 mid �
 | 2026-09-29 | **I2 to-tickets**：#214–#219 `ready-for-agent`；清单 `.scratch/i2-tickets/INDEX.md`；Frontier #214/#215/#216 |
 | 2026-09-29 | **I2 enrich-tickets**：#214–#219 Agent Guards 齐（Paths/Provenance pass）；Frontier 同上 |
 | 2026-09-29 | **I2 云端派工**：`docs/agents/phase-i2-cloud-dispatch.md` + `phase-i2-cloud-prompts.md`；人审全权 **Ronin**；启动闸=`GROK-PROXY-APPROVED I2-DISPATCH` @ #213 |
+| 2026-09-29 | **I2 实现波 #214–#218**：ACL+poison · 注入 Gate · security.md · 注入 1× e2e+ACCEPTANCE；PR #220/#221/#223/#224 合 main；Ronin 代批齐关（#216 可选） |
+| 2026-09-29 | **I2 DoD close（#219）**：冒烟级关门摘要见 `docs/evidence/i2/I2-DoD-CLOSE.md`；硬 Exit 引用 ACCEPTANCE+security.md；Out 未偷渡；不升格渗透认证/Hard-Gold |
