@@ -116,16 +116,18 @@ BACKLOG: Hard-Gold ticket | Policy-as-code (#8) | Studio (frozen)
 ## Phase V1.5 — Evidence-bound / attested patches · **CUSTOMER WEDGE**
 
 **Goal:** 改稿带证据、人确认后应用、可立刻再验。  
-**Track:** V · **Depends on:** V1；**默认在 I1 之后**（例外见文首）  
-**Maps to idea #2（对客主卖点 · 论文主投路线 A）**
+**Track:** V · **Depends on:** V1；**默认在 I1 之后**（例外见文首）· **I1 Exit 已齐**  
+**Maps to idea #2（对客主卖点 · 论文主投路线 A）**  
+**决议:** ADR-0029；评估见 `docs/research/V1.5-Evidence-bound补丁设计评估.md`  
+**共享理解:** 2026-09-29 已确认（表单闭环 / 独立 patch API / 薄对话本期 Out / 冒烟 Exit）
 
 **对外用语：** evidence-bound / attested patch（**少用** proof-carrying，易撞形式化 PCC）。
 
 | | |
 |--|--|
-| **In** | 基于已入库证据的 diff；补丁引用证据；薄对话只解释/触发生成；人确认才应用 |
-| **Out** | 开放问答；对话改正式裁决；编辑器秀 |
-| **Exit** | 「改 → 确认 → 再验」闭环可 demo；证据可导出 |
+| **In** | **表单闭环**：主张正文替换 + 必填 `t1_ids`（⊆ 本 Run 已入库 T1）+ 人确认才应用 + 强制单条再验；复验单/Run 详情增量 UX；`propose_patch`/`confirm_patch`（不扩 HumanLatch）；正式 `patch_events` 含 before/after；导出 JSON+短 MD |
+| **Out** | **薄对话**（本期不实装、不 stub）；开放问答；对话改正式裁决；编辑器秀 / span 级 diff 台；产品路径无证 C；#8 并行；Exit 硬绑「可发」 |
+| **Exit** | 冒烟：硬闸拒无证 + 有证 confirm + 再验触发 + 导出可演示；证据 `docs/evidence/v15/ACCEPTANCE.md`；升「可发」=加分非硬条；**n≥30 不挡** |
 
 **Note:** 不定 mid 生死；冲 mid 仍靠 I0+V1+I1+I2，**不得用本阶段替代 I1**。对客尖刀 + 论文主投实验在本阶段。
 
@@ -291,7 +293,7 @@ Findings ≈ 顶会正规次主赛道；Industry ≈ 同会落地轨；对 mid �
 | **I0** | 数字与表 | **DONE**（`docs/evidence/i0/ACCEPTANCE.md`） |
 | **V1** | 发前闭环（单垂直） | **DONE**（冒烟；`docs/evidence/v1/ACCEPTANCE.md`） |
 | **I1** | 失败证据 | **DONE**（冒烟；`docs/evidence/i1/ACCEPTANCE.md`） |
-| **V1.5** | Evidence-bound 补丁 | 改→确认→再验 |
+| **V1.5** | Evidence-bound 补丁（表单） | 硬闸+confirm+再验+导出（冒烟；ADR-0029） |
 | **I2** | ACL + 注入/投毒 | 两 demo 可复现（≠ #4） |
 | **B′** | 修真痛点 | 触发条件消失 |
 | **V2** | 嵌入+台账 | 钩子进工作流 |
@@ -321,3 +323,4 @@ Findings ≈ 顶会正规次主赛道；Industry ≈ 同会落地轨；对 mid �
 | 2026-09-29 | **① bare-pytest 卫生 DONE**：`pytest.ini` `pythonpath = .` |
 | 2026-09-29 | **本地 V1 ACCEPTANCE**：`docs/evidence/v1/ACCEPTANCE.md`（I1-Q7 硬挡解除条件） |
 | 2026-09-29 | **I1 DONE（冒烟）**：corpus `docs/evidence/i1/`（s001–s005）；`ACCEPTANCE.md`；#184–#188 CLOSED（Ronin 代批）；评估见 `docs/research/I1-失败三分法与HumanLatch语料设计评估.md`；ADR-0028；父规格 #183 收口 |
+| 2026-09-29 | **V1.5 grill DONE**：表单 Evidence-bound；独立 propose/confirm；薄对话 Out；冒烟 Exit 预锁；评估见 `docs/research/V1.5-Evidence-bound补丁设计评估.md`；ADR-0029；[#195](https://github.com/luxingjiang1993/FreshLatch/issues/195) CLOSED；下一跳 to-spec |

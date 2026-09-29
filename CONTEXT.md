@@ -42,8 +42,20 @@ T1 合法入口之增量:白名单域名单条 URL → 抓取 → 落盘 → 再
 _Avoid_: 多源采编、自动盯梢、失败仍半写入库
 
 **patch_events**:
-改稿对照实验与产品审计共用的事件账;V1 起以 JSONL 落 `data/patch_events/`;C vs T 对照只后台/脚本记账,不进正式发前 UX(ADR-0027)。
-_Avoid_: 发前 UI 上的实验臂开关、把未记账称作已开始论文实验
+改稿对照实验与产品审计共用的事件账;V1 起以 JSONL 落 `data/patch_events/`;C vs T 对照只后台/脚本记账,不进正式发前 UX(ADR-0027)。V1.5 正式确认事件须含 `before_text`/`after_text`(ADR-0029);未确认草案不入账。
+_Avoid_: 发前 UI 上的实验臂开关、把未记账称作已开始论文实验、提案即写入正式账本
+
+**Evidence-bound patch（attested patch）**:
+引用 ⊆ 本 Run 已入库 T1 的整条主张正文替换;人确认才应用;确认后强制单条再验。产品路径恒 attested(`arm=T`);对外少用 proof-carrying(ADR-0029)。
+_Avoid_: proof-carrying / PCC(对外主称)、无证自由改稿冒充 attested、首次带证据改稿
+
+**propose_patch / confirm_patch**:
+Verify+ 独立补丁 API:提案暂存与人确认应用。不是 HumanLatch 动词;不扩展 `discard`|`renew`(ADR-0029)。
+_Avoid_: apply_patch 作人闩第三按钮、用 renew 顺带改正文
+
+**Verify+**:
+发前产品形:Gate + T1 入库 + 包结论 + Evidence-bound 补丁(人确认改稿)。薄对话留位未实装;Studio 冻结。形状关系:`Gate ⊂ Verify+ ⊂ Studio`。
+_Avoid_: 把未做薄对话称作 Verify+ 已完备、Studio 已解冻
 
 **must_stale**:
 金标中必须被判定为 stale 的主张,任何 harness 不得对其放行,用于锁住评测可复现性。

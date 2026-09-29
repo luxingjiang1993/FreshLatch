@@ -44,6 +44,7 @@ Related Work 祖先（RARR / PAVE / 事实检查等）可承认；边界话术�
 
 - **V1 已落地（冒烟，2026-09-29）：** 发前闭环主缝在仓（顾问样例包 `v1-mck-soai`、白名单薄 URL、包结论、人审、`patch_events` 起记）。证据见 `docs/evidence/v1/V1-DoD-CLOSE.md`。档=冒烟；生产默认臂仍 `bm25`；本条不是 Hard-Gold，也不是检索臂评测升格。
 - **I1 已落地（冒烟，2026-09-29）：** 失败三分法 + 可复盘误判样本已在仓。短索引 `docs/evidence/i1/INDEX.md` 一眼：漏拦/误拦 ≥3，且 ≥1 条 `runnable=true`（金样 `i1-s005`）。证据见 `docs/evidence/i1/ACCEPTANCE.md`。档=冒烟；不报方差；生产 Gate / disposition / HumanLatch 枚举未扩；本条不是 Hard-Gold。
+- **V1.5 决议已钉（2026-09-29，未宣称产品 Exit）：** 表单 Evidence-bound；独立 `propose_patch`/`confirm_patch`；薄对话本期 Out。评估见 `docs/research/V1.5-Evidence-bound补丁设计评估.md`；ADR-0029。实装与 `docs/evidence/v15/ACCEPTANCE.md` 仍待 to-spec/implement。
 
 整协议口径（已入库 T1 才能裁定；`web→落盘→再验`；补丁 ⊆ T1；人确认；对话不改正式裁决）以 roadmap「贡献口径」为准，**随阶段追加进本文件**，不在 v0 写成已交付。
 
