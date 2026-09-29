@@ -14,15 +14,15 @@
 **代理:** 仓库变更按 L0/L1/L2（Ronin 可代 L1；**人终收类如历史 #166 不代批/代关**）；超时或证据不足 fail-closed。
 
 ```
-DONE: Phase A · Phase I0 · Phase V1
+DONE: Phase A · Phase I0 · Phase V1（冒烟 + 本地 ACCEPTANCE）· Phase I1（冒烟 corpus）· ① bare-pytest 卫生
 NOW → NEXT:
-  Phase I1 → Phase V1.5 → Phase I2
-  → Phase B′ (on-demand) → Phase V2
+  Phase V1.5 → Phase I2 → Phase B′ (on-demand) → Phase V2
 BACKLOG: Hard-Gold ticket | Policy-as-code (#8) | Studio (frozen)
 ```
 
 **默认阶段序（钉死）：** `V1 → I1 → V1.5`。  
-**唯一例外：** 自用痛点明确是「改稿再验」时，允许 V1 后先开 V1.5；**冲 mid 仍以 I1 为准**，不得用 V1.5 替代 I1。
+**唯一例外：** 自用痛点明确是「改稿再验」时，允许 V1 后先开 V1.5；**冲 mid 仍以 I1 为准**，不得用 V1.5 替代 I1。  
+**本期：** I1 Exit **已齐**（`docs/evidence/i1/ACCEPTANCE.md`）；下一主烤 **V1.5**。
 
 ---
 
@@ -60,11 +60,28 @@ BACKLOG: Hard-Gold ticket | Policy-as-code (#8) | Studio (frozen)
 
 ---
 
-## Phase V1 — Pre-publish loop · **DONE**
+## 本期优先 ① — bare-pytest path 卫生 · **DONE（2026-09-29）**
+
+**Goal:** 裸 `pytest` 与 `python -m pytest` 对 `tests/` collection 行为一致。  
+**Track:** 工程卫生 · **已关**
+
+| | |
+|--|--|
+| **In** | 根治 `from tests.unit.test_meta_gate import …` 在裸 `pytest.exe` 下失败 |
+| **Out** | 改产品 Gate/检索默认臂 |
+| **Exit** | **已齐**：清空 `PYTHONPATH` 后裸 `pytest tests/` collection **0 errors**；点名两 c9 文件裸跑与 `python -m pytest` 均绿 |
+
+**实装:** 仓库根 `pytest.ini` → `pythonpath = .`。权威命令仍可用 `python -m pytest`。
+
+---
+
+## Phase V1 — Pre-publish loop · **DONE（冒烟）· 本地 ACCEPTANCE 见 evidence/v1**
 
 **Goal:** 一条可演示的发前路径：入库 → Gate → 包结论 → 人审 → 两屏。  
 **Track:** V · **Depends on:** I0 DONE  
-**决议:** ADR-0027；评估见 `docs/research/V1-发前闭环垂直与包结论设计评估.md`
+**决议:** ADR-0027；评估见 `docs/research/V1-发前闭环垂直与包结论设计评估.md`  
+**共享理解:** 2026-09-29 再确认成立（垂直/两屏/包结论/薄 URL/patch_events/不做薄对话）  
+**本地 Exit 证明:** `docs/evidence/v1/ACCEPTANCE.md`（I1-Q7/ADR-0028；关门摘要另见 `V1-DoD-CLOSE.md`）
 
 | | |
 |--|--|
@@ -81,16 +98,18 @@ BACKLOG: Hard-Gold ticket | Policy-as-code (#8) | Studio (frozen)
 
 ---
 
-## Phase I1 — Failure taxonomy + HumanLatch corpus · **MID UNLOCK**
+## Phase I1 — Failure taxonomy + HumanLatch corpus · **DONE（冒烟）**
 
 **Goal:** 把「能跑」变成「能答辩错在哪层」。  
-**Track:** I · **Depends on:** V1 · **默认在 V1.5 之前**
+**Track:** I · **Depends on:** **本地 V1 Exit**（`docs/evidence/v1/ACCEPTANCE.md` **已齐 · 2026-09-29**）· **默认在 V1.5 之前**  
+**决议:** ADR-0028；评估见 `docs/research/I1-失败三分法与HumanLatch语料设计评估.md`  
+**本地 Exit 证明:** `docs/evidence/i1/ACCEPTANCE.md`（短索引 + `events.jsonl`；Ronin 代批 #188）
 
 | | |
 |--|--|
-| **In** | 失败三分法接门禁（找不到/找错/没用上）；≥3 条漏拦/误拦复盘 |
-| **Out** | 新功能大项；编造无复盘样本 |
-| **Exit** | 指着样本讲清闸错层级 + ≥1 可复跑 case |
+| **In** | 失败三分法（全链三桶）挂 **eval/轨迹标签**；≥3 漏拦/误拦复盘（重标 + ≥1 可复跑）；`docs/evidence/i1/` 页 + `events.jsonl` |
+| **Out** | 新功能大项；编造无复盘样本；**改生产** Gate/disposition/HumanLatch 枚举；把三分法写成生产 status |
+| **Exit** | **已齐（冒烟级，2026-09-29）**：短索引漏/误 ≥3 且 `runnable=true` ≥1（`i1-s005`）；证据 `docs/evidence/i1/ACCEPTANCE.md`。子票 #184–#188 CLOSED；父规格 #183 收口。非 Hard-Gold；生产枚举未扩。 |
 
 ---
 
@@ -268,9 +287,10 @@ Findings ≈ 顶会正规次主赛道；Industry ≈ 同会落地轨；对 mid �
 
 | Phase | You are building | Done when |
 |-------|------------------|-----------|
+| **① 卫生** | bare-pytest path | **DONE**（`pytest.ini` `pythonpath = .`） |
 | **I0** | 数字与表 | **DONE**（`docs/evidence/i0/ACCEPTANCE.md`） |
-| **V1** | 发前闭环（单垂直） | **DONE**（冒烟；`docs/evidence/v1/V1-DoD-CLOSE.md`） |
-| **I1** | 失败证据 | 样本讲清分层 |
+| **V1** | 发前闭环（单垂直） | **DONE**（冒烟；`docs/evidence/v1/ACCEPTANCE.md`） |
+| **I1** | 失败证据 | **DONE**（冒烟；`docs/evidence/i1/ACCEPTANCE.md`） |
 | **V1.5** | Evidence-bound 补丁 | 改→确认→再验 |
 | **I2** | ACL + 注入/投毒 | 两 demo 可复现（≠ #4） |
 | **B′** | 修真痛点 | 触发条件消失 |
@@ -281,7 +301,7 @@ Findings ≈ 顶会正规次主赛道；Industry ≈ 同会落地轨；对 mid �
 
 ## 一句话
 
-**I0 钉数字 → V1 单垂直发前闭环 → I1 失败样本 → V1.5 Evidence-bound 补丁（对客/主投尖刀）→ I2 安全两例 → B′/V2 按需；#8 薄挂且不早于 V1；#4 只做可选 demo；Studio 冻死；难金标另票；论文挂同一条发前闭环。**
+**I0 钉数字 → V1 发前闭环 → ① bare-pytest 卫生（DONE）→ 本地 V1 ACCEPTANCE → I1 失败样本（DONE）→ V1.5 Evidence-bound 补丁 → I2 安全两例 → B′/V2 按需；#8 薄挂且不早于 V1；#4 只做可选 demo；Studio 冻死；难金标另票；论文挂同一条发前闭环。**
 
 ---
 
@@ -297,3 +317,7 @@ Findings ≈ 顶会正规次主赛道；Industry ≈ 同会落地轨；对 mid �
 | 2026-09-29 | **V1 grill DONE**：顾问报告+McK SoAI；包结论新层；薄 URL=`www.mckinsey.com`；评估见 `docs/research/V1-发前闭环垂直与包结论设计评估.md`；ADR-0027；下一跳 to-spec |
 | 2026-09-29 | **V1 to-spec**：`docs/spec/11-PhaseV1-PrePublish.md`；GitHub [#168](https://github.com/luxingjiang1993/FreshLatch/issues/168) `ready-for-agent` |
 | 2026-09-29 | **V1 DoD close（#175）**：五项 DoD 勾选；冒烟级关门摘要见 `docs/evidence/v1/V1-DoD-CLOSE.md`。不升格检索臂、不宣称 Hard-Gold。人终收 issue 未在本行代关。 |
+| 2026-09-29 | **本期序 / I1 grill**：① bare-pytest 卫生；主烤 I1；ADR-0028；评估见 `docs/research/I1-失败三分法与HumanLatch语料设计评估.md` |
+| 2026-09-29 | **① bare-pytest 卫生 DONE**：`pytest.ini` `pythonpath = .` |
+| 2026-09-29 | **本地 V1 ACCEPTANCE**：`docs/evidence/v1/ACCEPTANCE.md`（I1-Q7 硬挡解除条件） |
+| 2026-09-29 | **I1 DONE（冒烟）**：corpus `docs/evidence/i1/`（s001–s005）；`ACCEPTANCE.md`；#184–#188 CLOSED（Ronin 代批）；评估见 `docs/research/I1-失败三分法与HumanLatch语料设计评估.md`；ADR-0028；父规格 #183 收口 |

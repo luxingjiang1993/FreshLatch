@@ -179,6 +179,10 @@ _Avoid_: 过时词匹配、记忆准确率
 与主张金标 `eval run --gold` **分轨**:入口为 `python -m freshlatch.eval retrieve`,产物在 `reports/retrieve-*.md`。I0 引用该轨数字时须遵守冒烟层预登记与 reports 为真相源(ADR-0026;`docs/accounting-card.md` / `docs/eval-retrieve.md`)。通过线与增益门正文在规格/评估文档,不在此扩写。
 _Avoid_: 把 retrieve 冒烟表与主张金标混报、把冒烟写成统计证明
 
+**I1 失败复盘（评测标签）**:
+答辩/冒烟用语,不是生产 Gate 或 disposition 枚举。桶名(找不到/找错/没用上)与漏拦/误拦的操作定义、corpus 路径见 ADR-0028 与 `docs/research/I1-失败三分法与HumanLatch语料设计评估.md`;语料落 `docs/evidence/i1/`。
+_Avoid_: 把三分法写成生产 status、无轨迹编造样本、远程 V1 关单冒充本地 Exit 后宣称 I1 完成
+
 **假绿对照 (False-Green Control)**:
 无工具基线:同模型不带工具只读 T0 摘要,应把已死主张判「成立」(假绿)。本产品必须红,对照成立才说明复验真在起作用。
 

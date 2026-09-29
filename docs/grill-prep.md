@@ -202,8 +202,55 @@ BOI / GenAI 暂行办法 / 个保审计办法 — 见会话记录；适合 `regu
 **已落盘（V1 决议）:**  
 `docs/adr/0027-v1-顾问报告垂直包结论与薄URL.md` · `docs/research/V1-发前闭环垂直与包结论设计评估.md` · CONTEXT 词条
 
-**下一跳:** `/to-tickets`（基于 [#168](https://github.com/luxingjiang1993/FreshLatch/issues/168) / `docs/spec/11-PhaseV1-PrePublish.md`）→ enrich → before-implement → implement。  
-**主缝：** 发前 Run 边界（**已确认 2026-09-29**）。
+**共享理解再确认（2026-09-29）：** V1 决议枝全部仍成立。  
+**纠偏（2026-09-29）：** 本期主烤 **Phase I1**（已 grill DONE · corpus/Exit 已齐）。  
+**下一跳:** Phase V1.5（Evidence-bound）；I1 证据见 `docs/evidence/i1/ACCEPTANCE.md`。  
+**主缝（I1）：** 失败三分法 ↔ 闸层 ↔ 可复盘样本（ADR-0028）。
+
+---
+
+## 2e. I1 grill · Round 1–2 已钉（2026-09-29）
+
+### Round 1（混选）
+
+| # | 拍板 |
+|---|------|
+| **I1-Q1** | **(c)**：本地 **V1 Exit 证明齐** 才碰 I1 实现/落样本/宣称 Exit；grill 与决议文档可先完成 |
+| **I1-Q2** | **(b) 全链视角**：找不到 / 找错 / 没用上 = retrieve · Lead/Critic 用证 · Gate/人审收口 三桶 |
+| **I1-Q3** | **(b)**：eval/轨迹挂标签；**生产** Gate / disposition / HumanLatch 动词 **不改枚举** |
+| **I1-Q4** | **(c)**：重标 W4/假绿+轨迹 ≥3；V1 顾问垂直/McK **≥1** 可复跑金样 |
+| **I1-Q5** | **(a)+(b)**：`docs/evidence/i1/` 每条一页 **且** JSONL + 短索引 md |
+| **I1-Q6** | **(a)**：①卫生先关；grill 可并行；写码/落样本挡卫生 Exit 后，且仍受 Q1 约束 |
+
+### Round 2（全认推荐 · 2026-09-29）
+
+| # | 拍板 |
+|---|------|
+| **I1-Q7** | **(c)**：另写 `docs/evidence/v1/ACCEPTANCE.md`（对照 I0）；含 disposition 映射抽检、patch_events 一行、默认臂仍 bm25、人审走通；远程 CLOSED ≠ 自动 Exit |
+| **I1-Q8** | **(a)** 采纳默认层映射表（找不到→retrieve/T1；找错→错段或点错证；没用上→Gate/HumanLatch 未收口） |
+| **I1-Q9** | **(c)**：漏拦/误拦按金标或人终审定义；**每条必须**同时打三分法一桶（复盘主键 = 漏\|误 × 桶） |
+| **I1-Q10** | **(a)**：JSONL 最少字段见下；路径 **`docs/evidence/i1/events.jsonl`** |
+| **I1-Q11** | **(c)**：优先可复跑命令+显式 decoding；无 Key 可 `runnable=replay_trace_only`，**不得**作唯一 Exit 金样 |
+| **I1-Q12** | **(a)**：开短 ADR；评估文档四件套；见下方 Anthropic 修正 |
+
+**JSONL 最少字段：**  
+`sample_id, claim_id, gold_or_human, machine_status, package_disp?, fail_bucket, err_kind, layer, trajectory_ptr, evidence_md, runnable, ts, actor`
+
+**本期序（叠约束）：** ① bare-pytest 卫生 **DONE** → 本地 V1 Exit（`docs/evidence/v1/ACCEPTANCE.md`）**DONE** → I1 to-spec / 落 corpus / implement **DONE**（`docs/evidence/i1/ACCEPTANCE.md`；#183 CLOSED）。
+
+**Anthropic 清单修正（合入拍板）：**
+1. I1 corpus / 三分法标签 = **答辩·冒烟层**，文首声明；不报统计显著/方差。  
+2. 可复跑金样须显式记录模型/temperature/seed/日期；托管漂移写入 ACCEPTANCE。  
+3. **词表：** `找不到/找错/没用上` 与 `漏拦/误拦` 为 **评测/答辩标签**，生产判不出 → **不进 CONTEXT 产品词表正文**；CONTEXT 仅留「I1 失败复盘（评测标签）」指针 + corpus 路径；细则进 ADR/评估。  
+4. Exit 判据本轮预锁（HARKing 禁事后改桶定义凑样本）。
+
+**Frontier：** 已空。  
+**共享理解:** 已确认（2026-09-29）。  
+
+**已落盘:**  
+`docs/research/I1-失败三分法与HumanLatch语料设计评估.md` · `docs/adr/0028-i1-失败三分法评测标签与语料.md` · CONTEXT 评测区指针  
+
+**下一跳:** Phase V1.5（I1 Exit 已齐：`docs/evidence/i1/ACCEPTANCE.md`；父规格 #183 CLOSED）。
 
 ---
 
@@ -237,20 +284,21 @@ BOI / GenAI 暂行办法 / 个保审计办法 — 见会话记录；适合 `regu
 `docs/accounting-card.md` · `docs/eval-retrieve.md` · `docs/contribution-boundary.md` · `docs/adr/0026-i0-冒烟层与reports为数字真相源.md` · `docs/research/I0-冒烟层与数字真相源设计评估.md` · `docs/evidence/i0/ACCEPTANCE.md`  
 
 **I0 Exit:** **DONE**（2026-09-29；证据见 ACCEPTANCE）。  
-**V1 Round 1–2:** 已钉（见 §2d）。**共享理解已确认**；ADR-0027 / 评估 / CONTEXT 已落。下一跳 **to-spec**。
+**V1 Round 1–2:** 已钉（见 §2d）。**共享理解已确认（含 2026-09-29 再确认）**；ADR-0027 / 评估 / CONTEXT 已落。规格/#168 已走过；远程 #169–#175 CLOSED。  
+**本期序（纠偏）：** ① bare-pytest 卫生先关 → ② **I1 grill**（§2e）→ to-spec → implement。
 ---
 
-## 3. 后续轮（依赖 §2 部分答案）
+## 3. 后续轮（依赖 §2 / §2e 部分答案）
 
 | 题 | 依赖 | 内容 |
 |----|------|------|
-| **V1-R2 Q7** | Q5 | 论文 C vs T 是否进 UX |
-| **V1-R2 映射边界** | Q3 | 「全 fresh 无人审」等边界；ADR 映射表 |
-| **V1-R2 URL 失败态** | Q4 | 超时/非白名单/非 HTML/空正文 |
-| **V1-R2 薄对话** | Q2 | 允许意图；禁改裁决点（原 Q8） |
-| **V1-R2 ADR** | Q1/Q3/Q4 | 是否开垂直+disposition+薄 URL ADR |
+| **V1-R2 Q7** | Q5 | ~~论文 C vs T 是否进 UX~~ **已钉** |
+| **V1-R2 映射边界** | Q3 | ~~「全 fresh 无人审」等边界~~ **已钉** |
 | Q9 Evidence-bound 补丁 UX | Q5, Q3 | **V1.5**；本轮可跳过或只留位 |
-| Q10 I1 样本来源 | Q1 | I1 轮再开 |
+| **I1-R2** 三分法 ↔ 层映射表 | I1-Q2/Q3 | 找不到/找错/没用上 × retrieve/Lead/Critic/Gate/HumanLatch |
+| **I1-R2** 漏拦 vs 误拦操作定义 | I1-Q2/Q4 | 与假绿对照 / must_* 金标如何对齐 |
+| **I1-R2** Exit 闭卷口述稿 | I1-Q4/Q5 | 指着哪 3 条讲清层级 |
+| **I1-R2** 是否开 ADR | I1-Q2/Q3 | 三分法进词表 vs 仅评估文档 |
 | Q11–Q13 | 更后 | 见原表 |
 
 ### I0 Round 2（依赖 §2b；见本会话）
@@ -262,7 +310,7 @@ BOI / GenAI 暂行办法 / 个保审计办法 — 见会话记录；适合 `regu
 | I0-Q11 | I0-Q6 | 贡献边界禁用话术表 |
 | I0-Q12 | I0-Q2/Q8 | Exit 闭卷探针 +「改假设重算」演示定义 |
 | I0-Q13 | I0-Q3 | Hard-Gold 指针形态 |
-| I0-Q14 | I0-Q1/Q8 | 是否另开 ADR |
+| I0-Q14 | I0-Q1/I0-Q8 | 是否另开 ADR |
 
 ---
 
@@ -276,7 +324,8 @@ BOI / GenAI 暂行办法 / 个保审计办法 — 见会话记录；适合 `regu
 | **Studio** | 多工作站外壳；冻结；须穿同一 Gate |
 | **disposition（包结论）** | 可发 / 需补丁 / 勿发（聚合层） |
 | **retrieval arm** | BM25 / dense / hybrid / rerank；生产默认 BM25 |
-| **HumanLatch** | 人审状态机与误判样本驱动说明 |
+| **HumanLatch** | 人审状态机与误判样本驱动说明（I1 将钉 corpus 形态） |
+| **失败三分法 / 漏拦·误拦** | **评测·答辩标签**（非生产 Gate 枚举）；定义与映射见 I1 ADR/评估；corpus 在 `docs/evidence/i1/` |
 | **Evidence-bound patch** | 引用 ⊆ 已入库 T1 的改稿；人确认；强制再验（对外少用 proof-carrying） |
 | **patch_events** | 改稿对照实验与产品审计共用事件账 |
 | **Hard-Gold** | 另票；过增益门才讨论改生产默认臂 |
@@ -295,6 +344,7 @@ BOI / GenAI 暂行办法 / 个保审计办法 — 见会话记录；适合 `regu
 |------|------|------|
 | Grill 未确认共享理解 | 读仓、列疑问、起草 ADR/glossary、**I0 文档** | 宣称 V1 Done；改生产默认臂 |
 | §2 Q1–Q5 已钉 | 搭 V1 骨架、schema、映射 ADR | 多垂直；对话改裁决 |
+| **本期①卫生未 Exit** | 只修 pytest path / 导入 / `pythonpath` | 开写 #169+ 产品票 |
 | V1 Exit | 演示发前路径；开始稳定记 `patch_events` | 难金标改默认；Studio |
 | I1 Exit 前 | — | 用 V1.5/论文叙事替代 mid 铁证 |
 
@@ -310,3 +360,9 @@ BOI / GenAI 暂行办法 / 个保审计办法 — 见会话记录；适合 `regu
 | 2026-09-29 | 共享理解确认；I0 三件套+ADR-0026+评估文档落盘；CONTEXT 增 retrieve 子系统评测词条 |
 | 2026-09-29 | V1 grill Round 1–2 认推荐：顾问报告+McK SoAI；两屏增量；包结论新层；c′=`www.mckinsey.com`；patch_events JSONL；Q7/Q15–Q18 已钉；待共享理解后 ADR-0027 |
 | 2026-09-29 | V1 共享理解确认；ADR-0027+评估+CONTEXT 落盘；下一跳 to-spec |
+| 2026-09-29 | V1 共享理解再确认；本期序曾钉 ①卫生→V1 implement |
+| 2026-09-29 | **纠偏**：本期主烤 **I1**；§2e Round 1 Frontier；卫生仍①；V1 远程 CLOSED / 本地 DoD 待勾 |
+| 2026-09-29 | I1 Round 1 混选钉入 §2e；Round 2 待答 |
+| 2026-09-29 | I1 Round 2 全认；frontier 空；Anthropic 修正：三分法不进产品词表正文；待共享理解确认后四件套 |
+| 2026-09-29 | I1 共享理解确认；评估+ADR-0028+CONTEXT 指针落盘；下一跳 ①卫生 + V1 ACCEPTANCE → to-spec |
+| 2026-09-29 | **I1 DONE**：corpus/Exit 齐；四件套入库；#183 CLOSED；下一跳 V1.5 |
