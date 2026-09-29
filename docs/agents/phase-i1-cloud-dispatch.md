@@ -81,7 +81,7 @@ Ronin 任务书：用户 Agent Store `ronin-phase-i1-proxy-brief.md`；父票 #1
       └─► #187 ─┘
 ```
 
-当前可派：**#184**（唯一前沿）。
+当前可派：**#184 CLOSED 后** → **#185 ∥ #186 ∥ #187**（提示词全文见 `docs/agents/phase-i1-cloud-prompts.md`）；三票均 `GROK-PROXY-APPROVED` 并 CLOSED 后 → **#188**。
 
 ---
 
