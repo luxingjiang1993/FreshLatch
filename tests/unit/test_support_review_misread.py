@@ -109,3 +109,65 @@ def test_doctrine_fragments_support_review_not_disproof():
         assert "支撑" in text or "不是推翻" in text
     assert "reverify_claim" in skill and "fresh" in skill
     assert SUPPORT_REVIEW_MISREAD_MESSAGE  # 锁档消息非空
+
+
+# -- #245 本跑 c5 实录 reason(trajectory run-20261001-010246;仅原文)-------------
+
+C5_STATEMENT = "我方单会话服务成本仍低于竞品"
+
+C5_RECORDED_COUNTERFACTUAL_REASON = (
+    "T1 原文明确指出，若竞品进一步降价至 49 美元档，我方成本优势将收窄至约 20%，需重新评估。"
+    "这表明在当前竞品报价下，我方单会话服务成本已不再显著低于竞品，且存在被追平甚至反超的风险，"
+    "因此主张『仍低于』的结论不成立。"
+)
+
+# 最小合成形:情景标记 + 结论不成立(不依赖整段长 reason)
+C5_MIN_COUNTERFACTUAL_REASON = (
+    "若竞品进一步降价至 49 美元档需重新评估，因此主张仍低于的结论不成立"
+)
+
+
+@pytest.mark.parametrize(
+    "reason",
+    [C5_RECORDED_COUNTERFACTUAL_REASON, C5_MIN_COUNTERFACTUAL_REASON],
+)
+def test_c5_counterfactual_shapes_blocked(reason):
+    """#245:反事实/敏感性升格为现时推翻 ⇒ 须打回。"""
+    assert is_support_review_misread_as_disproof(reason)
+
+
+C6_COST_AS_WINDOW_REASON = (
+    "T1 原文明确指出，SeaDesk 7 月新报价为标准版 79 美元/月/店，据此折算其单会话成本约 "
+    "0.019 美元，而我方成本为 0.009 美元，仍约为竞品的 47%，说明我方成本优势依然存在。"
+    "因此，SeaDesk 收缩免费版、聚焦付费商户并未改变我方在成本结构上的相对优势，无法支持"
+    "『市场窗口打开』这一主张。该反证直接攻击主张的核心前提——即『竞品收缩免费版意味着"
+    "市场窗口打开』，而 T1 原文已通过成本结构对比表明，即使在收缩免费版后，竞品仍不具备"
+    "成本劣势，故市场窗口未因该动作而打开。"
+)
+
+
+def test_c6_cost_as_window_shape_blocked():
+    """#245:成本对比当市场窗口反证(活模逃逸形) ⇒ 须打回。"""
+    assert is_support_review_misread_as_disproof(C6_COST_AS_WINDOW_REASON)
+
+
+def test_present_tense_price_drop_still_passes():
+    """#245 预登记:现时『已降价至』无敏感性情景标记 ⇒ 合法 stale 放行(c7 形)。"""
+    assert not is_support_review_misread_as_disproof(C7_LEGIT)
+
+
+def test_doctrine_fragments_counterfactual_not_present_overturn():
+    """#245 教义主缝:reverify/rubric/persona 明示敏感性/反事实 ≠ 现时推翻。"""
+    from freshlatch.roles.critic import CRITIC_PERSONA
+    from freshlatch.roles.lead import LEAD_PERSONA
+
+    root = Path(__file__).resolve().parent.parent.parent
+    skill = (root / "skills/reverify/SKILL.md").read_text(encoding="utf-8")
+    rubric = (root / "skills/freshness_audit/references/verdict-rubric.md").read_text(
+        encoding="utf-8"
+    )
+    devil = (root / "skills/devil_advocate/SKILL.md").read_text(encoding="utf-8")
+    needle = "需重新评估"
+    for text in (skill, rubric, LEAD_PERSONA, CRITIC_PERSONA, devil):
+        assert needle in text or "反事实" in text or "敏感性" in text
+        assert "现时" in text or "不是推翻" in text or "不得 mark_stale" in text

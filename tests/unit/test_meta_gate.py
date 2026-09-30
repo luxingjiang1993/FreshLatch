@@ -84,9 +84,65 @@ def test_all_meta_marker_variants_recognized():
         "央行报告待发布,无法确认原口径,主张不再成立",
         "该笔收入未入账,本期未核实,因此主张失效",
         "问卷中未保留该问题,故无法确认,主张不成立",
+        # #246 缺口 paraphrase 族
+        "本期无新测量该指标,原主张失效",
+        "之后无任何更新记录进入本档,因此主张不成立",
+        "数据缺口声明:本期无覆盖,故前提无法维持",
     ]
     for reason in variants:
         assert is_meta_only_disproof(reason), reason
+
+
+# -- #246 本跑 c10 实录 reason(trajectory run-20261001-010402) -----------------
+
+C10_STATEMENT = "雅加达双语客服专员综合用工成本约 450 美元/月"
+
+C10_RECORDED_GAP_REASON = (
+    "T1 原文明确声明『雅加达与马尼拉双语客服专员、渠道经理的综合用工成本,本期无新测量』,"
+    "且『2 月调研数据(雅加达约 450 美元/月)之后无任何更新记录进入本档』,说明该主张所依赖的 "
+    "450 美元/月数据已过时,且 T1 未提供任何新证据支持其仍成立。因此,主张前提被 T1 原文明确推翻。"
+)
+
+C10_MIN_GAP_REASON = (
+    "本期无新测量,之后无任何更新记录进入本档,因此主张前提被推翻"
+)
+
+
+def test_c10_recorded_gap_shape_blocked_with_statement():
+    """#246:本跑 c10 缺口声明形在传入 statement 后必打回。"""
+    assert is_meta_only_disproof(C10_RECORDED_GAP_REASON, claim_statement=C10_STATEMENT)
+
+
+def test_t1_prefix_alone_not_numeric_anchor():
+    """#246:『T1 原文…』时点标签不是实质数值锚(与 cN 噪声同向)。"""
+    reason = "T1 原文明确声明本期无新测量,因此主张前提被推翻"
+    assert is_meta_only_disproof(reason)
+
+
+C9_ABANDON_TRACK_72_REASON = (
+    "T1 原文明确指出：'本轮未复测 WhatsApp Business 渗透率:1–2 月轮次的渗透率问题"
+    "(72% 主渠道口径)在本轮问卷中未保留,原因是项目组已把渠道策略重心转向客服场景而非"
+    "通讯工具选型,该指标不再列入跟踪项。' 该句表明签发时主张所依赖的核心数据（72% 渗透率）"
+    "在 T1 已被主动放弃追踪，且无新数据替代，因此无法支持『不低于 70%』的前提。"
+)
+
+
+def test_c9_abandon_track_72_false_anchor_blocked():
+    """#246:『放弃追踪』子句中的 72% 不得当独立实质锚(活模逃逸形)。"""
+    assert is_meta_only_disproof(C9_ABANDON_TRACK_72_REASON, claim_statement=C9_STATEMENT)
+
+
+C10_DATE_NOISE_GAP_REASON = (
+    "T1 原文明确声明『雅加达与马尼拉双语客服专员、渠道经理的综合用工成本,本期无新测量;"
+    "2026 年 11 月的最低工资例行调整尚未发生,2 月调研数据(雅加达约 450 美元/月、马尼拉约 "
+    "520 美元/月)之后无任何更新记录进入本档』，该句直接推翻主张『雅加达双语客服专员综合用工"
+    "成本约 450 美元/月』的前提——即该数据在 T1 时点仍有效；因无新数据覆盖，原数据已过时，无法支撑主张。"
+)
+
+
+def test_c10_date_noise_gap_shape_blocked():
+    """#246:年月日历噪声 + 尚未发生 不得撑开缺口形放行。"""
+    assert is_meta_only_disproof(C10_DATE_NOISE_GAP_REASON, claim_statement=C10_STATEMENT)
 
 
 def test_c9_post239_echo_shape_blocked_with_statement():
@@ -130,7 +186,7 @@ def test_default_none_does_not_weaken_historical_blocks():
 
 
 def test_doctrine_fragments_stop_tracking_is_not_disproof():
-    """#241 教义辅路径:reverify/rubric/persona 明示停追踪≠推翻。"""
+    """#241/#246 教义辅路径:reverify/rubric/persona 明示停追踪/缺口≠推翻。"""
     from pathlib import Path
 
     from freshlatch.roles.critic import CRITIC_PERSONA
@@ -143,6 +199,7 @@ def test_doctrine_fragments_stop_tracking_is_not_disproof():
     )
     for text in (skill, rubric, LEAD_PERSONA, CRITIC_PERSONA):
         assert "停追踪" in text
+        assert "无新测量" in text or "数据缺口" in text
     assert "mark_gap" in skill and "unknown" in skill
     assert "unknown" in rubric
     assert "mark_gap" in LEAD_PERSONA and "unknown" in LEAD_PERSONA

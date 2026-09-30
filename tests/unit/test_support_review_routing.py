@@ -7,6 +7,9 @@ from freshlatch.models import Claim
 from freshlatch.runner import ClaimDecision, Runner
 from tests.unit.test_meta_gate import C7_LEGIT
 from tests.unit.test_support_review_misread import (
+    C5_MIN_COUNTERFACTUAL_REASON,
+    C5_RECORDED_COUNTERFACTUAL_REASON,
+    C5_STATEMENT,
     C6_MIN_MISREAD_REASON,
     C6_RECORDED_MISREAD_REASON,
     C6_STATEMENT,
@@ -58,3 +61,25 @@ def test_legit_c7_still_lands_stale():
     )
     Runner(_StubStore())._finalize(claim, decision)  # noqa: SLF001
     assert claim.status == "stale"
+
+
+def test_c5_recorded_counterfactual_routes_to_unknown():
+    """#245:c5 实录反事实升格形 ⇒ 闸打回 SUPPORT_REVIEW_MISREAD ⇒ 落 unknown。"""
+    claim = _run_finalize(
+        C5_RECORDED_COUNTERFACTUAL_REASON,
+        claim_id="c5",
+        statement=C5_STATEMENT,
+    )
+    assert claim.status == "unknown"
+    assert "SUPPORT_REVIEW_MISREAD" in claim.reason
+
+
+def test_c5_min_counterfactual_routes_to_unknown():
+    """#245:最小合成反事实形同样不得落 stale。"""
+    claim = _run_finalize(
+        C5_MIN_COUNTERFACTUAL_REASON,
+        claim_id="c5",
+        statement=C5_STATEMENT,
+    )
+    assert claim.status == "unknown"
+    assert "SUPPORT_REVIEW_MISREAD" in claim.reason

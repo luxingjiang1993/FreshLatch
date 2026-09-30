@@ -35,11 +35,13 @@ LEAD_PERSONA = """你是 Lead Reverifier,FreshLatch 的复验主官。你的任�
 3. T1 的复测/核实内容直接支持主张的每个前提 → reverify_claim(claim_id, "fresh", [t1 evidence_id...])。
    注意:判 fresh 必须给出 T1 证据 id(形如 doc#p2@T1),从 retrieve 结果里逐字引用,否则会被规则闸打回。
 4. T1 原文明确推翻主张 → mark_stale(claim_id, reason, [t1 evidence_id...], dimension),reason 必须含显式因果句:指出 T1 原文哪一句推翻了主张的哪个前提,不得只写「与最新文档不符」;反证 id 必须逐字引用 retrieve 返回的 T1 证据 id,不得编造;dimension 必填,填本反证自身攻击的维度(6 枚举之一,非法值整 call 拒绝并回列词表)。
-   注意:只有 T1 出现明确的推翻性内容时才判 stale;T1 只说「未复测/无新数据/待发布/未入账/不再列入跟踪/停追踪」是证据缺口,不是推翻——走 mark_gap + unknown,不得判 stale。不得把「无法验证/停追踪」改写成「推翻前提」,也不得仅复述主张原文数字当作反证锚。
+   注意:只有 T1 出现明确的推翻性内容时才判 stale;T1 只说「未复测/无新数据/无新测量/无更新记录/数据缺口/待发布/未入账/不再列入跟踪/停追踪」是证据缺口,不是推翻——走 mark_gap + unknown,不得判 stale。过时未更新 ≠ 已被推翻;不得把「无法验证/停追踪/缺口声明」改写成「推翻前提」,也不得仅复述主张原文数字当作反证锚。
    注意:复盘否定当时『窗口不佳』类分析是对主张的支撑,不是推翻(与该判断不符 ≠ 主张被推翻);支撑段落不得当反证——须走 reverify_claim(fresh,[同维 T1 证据]),不得因旁近复盘叙事误判 stale。
-   注意:媒体旧价被 T1 承认滞后且实际价格已变(c7 类)是真 stale,不是支撑复盘;不得因上条教义放过真推翻。若 T1 行业媒体自称报价滞后/按季核对,同时 T1 别处确认竞品已降价 → 主张『媒体显示客单价仍为旧价、价格优势仍在』整体 stale,不得因『媒体未更新』降档 unknown。
-   注意:主张『意味着市场窗口打开』类因果句,若 T1 核实其事实前提(如免费版收缩属实、付费续约健康)即构成直接支持 → 必须 reverify_claim(fresh,[同维 T1 证据 id],优先 t0-competitor-news 核实段);禁止以「窗口打开是推断」「原文无字面『窗口打开』」「仅见续约率/毛利未写窗口」降档 unknown 或 mark_stale。
+   注意:敏感性/反事实情景(「若…则需重新评估」「进一步降价至…档」)不是现时推翻;现时结论以同维现时段落为准(如成本模型 p2「结论维持」),不得因 p3 敏感性句误判 stale——须走 reverify_claim(fresh,[同维现时 T1 证据])。
+   注意:媒体旧价被 T1 承认滞后且实际价格已变(c7 类)是真 stale,不是支撑复盘,也不是证据缺口——不得因『媒体未更新/无新数据』走 mark_gap+unknown;须 mark_stale。若 T1 行业媒体自称报价滞后/按季核对,同时 T1 别处确认竞品已降价 → 主张『媒体显示客单价仍为旧价、价格优势仍在』整体 stale。
+   注意:主张『意味着市场窗口打开』类因果句,若 T1 核实其事实前提(如免费版收缩属实、付费续约健康)即构成直接支持 → 必须 reverify_claim(fresh,[同维 T1 证据 id],优先 t0-competitor-news 核实段);禁止以「窗口打开是推断」「原文无字面『窗口打开』」「仅见续约率/毛利未写窗口」「成本优势仍在」降档 unknown 或 mark_stale。
 5. T1 无原文覆盖或证据不足 → mark_gap(description) 后 reverify_claim(claim_id, "unknown", [])。
+   例外:媒体滞后+他处已证实价变(上条 c7 类)不是缺口,不得走本步。
 6. 想对主张加压、专找「已死」反证 → spawn_critic(focus?):focus 可省略(=不限方向),只能填 6 个枚举值
    (competitor_pricing/竞品价格:主张前提建立在竞品定价/价格对标数据上;
    regulatory_stance/监管口径:主张前提建立在监管政策/官方口径上;
@@ -72,9 +74,26 @@ MARK_STALE_DIMENSION_NOTE = (
     "mark_stale 受理自查(每条必显,不依赖自觉):该反证锚定的前提/度量维度与主张签发原文是否一致?"
     "定价≠成本、客单价≠毛利、覆盖率≠渗透率等「无因果关系并列」不构成推翻;"
     "复盘否定当时『窗口不佳』≠主张被推翻(支撑段落不得当反证);"
-    "维度不符或读反支撑复盘不得据此判 stale,应回到 T1 原文找同维度支持 → reverify_claim(fresh),"
+    "敏感性/『若…需重新评估』未实现情景≠现时推翻;"
+    "维度不符、读反支撑复盘或反事实升格不得据此判 stale,应回到 T1 原文找同维度支持 → reverify_claim(fresh),"
     "或走 mark_gap + unknown。"
 )
+
+# mark_gap 误把媒体滞后真 stale 当缺口(#245/#246 活模 c7)
+MEDIA_LAG_AS_GAP_MESSAGE = (
+    "mark_gap 打回:媒体自承报价滞后/按季核对且他处可证实价变(c7 类)是真 stale,不是证据缺口——"
+    "不得因『刊未更新/无新数据』走 unknown。请 retrieve/read_source 取竞品实际降价 T1 证据后 mark_stale。"
+)
+
+
+def _is_media_lag_misclassified_as_gap(description: str) -> bool:
+    """缺口描述是否把媒体滞后真冲突误写成 gap。"""
+    if not description:
+        return False
+    has_lag = any(m in description for m in ("滞后", "按季核对", "按季度核对"))
+    has_media = any(m in description for m in ("媒体", "月刊", "观察", "未更新", "无新"))
+    return has_lag and has_media
+
 
 # -- ADR-0012 受理层维度预检(#27 grilling 拍板,Anthropic 评审修订;以下三段文案逐字锁档) --
 # 恢复额度:每 Lead 会话每主张,mark_stale 被维度预检打回至多 1 次(#27/Q4)——
@@ -392,6 +411,8 @@ class LeadReverifier:
         desc = args.get("description", "").strip()
         if not desc:
             return {"error": "description 不能为空"}
+        if _is_media_lag_misclassified_as_gap(desc):
+            return {"error": MEDIA_LAG_AS_GAP_MESSAGE}
         self.ctx.gaps.append(desc)
         return {"recorded_gap": desc}
 

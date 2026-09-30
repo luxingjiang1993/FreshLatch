@@ -64,3 +64,20 @@ def test_legit_stale_still_lands_stale():
                              auditor_dimension_match=True)
     Runner(_StubStore())._finalize(claim, decision)  # noqa: SLF001
     assert claim.status == "stale"
+
+
+def test_c10_recorded_gap_routes_to_unknown():
+    """#246:c10 缺口声明形 ⇒ META_ONLY_DISPROOF ⇒ 落 unknown。"""
+    from tests.unit.test_meta_gate import C10_RECORDED_GAP_REASON, C10_STATEMENT
+
+    claim = Claim(claim_id="c10", statement=C10_STATEMENT,
+                  t0_evidence_ids=["t0-talent-salary#p2"])
+    decision = ClaimDecision(
+        claim_id="c10", status="stale", reason=C10_RECORDED_GAP_REASON,
+        evidence_ids=["t0-talent-salary#p2@T1"],
+        auditor_verdict="stale", auditor_reason="误把缺口当推翻",
+        auditor_dimension_match=True,
+    )
+    Runner(_StubStore())._finalize(claim, decision)  # noqa: SLF001
+    assert claim.status == "unknown"
+    assert "META_ONLY_DISPROOF" in claim.reason
