@@ -1,10 +1,11 @@
-"""发前钩子闸(ADR-0031 / #227)。
+"""发前钩子闸(ADR-0031 / #227/#230)。
 
 确定性纯逻辑:给定 run_id、该 Run 包结论、T1 checksum 机械新鲜度、
 可选 ack_needs_patch → allow/deny + code/message(+需补丁页眉约束)。
 
 只读消费 disposition 词表(ADR-0027);不触发整包再验、零 LLM。
-UI/CLI/HTTP 适配留给后续票;本模块禁止平行 if/else 出口。
+HTTP 入站 check(#230)与 UI/CLI 共用本闸;本模块禁止平行 if/else 出口。
+入站绑定面常量(本机默认 / 可选 token 头)亦登记于此,供适配层透传。
 """
 
 from __future__ import annotations
@@ -20,10 +21,28 @@ HOOK_UNBOUND_RUN = "HOOK_UNBOUND_RUN"
 HOOK_CHECKSUM_DRIFT = "HOOK_CHECKSUM_DRIFT"
 HOOK_DO_NOT_PUBLISH = "HOOK_DO_NOT_PUBLISH"
 HOOK_NEEDS_PATCH_NO_ACK = "HOOK_NEEDS_PATCH_NO_ACK"
+HOOK_UNAUTHORIZED = "HOOK_UNAUTHORIZED"
 HOOK_OK = "HOOK_OK"
 
 # 需补丁放行时强制页眉约束字面量(与包结论词表对齐)
 NEEDS_PATCH_BANNER = "需补丁"
+
+# 入站 check 可选鉴权与默认绑定面(ADR-0031;#230)
+# 环境变量未配置时本机冒烟仍可测;禁止默认 0.0.0.0 无鉴权当 Done
+HOOK_TOKEN_ENV = "FRESHLATCH_HOOK_TOKEN"
+HOOK_TOKEN_HEADER = "X-FreshLatch-Hook-Token"
+HOOK_BIND_HOST_ENV = "FRESHLATCH_BIND_HOST"
+HOOK_DEFAULT_BIND_HOST = "127.0.0.1"
+
+
+def deny_http_status(code: str) -> int:
+    """deny → HTTP 状态码映射(403 或 409;禁止 200 伪装放行)。
+
+    漂移/需补丁未 ack = 与当前态冲突 → 409;其余 fail-closed → 403。
+    """
+    if code in (HOOK_CHECKSUM_DRIFT, HOOK_NEEDS_PATCH_NO_ACK):
+        return 409
+    return 403
 
 
 @dataclass(frozen=True)
