@@ -333,3 +333,45 @@ def test_precheck_block_event_records_dimension_values():
     assert len(events) == 1
     assert events[0]["stale_dimension"] == "competitor_pricing"
     assert events[0]["quota"] == 1
+
+
+# -- 6. #239:打回文案换维再试 + 不同维第二次受理不回归 -------------------------------------
+
+
+def test_precheck_message_hints_retry_different_dimension():
+    """#239:打回 observation 须明示可换另一维再 mark_stale、勿重复本维(OpenManus 改写)。
+
+    ADR-0012 锁档文案变更须人审 Gate;本测钉可断言片段,不提高 quota。
+    """
+    text = MARK_STALE_DIMENSION_PRECHECK.format(dim="cost_model")
+    assert "勿重复本维 cost_model" in text
+    assert "另一" in text and "mark_stale" in text
+    assert "不向你披露" in text  # 登记值不披露红线仍在
+    from freshlatch.roles.lead import DIMENSION_RECOVERY_QUOTA
+    assert DIMENSION_RECOVERY_QUOTA == 1  # 本票禁止提高
+
+
+def test_second_different_matching_dimension_accepted_after_cost_model_reject():
+    """#239 fixture:首次 cost_model 打回后,换 interview_reversal(与登记维一致)可受理。
+
+    回归钉:额度不误伤「不同维且跨检通过」的第二次 mark_stale。
+    """
+    claim = Claim(claim_id="c3", statement="s", t0_evidence_ids=[],
+                  dimension="interview_reversal")
+    lead = _lead(claim=claim, llm=_ScriptLLM([]))
+    lead._seen_evidence.add("t0-x#p2@T1")
+    r1 = lead._t_mark_stale({"claim_id": "c3", "reason": REASON,
+                             "evidence_ids": ["t0-x#p2@T1"],
+                             "dimension": "cost_model"})
+    assert "error" in r1
+    assert "勿重复本维 cost_model" in r1["error"]
+    llm2 = _ScriptLLM([_aud({"status": "stale", "reason": "反证成立",
+                             "dimension_match": True})])
+    lead.llm = llm2
+    r2 = lead._t_mark_stale({"claim_id": "c3", "reason": REASON,
+                             "evidence_ids": ["t0-x#p2@T1"],
+                             "dimension": "interview_reversal"})
+    assert "error" not in r2, "换维且跨检通过须受理,不得被额度误伤"
+    assert lead.decision.status == "stale"
+    assert lead.decision.stale_dimension == "interview_reversal"
+    assert lead._objection is None

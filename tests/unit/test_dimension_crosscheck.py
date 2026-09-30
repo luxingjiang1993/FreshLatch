@@ -247,9 +247,10 @@ def test_critic_mark_stale_legal_dimension_recorded():
 
 
 def test_registered_dimension_not_in_model_context():
-    """ADR-0011 差异③:登记维度不注入 Lead/Critic 上下文(闸层独享比对锚)。
+    """ADR-0011 差异③:登记维度不注入 Lead/Critic 任务上下文(闸层独享比对锚)。
 
-    Critic 装配 + Lead 装配全文不得出现登记维度值——「照锚填字段」对策不成立的前提。
+    人格/教义可出现枚举词表(含 #239 Prefer 反默认 cost_model);禁止的是把本主张的
+    登记维值当作可比对锚注入任务——「照锚填字段」对策不成立的前提。
     """
     claim = Claim(claim_id="c5", statement="s", t0_evidence_ids=[],
                   dimension="cost_model")
@@ -257,7 +258,7 @@ def test_registered_dimension_not_in_model_context():
     task = lead._build_task()
     assert "cost_model" not in task, "Lead 任务上下文不得泄漏登记维度"
     critic = Critic(_ctx(), claim, _ScriptLLM([]), focus=None)
-    assert "cost_model" not in critic._build_system(), "Critic 系统提示不得泄漏登记维度"
+    assert "cost_model" not in critic._build_task(), "Critic 任务上下文不得泄漏登记维度"
 
 
 # -- 3. 闸字符串比对(不变量 8)-------------------------------------------------------------
