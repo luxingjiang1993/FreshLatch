@@ -17,6 +17,19 @@ C9_RUN2_REASON = ("本轮未复测 WhatsApp Business 渗透率:1–2 月轮次�
 
 C9_REPRO2_REASON = "无法确认其是否仍不低于 70%,原主张前提已失效"
 
+# -- #241 修后逃逸形:元标记子句剥除后残留「主张数字回声」(70% 来自 statement) --
+C9_STATEMENT = "目标市场 WhatsApp Business 渗透率不低于 70%"
+C9_POST239_ECHO_REASON = (
+    "T1 原文明确指出：'本轮未复测 WhatsApp Business 渗透率:1–2 月轮次的渗透率问题"
+    "(72% 主渠道口径)在本轮问卷中未保留,原因是项目组已把渠道策略重心转向客服场景而非"
+    "通讯工具选型,该指标不再列入跟踪项。' 该句直接推翻了主张 c9 中关于『目标市场 "
+    "WhatsApp Business 渗透率不低于 70%』的前提，因该指标已不再被追踪，故无法支持原主张。"
+)
+# 最小合成形:元标记 + 仅复述主张内数字,无独立实质锚
+C9_MIN_ECHO_REASON = (
+    "本轮未复测该指标,该句直接推翻了主张中『渗透率不低于 70%』的前提,故主张失效"
+)
+
 # -- 合法 stale 实录形状(trajectory 中 c3/c7 的真反证,含数值锚)--------------
 
 C3_LEGIT = ("T1 原文明确指出:Manila BizLink 与曼谷 SiamReach 均改口要求分成比例"
@@ -74,3 +87,64 @@ def test_all_meta_marker_variants_recognized():
     ]
     for reason in variants:
         assert is_meta_only_disproof(reason), reason
+
+
+def test_c9_post239_echo_shape_blocked_with_statement():
+    """#241:修后逃逸形(元+主张 70% 回声)在传入 claim.statement 后必打回。"""
+    assert is_meta_only_disproof(C9_POST239_ECHO_REASON, claim_statement=C9_STATEMENT)
+
+
+def test_c9_min_echo_synthetic_blocked_with_statement():
+    """#241:最小「元标记 + 主张数字回声」合成形必打回(不依赖整段长 reason)。"""
+    assert is_meta_only_disproof(C9_MIN_ECHO_REASON, claim_statement=C9_STATEMENT)
+
+
+def test_echo_alone_without_statement_may_still_pass():
+    """缺省不传 claim_statement 时不启用回声黑名单——对无回声依赖的历史形打回不弱化;
+    本测钉:仅回声形在缺省下仍可能放行(行为与 ADR-0008 当日一致),接线处必须传 statement。"""
+    # 最小回声形缺省:残留子句含 70 → 按旧算法放行
+    assert not is_meta_only_disproof(C9_MIN_ECHO_REASON)
+
+
+def test_meta_plus_independent_numeric_still_passes_with_statement():
+    """元 + 独立实质数值锚(不在主张 statement 内)传入 statement 后仍放行。"""
+    statement = "竞品 SeaDesk 客单价仍为 99 美元/月"
+    reason = "本期未复测该指标,但 T1 渠道纪要显示价格已降至 79 美元,因此原主张失效"
+    assert not is_meta_only_disproof(reason, claim_statement=statement)
+
+
+def test_c3_c7_legit_still_pass_with_their_statements():
+    """#241 回归:c3/c7 合法数值锚在传入各自 statement 后仍放行(防误伤)。"""
+    c3_stmt = "渠道伙伴分成比例维持在 25% 及以下"
+    c7_stmt = "竞品 SeaDesk 客单价仍为 99 美元/月"
+    assert not is_meta_only_disproof(C3_LEGIT, claim_statement=c3_stmt)
+    assert not is_meta_only_disproof(C7_LEGIT, claim_statement=c7_stmt)
+
+
+def test_default_none_does_not_weaken_historical_blocks():
+    """缺省 claim_statement=None 时,对无回声依赖的历史形状打回行为不弱化。"""
+    assert is_meta_only_disproof(C9_RUN2_REASON)
+    assert is_meta_only_disproof(C9_REPRO2_REASON)
+    assert is_meta_only_disproof(C9_RUN2_REASON, claim_statement=None)
+    assert is_meta_only_disproof(C9_REPRO2_REASON, claim_statement=C9_STATEMENT)
+
+
+def test_doctrine_fragments_stop_tracking_is_not_disproof():
+    """#241 教义辅路径:reverify/rubric/persona 明示停追踪≠推翻。"""
+    from pathlib import Path
+
+    from freshlatch.roles.critic import CRITIC_PERSONA
+    from freshlatch.roles.lead import LEAD_PERSONA
+
+    root = Path(__file__).resolve().parent.parent.parent
+    skill = (root / "skills/reverify/SKILL.md").read_text(encoding="utf-8")
+    rubric = (root / "skills/freshness_audit/references/verdict-rubric.md").read_text(
+        encoding="utf-8"
+    )
+    for text in (skill, rubric, LEAD_PERSONA, CRITIC_PERSONA):
+        assert "停追踪" in text
+    assert "mark_gap" in skill and "unknown" in skill
+    assert "unknown" in rubric
+    assert "mark_gap" in LEAD_PERSONA and "unknown" in LEAD_PERSONA
+    # Critic 无 mark_gap 白名单,引导至不得 mark_stale
+    assert "不得 mark_stale" in CRITIC_PERSONA

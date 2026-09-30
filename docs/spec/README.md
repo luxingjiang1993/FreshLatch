@@ -28,6 +28,7 @@ W4 开工前决策完备的实施规格:复验主链(W1–W2)、Critic 与评测
 | 13 | [13-PhaseI2-SecurityDemos.md](13-PhaseI2-SecurityDemos.md) | Phase I2 安全三例(主缝=召回信任边界+绿灯出口;ADR-0030;[#213](https://github.com/luxingjiang1993/FreshLatch/issues/213)) |
 | 14 | [14-PhaseV2-PublishHook.md](14-PhaseV2-PublishHook.md) | Phase V2 发前钩子+主张台账(主缝=publish-hook 放行边界;ADR-0031;[#226](https://github.com/luxingjiang1993/FreshLatch/issues/226)) |
 | 15 | [15-整仓分层验收.md](15-整仓分层验收.md) | 整仓编排验收(L0–L4;双绿灯;pre-registration;不含新功能决策) |
+| 16 | [16-must-unknown-c9-护栏.md](16-must-unknown-c9-护栏.md) | #239 后 c9 误 stale：元陈述+主张数字回声逃逸；闸收紧+回归护栏；禁改 gold |
 
 ## 决议来源索引(本规格各节的权威出处)
 

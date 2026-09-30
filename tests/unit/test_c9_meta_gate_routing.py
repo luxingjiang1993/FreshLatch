@@ -7,7 +7,12 @@ runner._finalize 是 stale→unknown 的唯一落档路径(绿灯唯一出口的
 
 from freshlatch.models import Claim
 from freshlatch.runner import ClaimDecision, Runner
-from tests.unit.test_meta_gate import C9_REPRO2_REASON, C9_RUN2_REASON
+from tests.unit.test_meta_gate import (
+    C9_POST239_ECHO_REASON,
+    C9_REPRO2_REASON,
+    C9_RUN2_REASON,
+    C9_STATEMENT,
+)
 
 
 class _StubStore:
@@ -15,8 +20,8 @@ class _StubStore:
         return []
 
 
-def _run_finalize(reason: str) -> Claim:
-    claim = Claim(claim_id="c9", statement="目标市场 WhatsApp Business 渗透率不低于 70%",
+def _run_finalize(reason: str, *, statement: str = C9_STATEMENT) -> Claim:
+    claim = Claim(claim_id="c9", statement=statement,
                   t0_evidence_ids=["t0-messaging-survey#p2"])
     decision = ClaimDecision(claim_id="c9", status="stale", reason=reason,
                              evidence_ids=["t0-messaging-survey#p3@T1"])
@@ -34,6 +39,13 @@ def test_c9_run2_shape_routes_to_unknown():
 def test_c9_repro2_shape_routes_to_unknown():
     """c9 复现2 实录形状(未复测当推翻)⇒ 同上。两次历史失败从此确定性落 unknown。"""
     claim = _run_finalize(C9_REPRO2_REASON)
+    assert claim.status == "unknown"
+    assert "META_ONLY_DISPROOF" in claim.reason
+
+
+def test_c9_post239_echo_shape_routes_to_unknown():
+    """#241:修后逃逸形(元+主张数字回声)经 runner 不得落 stale,须落 unknown。"""
+    claim = _run_finalize(C9_POST239_ECHO_REASON)
     assert claim.status == "unknown"
     assert "META_ONLY_DISPROOF" in claim.reason
 

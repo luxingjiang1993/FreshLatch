@@ -9,10 +9,13 @@
   2. 含元陈述标记的子句剥掉;
   3. 若一个标记都没有 ⇒ 放行(无标记不株连);
   4. 存在含阿拉伯数字且非元子句的「实质子句」⇒ 放行(数值锚反证,如 c3/c7 实录);
+     (#241 / 算法 A) 若传入 claim_statement:残留子句中的数字若全部出现在主张
+     statement 中(主张数字回声),则该子句不算实质锚;
   5. 否则 ⇒ 纯元陈述,打回。
 
-已知边界(预登记,评估文档 §拍板 B1-B3):无数值的实体性反证与元陈述共存时可能误伤,
-误伤方向单向(stale→unknown,不对称安全,绝不向绿灯开口);标记词表封闭,增补走评审工单。
+已知边界(预登记,评估文档 §拍板 B1-B3 + #241 补丁 B4):无数值的实体性反证与元陈述
+共存时可能误伤,误伤方向单向(stale→unknown,不对称安全,绝不向绿灯开口);标记词表
+封闭,增补走评审工单;缺省不传 claim_statement 时行为不弱于 ADR-0008 当日打回。
 """
 
 from __future__ import annotations
@@ -31,15 +34,47 @@ _META_MARKERS: tuple[str, ...] = (
 
 _CLAUSE_SPLIT = re.compile(r"[，。；、,.;:!?！？\n]+")
 _DIGIT = re.compile(r"\d")
+# 连续数字串;比对时用独立数位边界,避免「70」误命中「700」
+_NUMBER = re.compile(r"\d+")
+# 理由散文里常出现的主张编号(c9/c12…)不是数值锚,剥除后再抽数字
+_CLAIM_ID_NOISE = re.compile(r"\bc\d+\b", re.IGNORECASE)
 
 # 闸层打回消息;Lead/Critic 工具层提前反馈复用同一句(单一真相,不复制措辞)
 META_ONLY_MESSAGE = ("stale 反证不得为纯元陈述:未复测/不再列入跟踪/无新数据/待发布/未入账等"
                      "是证据缺口,不是推翻——请走 mark_gap + reverify_claim(unknown)")
 
 
-def is_meta_only_disproof(reason: str) -> bool:
+def _numbers_in(text: str) -> list[str]:
+    """抽取数字串;先剥除 cN 主张编号噪声。"""
+    cleaned = _CLAIM_ID_NOISE.sub(" ", text)
+    return _NUMBER.findall(cleaned)
+
+
+def _number_in_statement(num: str, statement: str) -> bool:
+    """数字串是否作为独立数位序列出现在 statement(前后非数字)。"""
+    return bool(re.search(rf"(?<!\d){re.escape(num)}(?!\d)", statement))
+
+
+def _is_claim_echo_only(clause: str, claim_statement: str) -> bool:
+    """残留子句数字是否全部为主张 statement 回声(算法 A)。
+
+    无数字 ⇒ 不是「回声放行」问题(由外层无数字路径处理);
+    有数字且全部见于 statement ⇒ 纯回声,不算实质锚;
+    任一数字不见于 statement ⇒ 含独立数值锚。
+    """
+    nums = _numbers_in(clause)
+    if not nums:
+        return False
+    return all(_number_in_statement(n, claim_statement) for n in nums)
+
+
+def is_meta_only_disproof(reason: str, *, claim_statement: str | None = None) -> bool:
     """stale 理由是否以纯元陈述为唯一依据。空理由返回 False:理由存在性归工具层
-    ≥20 字校验,闸不重复管(GateDecision.stale_reason 缺省向后兼容)。"""
+    ≥20 字校验,闸不重复管(GateDecision.stale_reason 缺省向后兼容)。
+
+    claim_statement:可选主张原文。传入时启用算法 A(主张数字回声不算实质锚);
+    缺省 None 时行为不得弱于 ADR-0008 当日对历史形状的打回。
+    """
     if not reason:
         return False
     has_meta = False
@@ -50,6 +85,10 @@ def is_meta_only_disproof(reason: str) -> bool:
         if any(m in clause for m in _META_MARKERS):
             has_meta = True
             continue  # 元子句:剥掉
-        if _DIGIT.search(clause):
-            return False  # 实质子句(数值锚且非元子句):不是纯元陈述
+        if not _DIGIT.search(clause):
+            continue
+        # 含数字的非元子句:默认视为实质锚;算法 A 下纯回声不算
+        if claim_statement is not None and _is_claim_echo_only(clause, claim_statement):
+            continue
+        return False  # 实质子句(独立数值锚):不是纯元陈述
     return has_meta
