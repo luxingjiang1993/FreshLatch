@@ -15,6 +15,12 @@ from typing import Any
 from freshlatch.evidence_bound import is_patch_eligible
 from freshlatch.latch import HumanLatch
 from freshlatch.models import Claim
+from freshlatch.prepublish import disposition_for_claims
+from freshlatch.publish_hook import (
+    NEEDS_PATCH_BANNER,
+    PublishHookResult,
+    evaluate_publish_hook,
+)
 from freshlatch.reading_source import BYPASS_TEXT, MEMO_NOTE
 from freshlatch.store.base import RetrievalStore
 
@@ -309,8 +315,13 @@ def render_client_memo_markdown(
     question: str = "",
     generated_at: str,
     synthetic: bool = False,
+    needs_patch_banner: bool = False,
 ) -> str:
-    """客户向复验备忘 Markdown(ADR-0015 必填字段;禁轨迹与商业裁决句)。"""
+    """客户向复验备忘 Markdown(ADR-0015 必填字段;禁轨迹与商业裁决句)。
+
+    needs_patch_banner:发前钩子需补丁+ack 放行时强制页眉标明「需补丁」(ADR-0031);
+    不扩商业裁决、不写轨迹。
+    """
     held: list[dict[str, Any]] = []
     voided: list[dict[str, Any]] = []
     gap: list[dict[str, Any]] = []
@@ -330,20 +341,68 @@ def render_client_memo_markdown(
     parts = [
         "# 客户向复验备忘",
         "",
-        f"**课题问题句**: {_sanitize_client_memo_text(question) or '(未提供)'}",
-        "",
-        f"**生成时间**: {generated_at}",
-        "",
-        f"**{disclaimer}**",
-        "",
-        MEMO_NOTE,
-        "",
-        _render_client_memo_section("仍成立", held),
-        _render_client_memo_section("已作废", voided),
-        _render_client_memo_section("缺口", gap, empty_gap_explicit=True),
-        _render_dem3_rubric_checklist(),
     ]
+    # 需补丁页眉紧贴标题后,强制可见;字面量与闸约束对齐
+    if needs_patch_banner:
+        parts.extend([f"**{NEEDS_PATCH_BANNER}**", ""])
+    parts.extend(
+        [
+            f"**课题问题句**: {_sanitize_client_memo_text(question) or '(未提供)'}",
+            "",
+            f"**生成时间**: {generated_at}",
+            "",
+            f"**{disclaimer}**",
+            "",
+            MEMO_NOTE,
+            "",
+            _render_client_memo_section("仍成立", held),
+            _render_client_memo_section("已作废", voided),
+            _render_client_memo_section("缺口", gap, empty_gap_explicit=True),
+            _render_dem3_rubric_checklist(),
+        ]
+    )
     return "\n".join(parts).rstrip() + "\n"
+
+
+def export_client_memo_gated(
+    *,
+    run_id: str | None,
+    disposition: str | None,
+    projections: list[dict[str, Any]],
+    generated_at: str,
+    ack_needs_patch: bool = False,
+    checksum_fresh: bool = True,
+    question: str = "",
+    synthetic: bool = False,
+    out_path: str | Path | None = None,
+) -> tuple[PublishHookResult, str | None]:
+    """Client Memo 套发前钩子闸(#229 / ADR-0031)。
+
+    先 evaluate_publish_hook;deny → 零写 out_path、markdown=None;
+    allow → 渲染 ADR-0015 字段集;需补丁+ack 时强制页眉「需补丁」。
+    UI/CLI 必须走本函数,禁止平行 if/else 出口。
+    """
+    hook = evaluate_publish_hook(
+        run_id=run_id,
+        disposition=disposition,
+        ack_needs_patch=ack_needs_patch,
+        checksum_fresh=checksum_fresh,
+    )
+    if not hook.allow:
+        return hook, None
+
+    md = render_client_memo_markdown(
+        projections,
+        question=question,
+        generated_at=generated_at,
+        synthetic=synthetic,
+        needs_patch_banner=hook.requires_needs_patch_banner,
+    )
+    if out_path is not None:
+        path = Path(out_path)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(md, encoding="utf-8")
+    return hook, md
 
 
 def export_client_memo_from_snapshot(
@@ -353,7 +412,10 @@ def export_client_memo_from_snapshot(
     generated_at: str,
     out_path: str | Path | None = None,
 ) -> str:
-    """读复验投影 → 客户向备忘 Markdown;不跑复验。可选落盘。"""
+    """读复验投影 → 客户向备忘 Markdown;不跑复验。可选落盘。
+
+    无闸渲染(字段契约/单测用)。发前导出请走 export_client_memo_from_snapshot_gated。
+    """
     snap = load_snapshot(snapshot_path)
     claims = [claim_from_dict(c) for c in snap["claims"]]
     projections = [project_claim(store, c) for c in claims]
@@ -368,3 +430,34 @@ def export_client_memo_from_snapshot(
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(md, encoding="utf-8")
     return md
+
+
+def export_client_memo_from_snapshot_gated(
+    snapshot_path: str | Path,
+    store: RetrievalStore,
+    *,
+    run_id: str | None,
+    generated_at: str,
+    disposition: str | None = None,
+    ack_needs_patch: bool = False,
+    checksum_fresh: bool = True,
+    out_path: str | Path | None = None,
+) -> tuple[PublishHookResult, str | None]:
+    """快照 → 套闸 Client Memo;deny 零写。disposition 缺省时由主张聚合。"""
+    snap = load_snapshot(snapshot_path)
+    claims = [claim_from_dict(c) for c in snap["claims"]]
+    projections = [project_claim(store, c) for c in claims]
+    disp = disposition if disposition is not None else disposition_for_claims(claims)
+    # 快照可覆写 run_id(便于夹具自带绑定键)
+    rid = run_id if run_id is not None else snap.get("run_id")
+    return export_client_memo_gated(
+        run_id=str(rid) if rid is not None else None,
+        disposition=disp,
+        projections=projections,
+        generated_at=generated_at,
+        ack_needs_patch=ack_needs_patch,
+        checksum_fresh=checksum_fresh,
+        question=str(snap.get("question") or ""),
+        synthetic=bool(snap.get("synthetic")),
+        out_path=out_path,
+    )
