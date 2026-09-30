@@ -14,6 +14,10 @@ from freshlatch.evidence import check_evidence_ids, valid_as_of
 from freshlatch.store.base import chunk_evidence_id
 from freshlatch.store.query_transform import transform_claim_query
 from freshlatch.gates.meta_gate import META_ONLY_MESSAGE, is_meta_only_disproof
+from freshlatch.gates.support_review import (
+    SUPPORT_REVIEW_MISREAD_MESSAGE,
+    is_support_review_misread_as_disproof,
+)
 from freshlatch.gates.rule_gate import (ERR_DIMENSION_CROSSCHECK_MISMATCH,
                                         dimension_crosscheck_mismatch)
 from freshlatch.models import Claim
@@ -32,6 +36,9 @@ LEAD_PERSONA = """你是 Lead Reverifier,FreshLatch 的复验主官。你的任�
    注意:判 fresh 必须给出 T1 证据 id(形如 doc#p2@T1),从 retrieve 结果里逐字引用,否则会被规则闸打回。
 4. T1 原文明确推翻主张 → mark_stale(claim_id, reason, [t1 evidence_id...], dimension),reason 必须含显式因果句:指出 T1 原文哪一句推翻了主张的哪个前提,不得只写「与最新文档不符」;反证 id 必须逐字引用 retrieve 返回的 T1 证据 id,不得编造;dimension 必填,填本反证自身攻击的维度(6 枚举之一,非法值整 call 拒绝并回列词表)。
    注意:只有 T1 出现明确的推翻性内容时才判 stale;T1 只说「未复测/无新数据/待发布/未入账/不再列入跟踪/停追踪」是证据缺口,不是推翻——走 mark_gap + unknown,不得判 stale。不得把「无法验证/停追踪」改写成「推翻前提」,也不得仅复述主张原文数字当作反证锚。
+   注意:复盘否定当时『窗口不佳』类分析是对主张的支撑,不是推翻(与该判断不符 ≠ 主张被推翻);支撑段落不得当反证——须走 reverify_claim(fresh,[同维 T1 证据]),不得因旁近复盘叙事误判 stale。
+   注意:媒体旧价被 T1 承认滞后且实际价格已变(c7 类)是真 stale,不是支撑复盘;不得因上条教义放过真推翻。若 T1 行业媒体自称报价滞后/按季核对,同时 T1 别处确认竞品已降价 → 主张『媒体显示客单价仍为旧价、价格优势仍在』整体 stale,不得因『媒体未更新』降档 unknown。
+   注意:主张『意味着市场窗口打开』类因果句,若 T1 核实其事实前提(如免费版收缩属实、付费续约健康)即构成直接支持 → 必须 reverify_claim(fresh,[同维 T1 证据 id],优先 t0-competitor-news 核实段);禁止以「窗口打开是推断」「原文无字面『窗口打开』」「仅见续约率/毛利未写窗口」降档 unknown 或 mark_stale。
 5. T1 无原文覆盖或证据不足 → mark_gap(description) 后 reverify_claim(claim_id, "unknown", [])。
 6. 想对主张加压、专找「已死」反证 → spawn_critic(focus?):focus 可省略(=不限方向),只能填 6 个枚举值
    (competitor_pricing/竞品价格:主张前提建立在竞品定价/价格对标数据上;
@@ -64,7 +71,9 @@ LEAD_PERSONA = """你是 Lead Reverifier,FreshLatch 的复验主官。你的任�
 MARK_STALE_DIMENSION_NOTE = (
     "mark_stale 受理自查(每条必显,不依赖自觉):该反证锚定的前提/度量维度与主张签发原文是否一致?"
     "定价≠成本、客单价≠毛利、覆盖率≠渗透率等「无因果关系并列」不构成推翻;"
-    "维度不符不得据此判 stale,应放弃本次判定并回到 T1 原文找同维度证据,或走 mark_gap + unknown。"
+    "复盘否定当时『窗口不佳』≠主张被推翻(支撑段落不得当反证);"
+    "维度不符或读反支撑复盘不得据此判 stale,应回到 T1 原文找同维度支持 → reverify_claim(fresh),"
+    "或走 mark_gap + unknown。"
 )
 
 # -- ADR-0012 受理层维度预检(#27 grilling 拍板,Anthropic 评审修订;以下三段文案逐字锁档) --
@@ -317,7 +326,9 @@ class LeadReverifier:
                            "claim_id": self.claim.claim_id})
         result = {"recorded": {"claim_id": self.claim.claim_id, "status": status,
                                "evidence_ids": evidence_ids},
-                  "note": "fresh 需经规则闸(双判一致),闸打回将落 unknown"}
+                  "note": ("fresh 需经规则闸(双判一致),闸打回将落 unknown;"
+                           "Critic 反证若维度不符(定价≠成本、Lite≠市场窗口)不得据此改判;"
+                           "Auditor 已 fresh 时维持 fresh 并 finish_reverify")}
         if checkpoint:
             result["critic_checkpoint"] = checkpoint
         if audit:
@@ -332,6 +343,8 @@ class LeadReverifier:
             return {"error": "reason 必须含显式因果句(指出 T1 原文哪一句推翻了哪个前提),不能少于 20 字"}
         if is_meta_only_disproof(reason, claim_statement=self.claim.statement):
             return {"error": f"mark_stale 打回: {META_ONLY_MESSAGE}"}
+        if is_support_review_misread_as_disproof(reason):
+            return {"error": f"mark_stale 打回: {SUPPORT_REVIEW_MISREAD_MESSAGE}"}
         ids, err = self._check_evidence_ids(args.get("evidence_ids"), require_t1=True)
         if err:
             return {"error": f"stale 必须给出可点回的 T1 反证 id(有效反证=可点回): {err}"}
@@ -547,7 +560,10 @@ class LeadReverifier:
                 "stale_dimension": result.stale_dimension,
                 "note": "Critic 只找反证、不得放行;是否采纳由你基于本会话证据自行判定。"
                         "采纳其 mark_stale 前,先独立核对该反证是否锚在主张的同一前提/度量维度"
-                        "(主张讲成本、反证给竞品定价=维度不符,属干扰项,不得据此改判 stale);"
+                        "(主张讲成本、反证给竞品定价=维度不符,属干扰项,不得据此改判 stale;"
+                        "主张讲市场窗口/免费版收缩时,Lite/入门版/降价叙事同样旁近干扰,不得据此改判;"
+                        "若本会话已受理 fresh 且 Auditor 亦 fresh,Critic 维度不符反证不得推翻——"
+                        "维持 fresh 并 finish_reverify);"
                         "核对通过也要用你自己的 reason 与证据 id 落 mark_stale,不得镜像 Critic 框架"}
 
     def _t_finish(self, args: dict) -> dict:

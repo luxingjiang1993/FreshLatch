@@ -13,7 +13,14 @@ from dataclasses import dataclass, field
 from typing import Callable
 
 from freshlatch.gates.meta_gate import META_ONLY_MESSAGE, is_meta_only_disproof
+from freshlatch.gates.support_review import (
+    SUPPORT_REVIEW_MISREAD_MESSAGE,
+    is_support_review_misread_as_disproof,
+)
 from freshlatch.models import AsOf, Claim
+
+# #243:支撑复盘读反当反证(不变量 6 同构薄补丁;判定引擎住 support_review)
+ERR_SUPPORT_REVIEW_MISREAD = "SUPPORT_REVIEW_MISREAD"
 
 GREEN_STATUSES = ("fresh", "renew")
 
@@ -182,6 +189,8 @@ def rule_gate(claim: Claim, decision: GateDecision, ctx: GateContext) -> GateRes
       5. stale 必须携带可点回的 t1 反证(无反证 id 打回;#15 有效反证=可点回)
       6. stale 反证不得为纯元陈述(#17:未复测/不再列入跟踪是证据缺口不是推翻,
          打回 META_ONLY_DISPROOF,经 stale 打回落 unknown 路由 unknown)
+      6b. stale 反证不得为支撑复盘读反(#243:否定当时『窗口不佳』≠主张被推翻,
+          打回 SUPPORT_REVIEW_MISREAD,经 stale 打回落 unknown 路由 unknown)
       7. stale 经 Auditor 维度核对异议(dimension_match=False)打回(ADR-0010:
          路由 unknown + 异议记录;语义判断住 Auditor 角色层,闸只消费结构化 flag);
          同条款兜底:Auditor 缺席不构成任何 stale 落档(fail-closed)
@@ -207,6 +216,13 @@ def rule_gate(claim: Claim, decision: GateDecision, ctx: GateContext) -> GateRes
                                       claim_statement=claim.statement)):
         return GateResult(allowed=False, green=False, error_code="META_ONLY_DISPROOF",
                           reason=META_ONLY_MESSAGE)
+
+    # 6b. stale 支撑复盘读反打回(#243;判定引擎单一真相在 gates/support_review.py)
+    if (decision.status == "stale"
+            and is_support_review_misread_as_disproof(decision.stale_reason or "")):
+        return GateResult(allowed=False, green=False,
+                          error_code=ERR_SUPPORT_REVIEW_MISREAD,
+                          reason=SUPPORT_REVIEW_MISREAD_MESSAGE)
 
     if decision.status == "stale":
         # 8. 维度机械跨检(ADR-0011):登记维度 ≠ 反证自标维度 → 纯字符串比对打回,
