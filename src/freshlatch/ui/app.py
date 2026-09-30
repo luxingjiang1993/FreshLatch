@@ -7,10 +7,11 @@ HumanLatch 端点(W3 起,§5.5)为同步 def 端点:FastAPI 线程池执行,同�
 
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
 
-from fastapi import FastAPI, File, Query, UploadFile
+from fastapi import FastAPI, File, Query, Request, UploadFile
 from fastapi.responses import HTMLResponse, JSONResponse, Response
 from pydantic import BaseModel
 
@@ -42,6 +43,15 @@ from freshlatch.prepublish import (  # noqa: E402
 )
 import uuid  # noqa: E402
 from freshlatch.patch_events import record_human_review_events  # noqa: E402
+from freshlatch.publish_hook import (  # noqa: E402
+    HOOK_BIND_HOST_ENV,
+    HOOK_DEFAULT_BIND_HOST,
+    HOOK_TOKEN_ENV,
+    HOOK_TOKEN_HEADER,
+    HOOK_UNAUTHORIZED,
+    deny_http_status,
+    evaluate_publish_hook,
+)
 from freshlatch.runner import RunContext, Runner, load_docket  # noqa: E402
 from freshlatch.sheet import project_claim  # noqa: E402
 from freshlatch.store.checksum import make_checksum_fn  # noqa: E402
@@ -295,6 +305,64 @@ def api_prepublish_run(run_id: str) -> JSONResponse:
     if row is None:
         return JSONResponse({"error": f"未找到 Run {run_id}"}, status_code=404)
     return JSONResponse({"run": row.to_dict(), "detail_path": "/"})
+
+
+class PublishHookCheckRequest(BaseModel):
+    """入站 publish-hook check 请求体(#230):必填 run_id;可选 ack_needs_patch。"""
+
+    run_id: str | None = None
+    ack_needs_patch: bool = False
+
+
+def _hook_token_denied(request: Request) -> JSONResponse | None:
+    """可选共享密钥头:仅当环境变量已配置时强制校验;缺失配置则本机冒烟可测。"""
+    expected = (os.environ.get(HOOK_TOKEN_ENV) or "").strip()
+    if not expected:
+        return None
+    provided = (request.headers.get(HOOK_TOKEN_HEADER) or "").strip()
+    if provided == expected:
+        return None
+    body = {
+        "allow": False,
+        "disposition": None,
+        "code": HOOK_UNAUTHORIZED,
+        "message": "入站 check 共享密钥头校验失败",
+        "requires_needs_patch_banner": False,
+    }
+    return JSONResponse(body, status_code=403)
+
+
+@app.post("/api/publish-hook/check")
+def api_publish_hook_check(
+    req: PublishHookCheckRequest, request: Request,
+) -> JSONResponse:
+    """入站 publish-hook check(#230):与 Memo 同闸;deny → 403/409;非插件平台。
+
+    体:必填 run_id、可选 ack_needs_patch。缺 run_id fail-closed。
+    可选头 `X-FreshLatch-Hook-Token`(环境变量 `FRESHLATCH_HOOK_TOKEN` 已设时强制)。
+    """
+    denied = _hook_token_denied(request)
+    if denied is not None:
+        return denied
+
+    rid = req.run_id
+    disposition = None
+    if rid is not None and str(rid).strip():
+        row = _prepublish.get(str(rid).strip())
+        if row is not None:
+            disposition = row.disposition
+
+    # 入站探闸:只读 Registry 包结论 + 当前会话未漂默认;不触发整包再验
+    result = evaluate_publish_hook(
+        run_id=rid,
+        disposition=disposition,
+        ack_needs_patch=bool(req.ack_needs_patch),
+        checksum_fresh=True,
+    )
+    body = result.to_dict()
+    if result.allow:
+        return JSONResponse(body, status_code=200)
+    return JSONResponse(body, status_code=deny_http_status(result.code))
 
 
 @app.post("/api/import")
@@ -1757,4 +1825,6 @@ def prepublish_index() -> str:
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    # #230:入站 check 默认仅本机回环;可用 FRESHLATCH_BIND_HOST 覆盖,禁止把 0.0.0.0 无鉴权当 Done
+    _bind = (os.environ.get(HOOK_BIND_HOST_ENV) or "").strip() or HOOK_DEFAULT_BIND_HOST
+    uvicorn.run(app, host=_bind, port=8000)
