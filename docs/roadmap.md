@@ -14,15 +14,15 @@
 **代理:** 仓库变更按 L0/L1/L2（Ronin 可代 L1；**人终收类如历史 #166 不代批/代关**）；超时或证据不足 fail-closed。
 
 ```
-DONE: Phase A · Phase I0 · Phase V1（冒烟 + 本地 ACCEPTANCE）· Phase I1（冒烟 corpus）· Phase V1.5（冒烟 Evidence-bound）· Phase I2（冒烟安全三例）· ① bare-pytest 卫生
+DONE: Phase A · Phase I0 · Phase V1（冒烟 + 本地 ACCEPTANCE）· Phase I1（冒烟 corpus）· Phase V1.5（冒烟 Evidence-bound）· Phase I2（冒烟安全三例）· Phase V2（冒烟·采用层 发前钩子+台账）· ① bare-pytest 卫生
 NOW → NEXT:
-  Phase V2（grill DONE · 下一跳 to-spec）
+  （下一主烤另开；B′ 按需）
 BACKLOG: Phase B′ (on-demand · 延后) | C′ 外部嵌入平台化 | 图谱/采编 CMS | Hard-Gold ticket | Policy-as-code (#8) | Studio (frozen)
 ```
 
 **默认阶段序（钉死）：** `V1 → I1 → V1.5`。  
 **唯一例外：** 自用痛点明确是「改稿再验」时，允许 V1 后先开 V1.5；**冲 mid 仍以 I1 为准**，不得用 V1.5 替代 I1。  
-**本期：** V1.5 Exit **已齐**；**I2 Exit 已齐（冒烟级）**（[#213](https://github.com/luxingjiang1993/FreshLatch/issues/213) · #214–#219；证据 `docs/evidence/i2/ACCEPTANCE.md` · 关门 `docs/evidence/i2/I2-DoD-CLOSE.md`）；**V2 grill DONE**（ADR-0031）；下一跳 **V2 to-spec**；**B′ 延后**（按需待命，不挡后续开发）。
+**本期：** V1.5 Exit **已齐**；**I2 Exit 已齐（冒烟级）**；**V2 Exit 已齐（冒烟·采用层）**（[#226](https://github.com/luxingjiang1993/FreshLatch/issues/226) · #227–#232；证据 `docs/evidence/v2/ACCEPTANCE.md` · 关门 `docs/evidence/v2/V2-DoD-CLOSE.md`）；**B′ 延后**（按需待命）。
 
 ---
 
@@ -177,7 +177,7 @@ BACKLOG: Phase B′ (on-demand · 延后) | C′ 外部嵌入平台化 | 图谱/
 |--|--|
 | **In** | **发前钩子（publish hook）**：只读包结论 + T1 checksum/`run_id` 机械新鲜度（**不**整包再验）；硬出口 = Client Memo **UI+CLI** 同闸 + **入站** HTTP check（本机默认 + 可选 token）；**主张台账** = 作废名单 ∪ 续命 `latch_log` **只读投影**（详情旁路 + 可导出 MD）；`需补丁` 默认拒干净导出，`ack_needs_patch` 才放行并强制页眉 |
 | **Out** | 大图谱；全量采编平台（旧 Phase C）；Word/Notion/开放 webhook **平台化**（→ Backlog C′）；Memo 商业裁决；扩 HumanLatch / renew 改正文；新表双写作废；改生产默认臂；解冻 Studio；把检索 embed 称作本阶段交付 |
-| **Exit** | **冒烟 · 采用层**（文首声明；不报采用率）：Memo 闸动作正确 + `curl` 入站 hook allow/deny 各 ≥1 + 台账可见本次 discard/renew + `docs/evidence/v2/ACCEPTANCE.md`。sheet/补丁同闸 = 加分另票。自用脚本点到也算；**不**硬绑「可发」。 |
+| **Exit** | **已齐（冒烟·采用层，2026-09-30）**：Memo 闸动作正确 + `curl`/TestClient 入站 hook allow/deny 各 ≥1 + 台账可见本次 discard/renew + `docs/evidence/v2/ACCEPTANCE.md`；关门摘要 `docs/evidence/v2/V2-DoD-CLOSE.md`。sheet/补丁同闸 = 加分另票。**不**硬绑「可发」。非 Hard-Gold；`curl` ≠ 插件/webhook 平台已交付；生产默认臂仍 `bm25`；Studio 未解冻。 |
 
 ---
 
@@ -309,14 +309,14 @@ Findings ≈ 顶会正规次主赛道；Industry ≈ 同会落地轨；对 mid �
 | **V1.5** | Evidence-bound 补丁（表单） | **DONE**（冒烟；`docs/evidence/v15/ACCEPTANCE.md` · `V15-DoD-CLOSE.md`） |
 | **I2** | 安全三例（ACL·注入·投毒） | **DONE**（冒烟；`docs/evidence/i2/ACCEPTANCE.md` · `I2-DoD-CLOSE.md`；≠ #4；ADR-0030） |
 | **B′** | 修真痛点 | **延后**（按需待命；触发条件消失才关） |
-| **V2** | 发前钩子+主张台账 | grill DONE · ADR-0031 · **下一跳 to-spec** |
+| **V2** | 发前钩子+主张台账 | **DONE**（冒烟·采用层；`docs/evidence/v2/ACCEPTANCE.md` · `V2-DoD-CLOSE.md`；ADR-0031） |
 | **Backlog** | B′ / 金标 / #8 / C′ 嵌入平台 / 图谱·CMS / Studio | 另票或冻结 |
 
 ---
 
 ## 一句话
 
-**I0 钉数字 → V1 发前闭环 → ① bare-pytest 卫生（DONE）→ 本地 V1 ACCEPTANCE → I1 失败样本（DONE）→ V1.5 Evidence-bound 补丁（DONE · 冒烟）→ I2 安全三例（DONE · 冒烟 · [#213](https://github.com/luxingjiang1993/FreshLatch/issues/213)）→ **V2 grill DONE（发前钩子+主张台账 · ADR-0031）→ 下一跳 to-spec**；**B′ 延后按需**；C′ 插件平台与图谱/CMS 仅 Backlog；#8 薄挂且不早于 V1；#4 只做可选 demo；Studio 冻死；难金标另票；论文挂同一条发前闭环。**
+**I0 钉数字 → V1 发前闭环 → ① bare-pytest 卫生（DONE）→ 本地 V1 ACCEPTANCE → I1 失败样本（DONE）→ V1.5 Evidence-bound 补丁（DONE · 冒烟）→ I2 安全三例（DONE · 冒烟 · [#213](https://github.com/luxingjiang1993/FreshLatch/issues/213)）→ **V2 发前钩子+主张台账（DONE · 冒烟·采用层 · [#226](https://github.com/luxingjiang1993/FreshLatch/issues/226) · ADR-0031）**；**B′ 延后按需**；C′ 插件平台与图谱/CMS 仅 Backlog；#8 薄挂且不早于 V1；#4 只做可选 demo；Studio 冻死；难金标另票；论文挂同一条发前闭环。**
 
 ---
 
@@ -355,3 +355,5 @@ Findings ≈ 顶会正规次主赛道；Industry ≈ 同会落地轨；对 mid �
 | 2026-09-30 | **V2 to-spec**：`docs/spec/14-PhaseV2-PublishHook.md`；GitHub [#226](https://github.com/luxingjiang1993/FreshLatch/issues/226) `ready-for-agent`；主缝=发前钩子放行边界 |
 | 2026-09-30 | **V2 to-tickets**：#227–#232 `ready-for-agent`；清单 `.scratch/v2-tickets/INDEX.md`；Frontier #227/#228 |
 | 2026-09-30 | **V2 enrich-tickets**：#227–#232 Agent Guards 齐（Paths/Provenance pass）；Frontier 同上 |
+| 2026-09-30 | **V2 实现波 #227–#231**：闸核心 · 台账 · Memo 套闸 · 入站 check · e2e+ACCEPTANCE；PR #233–#237 合 main；Ronin 代批齐关 |
+| 2026-09-30 | **V2 DoD close（#232）**：冒烟·采用层关门摘要见 `docs/evidence/v2/V2-DoD-CLOSE.md`；硬 Exit 引用 ACCEPTANCE；Out 未偷渡（无平台/图谱/双写/商业裁决/整包再验挂钩子/改臂/Studio）；curl ≠ 平台已交付；不升格 Hard-Gold |
