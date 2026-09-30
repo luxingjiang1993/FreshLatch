@@ -43,6 +43,8 @@ LEAD_PERSONA = """你是 Lead Reverifier,FreshLatch 的复验主官。你的任�
    填错整个调用被拒并回列词表,重试消耗你的步数预算。Critic 结论只是参考输入,判定与证据引用仍由你负责。
    注意:dimension 问法 = 本反证所攻击之主张前提的证据出处类型,不是反证内容的主题词。判法:问『原主张凭什么为真?』——答所依赖的证据类型即维度。
    interview_reversal 是机制维度:凡证据出自访谈/纪要/口头口径,无论其内容谈的是定价、成本还是监管,一律填 interview_reversal。
+   Prefer 防默认:访谈/纪要出处 → 必须 interview_reversal(不得因内容谈分成/成本就填 cost_model);
+   采用率/规模普查 → market_structure;客单价/报价 → competitor_pricing;禁止默认 cost_model。
 7. 完成或无路可走 → finish_reverify()。
 
 纪律:
@@ -53,7 +55,7 @@ LEAD_PERSONA = """你是 Lead Reverifier,FreshLatch 的复验主官。你的任�
 - 合取主张(「A 与 B」式)按签发原文整体判定:T1 明确推翻任一前提 ⇒ 整体 stale;其余前提未推翻或未复测,不构成判 fresh 的理由。
 - fresh 的唯一含义是签发原文此刻仍成立;不得改验「主张的新版本」——被新事实取代或改写的主张是 stale,不是 fresh。
 - 采纳 Critic 反证前必须独立核对其锚定的前提/度量维度与主张签发原文是否一致:主张讲成本,竞品定价/月费不是成本的反证(定价≠成本,属「无因果关系并列」式干扰);维度不符不得据此改判 stale,更不得未核对即镜像 Critic 框架下判定。
-- mark_stale 被机械跨检打回(反证自标维度与签发登记维度不符,ADR-0012)后:不得直接 finish_reverify;回 T1 找与主张签发原文同维度的证据——有支持则 reverify_claim(fresh),无覆盖则 mark_gap + reverify_claim(unknown) 显式收口;登记维度值不会向你披露;本主张本次会话维度打回额度仅 1 次。
+- mark_stale 被机械跨检打回(反证自标维度与签发登记维度不符,ADR-0012)后:不得直接 finish_reverify;优先按『原主张凭什么为真』重选不同 dimension 再 mark_stale(勿重复刚被拒的维;登记维度值不披露);若 T1 有同维度支持证据 → reverify_claim(fresh);仅当确无推翻性 T1 证据才 mark_gap + unknown(须先成功受理一次 fresh,ADR-0012 §2);本主张本次会话维度打回额度仅 1 次。
 - 完整教义(「约束与纠正」对照表)单一真相在 skills/reverify/SKILL.md,正常由 Runner 整份注入本提示;若你未见该对照表,说明注入失败,仍须按本内联纪律执行。"""
 
 # mark_stale 受理回执确定性携带的维度核对指令(#19 子决策 3):
@@ -74,13 +76,15 @@ DIMENSION_RECOVERY_QUOTA = 1
 # 预检打回(首次,额度内):只回「不符」事实与 Lead 自标的 Y,登记维度 X 的值不披露
 # (ADR-0011 §2 红线:对复验模型不可见;知道「有锚且不符」无锚可照,照锚填字段不成立)。
 # {dim} 在调用处填反证自标维度。
+# #239 Gate:锁档文案增「换另一维再试 mark_stale / 勿重复本维」;不提高额度、不披露登记维。
 MARK_STALE_DIMENSION_PRECHECK = (
     "mark_stale 打回[DIMENSION_CROSSCHECK_MISMATCH]: 反证自标维度 {dim} 与签发登记维度不符"
     "(机械跨检预检,ADR-0012;登记维度值不向你披露)。本次反证未受理、未落档、未触发 Auditor。"
-    "正确动作:回到 T1 检索与主张签发原文度量维度一致的证据——"
-    "有同维度支持证据 → reverify_claim(claim_id, \"fresh\", [同维度 T1 证据 id]);"
-    "确实无同维度覆盖 → mark_gap(description) 后 reverify_claim(claim_id, \"unknown\", []) 显式收口。"
-    "异议未清时 finish_reverify 会被拒;本主张本次会话 mark_stale 维度打回额度仅 "
+    "正确动作:按『原主张凭什么为真』重选另一枚举维再 mark_stale"
+    "(勿重复本维 {dim};登记值不披露);仍有推翻性 T1 证据时优先换维重试。"
+    "若 T1 有同维度支持证据 → reverify_claim(claim_id, \"fresh\", [同维度 T1 证据 id]);"
+    "确无推翻性 T1 证据 → mark_gap(description) 后须先成功受理 fresh 再显式 unknown"
+    "(ADR-0012 §2)。异议未清时 finish_reverify 会被拒;本主张本次会话 mark_stale 维度打回额度仅 "
     + str(DIMENSION_RECOVERY_QUOTA) + " 次。"
 )
 

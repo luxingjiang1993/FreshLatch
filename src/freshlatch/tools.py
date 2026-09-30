@@ -62,7 +62,11 @@ _TOOL_DEFS: dict[str, dict] = {
                        "description": f"本反证自身攻击的维度(前提出处语义):{'/'.join(FOCUS_DIMENSIONS)}. "
                                     "维度 = 本反证所攻击之主张前提的证据出处类型,不是反证内容的主题词。"
                                     "判法:问『原主张凭什么为真?』——答所依赖的证据类型即维度。"
-                                    "interview_reversal 是机制维度:凡证据出自访谈/纪要/口头口径,无论其内容谈的是定价、成本还是监管,一律填 interview_reversal。"}},
+                                    "interview_reversal 是机制维度:凡证据出自访谈/纪要/口头口径,"
+                                    "无论其内容谈的是定价、成本还是监管,一律填 interview_reversal。"
+                                    "Prefer:访谈/纪要→interview_reversal;采用率/规模普查→market_structure;"
+                                    "客单价/报价→competitor_pricing。"
+                                    "禁止默认 cost_model:仅当主张前提建立在成本/费用结构测算上才填;有疑勿填 cost_model。"}},
         ["claim_id", "reason", "evidence_ids", "dimension"]),
     "mark_gap": _fn(
         "mark_gap", "记录证据缺口(T1 无覆盖、证据不足)",

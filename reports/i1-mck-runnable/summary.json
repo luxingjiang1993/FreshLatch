@@ -1,0 +1,28 @@
+{
+  "kind": "i1_mck_runnable_gold",
+  "layer": "答辩/冒烟",
+  "pack_id": "v1-mck-soai",
+  "claim_id": "mck-1",
+  "statement": "组织在至少一项业务职能中常规使用 AI 的受访者比例约为 78%",
+  "corpus_mode": "full",
+  "ingested_chunks": 10,
+  "gold_expected": "stale",
+  "machine_status": "stale",
+  "gold_hit": true,
+  "err_kind_vs_gold": null,
+  "reason": "T1 原文明确指出：'88 percent report regular AI use in at least one business function, compared with 78 percent a year ago'，表明当前比例已更新为 88%，而非签发时的约 78%。该句直接推翻了主张中关于 '约为 78%' 的数值前提。",
+  "t1_evidence_ids": [
+    "mck-soai-agents-2025-11#p2@T1"
+  ],
+  "decoding": {
+    "model": "qwen-flash",
+    "temperature": 0.0,
+    "seed": null,
+    "recorded_at": "2026-09-30T13:42:39.654342+00:00",
+    "date": "2026-09-30"
+  },
+  "trajectory_path": "reports\\i1-mck-runnable\\trajectories\\run-20260930-214246.jsonl",
+  "db_path": "reports\\i1-mck-runnable\\mck-run.sqlite",
+  "repro_note": "托管端点会漂移，跨会话复现只能近似。temp=0 时 seed 无采样意义。",
+  "repro_command": "PYTHONPATH=src python3 scripts/i1_mck_runnable_gold.py --claim-id mck-1 --corpus-mode full --model qwen-flash --temperature 0.0 --out reports/i1-mck-runnable"
+}

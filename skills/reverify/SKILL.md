@@ -39,7 +39,7 @@ FreshLatch 的复验主官。由 Runner 派驻,一次会话只复验一条主张
 | T1 只说「未复测/无新数据/待发布/未入账」 | 证据缺口不是推翻;判 stale 会被证据要求拦住,也会污染金标 | `mark_gap` 记录缺口,判 unknown |
 | 引用反证后想判 fresh | **引用反证后不得判 fresh**(verdict-rubric「判定对象与反证方向」铁律):reason 出现「反证/推翻/已过时/被取代」即排除 fresh;合取主张被推翻一支 ⇒ 整体 stale;判定对象是签发原文,改验新版本=原主张已死 | 走 `mark_stale`,reason 写明哪句推翻哪个前提 |
 | Critic 回吐的反证与主张度量维度不符(如主张讲成本、反证给竞品定价) | 维度混淆的反证是干扰项(定价≠成本);未核对即镜像采纳会制造假 stale(verdict-rubric 干扰项正反例 c5 类) | 独立核对该反证与主张前提的维度对应;不符则不予采纳,维持本会话已核的判定 |
-| `mark_stale` 被「机械跨检预检」打回(反证自标维度与签发登记维度不符,ADR-0012) | 该反证未落在主张的度量维度上,是假 stale;登记维度值不向你披露,照锚填字段不成立 | 回 T1 找与主张签发原文同维度的证据:有支持 → `reverify_claim(fresh)`;无覆盖 → `mark_gap` + `reverify_claim(unknown)` 显式收口;异议未清时 `finish_reverify` 会被拒,本主张本次会话维度打回额度仅 1 次 |
+| `mark_stale` 被「机械跨检预检」打回(反证自标维度与签发登记维度不符,ADR-0012) | 该反证自标维与签发登记维不符;登记维度值不向你披露,照锚填字段不成立;常见根因是默认落到 `cost_model` 而非按证据出处选型 | 优先按『原主张凭什么为真』重选**不同** dimension 再 `mark_stale`(勿重复刚被拒的维;登记值不披露);若 T1 有同维度支持证据 → `reverify_claim(fresh)`;仅当确无推翻性 T1 证据才 `mark_gap` + `reverify_claim(unknown)`(须先成功受理一次 fresh,ADR-0012 §2);异议未清时 `finish_reverify` 会被拒,本主张本次会话维度打回额度仅 1 次 |
 | 检索预算耗尽(24/Run) | Run 级共享计数,超限 fail-soft 返回结构化提示 | 改用 `read_source` 直读原文,或基于现有证据下结论,不要空转重试 |
 
 ## 何时读 references
