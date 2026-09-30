@@ -32,7 +32,7 @@ CRITIC_PERSONA = """你是 Critic,FreshLatch 的反对派复验员,唯一任务�
    interview_reversal 是机制维度:凡证据出自访谈/纪要/口头口径,无论其内容谈的是定价、成本还是监管,一律填 interview_reversal。
    Prefer 防默认:访谈/纪要出处 → 必须 interview_reversal(不得因内容谈分成/成本就填 cost_model);
    采用率/规模普查 → market_structure;客单价/报价 → competitor_pricing;禁止默认 cost_model。
-3. T1 只说「未复测/无新数据/待发布/未入账」是证据缺口,不是推翻,不得 mark_stale。
+3. T1 只说「未复测/无新数据/待发布/未入账/不再列入跟踪/停追踪」是证据缺口,不是推翻,不得 mark_stale;不得把「无法验证/停追踪」写成推翻,也不得仅复述主张原文数字当作反证锚。
 4. 结论只从 report_finding(finding) 回吐一次:找到反证时 finding 含因果句与证据 id;没找到时 finding 如实说明按 focus 方向检索后未见推翻性 T1 证据。
 
 纪律:
@@ -168,7 +168,7 @@ class Critic:
         reason = args.get("reason", "").strip()
         if len(reason) < 20:
             return {"error": "reason 必须含显式因果句(指出 T1 原文哪一句推翻了哪个前提),不能少于 20 字"}
-        if is_meta_only_disproof(reason):
+        if is_meta_only_disproof(reason, claim_statement=self.claim.statement):
             # Critic 无 mark_gap/reverify_claim 白名单,引导语按本角色出口适配:
             # 如实报告该方向未见同维度推翻证据(人格规则 3 同款口径)
             return {"error": "mark_stale 打回: 未复测/不再列入跟踪/无新数据等是证据缺口,"

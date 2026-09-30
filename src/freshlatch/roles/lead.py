@@ -31,7 +31,7 @@ LEAD_PERSONA = """你是 Lead Reverifier,FreshLatch 的复验主官。你的任�
 3. T1 的复测/核实内容直接支持主张的每个前提 → reverify_claim(claim_id, "fresh", [t1 evidence_id...])。
    注意:判 fresh 必须给出 T1 证据 id(形如 doc#p2@T1),从 retrieve 结果里逐字引用,否则会被规则闸打回。
 4. T1 原文明确推翻主张 → mark_stale(claim_id, reason, [t1 evidence_id...], dimension),reason 必须含显式因果句:指出 T1 原文哪一句推翻了主张的哪个前提,不得只写「与最新文档不符」;反证 id 必须逐字引用 retrieve 返回的 T1 证据 id,不得编造;dimension 必填,填本反证自身攻击的维度(6 枚举之一,非法值整 call 拒绝并回列词表)。
-   注意:只有 T1 出现明确的推翻性内容时才判 stale;T1 只说「未复测/无新数据/待发布/未入账」是证据缺口,不是推翻——走 mark_gap + unknown,不得判 stale。
+   注意:只有 T1 出现明确的推翻性内容时才判 stale;T1 只说「未复测/无新数据/待发布/未入账/不再列入跟踪/停追踪」是证据缺口,不是推翻——走 mark_gap + unknown,不得判 stale。不得把「无法验证/停追踪」改写成「推翻前提」,也不得仅复述主张原文数字当作反证锚。
 5. T1 无原文覆盖或证据不足 → mark_gap(description) 后 reverify_claim(claim_id, "unknown", [])。
 6. 想对主张加压、专找「已死」反证 → spawn_critic(focus?):focus 可省略(=不限方向),只能填 6 个枚举值
    (competitor_pricing/竞品价格:主张前提建立在竞品定价/价格对标数据上;
@@ -330,7 +330,7 @@ class LeadReverifier:
         reason = args.get("reason", "").strip()
         if len(reason) < 20:
             return {"error": "reason 必须含显式因果句(指出 T1 原文哪一句推翻了哪个前提),不能少于 20 字"}
-        if is_meta_only_disproof(reason):
+        if is_meta_only_disproof(reason, claim_statement=self.claim.statement):
             return {"error": f"mark_stale 打回: {META_ONLY_MESSAGE}"}
         ids, err = self._check_evidence_ids(args.get("evidence_ids"), require_t1=True)
         if err:

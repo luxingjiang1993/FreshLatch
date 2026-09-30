@@ -200,8 +200,11 @@ def rule_gate(claim: Claim, decision: GateDecision, ctx: GateContext) -> GateRes
         return GateResult(allowed=False, green=False, error_code="NO_STALE_EVIDENCE",
                           reason="stale 必须给出 t1 反证 evidence_ids(有效反证=可点回)")
 
-    # 6. stale 纯元陈述打回(#17;判定引擎单一真相在 gates/meta_gate.py)
-    if decision.status == "stale" and is_meta_only_disproof(decision.stale_reason):
+    # 6. stale 纯元陈述打回(#17/#241;判定引擎单一真相在 gates/meta_gate.py;
+    # 算法 A:传入 claim.statement,主张数字回声不算实质锚)
+    if (decision.status == "stale"
+            and is_meta_only_disproof(decision.stale_reason,
+                                      claim_statement=claim.statement)):
         return GateResult(allowed=False, green=False, error_code="META_ONLY_DISPROOF",
                           reason=META_ONLY_MESSAGE)
 
