@@ -218,6 +218,7 @@ def test_dem3_manual_rubric_checklist_surface(tmp_path):
 def test_cli_client_memo_subcommand(tmp_path):
     store, _, snap_path = _seed_memo_fixture(tmp_path)
     out = tmp_path / "client_memo.md"
+    # 夹具含 unknown 缺口 → 需补丁;须 ack 才能过闸落盘
     export_main(
         [
             "client-memo",
@@ -229,11 +230,15 @@ def test_cli_client_memo_subcommand(tmp_path):
             str(out),
             "--generated-at",
             "2026-09-22T12:00:00+08:00",
+            "--run-id",
+            "run-memo-cli",
+            "--ack-needs-patch",
         ]
     )
     text = out.read_text(encoding="utf-8")
     assert text.startswith("# 客户向复验备忘")
     assert "## 仍成立" in text
+    assert "需补丁" in text  # 页眉标记
     assert FORBIDDEN_ROLE.search(text.split("## DEM-3")[0]) is None
 
 
@@ -254,6 +259,9 @@ def test_cli_module_client_memo_invocation(tmp_path):
             str(out),
             "--generated-at",
             "2026-09-22T12:00:00+08:00",
+            "--run-id",
+            "run-memo-mod",
+            "--ack-needs-patch",
         ],
         cwd=str(REPO_ROOT),
         env={**os.environ, "PYTHONPATH": str(SRC), "PYTHONIOENCODING": "utf-8"},

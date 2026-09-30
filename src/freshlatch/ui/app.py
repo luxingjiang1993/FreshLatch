@@ -43,7 +43,14 @@ from freshlatch.prepublish import (  # noqa: E402
 import uuid  # noqa: E402
 from freshlatch.patch_events import record_human_review_events  # noqa: E402
 from freshlatch.runner import RunContext, Runner, load_docket  # noqa: E402
-from freshlatch.sheet import project_claim  # noqa: E402
+from freshlatch.publish_hook import (  # noqa: E402
+    HOOK_CHECKSUM_DRIFT,
+    checksums_fresh,
+)
+from freshlatch.sheet import (  # noqa: E402
+    export_client_memo_gated,
+    project_claim,
+)
 from freshlatch.store.checksum import make_checksum_fn  # noqa: E402
 from freshlatch.gates.basis_rot import rot_claims  # noqa: E402
 from freshlatch.store.ingest import parse_document  # noqa: E402
@@ -88,7 +95,9 @@ _state: dict = {"claims": [], "question": "", "trajectory": None, "running": Fal
                 "budget": dict(EMPTY_BUDGET),
                 "run_ctx": None,
                 "retrieve_zero_hits": [],  # DEM-5:本轮 retrieve 空命中;仅提示,不改写判定
-                "active_run_id": None}  # 发前列表当前绑定 Run(#173)
+                "active_run_id": None,  # 发前列表当前绑定 Run(#173)
+                # #229:Run 绑定瞬间的 T1 checksum 快照;导出时与当前比对机械新鲜度
+                "bound_t1_checksums": {}}
 _prepublish = PrepublishRegistry()
 _t1: T1SourceSession | None = None
 ACTIVE_PACK: PackPaths
@@ -182,6 +191,27 @@ def _source_label() -> str:
     return " · ".join(bits)
 
 
+def _current_t1_checksum_map(store: SQLiteStore | None = None) -> dict[str, str]:
+    """当前库 T1 doc_id→checksum 映射(供发前钩子机械新鲜度)。"""
+    s = store if store is not None else _store()
+    return {
+        str(row["doc_id"]): str(row.get("checksum") or "")
+        for row in list_t1_checksums(s)
+    }
+
+
+def _bind_run_checksums(store: SQLiteStore | None = None) -> None:
+    """把当前 T1 checksum 钉到 active Run(新 Run / 首次绑定时)。"""
+    _state["bound_t1_checksums"] = _current_t1_checksum_map(store)
+
+
+def _run_checksum_fresh(store: SQLiteStore | None = None) -> bool:
+    """Run 绑定 checksum 相对当前是否未漂。"""
+    recorded = _state.get("bound_t1_checksums") or {}
+    current = _current_t1_checksum_map(store)
+    return checksums_fresh(recorded, current)
+
+
 def _sync_prepublish(*, new_run: bool = False) -> dict:
     """把当前会话投影进发前列表注册表;详情仍是既有复验单。"""
     claims = list(_state["claims"])
@@ -193,8 +223,12 @@ def _sync_prepublish(*, new_run: bool = False) -> dict:
     if new_run:
         run_id = f"run-{uuid.uuid4().hex[:10]}"
         _state["active_run_id"] = run_id
+        _bind_run_checksums()
     else:
         run_id = _state.get("active_run_id")
+        # 尚无绑定快照时补钉一次(不覆盖已有,避免把漂移洗成未漂)
+        if not (_state.get("bound_t1_checksums") or {}):
+            _bind_run_checksums()
     traj = str(_state["trajectory"]) if _state.get("trajectory") else None
     summary = _prepublish.upsert(
         run_id=run_id,
@@ -277,6 +311,60 @@ def api_claim_ledger_export(run_id: str | None = Query(default=None)) -> Respons
         content=md,
         media_type="text/markdown; charset=utf-8",
         headers={"Content-Disposition": 'attachment; filename="claim-ledger.md"'},
+    )
+
+
+@app.post("/api/client-memo/export")
+def api_client_memo_export(
+    ack_needs_patch: bool = Query(default=False),
+) -> Response:
+    """#229 导出客户备忘:与 CLI 共用 export_client_memo_gated。
+
+    deny → 403 + JSON(零写 Memo);allow → Markdown 附件。
+    需补丁须显式 ack_needs_patch;页眉强制「需补丁」。
+    """
+    from datetime import datetime, timezone
+
+    store = _store()
+    # 确保有 active Run 绑定(无则新建并钉 checksum)
+    if not _state.get("active_run_id"):
+        _sync_prepublish(new_run=True)
+    else:
+        _sync_prepublish(new_run=False)
+
+    claims = list(_state["claims"])
+    projections = [project_claim(store, c) for c in claims]
+    disposition = disposition_for_claims(claims)
+    hook, md = export_client_memo_gated(
+        run_id=_state.get("active_run_id"),
+        disposition=disposition,
+        projections=projections,
+        generated_at=datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        ack_needs_patch=bool(ack_needs_patch),
+        checksum_fresh=_run_checksum_fresh(store),
+        question=str(_state.get("question") or ""),
+        synthetic=bool(getattr(ACTIVE_PACK, "synthetic", False)),
+        out_path=None,  # HTTP 响应体交付;服务端不落盘
+    )
+    if not hook.allow:
+        # deny 零写:不返回 Markdown 体
+        status = 403
+        if hook.code == HOOK_CHECKSUM_DRIFT:
+            status = 409
+        return JSONResponse(hook.to_dict(), status_code=status)
+
+    assert md is not None
+    return Response(
+        content=md,
+        media_type="text/markdown; charset=utf-8",
+        headers={
+            "Content-Disposition": 'attachment; filename="client-memo.md"',
+            # HTTP 头仅 ASCII:中文 disposition 走响应体页眉,不进 header
+            "X-FreshLatch-Hook-Code": hook.code,
+            "X-FreshLatch-Needs-Patch-Banner": (
+                "1" if hook.requires_needs_patch_banner else "0"
+            ),
+        },
     )
 
 
@@ -768,6 +856,12 @@ HTML_PAGE = """<!DOCTYPE html>
  #disposition-bar .disp.ok{color:#1a7f37}
  #disposition-bar .disp.patch{color:#9a6700}
  #disposition-bar .disp.block{color:#cf222e}
+ /* #229 Client Memo 套闸导出入口(对照 mission_control 导出形态;禁第二 UI 栈) */
+ #disposition-bar button.export-memo{padding:5px 12px;border-radius:6px;border:1px solid #d0d7de;
+                                    cursor:pointer;background:#fff;font-size:13px}
+ #disposition-bar label.ack-needs-patch{font-size:12px;color:#57606a;display:inline-flex;
+                                       align-items:center;gap:4px}
+ #disposition-bar #memo-export-msg{font-size:12px;color:#cf222e}
  #t1-checksums,#gate-results{margin:0 16px 10px;background:#fff;border:1px solid #d0d7de;
                              border-radius:6px;padding:8px 12px;font-size:12px;color:#57606a}
  #t1-checksums code,#gate-results code{word-break:break-all}
@@ -849,6 +943,12 @@ HTML_PAGE = """<!DOCTYPE html>
 <div id="disposition-bar" aria-live="polite">
  <span>包结论 · <span id="disp-value" class="disp">—</span></span>
  <span class="meta" id="disp-run-meta"></span>
+ <label class="ack-needs-patch" id="ack-needs-patch-wrap" hidden>
+  <input type="checkbox" id="ack-needs-patch">
+  确认需补丁仍导出
+ </label>
+ <button type="button" class="export-memo" onclick="exportClientMemo()">导出客户备忘</button>
+ <span id="memo-export-msg" role="status"></span>
 </div>
 <div id="t1-checksums" class="craftsman-soft" aria-live="polite">
  <b>T1 checksum</b>
@@ -1223,6 +1323,36 @@ function renderDispositionBar(){
   if(STATE.run_status) bits.push('Run 状态 '+STATE.run_status);
   if(STATE.active_run_id) bits.push('id '+STATE.active_run_id);
   meta.textContent = bits.join(' · ');
+  // #229:仅需补丁时展示 ack 确认(对齐 ack_needs_patch)
+  const ackWrap = document.getElementById('ack-needs-patch-wrap');
+  if(ackWrap){ ackWrap.hidden = (d !== '需补丁'); }
+}
+async function exportClientMemo(){
+  // #229:UI 导出客户备忘;与 CLI 同闸;deny 不下载文件
+  const msg = document.getElementById('memo-export-msg');
+  if(msg) msg.textContent = '';
+  const ackEl = document.getElementById('ack-needs-patch');
+  const ack = !!(ackEl && ackEl.checked);
+  const r = await fetch('/api/client-memo/export?ack_needs_patch='+(ack?'true':'false'), {
+    method: 'POST'
+  });
+  if(!r.ok){
+    let detail = '拒绝导出';
+    try{
+      const j = await r.json();
+      detail = (j.code||'') + (j.message?(' · '+j.message):'');
+    }catch(e){}
+    if(msg) msg.textContent = detail;
+    return;
+  }
+  const text = await r.text();
+  const blob = new Blob([text], {type: 'text/markdown;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'client-memo.md';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  if(msg) msg.textContent = '';
 }
 function renderT1Checksums(){
   const box = document.getElementById('t1-checksums');
