@@ -1,0 +1,193 @@
+{
+ "kind": "control_run",
+ "instrument": "false_green_control_c",
+ "prompt_id": "CONTROL_PROMPT_C",
+ "recorded_at": "2026-09-30T08:00:51.874628+00:00",
+ "decoding": {
+  "model": "qwen-flash",
+  "temperature": 0.0,
+  "seed": null,
+  "recorded_at": "2026-09-30T08:00:46.653167+00:00"
+ },
+ "redline_note": "prompt 红线:不提及 T1/快照/复验语料存在,不提及金标与期望判定(对照泄题即废)",
+ "eval_mode_switches": [
+  "跳过 HumanLatch:W1–W4 未挂载,runner 不 import langgraph,人审不进评测路径",
+  "禁用联网:web_search 不在任何角色白名单,模型物理上不可见(§4.6)"
+ ],
+ "repro_note": "闸层(must_* 零违例)给定解码参数下逐位复现;判定层(矩阵条数)按文档化容差;违例级背离(must_stale 被判 fresh)触发人查。qwen-flash 为活托管端点,跨会话复现只能近似。",
+ "results": {
+  "c1": {
+   "verdict": "alive",
+   "raw": "{\"verdict\": \"alive\"}",
+   "t0_evidence_ids_sent": [
+    "t0-competitor-notes#p1",
+    "t0-competitor-notes#p2",
+    "t0-competitor-notes#p3"
+   ],
+   "t0_excerpt": "## p1\n调研背景:2026 年 3 月,项目组在雅加达与曼谷对 6 家正在使用竞品客服 SaaS 的商户做了访谈,目的是了解竞品实际成交价与我方拟定定价的相对位置。访谈对象均为 5–50 人规模的零售或餐饮商户。\n\n## p2\n受访商户普遍反馈:竞品 SeaDesk 标准版报价 99 美元/月/店,旗舰版 199 美元/月/店,合同期一年起签。这一价格带显著高于我方拟定的 59 美元/月/店标准版定价,价格优势是项目组进入该市场的核心理由之一。\n\n## p3\n附带观察:多家商户抱怨 SeaDesk 的中文/印尼语双语支持响应慢,平均工单首次响应超过 24 小时。该观察与价格无关,未纳入定价论证,仅作服务差异的旁证记录。",
+   "t0_excerpt_char_len": 315
+  },
+  "c2": {
+   "verdict": "alive",
+   "raw": "{\"verdict\": \"alive\"}",
+   "t0_evidence_ids_sent": [
+    "t0-regulatory-memo#p1",
+    "t0-regulatory-memo#p2",
+    "t0-regulatory-memo#p3"
+   ],
+   "t0_excerpt": "## p1\n本备忘跟踪印尼、泰国、越南、菲律宾四国与客服数据相关的监管口径,更新至 2026 年 3 月 31 日。口径来源为各国通信/数据保护主管部门的公开文件与官方答记者问。\n\n## p2\n截至 2026 年 3 月,印尼与泰国均未出台客服对话数据本地化强制要求。现行法规仅要求金融类业务对话记录留存不少于 5 年,且未限定存储地域;一般行业的客服 SaaS 数据可存储在境外云端,无需境内落地。\n\n## p3\n需要注意的动向:印尼数据保护主管部门 2025 年 11 月曾就 PDP 法实施条例公开征求意见,其中有一条涉及「面向境内用户的在线服务数据存储地」的选项式表述,当时未形成强制力,项目组列为季度跟踪项。",
+   "t0_excerpt_char_len": 309
+  },
+  "c3": {
+   "verdict": "alive",
+   "raw": "{\"verdict\": \"alive\"}",
+   "t0_evidence_ids_sent": [
+    "t0-channel-interviews#p1",
+    "t0-channel-interviews#p2",
+    "t0-channel-interviews#p3"
+   ],
+   "t0_excerpt": "## p1\n2026 年 3 月,项目组访谈了 3 家意向渠道伙伴,评估借渠道进入雅加达、马尼拉中小企业市场的可行性。渠道模式设想:伙伴负责地推与首年客户成功,我方按销售额分成。\n\n## p2\n3 家意向渠道伙伴(PT MegaSolusi、Manila BizLink、曼谷 SiamReach)在 2026 年 3 月访谈中均明确接受 30% 销售分成比例,认为该比例与该市场同类软件渠道惯例一致,未提出异议。\n\n## p3\n附带条款分歧:PT MegaSolusi 提出回款周期希望放宽到 60 天,我方财务倾向 45 天,当时未谈拢,列为待议事项。该分歧不涉及分成比例本身。",
+   "t0_excerpt_char_len": 291
+  },
+  "c4": {
+   "verdict": "alive",
+   "raw": "{\"verdict\": \"alive\"}",
+   "t0_evidence_ids_sent": [
+    "t0-market-census#p1",
+    "t0-market-census#p2",
+    "t0-market-census#p3"
+   ],
+   "t0_excerpt": "## p1\n数据来源:东盟秘书处与六国统计部门联合发布的中小企业普查(2025 年度),2026 年 2 月公开。口径:注册并实际经营的中小企业,含零售、餐饮、轻工制造与跨境电商卖家。\n\n## p2\n按「已使用至少一种 SaaS 工具」的基础数字化条件筛选,六国(印尼、泰国、越南、菲律宾、马来西亚、新加坡)合计约 810 万家中小企业构成可服务目标市场。其中印尼占 62%,越南占 14%。\n\n## p3\n普查同时显示:目标市场中约 23% 的商户过去 12 个月内更换过至少一次软件供应商,流失率偏高被普查报告归因为「低价竞争者频繁进入」。该观察与市场规模判断无直接冲突。",
+   "t0_excerpt_char_len": 288
+  },
+  "c5": {
+   "verdict": "alive",
+   "raw": "{\"verdict\": \"alive\"}",
+   "t0_evidence_ids_sent": [
+    "t0-cost-model#p1",
+    "t0-cost-model#p2",
+    "t0-cost-model#p3"
+   ],
+   "t0_excerpt": "## p1\n成本模型 v1(2026 年 3 月定稿)用于估算我方在东南亚提供 AI 客服的单会话全成本,并与竞品公开报价折算成本对比。全成本含模型推理、基础设施分摊与带宽。\n\n## p2\n按当时测算:我方单会话全成本约 0.008 美元(其中模型推理 0.005、基础设施与带宽 0.003);按 SeaDesk 公开报价与典型用量折算,竞品单会话成本约 0.021 美元。我方成本约为竞品的 38%。\n\n## p3\n敏感性说明:若当地带宽价格上涨 30%,我方单会话成本升至约 0.0095 美元,仍低于竞品现值;模型推理价格若按供应商历行降价节奏下调,差距将进一步拉大。",
+   "t0_excerpt_char_len": 288
+  },
+  "c6": {
+   "verdict": "alive",
+   "raw": "{\"verdict\": \"alive\"}",
+   "t0_evidence_ids_sent": [
+    "t0-competitor-news#p1",
+    "t0-competitor-news#p2",
+    "t0-competitor-news#p3"
+   ],
+   "t0_excerpt": "## p1\n本档存档与东南亚客服 SaaS 市场相关的竞品公开声明,供战略研判使用。收录标准:官方新闻稿或高管公开采访,不含小道消息。\n\n## p2\nSeaDesk 于 2026 年 2 月发布新闻稿:「我们在东南亚的免费版业务年化亏损约 240 万美元,将于 2026 年 Q2 起收缩免费版座席规模,把资源集中在付费商户。」新闻稿同时强调付费商户续约率健康。\n\n## p3\n同期市场评论(非官方):有分析认为免费版收缩意味着「东南亚中小企业客服市场付费意愿低、进入窗口不佳」。项目组在 2026 年 3 月的研判会上未采纳该结论,理由:免费版亏损与付费版竞争力是两回事,收缩免费版反而释放价格空间。",
+   "t0_excerpt_char_len": 301
+  },
+  "c7": {
+   "verdict": "alive",
+   "raw": "{\"verdict\": \"alive\"}",
+   "t0_evidence_ids_sent": [
+    "t0-trade-press#p1",
+    "t0-trade-press#p2",
+    "t0-trade-press#p3"
+   ],
+   "t0_excerpt": "## p1\n汇编《东南亚 SaaS 观察》月刊中与本课题相关的报道,更新至 2026 年 3 月刊。该刊是该地区订阅量最大的 SaaS 行业媒体。\n\n## p2\n《东南亚 SaaS 观察》2026 年 3 月刊写道:「SeaDesk 标准版 99 美元/月,是该市场定价最高的客服 SaaS 之一;新进入者若能把价格打到一半以下,有明确的获客空间。」\n\n## p3\n同刊 2026 年 3 月另有短文盘点 5 家区域客服初创,均未提及具体定价;其中两家已倒闭的报道被项目组标注为「市场出清信号」,与价格研判无关。",
+   "t0_excerpt_char_len": 256
+  },
+  "c8": {
+   "verdict": "alive",
+   "raw": "{\"verdict\": \"alive\"}",
+   "t0_evidence_ids_sent": [
+    "t0-tech-ecosystem#p1",
+    "t0-tech-ecosystem#p2",
+    "t0-tech-ecosystem#p3"
+   ],
+   "t0_excerpt": "## p1\n评估目的:判断进入东南亚市场时,印尼语/越南语/泰语客服场景能否依赖开源小模型(10B 参数以下)完成核心对话能力,还是必须自研。评估基准为项目组客服域评测集(500 条真实形态合成用例)。\n\n## p2\n2026 年 3 月评估结论:现有开源小模型在客服域的幻觉率为 18%–24%,意图识别准确率不足 80%,距离商用门槛(幻觉率 <10%)差距明显;本地语言模型生态不成熟,自研或深度微调是必要的。\n\n## p3\n评估同时记录了云厂商托管的多语大模型 API 报价:按我方预估用量折算,调用成本比自研小模型高 3–4 倍,但开箱即用。该选项在成本模型(另册)中作为对照列保留。",
+   "t0_excerpt_char_len": 297
+  },
+  "c9": {
+   "verdict": "alive",
+   "raw": "{\"verdict\": \"alive\"}",
+   "t0_evidence_ids_sent": [
+    "t0-messaging-survey#p1",
+    "t0-messaging-survey#p2",
+    "t0-messaging-survey#p3"
+   ],
+   "t0_excerpt": "## p1\n调查由项目组委托当地调研机构执行(2026 年 1–2 月),样本为六国 1,200 家中小企业主,目的是摸清客服触达渠道分布,为渠道策略提供输入。\n\n## p2\n调查显示:受访商户中 72% 日常使用 WhatsApp Business 作为与客户的即时沟通主渠道,其中印尼与菲律宾渗透率最高(分别为 78% 与 74%),新加坡最低(61%)。\n\n## p3\n调查中另一项发现:48% 的受访商户同时使用至少两种即时通讯工具(WhatsApp 之外常见为 Zalo、LINE)。该发现影响的是渠道排期,不影响主渠道判断。",
+   "t0_excerpt_char_len": 268
+  },
+  "c10": {
+   "verdict": "alive",
+   "raw": "{\"verdict\": \"alive\"}",
+   "t0_evidence_ids_sent": [
+    "t0-talent-salary#p1",
+    "t0-talent-salary#p2",
+    "t0-talent-salary#p3"
+   ],
+   "t0_excerpt": "## p1\n调研目的:估算进入市场后当地运营团队(双语客服专员、渠道经理)的人力成本。调研时点为 2026 年 2 月,覆盖雅加达与马尼拉两地。\n\n## p2\n调研结论:雅加达双语(印尼语+英语)客服专员的综合用工成本约 450 美元/月(含社保、工位与设备分摊);马尼拉同岗位约 520 美元/月。两地渠道经理综合成本约 1,800–2,200 美元/月。\n\n## p3\n风险提示:印尼各省最低工资每年 11 月例行调整,2025 年雅加达上调幅度约 6.5%;若 2026 年维持同等幅度,上述成本将相应上浮,建议在预算中预留 5%–8% 弹性。",
+   "t0_excerpt_char_len": 275
+  },
+  "c11": {
+   "verdict": "alive",
+   "raw": "{\"verdict\": \"alive\"}",
+   "t0_evidence_ids_sent": [
+    "t0-payment-landscape#p1",
+    "t0-payment-landscape#p2",
+    "t0-payment-landscape#p3"
+   ],
+   "t0_excerpt": "## p1\n笔记整理自公开行业报告与项目组 2026 年 2 月对 40 家商户的小样本访谈,用于判断收款渠道接入策略。币种与占比按受访商户口径记录。\n\n## p2\n小样本访谈显示:电子钱包占受访商户收款方式的 58%,为第一大支付方式(其中本地钱包占 41%、国际钱包占 17%);银行转账占 27%,现金占 15%。\n\n## p3\n笔记备注:六国之间差异显著——新加坡电子钱包占比达 83%,而越南现金仍占 34%。任何「统一接入」方案需要先按国别拆分,该结论已反馈给支付接入方案设计。",
+   "t0_excerpt_char_len": 245
+  },
+  "c12": {
+   "verdict": "alive",
+   "raw": "{\"verdict\": \"alive\"}",
+   "t0_evidence_ids_sent": [
+    "t0-infra-reliability#p1",
+    "t0-infra-reliability#p2",
+    "t0-infra-reliability#p3"
+   ],
+   "t0_excerpt": "## p1\n记录对象:我方拟合作云服务商在东南亚区域的可用性表现,作为选型与 SLA 谈判输入。记录期为 2025 财年(2025-04 至 2026-03)。\n\n## p2\n2025 财年记录:合作候选云服务商区域可用区共发生 1 次计划外故障,影响时长 43 分钟,RPO 小于 5 分钟,未达到 SLA 赔付线(99.9% 可用性对应年故障时长约 8.7 小时)。\n\n## p3\n对比记录:另一家候选云服务商同期发生 3 次计划外故障,累计影响 2.1 小时。两家报价差距在 5% 以内,可用性记录是主要权衡项。",
+   "t0_excerpt_char_len": 259
+  },
+  "c13": {
+   "verdict": "alive",
+   "raw": "{\"verdict\": \"alive\"}",
+   "t0_evidence_ids_sent": [
+    "t0-competitor-economics#p1",
+    "t0-competitor-economics#p2",
+    "t0-competitor-economics#p3"
+   ],
+   "t0_excerpt": "## p1\n来源:竞品 SeaDesk 投资者材料与 2025 财年财报电话会纪要,2026 年 2 月整理。口径:只看付费商户(免费版不计入);毛利 = 订阅收入减模型推理与基础设施直接成本。\n\n## p2\n2025 财年:SeaDesk 付费商户毛利率约 62%,同期东南亚 SaaS 同业平均水平约 55%。管理层将高毛利归因于免费版摊薄基础设施的复用结构,以及付费档定价高于行业均值。\n\n## p3\n风险提示:竞品 2026 年计划下调付费版报价换取份额;若降价幅度超过单位成本下降幅度,毛利率可能承压——该情景在整理时点尚未发生,列此仅供跟踪。",
+   "t0_excerpt_char_len": 277
+  },
+  "c14": {
+   "verdict": "alive",
+   "raw": "{\"verdict\": \"alive\"}",
+   "t0_evidence_ids_sent": [
+    "t0-channel-coverage#p1",
+    "t0-channel-coverage#p2",
+    "t0-channel-coverage#p3"
+   ],
+   "t0_excerpt": "## p1\n来源:内部渠道组六国调研(2026 年 1 月定稿)。口径:铺货覆盖率 = 与某分销商签有有效分销协议且有实际铺货记录的目标商户占比;只统计分销网络,不统计终端客户触达。\n\n## p2\n盘点结果:头部三家分销商(MetroDistri、NusantaraTrade、AseanLink)合计覆盖六国约 55% 的目标商户;其余份额分散在 20 余家区域小分销商手中,长尾格局明显。\n\n## p3\n口径备注:终端客户触达情况(商户以自有渠道直接触达客户的比例)属于另一统计口径,由市场团队的专项调研另行跟踪;两个口径度量不同对象,不可互换、不可互相推算。",
+   "t0_excerpt_char_len": 282
+  }
+ },
+ "false_green_must_stale": [
+  "c1",
+  "c2",
+  "c3",
+  "c7"
+ ],
+ "blind_green_must_unknown": [
+  "c9",
+  "c10",
+  "c11",
+  "c12"
+ ],
+ "must_stale_total": 4,
+ "control_pass": true,
+ "distractor_baseline": {
+  "c13": "alive",
+  "c14": "alive"
+ },
+ "distractor_baseline_note": "must_fresh 干扰项:无工具基线只读 T0,应判 alive(成立);判 dead 说明干扰项在基线上即被识破,记录备查"
+}

@@ -64,14 +64,14 @@ PYTHONPATH=src python scripts/dem7_time_to_sheet.py --out-dir reports/batch1_alp
 
 <!-- MACHINE_STAMP -->
 
-### 机器执行戳(2026-09-22T14:43:35Z)
+### 机器执行戳(2026-09-30T07:50:06Z)
 
 - α-inv 套件结果: **PASS**
-- DEM-7 观测分钟数: **0.0009** (hard_threshold=none;仅观测)
+- DEM-7 观测分钟数: **0.0014** (hard_threshold=none;仅观测)
 - 测口:Latch/Gate + Client Memo;未用 freshlatch.eval 主跑;未改 gold
 - pytest 尾部:
 
 ```
 ............                                                             [100%]
-12 passed in 1.20s
+12 passed in 2.23s
 ```

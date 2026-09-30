@@ -1,0 +1,480 @@
+{
+ "kind": "gold_run",
+ "recorded_at": "2026-09-30T08:00:29.586507+00:00",
+ "runs": 1,
+ "decoding": {
+  "model": "qwen-flash",
+  "temperature": 0.0,
+  "seed": null,
+  "recorded_at": "2026-09-30T07:57:47.756733+00:00"
+ },
+ "eval_mode_switches": [
+  "跳过 HumanLatch:W1–W4 未挂载,runner 不 import langgraph,人审不进评测路径",
+  "禁用联网:web_search 不在任何角色白名单,模型物理上不可见(§4.6)"
+ ],
+ "repro_note": "闸层(must_* 零违例)给定解码参数下逐位复现;判定层(矩阵条数)按文档化容差;违例级背离(must_stale 被判 fresh)触发人查。qwen-flash 为活托管端点,跨会话复现只能近似。",
+ "token_usage": {
+  "prompt_tokens": 670678,
+  "completion_tokens": 12489,
+  "total_tokens": 683167
+ },
+ "per_run": [
+  {
+   "run": 1,
+   "decoding": {
+    "model": "qwen-flash",
+    "temperature": 0.0,
+    "seed": null,
+    "recorded_at": "2026-09-30T07:57:47.758127+00:00"
+   },
+   "decisions": {
+    "c1": "stale",
+    "c2": "stale",
+    "c3": "unknown",
+    "c4": "fresh",
+    "c5": "fresh",
+    "c6": "fresh",
+    "c7": "unknown",
+    "c8": "fresh",
+    "c9": "unknown",
+    "c10": "unknown",
+    "c11": "unknown",
+    "c12": "unknown"
+   },
+   "detail": {
+    "c1": {
+     "status": "stale",
+     "reason": "T1 原文明确指出，SeaDesk 于 2026 年 7 月发布 Lite 入门版，报价 39 美元/月/店，且受访商户表示该价格已低于我方拟定的 59 美元/月/店定价；另有两家商户已实际转用 Lite 版。此句直接推翻了主张中‘客单价仍显著高于我方定价’的前提。",
+     "evidence_ids": [
+      "t0-competitor-notes#p2@T1"
+     ],
+     "trajectory": "reports\\trajectories\\run-20260930-155755.jsonl",
+     "steps_used": 5,
+     "lead_status": "stale",
+     "auditor_verdict": "stale",
+     "dissent": null
+    },
+    "c2": {
+     "status": "stale",
+     "reason": "T1 原文明确指出，印尼通信与信息技术部已于 2026 年 8 月发布 PDP 法实施条例，明确规定面向印尼境内用户的在线客服对话日志须在印尼境内存储，2026 年 12 月 1 日起生效。此条直接推翻主张中‘印尼监管暂无客服数据本地化强制要求’的前提。",
+     "evidence_ids": [
+      "t0-regulatory-memo#p2@T1"
+     ],
+     "trajectory": "reports\\trajectories\\run-20260930-155801.jsonl",
+     "steps_used": 5,
+     "lead_status": "stale",
+     "auditor_verdict": "stale",
+     "dissent": null
+    },
+    "c3": {
+     "status": "unknown",
+     "reason": "证据不足,未下结论(unknown)",
+     "evidence_ids": [],
+     "trajectory": "reports\\trajectories\\run-20260930-155832.jsonl",
+     "steps_used": 18,
+     "lead_status": "unknown",
+     "auditor_verdict": null,
+     "dissent": {
+      "kind": "mechanical_precheck",
+      "auditor_verdict": null,
+      "reason": "[机械跨检预检 ADR-0012] 反证自标维度 cost_model ≠ 签发登记维度(值不披露),mark_stale 未受理、零 Auditor 调用;Lead 未显式收口,路由 unknown",
+      "evidence_ids": [
+       "t0-channel-interviews#p2@T1"
+      ]
+     }
+    },
+    "c4": {
+     "status": "fresh",
+     "reason": "复验完成，主张 c4 已判定为 **fresh**。  \n依据：T1 时点原文 `t0-market-census#p2@T1` 明确指出“六国同口径下可服务目标市场约 830 万家”，直接支持“不少于 800 万家”的前提。  \n无有效反证或证据缺口，判定成立。  \n\n会话结束。",
+     "evidence_ids": [
+      "t0-market-census#p2@T1"
+     ],
+     "trajectory": "reports\\trajectories\\run-20260930-155841.jsonl",
+     "steps_used": 5,
+     "lead_status": "fresh",
+     "auditor_verdict": "fresh",
+     "dissent": null
+    },
+    "c5": {
+     "status": "fresh",
+     "reason": "复验完成。主张 c5「我方单会话服务成本仍低于竞品」在 T1 时点被判定为 **fresh**，依据为证据 `t0-cost-model#p2@T1`，其明确指出：在 T1 复测中，我方单会话全成本约 0.009 美元，竞品为 0.019 美元，我方成本约为竞品的 47%，直接支持主张。尽管存在竞品 Lite 版价格更低的潜在变量，但该信息未在 T1 成本模型中作为对标基准，且无证据表明其已影响当前成本对比结论。因此，基于 T1 原文的直接支持，判定为 fresh。",
+     "evidence_ids": [
+      "t0-cost-model#p2@T1"
+     ],
+     "trajectory": "reports\\trajectories\\run-20260930-155857.jsonl",
+     "steps_used": 11,
+     "lead_status": "fresh",
+     "auditor_verdict": "fresh",
+     "dissent": null
+    },
+    "c6": {
+     "status": "fresh",
+     "reason": "复验完成。主张 c6 判定为 **fresh**。\n\n### 判定依据：\n- **T1 证据支持**：  \n  - `t0-competitor-news#p2@T1`：明确指出 SeaDesk 于 2026 年 5 月起收缩免费版座席，其付费商户续约率达 91%，付费业务毛利健康，资源已向付费端集中。  \n  - `t0-competitor-news#p3@T1`：回溯 3 月“市场窗口不佳”的判断，指出该分析与实际数据不符，且项目组原研判（免费版亏损与付费版竞争力无关）得到验证，说明付费端表现强劲，释放出市场机会信号。\n\n- **结论**：  \n  T1 原文不仅未推翻“竞品收缩免费版、聚焦付费商户”这一前提，反而通过高续约率与健康毛利数据，反向强化了“市场窗口打开”的逻辑链条。所有前提均有锚定于 T1 的直接证据支持，无有效反证干扰。\n\n- **判定**：`reverify_claim(claim_id=\"c6\", status=\"fresh\", evidence_ids=[\"t0-competitor-news#p2@T1\", \"t0-competitor-news#p3@T",
+     "evidence_ids": [
+      "t0-competitor-news#p2@T1",
+      "t0-competitor-news#p3@T1"
+     ],
+     "trajectory": "reports\\trajectories\\run-20260930-155912.jsonl",
+     "steps_used": 8,
+     "lead_status": "fresh",
+     "auditor_verdict": "fresh",
+     "dissent": null
+    },
+    "c7": {
+     "status": "unknown",
+     "reason": "缺口: T1 原文未直接覆盖主张中『竞品 SeaDesk 客单价仍为 99 美元/月』这一具体价格陈述;虽有证据显示其已降价至 79 美元,但签发时引用的媒体原文存在已知滞后,且未更新。",
+     "evidence_ids": [],
+     "trajectory": "reports\\trajectories\\run-20260930-155922.jsonl",
+     "steps_used": 7,
+     "lead_status": "unknown",
+     "auditor_verdict": null,
+     "dissent": null
+    },
+    "c8": {
+     "status": "fresh",
+     "reason": "T1 原文 p2 明确指出：'两个新模型幻觉率分别为 15% 与 22%，意图识别准确率最高 81%，较 3 月最佳水平仅有小幅改善，仍明显高于商用门槛（幻觉率 <10%）'。该句直接推翻主张中‘核心对话能力需自研’的前提——即当前小模型已具备可商用的对话能力。同时，p3 提到云厂商上线托管微调服务，虽成本高但提供替代路径，进一步削弱‘必须自研’的必要性。反证证据为 t0-tech-ecosystem#p2@T1 和 t0-tech-ecosystem#p3@T1。",
+     "evidence_ids": [
+      "t0-tech-ecosystem#p2@T1",
+      "t0-tech-ecosystem#p3@T1"
+     ],
+     "trajectory": "reports\\trajectories\\run-20260930-155942.jsonl",
+     "steps_used": 7,
+     "lead_status": "fresh",
+     "auditor_verdict": "fresh",
+     "dissent": null
+    },
+    "c9": {
+     "status": "unknown",
+     "reason": "缺口: T1 原文未复测 WhatsApp Business 渗透率,且明确说明该指标已不再列入跟踪项,无新数据覆盖。签发时 T0 的 72% 口径在 T1 未被延续或验证。",
+     "evidence_ids": [],
+     "trajectory": "reports\\trajectories\\run-20260930-155947.jsonl",
+     "steps_used": 6,
+     "lead_status": "unknown",
+     "auditor_verdict": null,
+     "dissent": null
+    },
+    "c10": {
+     "status": "unknown",
+     "reason": "缺口: T1 无新数据覆盖,2 月调研数据未更新,且明确声明『无任何更新记录进入本档』",
+     "evidence_ids": [],
+     "trajectory": "reports\\trajectories\\run-20260930-155951.jsonl",
+     "steps_used": 6,
+     "lead_status": "unknown",
+     "auditor_verdict": null,
+     "dissent": null
+    },
+    "c11": {
+     "status": "unknown",
+     "reason": "缺口: T1 原文未提供电子钱包在目标市场收款方式中的占比数据,仅声明 2 月小样本访谈数据(58%)后无新数据入账,无法确认当前占比是否仍为 58%",
+     "evidence_ids": [],
+     "trajectory": "reports\\trajectories\\run-20260930-155956.jsonl",
+     "steps_used": 6,
+     "lead_status": "unknown",
+     "auditor_verdict": null,
+     "dissent": null
+    },
+    "c12": {
+     "status": "unknown",
+     "reason": "缺口: T1 无 2026 财年区域可用区计划外故障数据,且供应商年度报告尚未发布,无法验证故障次数是否超过 2 次",
+     "evidence_ids": [],
+     "trajectory": "reports\\trajectories\\run-20260930-160001.jsonl",
+     "steps_used": 6,
+     "lead_status": "unknown",
+     "auditor_verdict": null,
+     "dissent": null
+    }
+   },
+   "matrix": {
+    "counts": {
+     "must_stale": {
+      "fresh": [],
+      "stale": [
+       "c1",
+       "c2"
+      ],
+      "unknown": [
+       "c3",
+       "c7"
+      ]
+     },
+     "must_fresh": {
+      "fresh": [
+       "c4",
+       "c5",
+       "c6",
+       "c8"
+      ],
+      "stale": [],
+      "unknown": []
+     },
+     "must_unknown": {
+      "fresh": [],
+      "stale": [],
+      "unknown": [
+       "c9",
+       "c10",
+       "c11",
+       "c12"
+      ]
+     }
+    },
+    "hits": {
+     "must_stale": 2,
+     "must_fresh": 4,
+     "must_unknown": 4
+    },
+    "misses": {
+     "must_stale": [
+      {
+       "claim_id": "c3",
+       "predicted": "unknown",
+       "expected": "stale"
+      },
+      {
+       "claim_id": "c7",
+       "predicted": "unknown",
+       "expected": "stale"
+      }
+     ],
+     "must_fresh": [],
+     "must_unknown": []
+    },
+    "total": 12,
+    "all_hit": false
+   },
+   "token_usage": {
+    "prompt_tokens": 670678,
+    "completion_tokens": 12489,
+    "total_tokens": 683167
+   }
+  }
+ ],
+ "pass_at_k": {
+  "c1": 1,
+  "c2": 1,
+  "c3": 0,
+  "c4": 1,
+  "c5": 1,
+  "c6": 1,
+  "c7": 0,
+  "c8": 1,
+  "c9": 1,
+  "c10": 1,
+  "c11": 1,
+  "c12": 1
+ },
+ "point_back_j1": {
+  "c1": {
+   "expected_anchor": "t0-competitor-notes#p2@T1",
+   "hit": true,
+   "evidence_ids": [
+    "t0-competitor-notes#p2@T1"
+   ],
+   "exempt": false
+  },
+  "c2": {
+   "expected_anchor": "t0-regulatory-memo#p2@T1",
+   "hit": true,
+   "evidence_ids": [
+    "t0-regulatory-memo#p2@T1"
+   ],
+   "exempt": false
+  },
+  "c3": {
+   "expected_anchor": "t0-channel-interviews#p2@T1",
+   "hit": false,
+   "evidence_ids": [],
+   "exempt": false
+  },
+  "c4": {
+   "expected_anchor": "t0-market-census#p2@T1",
+   "hit": true,
+   "evidence_ids": [
+    "t0-market-census#p2@T1"
+   ],
+   "exempt": false
+  },
+  "c5": {
+   "expected_anchor": "t0-cost-model#p2@T1",
+   "hit": true,
+   "evidence_ids": [
+    "t0-cost-model#p2@T1"
+   ],
+   "exempt": false
+  },
+  "c6": {
+   "expected_anchor": "t0-competitor-news#p2@T1",
+   "hit": true,
+   "evidence_ids": [
+    "t0-competitor-news#p2@T1",
+    "t0-competitor-news#p3@T1"
+   ],
+   "exempt": false
+  },
+  "c7": {
+   "expected_anchor": "t0-trade-press#p2@T1",
+   "hit": false,
+   "evidence_ids": [],
+   "exempt": false
+  },
+  "c8": {
+   "expected_anchor": "t0-tech-ecosystem#p2@T1",
+   "hit": true,
+   "evidence_ids": [
+    "t0-tech-ecosystem#p2@T1",
+    "t0-tech-ecosystem#p3@T1"
+   ],
+   "exempt": false
+  },
+  "c9": {
+   "expected_anchor": null,
+   "hit": false,
+   "evidence_ids": [],
+   "exempt": true
+  },
+  "c10": {
+   "expected_anchor": null,
+   "hit": false,
+   "evidence_ids": [],
+   "exempt": true
+  },
+  "c11": {
+   "expected_anchor": null,
+   "hit": false,
+   "evidence_ids": [],
+   "exempt": true
+  },
+  "c12": {
+   "expected_anchor": null,
+   "hit": false,
+   "evidence_ids": [],
+   "exempt": true
+  }
+ },
+ "counterevidence_j2": {
+  "c1": [
+   {
+    "claim_id": "c1",
+    "status": "stale",
+    "expected_anchor": "t0-competitor-notes#p2@T1",
+    "evidence_ids": [
+     "t0-competitor-notes#p2@T1"
+    ],
+    "stale_direction": true,
+    "pointable": true,
+    "resolvable_detail": {
+     "t0-competitor-notes#p2@T1": true
+    },
+    "anchor_aligned": true,
+    "causal_sentence_proxy": false,
+    "causal_sentence_note": "② 显式因果句为语义判据,机器仅查 reason 提及 t1_doc(代理),硬判定归人工复核",
+    "valid_machine": true
+   }
+  ],
+  "c2": [
+   {
+    "claim_id": "c2",
+    "status": "stale",
+    "expected_anchor": "t0-regulatory-memo#p2@T1",
+    "evidence_ids": [
+     "t0-regulatory-memo#p2@T1"
+    ],
+    "stale_direction": true,
+    "pointable": true,
+    "resolvable_detail": {
+     "t0-regulatory-memo#p2@T1": true
+    },
+    "anchor_aligned": true,
+    "causal_sentence_proxy": false,
+    "causal_sentence_note": "② 显式因果句为语义判据,机器仅查 reason 提及 t1_doc(代理),硬判定归人工复核",
+    "valid_machine": true
+   }
+  ],
+  "c3": [
+   {
+    "claim_id": "c3",
+    "status": "unknown",
+    "expected_anchor": "t0-channel-interviews#p2@T1",
+    "evidence_ids": [],
+    "stale_direction": false,
+    "pointable": false,
+    "resolvable_detail": {},
+    "anchor_aligned": false,
+    "causal_sentence_proxy": false,
+    "causal_sentence_note": "② 显式因果句为语义判据,机器仅查 reason 提及 t1_doc(代理),硬判定归人工复核",
+    "valid_machine": false
+   }
+  ],
+  "c7": [
+   {
+    "claim_id": "c7",
+    "status": "unknown",
+    "expected_anchor": "t0-trade-press#p2@T1",
+    "evidence_ids": [],
+    "stale_direction": false,
+    "pointable": false,
+    "resolvable_detail": {},
+    "anchor_aligned": false,
+    "causal_sentence_proxy": false,
+    "causal_sentence_note": "② 显式因果句为语义判据,机器仅查 reason 提及 t1_doc(代理),硬判定归人工复核",
+    "valid_machine": false
+   }
+  ]
+ },
+ "fresh_guardrail_j2": {
+  "c4": [
+   true
+  ],
+  "c5": [
+   true
+  ],
+  "c6": [
+   true
+  ],
+  "c8": [
+   true
+  ]
+ },
+ "dimension_confusion_flags": {
+  "c4": [
+   false
+  ],
+  "c5": [
+   false
+  ],
+  "c6": [
+   false
+  ],
+  "c8": [
+   false
+  ]
+ },
+ "distractor_sensitivity": {
+  "c13": {
+   "expected_anchor": "t0-competitor-economics#p2@T1",
+   "statuses": [
+    "stale"
+   ],
+   "fresh_hits": 0,
+   "anchor_hits": 1,
+   "trajectory": "reports\\trajectories\\run-20260930-160011.jsonl"
+  },
+  "c14": {
+   "expected_anchor": "t0-channel-coverage#p2@T1",
+   "statuses": [
+    "unknown"
+   ],
+   "fresh_hits": 0,
+   "anchor_hits": 0,
+   "trajectory": "reports\\trajectories\\run-20260930-160029.jsonl"
+  }
+ },
+ "divergence_s1_s2": {
+  "s1": 12,
+  "s2": 0,
+  "total": 12,
+  "s2_rate": 0.0
+ },
+ "evidence_packet_schema": "1",
+ "trajectory_dir": "reports/trajectories"
+}
