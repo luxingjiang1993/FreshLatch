@@ -111,4 +111,4 @@ HTTP 主缝：`test_v2_prelock_main_seam_hard_bars`。
 - sheet/补丁包同闸（加分另票）  
 - Exit 硬绑「可发」或报采用率  
 - DoD 关门摘要：`docs/evidence/v2/V2-DoD-CLOSE.md`（[#232](https://github.com/luxingjiang1993/FreshLatch/issues/232)；本 ACCEPTANCE 不代关 DoD）  
-- 本票 #231 等 Ronin `GROK-PROXY-APPROVED #231` 后再 close；父规格 #226 等 #232 代 Exit 后收口
+- 本票 #231 已 `GROK-PROXY-APPROVED #231` 并 CLOSED；父规格 #226 等 #232 Ronin 代 Exit 后收口（实现侧不代关）

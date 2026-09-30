@@ -34,6 +34,8 @@ One-line boundary: **sell voiding and gaps — not faster summaries, not auto de
 
 **I2 = 安全三例**（ADR-0030 · 冒烟 / 面试安全轮）。越权召回 · 间接注入 · 检索投毒各一例可复现（确定性硬门；注入另 1× Lead→Auditor 冒烟）。薄表 `docs/security.md`；硬 Exit `docs/evidence/i2/ACCEPTANCE.md`；关门摘要 `docs/evidence/i2/I2-DoD-CLOSE.md`。**≠ idea #4**。档=冒烟；不是渗透认证，不报安全通过率/方差，不升格 Hard-Gold。
 
+**V2 = 发前钩子 + 主张台账**（ADR-0031 · 冒烟 / 采用层）。Client Memo UI+CLI 同闸 + 入站 `POST /api/publish-hook/check`（本机默认 + 可选 token）+ 主张台账只读投影（discard∪renew）。硬 Exit 见 `docs/evidence/v2/ACCEPTANCE.md`；关门摘要见 `docs/evidence/v2/V2-DoD-CLOSE.md`。档=冒烟·采用层；**不**硬绑「可发」；`curl`/TestClient ≠ 开放 webhook/插件平台已交付；不报采用率；不升格 Hard-Gold。
+
 ---
 
 ## What you get
@@ -100,7 +102,8 @@ Honest snapshot of this public repo:
 | **Not claimed** | Live SaaS, paying customers, "W12 passed," or closed Phase-1 measurement — do not cite this repo that way |
 | **V1.5 (smoke)** | Evidence-bound form patch seam is in-repo（propose/confirm + reverify + export）. See `docs/evidence/v15/`. **薄对话** remains Out. Not Hard-Gold. |
 | **I2 (smoke)** | Security demos in-repo：ACL tenant filter · injection fail-closed · poison metadata drop. See `docs/evidence/i2/` + `docs/security.md`. ≠ #4. Not penetration cert / Hard-Gold. |
-| **Known gaps** | Retrieval is still BM25-first (production default `bm25`). Some modules (e.g. memory hygiene) exist in code but are not all on the default main path. A whitelist thin URL (`www.mckinsey.com`) exists for the T1 ingest demo; open-ended live web and an open crawler are still not built. Thin dialogue / chat-as-verdict is deliberately not shipped in V1.5. |
+| **V2 (smoke / adoption)** | Publish hook + claim ledger in-repo：Memo UI/CLI gate · inbound check allow/deny · read-only discard∪renew ledger. See `docs/evidence/v2/`. `curl` ≠ webhook/plugin platform Done. Not Hard-Gold; does not hard-bind「可发」. |
+| **Known gaps** | Retrieval is still BM25-first (production default `bm25`). Some modules (e.g. memory hygiene) exist in code but are not all on the default main path. A whitelist thin URL (`www.mckinsey.com`) exists for the T1 ingest demo; open-ended live web and an open crawler are still not built. Thin dialogue / chat-as-verdict is deliberately not shipped in V1.5. Word/Notion/open webhook platforms remain Backlog C′ (not V2 Done). |
 
 For engineering acceptance boundaries, read `docs/evidence/` and root `CONTEXT.md`. This README is not a certification.
 
