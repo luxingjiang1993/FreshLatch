@@ -35,3 +35,8 @@ PYTHONPATH=src python -m freshlatch.eval retrieve --retrieve-gold data/eval/retr
 - 本票不改 `PRODUCTION_RETRIEVAL_MODE`
 - 不宣称 Hard-Gold 已授权换臂
 - 不与主张金标混报
+
+## 5. 改臂另决议（指针）
+
+过线布尔与改臂**授权闸**见 **ADR-0033** · 评估 `docs/research/Hard-Gold过线与改臂决议设计评估.md` · 证据 `docs/evidence/hard-gold-arm/`（[#257](https://github.com/luxingjiang1993/FreshLatch/issues/257)）。  
+骨架 Exit ≠ 该闸已过线；过线后改配置仍须 **Gate** 实现票。

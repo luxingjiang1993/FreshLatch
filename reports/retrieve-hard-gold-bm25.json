@@ -1,7 +1,7 @@
 {
-  "date": "2026-10-02",
+  "date": "2026-10-03",
   "level": "hard_gold_skeleton",
-  "hard_gold_path": "data/eval/retrieve_hard_gold.json",
+  "hard_gold_path": "data\\eval\\retrieve_hard_gold.json",
   "stats": {
     "n": 20,
     "trap_adversarial_count": 8,
@@ -18,9 +18,9 @@
   },
   "production_retrieval_mode": "bm25",
   "gain_verdict": "关（Hard-Gold 骨架已跑；改生产默认臂仍须另决议 + 过线；PRODUCTION_RETRIEVAL_MODE='bm25'）",
-  "arm_note": "无 dense 索引：本波仅 BM25 轨；按 I0 纪律标需索引，不得因此改臂。",
+  "arm_note": "臂对比已跑（见 retrieve-arm-compare.md）；通过线=fail。Hard-Gold 骨架 ≠ 授权换臂。",
   "arm_compare": {
-    "verdict": null,
-    "report_path": null
+    "verdict": "fail",
+    "report_path": "reports\\retrieve-arm-compare.md"
   }
 }
