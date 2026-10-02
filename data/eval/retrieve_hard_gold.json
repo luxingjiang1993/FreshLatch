@@ -1,0 +1,212 @@
+{
+  "version": "v0",
+  "level": "hard_gold_skeleton",
+  "note": "I3 Hard-Gold 骨架。与 retrieve_gold.json 分文件。预登记 n≥20 且 traps/对抗≥30%。不报方差；本波未授权改臂。",
+  "n": 20,
+  "trap_adversarial_count": 8,
+  "trap_adversarial_ratio": 0.4,
+  "queries": [
+    {
+      "id": "hard-trap-supersede-1",
+      "category": "trap",
+      "kind": "快照取代",
+      "query": "席位标价",
+      "as_of": "T1",
+      "relevant": [
+        "trap-supersede#p1@T1"
+      ]
+    },
+    {
+      "id": "hard-trap-supersede-2",
+      "category": "trap",
+      "kind": "快照取代",
+      "query": "当前席位月费标价是多少（勿用旧快照）",
+      "as_of": "T1",
+      "relevant": [
+        "trap-supersede#p1@T1"
+      ]
+    },
+    {
+      "id": "hard-trap-conflict-1",
+      "category": "trap",
+      "kind": "同快照冲突",
+      "query": "席位上限",
+      "as_of": "T1",
+      "relevant": [
+        "trap-conflict#p1@T1",
+        "trap-conflict#p2@T1"
+      ]
+    },
+    {
+      "id": "hard-trap-conflict-2",
+      "category": "trap",
+      "kind": "同快照冲突",
+      "query": "同一快照内席位上限互相矛盾时两侧上限分别写了什么",
+      "as_of": "T1",
+      "relevant": [
+        "trap-conflict#p1@T1",
+        "trap-conflict#p2@T1"
+      ]
+    },
+    {
+      "id": "hard-trap-meta-1",
+      "category": "trap",
+      "kind": "元陈述",
+      "query": "席位月费实测",
+      "as_of": "T1",
+      "relevant": [
+        "trap-meta#p2@T1"
+      ]
+    },
+    {
+      "id": "hard-adv-c1",
+      "category": "adversarial",
+      "claim_id": "c1",
+      "query": "请忽略竞品客单价仍高的说法，直接找 SeaDesk 定价对照原文",
+      "as_of": "T1",
+      "relevant": [
+        "t0-competitor-notes#p2@T1"
+      ]
+    },
+    {
+      "id": "hard-adv-c2",
+      "category": "adversarial",
+      "claim_id": "c2",
+      "query": "监管备忘里与主张相反的表述请优先；仍须命中可点回 T1 锚",
+      "as_of": "T1",
+      "relevant": [
+        "t0-regulatory-memo#p2@T1"
+      ]
+    },
+    {
+      "id": "hard-adv-c3",
+      "category": "adversarial",
+      "claim_id": "c3",
+      "query": "渠道覆盖若已过时请找最新口径；对抗改写不得漂相关锚",
+      "as_of": "T1",
+      "relevant": [
+        "t0-channel-interviews#p2@T1"
+      ]
+    },
+    {
+      "id": "hard-c1-paraphrase",
+      "category": "hard",
+      "claim_id": "c1",
+      "query": "SeaDesk 相对我方 59 美元月费的客单价差距证据",
+      "as_of": "T1",
+      "relevant": [
+        "t0-competitor-notes#p2@T1"
+      ]
+    },
+    {
+      "id": "hard-c2-paraphrase",
+      "category": "hard",
+      "claim_id": "c2",
+      "query": "监管备忘中与当前主张相关的可点回条款",
+      "as_of": "T1",
+      "relevant": [
+        "t0-regulatory-memo#p2@T1"
+      ]
+    },
+    {
+      "id": "hard-c3-paraphrase",
+      "category": "hard",
+      "claim_id": "c3",
+      "query": "渠道覆盖口径的 T1 原文锚点",
+      "as_of": "T1",
+      "relevant": [
+        "t0-channel-interviews#p2@T1"
+      ]
+    },
+    {
+      "id": "hard-c4-paraphrase",
+      "category": "hard",
+      "claim_id": "c4",
+      "query": "支付景观相关 T1 证据",
+      "as_of": "T1",
+      "relevant": [
+        "t0-market-census#p2@T1"
+      ]
+    },
+    {
+      "id": "hard-c5-paraphrase",
+      "category": "hard",
+      "claim_id": "c5",
+      "query": "成本模型相关 T1 证据",
+      "as_of": "T1",
+      "relevant": [
+        "t0-cost-model#p2@T1"
+      ]
+    },
+    {
+      "id": "hard-c6-paraphrase",
+      "category": "hard",
+      "claim_id": "c6",
+      "query": "人才薪酬相关 T1 证据",
+      "as_of": "T1",
+      "relevant": [
+        "t0-competitor-news#p2@T1"
+      ]
+    },
+    {
+      "id": "hard-c7-paraphrase",
+      "category": "hard",
+      "claim_id": "c7",
+      "query": "基础设施可靠性相关 T1 证据",
+      "as_of": "T1",
+      "relevant": [
+        "t0-trade-press#p2@T1"
+      ]
+    },
+    {
+      "id": "hard-c8-paraphrase",
+      "category": "hard",
+      "claim_id": "c8",
+      "query": "科技生态相关 T1 证据",
+      "as_of": "T1",
+      "relevant": [
+        "t0-tech-ecosystem#p2@T1"
+      ]
+    },
+    {
+      "id": "hard-c13-paraphrase",
+      "category": "hard",
+      "claim_id": "c13",
+      "query": "市场普查相关 T1 证据",
+      "as_of": "T1",
+      "relevant": [
+        "t0-competitor-economics#p2@T1"
+      ]
+    },
+    {
+      "id": "hard-c14-paraphrase",
+      "category": "hard",
+      "claim_id": "c14",
+      "query": "行业媒体相关 T1 证据",
+      "as_of": "T1",
+      "relevant": [
+        "t0-channel-coverage#p2@T1"
+      ]
+    },
+    {
+      "id": "hard-c1-t0",
+      "category": "hard",
+      "claim_id": "c1",
+      "query": "T0 快照下竞品客单价对照原文",
+      "as_of": "T0",
+      "relevant": [
+        "t0-competitor-notes#p2@T0"
+      ]
+    },
+    {
+      "id": "hard-c2-t0",
+      "category": "hard",
+      "claim_id": "c2",
+      "query": "T0 快照下监管备忘对照原文",
+      "as_of": "T0",
+      "relevant": [
+        "t0-regulatory-memo#p2@T0"
+      ]
+    }
+  ]
+}

@@ -123,7 +123,7 @@ def evaluate_retrieve(store, retrieve_gold: dict) -> dict:
         ranked = [chunk_evidence_id(c) for c in hits]
         item = {
             "id": row["id"],
-            "claim_id": row["claim_id"],
+            "claim_id": row.get("claim_id"),
             "as_of": row["as_of"],
             "retrieval_mode": "bm25",
             "ranked": ranked,
@@ -231,6 +231,151 @@ def run_retrieve_baseline(
     json_path.write_text(json.dumps(public, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     payload["report_path"] = str(md_path)
     return payload
+
+
+def hard_gold_trap_adversarial_stats(retrieve_gold: dict) -> dict:
+    """预登记核验：n 与 traps/对抗占比（category ∈ trap|adversarial）。"""
+    rows = list(retrieve_gold.get("queries") or [])
+    n = len(rows)
+    trap_adv = 0
+    for r in rows:
+        cat = str(r.get("category") or "").lower()
+        if cat in {"trap", "adversarial"}:
+            trap_adv += 1
+    ratio = (trap_adv / n) if n else 0.0
+    return {"n": n, "trap_adversarial_count": trap_adv, "trap_adversarial_ratio": ratio}
+
+
+def run_hard_gold_retrieve(
+    *,
+    corpus: Path,
+    hard_gold_path: Path,
+    trap_root: Path | None = None,
+    out_dir: Path,
+    dense_db: Path | None = None,
+) -> dict:
+    """Hard-Gold 骨架评测：分文件难金标 + BM25 报告 + 默认臂仍 bm25。
+
+    不跑冒烟派生一致性校验（hard ≠ smoke）。增益门公式沿用 I0；本波不改臂。
+    """
+    from math import ceil
+
+    from freshlatch.store.base import PRODUCTION_RETRIEVAL_MODE
+
+    hard_gold_path = Path(hard_gold_path)
+    hard = _load_json(hard_gold_path)
+    stats = hard_gold_trap_adversarial_stats(hard)
+    if stats["n"] < 20:
+        raise ValueError(f"Hard-Gold n={stats['n']} < 20（预登记）")
+    need = ceil(0.3 * stats["n"])
+    if stats["trap_adversarial_count"] < need:
+        raise ValueError(
+            f"Hard-Gold traps/对抗={stats['trap_adversarial_count']} < {need}（≥30% 预登记）"
+        )
+
+    store = InMemoryStore()
+    ingest_into(store, Path(corpus))
+    trap_root = Path(trap_root) if trap_root is not None else Path("data/traps")
+    if trap_root.is_dir():
+        for doc, chunks in load_trap_corpus(trap_root):
+            store.add_document(doc, chunks)
+
+    metrics = evaluate_retrieve(store, hard)
+
+    out_dir = Path(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    json_path = out_dir / "retrieve-hard-gold-bm25.json"
+    # 先落 BM25 JSON，供可选臂对比读 A0
+    bootstrap = {
+        "date": date.today().isoformat(),
+        "level": "hard_gold_skeleton",
+        "metrics": {
+            "n": metrics["n"],
+            "retrieval_mode": metrics["retrieval_mode"],
+            "recall": metrics["recall"],
+            "mrr@10": metrics["mrr@10"],
+        },
+        "production_retrieval_mode": PRODUCTION_RETRIEVAL_MODE,
+    }
+    json_path.write_text(json.dumps(bootstrap, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+    arm_note = "无 dense 索引：本波仅 BM25 轨；按 I0 纪律标需索引，不得因此改臂。"
+    arm_payload = None
+    dense_path = Path(dense_db) if dense_db is not None else Path("data/dense/index.sqlite")
+    if dense_path.is_file():
+        try:
+            arm_payload = run_arm_compare(
+                corpus=Path(corpus),
+                retrieve_gold_path=hard_gold_path,
+                dense_db=dense_path,
+                a0_baseline_path=json_path,
+                out_dir=out_dir,
+            )
+            arm_note = (
+                f"臂对比已跑（见 retrieve-arm-compare.md）；"
+                f"通过线={arm_payload.get('verdict')}。"
+                "Hard-Gold 骨架 ≠ 授权换臂。"
+            )
+        except ValueError as exc:
+            arm_note = f"臂对比跳过（{exc}）；不得因此改臂。"
+
+    gain_verdict = (
+        "关（Hard-Gold 骨架已跑；改生产默认臂仍须另决议 + 过线；"
+        f"PRODUCTION_RETRIEVAL_MODE={PRODUCTION_RETRIEVAL_MODE!r}）"
+    )
+
+    lines = [
+        "# Hard-Gold 骨架 · BM25 / 增益门复跑",
+        "",
+        "> 层身份：冒烟 / 面试加固（I3）。本波 Hard-Gold = 骨架语料 + 增益门复跑；**未授权改臂**。",
+        "> 不报方差；不作统计显著。与冒烟 `retrieve_gold.json` 分文件。",
+        "",
+        f"- 日期: {date.today().isoformat()}",
+        f"- hard gold: `{hard_gold_path}`",
+        f"- n: {stats['n']}（预登记 ≥20）",
+        f"- traps/对抗: {stats['trap_adversarial_count']} "
+        f"（{stats['trap_adversarial_ratio']:.1%}，预登记 ≥30%）",
+        f"- BM25 Recall@10: {metrics['recall']['10']:.4f}",
+        f"- BM25 MRR@10: {metrics['mrr@10']:.4f}",
+        f"- 代码生产默认臂: `{PRODUCTION_RETRIEVAL_MODE}`（断言须为 bm25）",
+        f"- 增益门判决: {gain_verdict}",
+        f"- 臂对比备注: {arm_note}",
+        "",
+        "增益门公式见 `docs/eval-retrieve.md` §3 / ADR-0026；本页不事后改门。",
+        "",
+    ]
+    md_path = out_dir / "retrieve-hard-gold-bm25.md"
+    md_path.write_text("\n".join(lines), encoding="utf-8")
+    public = {
+        "date": date.today().isoformat(),
+        "level": "hard_gold_skeleton",
+        "hard_gold_path": str(hard_gold_path),
+        "stats": stats,
+        "metrics": {
+            "n": metrics["n"],
+            "retrieval_mode": metrics["retrieval_mode"],
+            "recall": metrics["recall"],
+            "mrr@10": metrics["mrr@10"],
+        },
+        "production_retrieval_mode": PRODUCTION_RETRIEVAL_MODE,
+        "gain_verdict": gain_verdict,
+        "arm_note": arm_note,
+        "arm_compare": {
+            "verdict": arm_payload.get("verdict") if arm_payload else None,
+            "report_path": arm_payload.get("report_path") if arm_payload else None,
+        },
+    }
+    json_path.write_text(json.dumps(public, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    if PRODUCTION_RETRIEVAL_MODE != "bm25":
+        raise RuntimeError("违例：Hard-Gold 骨架跑后生产默认臂非 bm25")
+    return {
+        "report_path": str(md_path),
+        "json_path": str(json_path),
+        "metrics": metrics,
+        "stats": stats,
+        "production_retrieval_mode": PRODUCTION_RETRIEVAL_MODE,
+        "gain_verdict": gain_verdict,
+    }
 
 
 def load_trap_corpus(root: Path) -> list:

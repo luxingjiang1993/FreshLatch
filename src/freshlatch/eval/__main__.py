@@ -21,6 +21,7 @@ from freshlatch.eval.control import run_control, run_control_c  # noqa: E402
 from freshlatch.eval.report import console_summary, render_report, write_outputs  # noqa: E402
 from freshlatch.eval.retrieve_eval import (  # noqa: E402
     run_arm_compare,
+    run_hard_gold_retrieve,
     run_rerank_compare,
     run_retrieve_baseline,
     run_transform_compare,
@@ -75,6 +76,11 @@ def build_parser(pack: PackPaths | None = None) -> argparse.ArgumentParser:
     p_ret.add_argument("--docket", default="data/t0_docket.json")
     p_ret.add_argument("--distractor-docket", default="data/eval/distractor_docket.json")
     p_ret.add_argument("--retrieve-gold", default="data/eval/retrieve_gold.json")
+    p_ret.add_argument(
+        "--hard",
+        action="store_true",
+        help="Hard-Gold 骨架集（data/eval/retrieve_hard_gold.json；不改臂）",
+    )
     p_ret.add_argument("--out", default="reports")
 
     return ap
@@ -89,6 +95,23 @@ def main() -> None:
         return
 
     if args.cmd == "retrieve":
+        if getattr(args, "hard", False):
+            hard_path = Path(args.retrieve_gold)
+            if hard_path.name == "retrieve_gold.json" or not hard_path.is_file():
+                hard_path = Path("data/eval/retrieve_hard_gold.json")
+            hard = run_hard_gold_retrieve(
+                corpus=Path(args.corpus),
+                hard_gold_path=hard_path,
+                out_dir=Path(args.out),
+            )
+            print(
+                f"[Hard-Gold 骨架] n={hard['stats']['n']} "
+                f"traps/对抗={hard['stats']['trap_adversarial_count']} "
+                f"Recall@10={hard['metrics']['recall']['10']:.4f} "
+                f"臂={hard['production_retrieval_mode']}"
+            )
+            print(f"报告: {hard['report_path']}")
+            return
         try:
             payload = run_retrieve_baseline(
                 corpus=Path(args.corpus),
