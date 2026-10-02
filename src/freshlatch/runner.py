@@ -223,6 +223,34 @@ class Runner:
             "freshness_audit": load_skill_body("freshness_audit"),  # Auditor(#20/ADR-0009,#22 接线)
         }
 
+    def guarded_agent_call(
+        self,
+        fn,
+        *,
+        timeout_s: float = 30.0,
+        force_timeout: bool = False,
+        claim_id: str | None = None,
+    ):
+        """I3 #250:Agent 步骤受控包装——超时 → 结构化错误,不静默绿。
+
+        合成夹具 · 非真事故复盘。成功则返回 fn() 结果;失败返回 StructuredAgentError。
+        """
+        from freshlatch.i3_hardening import StructuredAgentError, run_with_timeout_structured
+
+        result = run_with_timeout_structured(
+            fn, timeout_s, force_timeout=force_timeout,
+        )
+        if isinstance(result, StructuredAgentError):
+            self.ctx.emit({
+                "type": "agent_hardening_error",
+                "claim_id": claim_id,
+                "error_code": result.error_code,
+                "reason": result.message,
+                "status": "unknown",
+                "fixture": "合成夹具 · 非真事故复盘",
+            })
+        return result
+
     def _spawn_lead(self, claim: Claim):
         """构造 Lead 会话:教义表(reverify 为本会话主提示,devil_advocate 沿派驻链给 Critic,
         freshness_audit 沿自动触发链给 Auditor)。"""

@@ -137,6 +137,17 @@ def _apply_one(store, claims_by_id: dict, d: HumanDecision, now: Callable[[], da
                           detail=f"已作废并进作废名单(voided_at={ts});机器判定 {claim.status} 保留")
 
 
+def _renew_already_logged(store, claim_id: str, evidence_id: str) -> bool:
+    """同 claim+evidence 是否已有成功 renew 行(I3 #250 重放不双写)。"""
+    list_fn = getattr(store, "list_latch_events", None)
+    if list_fn is None:
+        return False
+    for row in list_fn(claim_id) or []:
+        if row.get("action") == "renew" and str(row.get("evidence_id") or "") == evidence_id:
+            return True
+    return False
+
+
 def parse_evidence_id(eid: object) -> tuple[str, str, AsOf] | None:
     """`doc_id#anchor@as_of` → (doc_id, anchor, as_of);格式不成立返回 None。
 
@@ -159,12 +170,19 @@ def _apply_renew(store, claim: Claim, d: HumanDecision, now: Callable[[], dateti
       1. 格式校验:`doc#anchor@T1`;
       2. 点回校验:证据必须点回真实 chunk(编造的 id 不得续命);
       3. 规则闸:证据锚 T1 / checksum 对不上 / 作废名单(#23 实装清单第 3 项)。
+
+    I3 #250:同 claim+evidence 重放幂等跳过,不双写 latch_log 坏账行。
     """
     machine_status_before = claim.status  # 落档前机器判定;失败路径不得改 status
     if not str(d.evidence_id or "").strip():
         return DecisionResult(claim.claim_id, ok=False, action="renew",
                               error_code="RENEW_NO_EVIDENCE",
                               detail="续命必须带 T1 原文证据(evidence_id 至少 1 个,ADR-0006 §4)")
+    # 重放幂等(合成夹具 · 非真事故复盘):已有同证据 renew 行则零写跳过
+    if _renew_already_logged(store, claim.claim_id, str(d.evidence_id)):
+        return DecisionResult(claim.claim_id, ok=True, action="renew",
+                              detail=(f"已续命,幂等跳过(latch_log 已有 "
+                                      f"{d.evidence_id};不双写坏账)"))
     parsed = parse_evidence_id(d.evidence_id)
     if parsed is None:
         return DecisionResult(claim.claim_id, ok=False, action="renew",
