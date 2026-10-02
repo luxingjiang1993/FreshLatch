@@ -23,3 +23,26 @@ data/*.log
 # 本地 git worktree 隔离目录(不入库)
 .worktrees/
 
+# 本地草稿/会话暂存(不入库；权威落 docs/ 与 GitHub Issues)
+.scratch/
+
+# 本地架构/图示导出缓存(不入库)
+.archify/
+
+# 本地 Cursor 会话笔记(不入库；规范进 docs/)
+.cursor/
+
+# 本地评测 tee / 临时 sqlite / 轨迹(正式报告以已跟踪的 reports 为准；新跑 raw 默不入库)
+reports/**/*.sqlite
+reports/**/mck-run.sqlite
+reports/**/trajectories/*.jsonl
+reports/dense-rebuild-*.txt
+reports/pytest-integration-*.txt
+reports/pytest-245-246.txt
+reports/i1-mck-1-*.txt
+reports/i2-live-*.txt
+reports/l3-*.txt
+reports/i2-inj-e2e/
+reports/report-*.json
+reports/report-*.md
+
