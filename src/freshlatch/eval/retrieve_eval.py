@@ -302,19 +302,33 @@ def run_hard_gold_retrieve(
     arm_note = "无 dense 索引：本波仅 BM25 轨；按 I0 纪律标需索引，不得因此改臂。"
     arm_payload = None
     dense_path = Path(dense_db) if dense_db is not None else Path("data/dense/index.sqlite")
+    rerank_payload = None
     if dense_path.is_file():
         try:
+            # hard 臂对比 / rerank 必须与 A0 同库 = corpus + traps（#259）
             arm_payload = run_arm_compare(
                 corpus=Path(corpus),
                 retrieve_gold_path=hard_gold_path,
                 dense_db=dense_path,
                 a0_baseline_path=json_path,
                 out_dir=out_dir,
+                trap_root=trap_root,
+                report_name="retrieve-hard-gold-arm-compare.md",
+                level_label="Hard-Gold hard 集",
             )
             arm_note = (
-                f"臂对比已跑（见 retrieve-arm-compare.md）；"
+                f"臂对比已跑（见 retrieve-hard-gold-arm-compare.md；同库 corpus+traps）；"
                 f"通过线={arm_payload.get('verdict')}。"
                 "Hard-Gold 骨架 ≠ 授权换臂。"
+            )
+            rerank_payload = run_rerank_compare(
+                corpus=Path(corpus),
+                retrieve_gold_path=hard_gold_path,
+                dense_db=dense_path,
+                out_dir=out_dir,
+                trap_root=trap_root,
+                report_name="retrieve-hard-gold-rerank-compare.md",
+                level_label="Hard-Gold hard 集",
             )
         except ValueError as exc:
             arm_note = f"臂对比跳过（{exc}）；不得因此改臂。"
@@ -363,6 +377,11 @@ def run_hard_gold_retrieve(
         "arm_compare": {
             "verdict": arm_payload.get("verdict") if arm_payload else None,
             "report_path": arm_payload.get("report_path") if arm_payload else None,
+            "corpus_scope": "corpus+traps",
+        },
+        "rerank_compare": {
+            "sentence": rerank_payload.get("sentence") if rerank_payload else None,
+            "report_path": rerank_payload.get("report_path") if rerank_payload else None,
         },
     }
     json_path.write_text(json.dumps(public, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
@@ -375,6 +394,8 @@ def run_hard_gold_retrieve(
         "stats": stats,
         "production_retrieval_mode": PRODUCTION_RETRIEVAL_MODE,
         "gain_verdict": gain_verdict,
+        "arm_compare": arm_payload,
+        "rerank_compare": rerank_payload,
     }
 
 
@@ -578,6 +599,24 @@ def _attach_vecs(store: InMemoryStore, db_path: Path) -> int:
     return attached
 
 
+def _ingest_eval_corpus(
+    store: InMemoryStore,
+    corpus: Path,
+    trap_root: Path | None = None,
+) -> int:
+    """评测入库：主语料；可选 traps（与 A0 / Hard-Gold 同库口径）。"""
+    n = ingest_into(store, Path(corpus))
+    if trap_root is None:
+        return n
+    root = Path(trap_root)
+    if not root.is_dir():
+        return n
+    for doc, chunks in load_trap_corpus(root):
+        store.add_document(doc, chunks)
+        n += len(chunks)
+    return n
+
+
 def _cached_query_embedder(queries: list[str]):
     from freshlatch.store.embeddings import embed_texts
 
@@ -603,13 +642,19 @@ def run_arm_compare(
     dense_db: Path,
     a0_baseline_path: Path,
     out_dir: Path,
+    trap_root: Path | None = None,
+    report_name: str = "retrieve-arm-compare.md",
+    level_label: str = "冒烟",
 ) -> dict:
-    """同语料同 query 的 BM25 / dense / hybrid 三列。不用 α 加权。"""
+    """同语料同 query 的 BM25 / dense / hybrid 三列。不用 α 加权。
+
+    trap_root 非空时与 A0/Hard-Gold 同库（corpus+traps）；冒烟默认不加 traps。
+    """
     from freshlatch.store.pipeline import RRF_K
 
     retrieve_gold = _load_json(retrieve_gold_path)
     store = InMemoryStore()
-    ingest_into(store, corpus)
+    _ingest_eval_corpus(store, corpus, trap_root=trap_root)
     attached = _attach_vecs(store, dense_db)
     if attached != len(store._chunks) or attached == 0:
         raise ValueError("dense 索引未覆盖全部 chunk,拒绝把降级结果写成 dense/hybrid")
@@ -636,13 +681,15 @@ def run_arm_compare(
         bm25=means["bm25"], dense=means["dense"], hybrid=means["hybrid"], a0=a0,
     )
     passed = bool(verdict["pass"] and dense_honest and hybrid_honest)
+    scope = "corpus+traps" if trap_root is not None else "corpus"
     lines = [
-        "# BM25 / dense / hybrid 三列（冒烟）",
+        f"# BM25 / dense / hybrid 三列（{level_label}）",
         "",
         f"- RRF k: {RRF_K}",
         "- 融合: 名次倒数,不是 α 加权",
         "- 模型: text-embedding-v4",
         "- 解码: 向量为预计算嵌入,打分无 temperature/seed",
+        f"- 评测库: {scope}",
         f"- n: {len(retrieve_gold['queries'])}（冒烟级,不声称统计显著,不报方差）",
         f"- BM25 Recall@10: {means['bm25']:.4f}",
         f"- dense Recall@10: {means['dense']:.4f}",
@@ -655,12 +702,12 @@ def run_arm_compare(
         f"- hybrid 列确为 hybrid: {'pass' if hybrid_honest else 'fail'}",
         f"- 通过线: {'pass' if passed else 'fail'}",
         "",
-        "本页是冒烟对比,不是统计结论。生产默认仍是 BM25。",
+        f"本页是 {level_label} 对比,不是统计结论。生产默认仍是 BM25。",
         "",
     ]
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
-    path = out / "retrieve-arm-compare.md"
+    path = out / report_name
     path.write_text("\n".join(lines), encoding="utf-8")
     return {
         "report_path": str(path),
@@ -668,6 +715,9 @@ def run_arm_compare(
         "means": means,
         "pass": passed,
         "verdict": "pass" if passed else "fail",
+        "corpus_scope": scope,
+        "bm25_vs_a0": verdict["bm25_vs_a0"],
+        "hybrid_vs_min": verdict["hybrid_vs_min"],
     }
 
 
@@ -697,6 +747,9 @@ def run_rerank_compare(
     retrieve_gold_path: Path,
     dense_db: Path,
     out_dir: Path,
+    trap_root: Path | None = None,
+    report_name: str = "retrieve-rerank-compare.md",
+    level_label: str = "冒烟",
 ) -> dict:
     """hybrid 与 hybrid+rerank 的 Recall@10 和 p95。未过线则生产默认关。"""
     import time
@@ -705,7 +758,7 @@ def run_rerank_compare(
 
     retrieve_gold = _load_json(retrieve_gold_path)
     store = InMemoryStore()
-    ingest_into(store, corpus)
+    _ingest_eval_corpus(store, corpus, trap_root=trap_root)
     attached = _attach_vecs(store, dense_db)
     if attached != len(store._chunks) or attached == 0:
         raise ValueError("dense 索引未覆盖全部 chunk,拒绝把降级结果写成 rerank 成绩")
@@ -739,11 +792,13 @@ def run_rerank_compare(
     )
     if not honest:
         sentence = "生产默认关"
+    scope = "corpus+traps" if trap_root is not None else "corpus"
     lines = [
-        "# hybrid 与 hybrid+rerank 对比（冒烟）",
+        f"# hybrid 与 hybrid+rerank 对比（{level_label}）",
         "",
         "- 对比臂: 本地词重叠精排,不是 bge,不是 α 加权",
         "- 解码: 无 LLM temperature/seed;延迟在本机 perf_counter 上测量",
+        f"- 评测库: {scope}",
         f"- n: {len(retrieve_gold['queries'])}（冒烟级,不声称统计显著,不报方差）",
         f"- hybrid Recall@10: {hybrid_mean:.4f}",
         f"- hybrid+rerank Recall@10: {rerank_mean:.4f}",
@@ -758,7 +813,7 @@ def run_rerank_compare(
     ]
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
-    path = out / "retrieve-rerank-compare.md"
+    path = out / report_name
     path.write_text("\n".join(lines), encoding="utf-8")
     return {
         "report_path": str(path),
@@ -767,4 +822,5 @@ def run_rerank_compare(
         "rerank": rerank_mean,
         "p95_ms": p95,
         "production_mode": PRODUCTION_RETRIEVAL_MODE,
+        "corpus_scope": scope,
     }

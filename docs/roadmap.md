@@ -16,13 +16,13 @@
 ```
 DONE: Phase A · Phase I0 · Phase V1（冒烟 + 本地 ACCEPTANCE）· Phase I1（冒烟 corpus）· Phase V1.5（冒烟 Evidence-bound）· Phase I2（冒烟安全三例）· Phase V2（冒烟·采用层 发前钩子+台账）· Phase I3（冒烟/面试加固三轨）· ① bare-pytest 卫生
 NOW → NEXT:
-  C′ 外部嵌入平台化 |（Hard-Gold 过线未过 · 冻 bm25 · 无改臂实现票）
+  C′ 外部嵌入平台化 |（Hard-Gold 已过线 · 未换臂 · Gate #260 待人终收）
 BACKLOG: C′ 外部嵌入平台化 | 图谱/采编 CMS | High-Recall SKU | Studio (frozen) | B′ 真事故扩面（I3 夹具以外仍 on-demand）
 ```
 
 **默认阶段序（钉死）：** `V1 → I1 → V1.5`。  
 **唯一例外：** 自用痛点明确是「改稿再验」时，允许 V1 后先开 V1.5；**冲 mid 仍以 I1 为准**，不得用 V1.5 替代 I1。  
-**本期：** V1.5 / I2 / V2 / **I3 Exit 已齐**；**Hard-Gold 改臂闸流程已钉**（[#257](https://github.com/luxingjiang1993/FreshLatch/issues/257) · ADR-0033）；**#258 复跑已跑 · 未过线 · 冻 bm25 · 未换臂**（证据 `docs/evidence/hard-gold-arm/`）。
+**本期：** V1.5 / I2 / V2 / **I3 Exit 已齐**；**Hard-Gold 改臂闸流程已钉**（[#257](https://github.com/luxingjiang1993/FreshLatch/issues/257) · ADR-0033）；**#259 同库复跑已过线 · 未换臂 · 待 Gate 实现票**（证据 `docs/evidence/hard-gold-arm/`）。
 
 ---
 
@@ -203,11 +203,11 @@ BACKLOG: C′ 外部嵌入平台化 | 图谱/采编 CMS | High-Recall SKU | Stud
 
 ## Backlog · **SEPARATE TICKETS / FROZEN**
 
-### Ticket: Hard-Gold + arms gate · **骨架并入 I3 · 改臂闸已决议 · 复跑未过线（冻 bm25）**
+### Ticket: Hard-Gold + arms gate · **骨架并入 I3 · 改臂闸已决议 · 已过线 · 未换臂**
 I3 交付难金标骨架 + 增益报告 + **不改臂**。  
-**改臂授权闸**已 grill 收口（[#257](https://github.com/luxingjiang1993/FreshLatch/issues/257) · ADR-0033）；**#258 复跑已跑**：**未过线 · 冻 bm25 · 未换臂**（Hybrid 整门 fail：BM25 相对 A0；Rerank 关）。  
-评估见 `docs/research/Hard-Gold过线与改臂决议设计评估.md`；证据 `docs/evidence/hard-gold-arm/` · [`RERUN-20261003.md`](./evidence/hard-gold-arm/RERUN-20261003.md)。  
-**不等于** 旧 Phase B；**不挡** 已完成的 V1；**≠** 已换臂；**不开**改臂实现票。
+**改臂授权闸**已 grill 收口（[#257](https://github.com/luxingjiang1993/FreshLatch/issues/257) · ADR-0033）；**#258** 曾因臂对比缺 traps 假 fail；**#259** 同库（corpus+traps）按原门复跑：**已过线 · 未换臂**（Hybrid pass；Rerank 关；配置仍 bm25）。  
+评估见 `docs/research/Hard-Gold过线与改臂决议设计评估.md`；证据 `docs/evidence/hard-gold-arm/` · [`RERUN-20261003-259.md`](./evidence/hard-gold-arm/RERUN-20261003-259.md)。  
+**不等于** 旧 Phase B；**≠** 已换臂；**须** Gate 实现票人终收后方可改 `PRODUCTION_RETRIEVAL_MODE`。
 
 ### Ticket: High-Recall SKU（可选）
 预算内二次检索；同一审计契约；默认臂变更仍走 Hard-Gold 改臂决议。
@@ -385,3 +385,4 @@ Findings ≈ 顶会正规次主赛道；Industry ≈ 同会落地轨；对 mid �
 | 2026-10-02 | **I3 DoD close（#253）**：冒烟/面试加固关门摘要见 `docs/evidence/i3/I3-DoD-CLOSE.md`；硬 Exit 引用 ACCEPTANCE；Out 未偷渡；骨架 ≠ 换臂；夹具 ≠ 真事故；不升格政策平台 |
 | 2026-10-03 | **Hard-Gold 改臂闸 grill DONE（#257）**：过线=dense+hard 臂对比+Hybrid@hard；过线才 Gate 实现票；本波不换臂；评估见 `docs/research/Hard-Gold过线与改臂决议设计评估.md`；ADR-0033；证据 `docs/evidence/hard-gold-arm/`；下一跳 dense+hard 复跑票 |
 | 2026-10-03 | **Hard-Gold 过线复跑（#258）**：dense ok；hard 臂对比通过线 fail（BM25 vs A0）；Rerank 关；**不过线 · 冻 bm25 · 未换臂**；书面结论 `docs/evidence/hard-gold-arm/RERUN-20261003.md` |
+| 2026-10-03 | **Hard-Gold 同库复跑（#259）**：corpus+traps；dense=94；原门 Hybrid@hard **pass**；Rerank 关；**过线 · 未换臂**；书面结论 `docs/evidence/hard-gold-arm/RERUN-20261003-259.md`；下一跳 Gate 改臂实现票 |

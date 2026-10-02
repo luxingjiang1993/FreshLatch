@@ -18,9 +18,14 @@
   },
   "production_retrieval_mode": "bm25",
   "gain_verdict": "关（Hard-Gold 骨架已跑；改生产默认臂仍须另决议 + 过线；PRODUCTION_RETRIEVAL_MODE='bm25'）",
-  "arm_note": "臂对比已跑（见 retrieve-arm-compare.md）；通过线=fail。Hard-Gold 骨架 ≠ 授权换臂。",
+  "arm_note": "臂对比已跑（见 retrieve-hard-gold-arm-compare.md；同库 corpus+traps）；通过线=pass。Hard-Gold 骨架 ≠ 授权换臂。",
   "arm_compare": {
-    "verdict": "fail",
-    "report_path": "reports\\retrieve-arm-compare.md"
+    "verdict": "pass",
+    "report_path": "reports\\retrieve-hard-gold-arm-compare.md",
+    "corpus_scope": "corpus+traps"
+  },
+  "rerank_compare": {
+    "sentence": "生产默认关",
+    "report_path": "reports\\retrieve-hard-gold-rerank-compare.md"
   }
 }

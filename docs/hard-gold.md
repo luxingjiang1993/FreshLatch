@@ -38,5 +38,5 @@ PYTHONPATH=src python -m freshlatch.eval retrieve --retrieve-gold data/eval/retr
 
 ## 5. 改臂另决议（指针）
 
-过线布尔与改臂**授权闸**见 **ADR-0033** · 评估 `docs/research/Hard-Gold过线与改臂决议设计评估.md` · 证据 `docs/evidence/hard-gold-arm/`（[#257](https://github.com/luxingjiang1993/FreshLatch/issues/257)）。  
-骨架 Exit ≠ 该闸已过线；过线后改配置仍须 **Gate** 实现票。
+过线布尔与改臂**授权闸**见 **ADR-0033** · 评估 `docs/research/Hard-Gold过线与改臂决议设计评估.md` · 证据 `docs/evidence/hard-gold-arm/`（[#257](https://github.com/luxingjiang1993/FreshLatch/issues/257) · [#259](https://github.com/luxingjiang1993/FreshLatch/issues/259)）。  
+hard 臂对比与 A0 **同库** = `corpus + traps`；dense 须覆盖同库。骨架 Exit ≠ 已换臂；过线后改配置仍须 **Gate** 实现票。

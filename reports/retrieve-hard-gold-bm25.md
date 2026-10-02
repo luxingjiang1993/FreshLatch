@@ -11,6 +11,6 @@
 - BM25 MRR@10: 0.3497
 - 代码生产默认臂: `bm25`（断言须为 bm25）
 - 增益门判决: 关（Hard-Gold 骨架已跑；改生产默认臂仍须另决议 + 过线；PRODUCTION_RETRIEVAL_MODE='bm25'）
-- 臂对比备注: 臂对比已跑（见 retrieve-arm-compare.md）；通过线=fail。Hard-Gold 骨架 ≠ 授权换臂。
+- 臂对比备注: 臂对比已跑（见 retrieve-hard-gold-arm-compare.md；同库 corpus+traps）；通过线=pass。Hard-Gold 骨架 ≠ 授权换臂。
 
 增益门公式见 `docs/eval-retrieve.md` §3 / ADR-0026；本页不事后改门。

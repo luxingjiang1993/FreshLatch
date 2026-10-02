@@ -2,10 +2,11 @@
 
 - 对比臂: 本地词重叠精排,不是 bge,不是 α 加权
 - 解码: 无 LLM temperature/seed;延迟在本机 perf_counter 上测量
+- 评测库: corpus+traps
 - n: 20（冒烟级,不声称统计显著,不报方差）
-- hybrid Recall@10: 0.5000
-- hybrid+rerank Recall@10: 0.5000
-- p95: 189.2 ms
+- hybrid Recall@10: 0.7500
+- hybrid+rerank Recall@10: 0.7500
+- p95: 39.3 ms
 - 门槛: Recall@10 严格更好且 p95≤800ms
 - rerank 列确为 hybrid+rerank: pass
 - 判决: 生产默认关
