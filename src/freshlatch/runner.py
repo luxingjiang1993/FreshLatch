@@ -282,6 +282,10 @@ class Runner:
         mark_stale × Auditor fresh → stale + 异议记录。Auditor 无任何路径把状态改绿。
         收口 seal_no_unfounded_fresh:无 Auditor / 未双判一致不得留下 fresh。
         """
+        from freshlatch.gates.policy_gate import (
+            apply_policy_after_rule_gate,
+            extract_provenance_refs,
+        )
         from freshlatch.gates.rule_gate import (
             ERR_DIMENSION_CROSSCHECK_MISMATCH,
             GateContext,
@@ -308,6 +312,16 @@ class Runner:
                                 registered_dimension=claim.dimension,
                                 stale_dimension=decision.stale_dimension,
                                 t1_evidence_texts=self._cited_t1_texts(decision.evidence_ids))
+
+        def _after_rule_gate(gate_result, gd: GateDecision):
+            """I3 #249:rule_gate 之后组合政策旁路;不改 rule_gate 不变量正文。"""
+            return apply_policy_after_rule_gate(
+                gate_result,
+                provenance=extract_provenance_refs(
+                    evidence_ids=gd.t1_evidence_ids,
+                    texts=gd.t1_evidence_texts,
+                ),
+            )
 
         def _gate_back(reason_text: str) -> None:
             claim.status = "unknown"
@@ -337,7 +351,8 @@ class Runner:
         if decision.status == "fresh":
             routed = arbitrate_fresh(decision.auditor_verdict)
             if routed == "fresh":
-                gate = rule_gate(claim, _gate_decision("fresh"), gate_ctx)
+                gd = _gate_decision("fresh")
+                gate = _after_rule_gate(rule_gate(claim, gd, gate_ctx), gd)
                 if gate.green:
                     claim.status = "fresh"
                 else:

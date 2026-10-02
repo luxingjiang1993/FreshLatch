@@ -1,0 +1,15 @@
+{
+  "version": "1",
+  "note": "I3 #249 Policy-as-code thin：出处禁区。政策拒 ≠ 新鲜度拒。非 OPA/Cedar。",
+  "rules": [
+    {
+      "id": "source-ban-demo-001",
+      "kind": "source_ban",
+      "patterns": [
+        "banned.example",
+        "*/leaked-internal/*"
+      ],
+      "description": "演示用出处禁区（域名 banned.example 与路径 */leaked-internal/*）。已入库 T1 仍可被政策拒支撑绿灯。"
+    }
+  ]
+}

@@ -16,6 +16,10 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Callable
 
+from freshlatch.gates.policy_gate import (
+    apply_policy_after_rule_gate,
+    extract_provenance_refs,
+)
 from freshlatch.gates.rule_gate import GateContext, GateDecision, rule_gate
 from freshlatch.models import AsOf, Claim
 
@@ -173,11 +177,19 @@ def _apply_renew(store, claim: Claim, d: HumanDecision, now: Callable[[], dateti
                               error_code=RENEW_EVIDENCE_UNRESOLVED,
                               detail=f"证据点不回任何 {as_of} 原文块: {d.evidence_id}")
     basis = {"doc_id": chunk.doc_id, "checksum": chunk.checksum}  # 新 validity_basis(T1 doc+checksum)
-    gate = rule_gate(
-        claim,
-        GateDecision(status="renew", t1_evidence_ids=[str(d.evidence_id)], validity_basis=basis),
-        GateContext(invalidation_list=set(store.list_invalidation()),
-                    checksum_fn=checksum_fn or (lambda doc, at: None)),
+    # I3 #249:规则闸之后组合出处禁区旁路(政策拒 ≠ 新鲜度拒;不改 rule_gate 正文)
+    gate = apply_policy_after_rule_gate(
+        rule_gate(
+            claim,
+            GateDecision(status="renew", t1_evidence_ids=[str(d.evidence_id)],
+                         validity_basis=basis),
+            GateContext(invalidation_list=set(store.list_invalidation()),
+                        checksum_fn=checksum_fn or (lambda doc, at: None)),
+        ),
+        provenance=extract_provenance_refs(
+            evidence_ids=[str(d.evidence_id)],
+            texts=[getattr(chunk, "text", "") or ""],
+        ),
     )
     if not gate.green:
         return DecisionResult(claim.claim_id, ok=False, action="renew",
