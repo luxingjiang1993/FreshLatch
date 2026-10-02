@@ -395,6 +395,40 @@ BOI / GenAI 暂行办法 / 个保审计办法 — 见会话记录；适合 `regu
 
 ---
 
+## 2i. I3 grill · 面试加固三轨（#8 · B′夹具 · Hard-Gold骨架）（2026-10-03）
+
+### Round 1–3 已钉（全认推荐）
+
+| # | 拍板 |
+|---|------|
+| **I3-Q1** | 一阶段 · **三轨**（验收互不顶替） |
+| **I3-Q2** | 生死线 = **冲 mid**；Hard-Gold 本波不改臂 |
+| **I3-Q3** | B′ = 最小 hardening（timeout/结构化错误/串行幂等）+ 薄观测页；合成夹具 |
+| **I3-Q4** | Hard-Gold = 规格 + 难金标 + 增益报告；**不改** `PRODUCTION_RETRIEVAL_MODE` |
+| **I3-Q5** | #8 = 声明式禁区旁路；≥1 可复现 |
+| **I3-Q6** | 阶段名 = **Phase I3** |
+| **I3-Q7** | 三轨 Exit 预锁表认（见评估 / ADR-0032） |
+| **I3-Q8** | 票序 = **#8 → B′ → Hard-Gold → DoD** |
+| **I3-Q9** | 难金标 = 分文件 `retrieve_hard_gold` · n≥20 · traps/对抗≥30% |
+| **I3-Q10** | #8 首条 = **出处禁区**（政策拒 ≠ 新鲜度拒） |
+| **I3-Q11** | 一篇评估 + ADR-0032 + 词表 |
+| **I3-Q12** | Out 整表认（改臂/OPA/Memory/Studio/C′/替代 I1·I2/方差/整包再验挂钩子…） |
+| **I3-Q13** | 主缝句钉死（见 ADR-0032 / roadmap I3） |
+| **I3-Q14** | ACCEPTANCE 文首层标签强制 |
+| **I3-Q15** | CONTEXT：Hard-Gold · Policy-as-code · 政策拒 |
+
+**Anthropic 合入：** 全档冒烟；Hard-Gold 骨架≠换臂授权；判据预登记；词表不含 Phase 名/通过线数字。
+
+**Frontier：** 已空。  
+**共享理解:** 已确认（2026-10-03）。  
+
+**已落盘:**  
+`docs/research/I3-面试加固三轨设计评估.md` · `docs/adr/0032-i3-三轨加固政策旁路与Hard-Gold骨架.md` · CONTEXT · roadmap Phase I3  
+
+**下一跳:** Frontier [#249](https://github.com/luxingjiang1993/FreshLatch/issues/249) → `/before-implement 249` 后 fresh `/implement`（清单 `.scratch/i3-tickets/INDEX.md`）。
+
+---
+
 ## 2b. I0 grill 已钉（2026-09-29 · Round 1 · 认推荐）
 
 | # | 决策 | 拍板 |
@@ -472,7 +506,8 @@ BOI / GenAI 暂行办法 / 个保审计办法 — 见会话记录；适合 `regu
 | **I2 安全三例** | 面试安全轮：越权召回 / 间接注入 / 检索投毒各 1 fixture；≠ #4；ADR-0030 → **已迁 CONTEXT** |
 | **tenant_id / poison** | 召回 ACL 上下文；不可引用元数据标签 → **已迁 CONTEXT** |
 | **patch_events** | 改稿对照实验与产品审计共用事件账 |
-| **Hard-Gold** | 另票；过增益门才讨论改生产默认臂 |
+| **Hard-Gold** | retrieve 难金标分文件轨；骨架可跑≠改臂授权 → **已迁 CONTEXT / ADR-0032** |
+| **Policy-as-code / 政策拒** | 声明式禁区旁路；出处禁区首条 → **已迁 CONTEXT / ADR-0032** |
 | **冒烟层评测（I0）** | Phase A retrieve 对比表的诚实档：n 小、可复跑、**禁止**升格为统计显著/方差结论；文首必须声明（评测文档纪律，不进产品词表正文） |
 | **retrieve 子系统评测** | `python -m freshlatch.eval retrieve` 轨；与主张金标 `eval run --gold` **分轨**，不得混报 |
 | **V1 垂直（顾问报告）** | 近端唯一垂直：已签发顾问/战略主张的发前复验；样例主包 McKinsey State of AI（T0≈2025-03 / T1≈2025-11）；非研报、非合规主包 |
@@ -494,7 +529,8 @@ BOI / GenAI 暂行办法 / 个保审计办法 — 见会话记录；适合 `regu
 | I1 Exit 前 | — | 用 V1.5/论文叙事替代 mid 铁证 |
 | **V1.5 grill 已确认 · Exit 已齐** | I2 / 论文预实验簿记 | 薄对话；扩 HumanLatch；Exit 硬绑可发；改生产默认臂；用 V1.5 替代 I1 |
 | **I2 grill 已确认 · Exit 已齐** | — | 安全平台；#4 顶替 I2；取消确定性硬门 |
-| **V2 grill 已确认 · 待 to-spec** | to-spec / 发前钩子+台账冒烟 | 插件平台当 V2 Exit；整包再验挂钩子；双写作废表；Memo 商业裁决；检索 embed 冒充本阶段 |
+| **V2 grill 已确认 · Exit 已齐** | — | 插件平台当 V2 Exit；整包再验挂钩子；双写作废表；Memo 商业裁决；检索 embed 冒充本阶段 |
+| **I3 to-tickets DONE · Frontier #249** | before-implement → implement（#249→#253） | 本波改默认臂；OPA 平台；改写 rule_gate 不变量；用 I3 替代 I1/I2；报方差 |
 
 ---
 
@@ -525,3 +561,6 @@ BOI / GenAI 暂行办法 / 个保审计办法 — 见会话记录；适合 `regu
 | 2026-09-29 | **I2 共享理解确认**；评估+ADR-0030+CONTEXT+roadmap 完整对齐三例落盘；下一跳 to-spec |
 | 2026-09-30 | **V2 Round 1–3**：发前钩子+台账；入站 check；Memo UI+CLI；冒烟 Exit；C′/图谱 Backlog；§2h |
 | 2026-09-30 | **V2 共享理解确认**；评估+ADR-0031+CONTEXT+roadmap 落盘；下一跳 to-spec |
+| 2026-10-03 | **I3 Round 1–3** 全认；共享理解确认；评估+ADR-0032+CONTEXT+roadmap 落盘；下一跳 to-spec |
+| 2026-10-03 | **I3 to-spec**：`docs/spec/20-PhaseI3-InterviewHardening.md`；[#248](https://github.com/luxingjiang1993/FreshLatch/issues/248)；下一跳 to-tickets |
+| 2026-10-03 | **I3 to-tickets + enrich**：#249–#253；Frontier #249；`.scratch/i3-tickets/INDEX.md` |

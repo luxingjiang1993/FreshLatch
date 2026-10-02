@@ -16,13 +16,13 @@
 ```
 DONE: Phase A · Phase I0 · Phase V1（冒烟 + 本地 ACCEPTANCE）· Phase I1（冒烟 corpus）· Phase V1.5（冒烟 Evidence-bound）· Phase I2（冒烟安全三例）· Phase V2（冒烟·采用层 发前钩子+台账）· ① bare-pytest 卫生
 NOW → NEXT:
-  （下一主烤另开；B′ 按需）
-BACKLOG: Phase B′ (on-demand · 延后) | C′ 外部嵌入平台化 | 图谱/采编 CMS | Hard-Gold ticket | Policy-as-code (#8) | Studio (frozen)
+  Phase I3（to-tickets DONE · [#248](https://github.com/luxingjiang1993/FreshLatch/issues/248) · Frontier [#249](https://github.com/luxingjiang1993/FreshLatch/issues/249) → before-implement）
+BACKLOG: C′ 外部嵌入平台化 | 图谱/采编 CMS | High-Recall SKU | Studio (frozen) | B′ 真事故扩面（I3 夹具以外仍 on-demand）
 ```
 
 **默认阶段序（钉死）：** `V1 → I1 → V1.5`。  
 **唯一例外：** 自用痛点明确是「改稿再验」时，允许 V1 后先开 V1.5；**冲 mid 仍以 I1 为准**，不得用 V1.5 替代 I1。  
-**本期：** V1.5 Exit **已齐**；**I2 Exit 已齐（冒烟级）**；**V2 Exit 已齐（冒烟·采用层）**（[#226](https://github.com/luxingjiang1993/FreshLatch/issues/226) · #227–#232；证据 `docs/evidence/v2/ACCEPTANCE.md` · 关门 `docs/evidence/v2/V2-DoD-CLOSE.md`）；**B′ 延后**（按需待命）。
+**本期：** V1.5 / I2 / V2 Exit **已齐（冒烟）**；**下一主烤 = Phase I3**（整合原 Backlog：Policy-as-code #8 · B′ 最小夹具 · Hard-Gold 骨架不改臂；评估见 `docs/research/I3-面试加固三轨设计评估.md` · ADR-0032）。
 
 ---
 
@@ -150,11 +150,11 @@ BACKLOG: Phase B′ (on-demand · 延后) | C′ 外部嵌入平台化 | 图谱/
 
 ---
 
-## Phase B′ — Agent hardening · **ON-DEMAND ONLY · 延后（2026-09-30）**
+## Phase B′ — Agent hardening · **部分并入 I3 · 真事故仍 ON-DEMAND**
 
-**Status:** **DEFERRED** — 后续还有开发优先；无真痛点不开。**不挡 V2 / 后续阶段**。演示卡死、人审重放翻车或讲不清闸分布时再开对应 Trigger 薄票。  
-**Goal:** 修真实演示/人审事故，不为「像生产」空转。  
-**Depends on:** V1 + I1 之后出现痛点
+**Status:** I3 本波仅做 **合成夹具**（timeout/结构化错误/串行幂等薄刀 + 闸分布一页）；**不声称**修过真生产事故。真 Trigger（演示卡死/人审重放翻车）仍可另开薄票扩面。  
+**Goal:** 修真实演示/人审事故，不为「像生产」空转；I3 夹具服务冲 mid。  
+**Depends on:** V1 + I1 之后；I3 见下节
 
 | Trigger | Work |
 |---------|------|
@@ -163,6 +163,26 @@ BACKLOG: Phase B′ (on-demand · 延后) | C′ 外部嵌入平台化 | 图谱/
 | 说不清闸分布 | 轨迹 → 一页观测 |
 
 **Out:** Memory 大叙事、多 Agent 拓扑、跨 Provider 对照作硬关门。
+
+---
+
+## Phase I3 — 面试加固三轨（#8 · B′夹具 · Hard-Gold骨架）· **to-tickets DONE · Frontier #249**
+
+**Goal:** 冲 mid 可答辩加固包：政策旁路拒绿灯 · Agent 假绿/重入不静默 · 难金标骨架可跑且默认臂仍 bm25。  
+**Track:** I · **Depends on:** V1–V2 / I0–I2 冒烟已齐  
+**决议:** ADR-0032；评估见 `docs/research/I3-面试加固三轨设计评估.md`  
+**共享理解:** 2026-10-03 已确认（一阶段三轨 · 票序 #8→B′→Hard-Gold→DoD · 不改臂 · 出处禁区旁路）  
+**规格:** `docs/spec/20-PhaseI3-InterviewHardening.md` · GitHub [#248](https://github.com/luxingjiang1993/FreshLatch/issues/248) `ready-for-agent`  
+**子票:** #249–#253（清单 `.scratch/i3-tickets/INDEX.md`）；依赖 `#249→#250→#251→#252→#253`  
+**主缝:** 政策旁路能拒绿灯、Agent 假绿/重入不静默、难金标骨架可跑且默认臂仍为 bm25——三轨证据分列，互不顶替。
+
+| | |
+|--|--|
+| **In** | **#8**：声明式出处禁区 → Verify+ 旁路 → 政策拒 ≥1 可复现；**B′**：timeout/结构化错误 + 人审串行幂等薄 + 闸分布一页（合成夹具）；**Hard-Gold**：规格 + `retrieve_hard_gold` n≥20（traps/对抗≥30%）+ 分列增益报告 + **断言仍 bm25**；`docs/evidence/i3/ACCEPTANCE.md` |
+| **Out** | 改 `PRODUCTION_RETRIEVAL_MODE`；宣称 Hard-Gold 已授权换臂；OPA/Cedar/政策平台；改写 `rule_gate` 不变量语义；Memory/多 Agent/跨 Provider 硬关门；Studio；C′/图谱/CMS；High-Recall 改默认；用 I3 替代 I1/I2；报方差/显著；整包再验挂回发前钩子 |
+| **Exit** | **预锁（冒烟/面试加固）**：三轨硬条均 pass 且 ACCEPTANCE 落盘；文首层标签强制。**非**改臂授权；**非**政策平台；**非**真事故复盘。 |
+
+**票序（一人一条）：** #8 → B′ → Hard-Gold → 联合 DoD。
 
 ---
 
@@ -183,17 +203,15 @@ BACKLOG: Phase B′ (on-demand · 延后) | C′ 外部嵌入平台化 | 图谱/
 
 ## Backlog · **SEPARATE TICKETS / FROZEN**
 
-### Ticket: Hard-Gold + arms gate（另票 · 必单列）
-过难金标 + 分列评测增益门 → 才讨论改生产默认（dense/hybrid/rerank）。  
-**不等于** 旧 Phase B；**不挡** V1。
+### Ticket: Hard-Gold + arms gate · **骨架并入 I3 · 改臂仍另决议**
+I3 交付难金标骨架 + 增益报告 + **不改臂**。过线后「讨论改生产默认」仍须**另决议**（≠ I3 Exit 已换臂）。  
+**不等于** 旧 Phase B；**不挡** 已完成的 V1。
 
 ### Ticket: High-Recall SKU（可选）
-预算内二次检索；同一审计契约；默认臂变更仍走 Hard-Gold。
+预算内二次检索；同一审计契约；默认臂变更仍走 Hard-Gold 改臂决议。
 
-### Ticket: Policy-as-code thin slice（idea **#8**）
-禁区规则进 Gate；挂 Verify+ 旁路；**勿**单独立项做大平台。  
-**Earliest:** **不得早于 V1 Exit**。  
-**默认挂点:** I1 之后，或与 V1.5 **并行薄切片**；**不抢 V1**。
+### Ticket: Policy-as-code thin slice（idea **#8**）· **并入 I3**
+禁区规则进 Gate 旁路；I3 首条 = 出处禁区。完整政策平台仍 **Out**。
 
 ### Ticket: C′ 外部嵌入平台化（备选 · 非 V2 Exit）
 Word / PPT / Notion 插件、开放公网 webhook 等 Adoption **后期**嵌入面。  
@@ -308,15 +326,16 @@ Findings ≈ 顶会正规次主赛道；Industry ≈ 同会落地轨；对 mid �
 | **I1** | 失败证据 | **DONE**（冒烟；`docs/evidence/i1/ACCEPTANCE.md`） |
 | **V1.5** | Evidence-bound 补丁（表单） | **DONE**（冒烟；`docs/evidence/v15/ACCEPTANCE.md` · `V15-DoD-CLOSE.md`） |
 | **I2** | 安全三例（ACL·注入·投毒） | **DONE**（冒烟；`docs/evidence/i2/ACCEPTANCE.md` · `I2-DoD-CLOSE.md`；≠ #4；ADR-0030） |
-| **B′** | 修真痛点 | **延后**（按需待命；触发条件消失才关） |
+| **B′** | 修真痛点 / I3 夹具 | **I3 夹具并入**；真事故仍 on-demand |
 | **V2** | 发前钩子+主张台账 | **DONE**（冒烟·采用层；`docs/evidence/v2/ACCEPTANCE.md` · `V2-DoD-CLOSE.md`；ADR-0031） |
-| **Backlog** | B′ / 金标 / #8 / C′ 嵌入平台 / 图谱·CMS / Studio | 另票或冻结 |
+| **I3** | #8 政策旁路 · B′夹具 · Hard-Gold骨架 | **to-tickets DONE**（[#248](https://github.com/luxingjiang1993/FreshLatch/issues/248)·#249–#253；Frontier [#249](https://github.com/luxingjiang1993/FreshLatch/issues/249)） |
+| **Backlog** | C′ / 图谱·CMS / High-Recall / Studio / 改臂另决议 | 另票或冻结 |
 
 ---
 
 ## 一句话
 
-**I0 钉数字 → V1 发前闭环 → ① bare-pytest 卫生（DONE）→ 本地 V1 ACCEPTANCE → I1 失败样本（DONE）→ V1.5 Evidence-bound 补丁（DONE · 冒烟）→ I2 安全三例（DONE · 冒烟 · [#213](https://github.com/luxingjiang1993/FreshLatch/issues/213)）→ **V2 发前钩子+主张台账（DONE · 冒烟·采用层 · [#226](https://github.com/luxingjiang1993/FreshLatch/issues/226) · ADR-0031）**；**B′ 延后按需**；C′ 插件平台与图谱/CMS 仅 Backlog；#8 薄挂且不早于 V1；#4 只做可选 demo；Studio 冻死；难金标另票；论文挂同一条发前闭环。**
+**I0 钉数字 → V1 发前闭环 → ① bare-pytest 卫生（DONE）→ 本地 V1 ACCEPTANCE → I1 失败样本（DONE）→ V1.5 Evidence-bound 补丁（DONE · 冒烟）→ I2 安全三例（DONE · 冒烟 · [#213](https://github.com/luxingjiang1993/FreshLatch/issues/213)）→ **V2 发前钩子+主张台账（DONE · 冒烟·采用层 · [#226](https://github.com/luxingjiang1993/FreshLatch/issues/226) · ADR-0031）** → **I3 面试加固三轨（NOW · #8+B′夹具+Hard-Gold骨架 · ADR-0032 · 评估见 docs/research/I3-面试加固三轨设计评估.md）**；C′ 插件平台与图谱/CMS 仅 Backlog；改臂另决议；#4 只做可选 demo；Studio 冻死；论文挂同一条发前闭环。**
 
 ---
 
@@ -357,3 +376,6 @@ Findings ≈ 顶会正规次主赛道；Industry ≈ 同会落地轨；对 mid �
 | 2026-09-30 | **V2 enrich-tickets**：#227–#232 Agent Guards 齐（Paths/Provenance pass）；Frontier 同上 |
 | 2026-09-30 | **V2 实现波 #227–#231**：闸核心 · 台账 · Memo 套闸 · 入站 check · e2e+ACCEPTANCE；PR #233–#237 合 main；Ronin 代批齐关 |
 | 2026-09-30 | **V2 DoD close（#232）**：冒烟·采用层关门摘要见 `docs/evidence/v2/V2-DoD-CLOSE.md`；硬 Exit 引用 ACCEPTANCE；Out 未偷渡（无平台/图谱/双写/商业裁决/整包再验挂钩子/改臂/Studio）；curl ≠ 平台已交付；不升格 Hard-Gold |
+| 2026-10-03 | **I3 grill DONE**：整合 #8+B′夹具+Hard-Gold骨架；一阶段三轨；不改臂；出处禁区旁路；评估见 `docs/research/I3-面试加固三轨设计评估.md`；ADR-0032；下一跳 to-spec |
+| 2026-10-03 | **I3 to-spec**：`docs/spec/20-PhaseI3-InterviewHardening.md`；GitHub [#248](https://github.com/luxingjiang1993/FreshLatch/issues/248) `ready-for-agent`；下一跳 to-tickets |
+| 2026-10-03 | **I3 to-tickets + enrich**：#249–#253 `ready-for-agent`；清单 `.scratch/i3-tickets/INDEX.md`；Frontier #249 |

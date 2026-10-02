@@ -161,6 +161,14 @@ _Avoid_: 记忆插件、Mem0、记忆体检产品
 纯函数/Workflow 层,强制执行不变量:`stale` / `unknown` 不得绿灯、无 `t1_evidence_ids` 不得 `fresh`、checksum 对不上不得 fresh/续命(**Batch 2 半激活**,ADR-0017:renew 半边接线真 `checksum_fn`=语料现算 sha256且禁读库列,以确定性负例验收;fresh 半边仍**结构性空转**——不构造 `validity_basis`;不得升格为「checksum 已证明 latch」;盘点见 docs/research/checksum链激活契约.md,决议见 docs/research/β-checksum激活契约与空转设计评估.md)、stale 必须携带可点回 T1 反证 id、stale 反证不得为纯元陈述、fresh 需双判一致(`auditor_verdict` 在场且非 dissent,ADR-0009)、stale 反证经 Auditor 维度核对异议时打回落 unknown + 异议记录(ADR-0010)、登记维度 ≠ 反证自标维度时机械跨检打回 unknown + 机械比对异议(`DIMENSION_CROSSCHECK_MISMATCH`,ADR-0011;两维任一缺失回落 Auditor 语义核对;**受理层预检先行、闸层转兜底**,ADR-0012)、续命(renew)必须带 ≥1 个锚 T1 的 evidence_id(ADR-0006 §4;renew 是人审 L0 出口,不受双判一致约束)。绿灯唯一出口。
 _Avoid_: 校验器、检查器
 
+**Policy-as-code（thin · #8）**:
+声明式禁区规则经 Verify+ **旁路**装入闸路径;命中则不得绿灯。不是 OPA/Cedar 政策平台,不是现有规则闸不变量正文本身(ADR-0032)。
+_Avoid_: 政策引擎已交付、把禁区塞进并改写 rule_gate 不变量语义、完整 RBAC 策略面
+
+**政策拒**:
+因禁区规则命中而不得绿灯的拦截语义;与新鲜度拒、`must_stale`、元陈述拒、ACL/poison 拒 **分语义**(ADR-0032)。
+_Avoid_: 与 stale/unknown 混称、把政策拒说成检索投毒已拦
+
 **checksum 半激活 / 结构性空转**:
 checksum 链按半边诚实登记启用态:已宣称激活的半边须接线且确定性负例打得响;未激活半边明示结构性空转,不得宣传全链已启用。套套逻辑(`checksum_fn` 读与 basis 同源库列)视为假激活。操作验收句在评估文档与 ADR-0017,不进本定义扩写。Batch 2 攻击面用例表(ATK-CS-*)见 docs/research/β-checksum攻击面用例集合设计评估.md。β+ 档 3a(ADR-0024):方向已锁为将来 list 同构全员受检,本批仍不构造 fresh `validity_basis`;单 doc 主证据激活已否;实装须另票预登记。评估见 docs/research/β+-档3a-fresh-validity_basis设计评估.md。β+ 档 3b(ADR-0025):跨轮腐烂重检方向已锁——复验入口与 UI 拉单双触发、同一 `check_basis`/`apply_rot`,不符→`unknown`+机械码;无 basis 的 fresh 不检;实装须另票。评估见 docs/research/β+-档3b-跨轮腐烂重检设计评估.md。
 _Avoid_: checksum 已启用(含糊全称)、开关已打开、档3a已启用、跨轮重检已上线(决议未实装时)
@@ -206,6 +214,10 @@ _Avoid_: 过时词匹配、记忆准确率
 **retrieve 子系统评测**:
 与主张金标 `eval run --gold` **分轨**:入口为 `python -m freshlatch.eval retrieve`,产物在 `reports/retrieve-*.md`。I0 引用该轨数字时须遵守冒烟层预登记与 reports 为真相源(ADR-0026;`docs/accounting-card.md` / `docs/eval-retrieve.md`)。通过线与增益门正文在规格/评估文档,不在此扩写。
 _Avoid_: 把 retrieve 冒烟表与主张金标混报、把冒烟写成统计证明
+
+**Hard-Gold**:
+retrieve **难金标**轨,与冒烟 `retrieve_gold` **分文件**(如 `retrieve_hard_gold`);过预登记增益门后才**讨论**改生产默认臂。骨架波可跑分列报告但**不等于**已授权改 `PRODUCTION_RETRIEVAL_MODE`(ADR-0026 · ADR-0032)。
+_Avoid_: 把 n=36 冒烟称作 Hard-Gold、Hard-Gold 跑过即已换臂、与主张金标混报
 
 **I1 失败复盘（评测标签）**:
 答辩/冒烟用语,不是生产 Gate 或 disposition 枚举。桶名(找不到/找错/没用上)与漏拦/误拦的操作定义、corpus 路径见 ADR-0028 与 `docs/research/I1-失败三分法与HumanLatch语料设计评估.md`;语料落 `docs/evidence/i1/`。

@@ -32,6 +32,7 @@ W4 开工前决策完备的实施规格:复验主链(W1–W2)、Critic 与评测
 | 17 | [17-must-fresh-c6-all-hit.md](17-must-fresh-c6-all-hit.md) | 可选薄票：#241 后仅剩 c6 误 stale；追 gold `all_hit`；预锁止损；禁改 gold |
 | 18 | [18-must-fresh-c5-反事实敏感性.md](18-must-fresh-c5-反事实敏感性.md) | L3 后 c5 误 stale：敏感性/反事实升格为现时推翻；教义+薄启发式；禁改 gold；与 §19 分票 |
 | 19 | [19-must-unknown-c10-缺口误stale.md](19-must-unknown-c10-缺口误stale.md) | L3 后 c10 误 stale：缺口/无新测量 paraphrase 击穿元陈述词表；标记增补；禁改 gold；与 §18 分票 |
+| 20 | [20-PhaseI3-InterviewHardening.md](20-PhaseI3-InterviewHardening.md) | Phase I3 面试加固三轨(#8 政策旁路 · B′夹具 · Hard-Gold骨架;ADR-0032;[#248](https://github.com/luxingjiang1993/FreshLatch/issues/248)) |
 
 ## 决议来源索引(本规格各节的权威出处)
 
