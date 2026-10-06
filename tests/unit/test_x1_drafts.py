@@ -475,6 +475,9 @@ def test_non_json_writes_raw_and_exits_nonzero(tmp_path: Path, capsys):
     assert "Traceback" not in captured.out
     assert (out / "raw-response.txt").read_text(encoding="utf-8") == "这不是 JSON"
     assert (out / ".x1-drafts-manifest.json").is_file()
+    manifest = json.loads((out / ".x1-drafts-manifest.json").read_text(encoding="utf-8"))
+    assert "不得当标签使用" in captured.err
+    assert "不得当标签使用" in manifest["raw_response_note"]
 
 
 def test_flag_passes_enable_thinking_false_to_create(tmp_path: Path):
@@ -804,3 +807,119 @@ def test_non_json_then_rerun_same_out(tmp_path: Path):
     assert code2 == 0
     assert (out / "questions.json").is_file()
     assert (out / "corpus" / "t1" / "draft-doc.md").is_file()
+
+
+def _assert_document_path_failure(tmp_path: Path, capsys, documents, *, err_substr: str) -> None:
+    """非法文档路径必须走 raw-response 失败路径，不得 traceback。"""
+    mod = _load_script()
+    payload = {
+        "documents": documents,
+        "questions": _draft_payload()["questions"],
+    }
+    raw = json.dumps(payload, ensure_ascii=False)
+    fake = FakeLLM(raw)
+    cfg = _write_json(tmp_path / "config.json", _cfg())
+    out = tmp_path / "drafts"
+    llm_path = ROOT / "src" / "freshlatch" / "llm.py"
+    before_llm = llm_path.read_bytes()
+    code = mod.main(
+        ["generate", "--config", str(cfg), "--out", str(out)],
+        llm_client=fake,
+    )
+    captured = capsys.readouterr()
+    assert code == 1
+    assert "Traceback" not in captured.err
+    assert "Traceback" not in captured.out
+    assert err_substr in captured.err
+    assert "不得当标签使用" in captured.err
+    assert (out / "raw-response.txt").read_text(encoding="utf-8") == raw
+    manifest = json.loads((out / ".x1-drafts-manifest.json").read_text(encoding="utf-8"))
+    assert "不得当标签使用" in manifest["raw_response_note"]
+    assert not (out / "questions.json").is_file()
+    assert llm_path.read_bytes() == before_llm
+
+
+@pytest.mark.parametrize(
+    "raw_path",
+    [
+        "C:x",
+        "C:data/corpus/t1/x.md",
+        "C:\\abs\\x.md",
+        "\\\\server\\share\\x.md",
+        "corpus\\..\\..\\x.md",
+        ".",
+    ],
+)
+def test_document_windows_and_root_paths_write_raw(tmp_path: Path, capsys, raw_path: str):
+    """Linux / Windows CI 同一套用例：盘符、UNC、反斜杠穿越、暂存根均拒绝。"""
+    _assert_document_path_failure(
+        tmp_path,
+        capsys,
+        [{"path": raw_path, "content": "不该写出"}],
+        err_substr="路径非法",
+    )
+
+
+def test_document_corpus_file_dir_collision_writes_raw(tmp_path: Path, capsys):
+    _assert_document_path_failure(
+        tmp_path,
+        capsys,
+        [
+            {"path": "corpus", "content": "文件伪装成 corpus 目录"},
+            {"path": "corpus/t1/d.md", "content": _doc_body()},
+        ],
+        err_substr="文件与目录冲突",
+    )
+
+
+def test_document_write_oserror_writes_raw(tmp_path: Path, capsys, monkeypatch):
+    mod = _load_script()
+    real_write = Path.write_text
+
+    def _boom(self, *args, **kwargs):
+        if self.suffix == ".md":
+            raise OSError("simulated write failure")
+        return real_write(self, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "write_text", _boom)
+    payload = _draft_payload()
+    raw = json.dumps(payload, ensure_ascii=False)
+    fake = FakeLLM(raw)
+    cfg = _write_json(tmp_path / "config.json", _cfg())
+    out = tmp_path / "drafts"
+    code = mod.main(
+        ["generate", "--config", str(cfg), "--out", str(out)],
+        llm_client=fake,
+    )
+    captured = capsys.readouterr()
+    assert code == 1
+    assert "Traceback" not in captured.err
+    assert "Traceback" not in captured.out
+    assert "写入草稿失败" in captured.err
+    assert "不得当标签使用" in captured.err
+    assert (out / "raw-response.txt").read_text(encoding="utf-8") == raw
+    manifest = json.loads((out / ".x1-drafts-manifest.json").read_text(encoding="utf-8"))
+    assert "不得当标签使用" in manifest["raw_response_note"]
+    assert not (out / "questions.json").is_file()
+
+
+def test_document_path_syntax_rejects_drive_unc_backslash_and_dot():
+    """不依赖本机 Path 语义：Linux CI 也能拦住 Windows 盘符/UNC。"""
+    mod = _load_script()
+    samples = [
+        "C:x",
+        "C:data/corpus/t1/x.md",
+        "C:\\abs\\x.md",
+        "\\\\server\\share\\x.md",
+        "corpus\\..\\..\\x.md",
+        ".",
+        "../x.md",
+        "/abs/x.md",
+    ]
+    for raw in samples:
+        err = mod._document_path_syntax_error(raw)
+        assert err, f"应拒绝路径 {raw!r}"
+        assert "路径非法" in err
+    assert mod._document_path_syntax_error("corpus/t1/d.md") is None
+    assert mod._document_paths_collide(["corpus", "corpus/t1/d.md"])
+    assert not mod._document_paths_collide(["corpus/t1/d.md", "corpus/t1/e.md"])
