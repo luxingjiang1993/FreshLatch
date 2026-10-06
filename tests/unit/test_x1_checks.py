@@ -21,6 +21,7 @@ from freshlatch.eval.x1_checks import (
     MIN_SYNTHETIC_RATIO,
     MIN_TRAP_ADVERSARIAL_RATIO,
     check_x1,
+    clean_chunk_text,
     clean_text,
     eight_gram_overlap,
     strip_law_names,
@@ -185,6 +186,124 @@ def test_acceptance_lexical_full_query_copy(tmp_path: Path):
     assert "decontam=1" in r.records[0]
 
 
+def test_lexical_copy_across_newlines(tmp_path: Path):
+    """原文跨行照抄的 lexical 题必须判污染。换行属于 Cc，清洗后应拼回连续正文。"""
+    corpus = tmp_path / "corpus"
+    traps = tmp_path / "traps"
+    _write_doc(
+        corpus,
+        "t1",
+        "T1",
+        "law-doc",
+        "## p1\n适用于重要\n数据出境活动\n",
+    )
+    questions = [
+        _q(
+            "lex-nl",
+            "适用于重要数据出境活动",
+            qtype="lexical",
+            relevant=["law-doc#p1@T1"],
+        )
+    ]
+    r = _run(corpus, traps, questions, _cfg())
+    assert r.decontam_hits == 1
+    assert r.exit_code == 1
+    assert "decontam=1" in r.records[0]
+
+
+def test_arm_empty_relevant_is_violation(tmp_path: Path):
+    corpus = tmp_path / "corpus"
+    traps = tmp_path / "traps"
+    _write_doc(corpus, "t1", "T1", "doc-a", _ok_body("护栏旁述十二字以上。"))
+    questions = [
+        _q("a-empty", "臂对比题十二字以上", qtype="paraphrase", relevant=[]),
+    ]
+    r = _run(corpus, traps, questions, _cfg())
+    assert r.exit_code == 1
+    assert any("relevant 不得为空" in m for m in r.messages)
+    ok = [
+        _q(
+            "g1",
+            "旧快照护栏十二字",
+            qtype="lexical",
+            category="trap",
+            score_role="guardrail",
+            relevant=[],
+        ),
+        _q(
+            "a1",
+            "臂对比题十二字以上",
+            qtype="paraphrase",
+            relevant=["doc-a#p1@T1"],
+        ),
+    ]
+    r2 = _run(corpus, traps, ok, _cfg())
+    assert r2.exit_code == 0
+    assert r2.n_guardrail == 1
+
+
+def test_query_missing_not_string_or_empty_after_whitelist(tmp_path: Path):
+    corpus = tmp_path / "corpus"
+    traps = tmp_path / "traps"
+    _write_doc(corpus, "t1", "T1", "doc-a", _ok_body("叙述十二字以上即可。"))
+    missing = _q("no-q", "占位问句十二字以上", relevant=["doc-a#p1@T1"])
+    del missing["query"]
+    r_missing = _run(corpus, traps, [missing], _cfg())
+    assert r_missing.exit_code == 1
+    assert any("缺 query" in m for m in r_missing.messages)
+
+    not_str = _q("num-q", "占位问句十二字以上", relevant=["doc-a#p1@T1"])
+    not_str["query"] = 123
+    r_type = _run(corpus, traps, [not_str], _cfg())
+    assert r_type.exit_code == 1
+    assert any("不是字符串" in m for m in r_type.messages)
+
+    only_law = _q(
+        "law-only",
+        LAW,
+        qtype="lexical",
+        relevant=["doc-a#p1@T1"],
+    )
+    r_empty = _run(corpus, traps, [only_law], _cfg())
+    assert r_empty.exit_code == 1
+    assert any("去白名单后为空" in m for m in r_empty.messages)
+
+
+def test_nan_inf_threshold_exit_2(tmp_path: Path):
+    corpus = tmp_path / "corpus"
+    traps = tmp_path / "traps"
+    shared = "甲乙丙丁戊己庚辛壬癸子丑寅卯"
+    _write_doc(corpus, "t1", "T1", "doc-a", _ok_body(shared))
+    questions = [_q("p1", shared, qtype="paraphrase", relevant=["doc-a#p1@T1"])]
+    r_nan = _run(corpus, traps, questions, _cfg(decontam_8gram_max=float("nan")))
+    assert r_nan.exit_code == 2
+    assert r_nan.decontam_hits == 0
+    r_inf = _run(corpus, traps, questions, _cfg(decontam_8gram_max=float("inf")))
+    assert r_inf.exit_code == 2
+    assert r_inf.decontam_hits == 0
+    r_ninf = _run(corpus, traps, questions, _cfg(decontam_8gram_max=float("-inf")))
+    assert r_ninf.exit_code == 2
+
+
+def test_answer_points_must_be_strings(tmp_path: Path):
+    corpus = tmp_path / "corpus"
+    traps = tmp_path / "traps"
+    _write_doc(corpus, "t1", "T1", "doc-a", "## p1\n只有甲点在这里。\n")
+    _write_doc(corpus, "t1", "T1", "doc-b", "## p1\n只有乙点在这里。\n")
+    questions = [
+        _q(
+            "mh-pts",
+            "两跳分属两文档",
+            qtype="multi_hop",
+            relevant=["doc-a#p1@T1", "doc-b#p1@T1"],
+            answer_points=["只有甲点在这里", 2],
+        )
+    ]
+    r = _run(corpus, traps, questions, _cfg())
+    assert r.exit_code == 1
+    assert any("字符串列表" in m for m in r.messages)
+
+
 def test_whitelist_stripped_from_query_not_chunk(tmp_path: Path):
     corpus = tmp_path / "corpus"
     traps = tmp_path / "traps"
@@ -194,8 +313,9 @@ def test_whitelist_stripped_from_query_not_chunk(tmp_path: Path):
     cleaned_q = strip_law_names(clean_text(query))
     assert LAW not in cleaned_q
     assert extra == cleaned_q or extra.replace("。", "") in cleaned_q
-    body = clean_text(f"## p1\n{LAW}只出现在块里。")
+    body = clean_chunk_text(f"## p1\n{LAW}只出现在块里。")
     assert LAW in body
+    assert not body.startswith("p1")
     before = eight_gram_overlap(clean_text(query), [body])
     after = eight_gram_overlap(cleaned_q, [body])
     assert before is not None and before > 0.2

@@ -7,6 +7,8 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
+import re
 import unicodedata
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -67,6 +69,8 @@ LAW_NAMES = (
 LCS_FLAG_MIN = 0.8
 LEXICAL_MIN_LEN = 8
 NGRAM = 8
+# 块正文开头的条款标题，清洗前剥掉，避免 pN 粘到正文上。
+_CLAUSE_HEADING = re.compile(r"^## p\d+[ \t]*(?:\n|$)")
 
 
 @dataclass
@@ -104,9 +108,32 @@ class CheckResult:
         return "\n".join(lines) + "\n"
 
 
+def strip_clause_heading(text: str) -> str:
+    """去掉块开头的 ``## pN`` 标题行。"""
+    normalized = text.replace("\r\n", "\n").replace("\r", "\n")
+    m = _CLAUSE_HEADING.match(normalized)
+    if m:
+        return normalized[m.end() :]
+    return normalized
+
+
 def clean_text(text: str) -> str:
-    """删掉 Unicode 类别 P（标点）与 Z（分隔符）。不做大小写折叠，不做繁简转换。"""
-    return "".join(ch for ch in text if unicodedata.category(ch)[0] not in {"P", "Z"})
+    """删掉 Unicode 类别 P（标点）、Z（分隔符）与 Cc（控制字符，含 \\n \\t \\r）。
+
+    不做大小写折叠，不做繁简转换。
+    """
+    out: list[str] = []
+    for ch in text:
+        cat = unicodedata.category(ch)
+        if cat[0] in {"P", "Z"} or cat == "Cc":
+            continue
+        out.append(ch)
+    return "".join(out)
+
+
+def clean_chunk_text(text: str) -> str:
+    """块正文：先剥 ``## pN`` 标题行，再按 clean_text 清洗。"""
+    return clean_text(strip_clause_heading(text))
 
 
 def strip_law_names(cleaned_query: str) -> str:
@@ -280,6 +307,10 @@ def check_x1(
         decontam_max = None
     else:
         decontam_max = float(cfg["decontam_8gram_max"])
+        if not math.isfinite(decontam_max):
+            threshold_unlocked = True
+            messages.append("decontam_8gram_max 为 NaN 或 Infinity，不代入阈值")
+            decontam_max = None
 
     for key, expected in LOCKED_CONFIG.items():
         if key not in cfg:
@@ -484,10 +515,25 @@ def check_x1(
                 qtype_counts[qtype] += 1
             if category in {"trap", "adversarial"}:
                 n_trap_adv += 1
+            if len(relevant) == 0:
+                has_violation = True
+                messages.append(f"{qid} arm 题 relevant 不得为空")
 
-        query_text = item.get("query", "")
-        if not isinstance(query_text, str):
-            query_text = ""
+        query_ok = False
+        cleaned_q = ""
+        if "query" not in item:
+            has_violation = True
+            messages.append(f"{qid} 缺 query")
+        elif not isinstance(item.get("query"), str):
+            has_violation = True
+            messages.append(f"{qid} query 不是字符串")
+        else:
+            cleaned_q = strip_law_names(clean_text(item["query"]))
+            if not cleaned_q:
+                has_violation = True
+                messages.append(f"{qid} query 去白名单后为空")
+            else:
+                query_ok = True
 
         r8: float | None = None
         lcs: float | None = None
@@ -495,7 +541,6 @@ def check_x1(
         decontam = 0
 
         skip_decontam = is_guardrail and len(relevant) == 0
-        cleaned_q = strip_law_names(clean_text(query_text))
         rel_chunks: list[Chunk] = []
         for eid in relevant:
             ch = by_eid.get(str(eid))
@@ -504,7 +549,7 @@ def check_x1(
                 messages.append(f"{qid} relevant 找不到 {eid}")
             else:
                 rel_chunks.append(ch)
-        rel_clean = [clean_text(c.text) for c in rel_chunks]
+        rel_clean = [clean_chunk_text(c.text) for c in rel_chunks]
 
         if qtype == "multi_hop" and not is_guardrail:
             doc_ids = []
@@ -519,20 +564,23 @@ def check_x1(
             if not isinstance(points, list) or len(points) < 2:
                 has_violation = True
                 messages.append(f"{qid} 须有至少 2 条 answer_points")
+            elif not all(isinstance(p, str) for p in points):
+                has_violation = True
+                messages.append(f"{qid} answer_points 必须是字符串列表")
             else:
-                cleaned_pts = [clean_text(str(p)) for p in points]
+                cleaned_pts = [clean_text(p) for p in points]
                 if any(not p for p in cleaned_pts):
                     has_violation = True
                     messages.append(f"{qid} answer_points 清洗后有空串")
                 else:
                     for ch in chunks:
-                        body = clean_text(ch.text)
+                        body = clean_chunk_text(ch.text)
                         if all(p in body for p in cleaned_pts):
                             has_violation = True
                             messages.append(f"{qid} answer_points 集中在同一 chunk")
                             break
 
-        if not skip_decontam:
+        if not skip_decontam and query_ok:
             if qtype == "lexical":
                 r8 = None
                 lcs = None
