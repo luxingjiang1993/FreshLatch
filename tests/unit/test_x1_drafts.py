@@ -448,6 +448,7 @@ def test_generate_uses_flash_decoding_params(tmp_path: Path):
     assert '"path":"corpus/t1/b1-memo.md"' in prompt
     assert "题目 id 必须形如 b1-q1" in prompt
     assert "文件名必须是 <doc_id>.md" in prompt
+    assert "目标文件已存在时，该批校验失败" not in prompt
     assert (out / ".x1-drafts-manifest.json").is_file()
 
 
@@ -2516,7 +2517,7 @@ def test_interrupted_call_keeps_precharge_and_resume_replaces_it(tmp_path: Path,
     assert len(again.calls) == 1
     resumed = _manifest(out)
     assert resumed["batches"]["b1"]["status"] == "ok"
-    assert resumed["spent_cny"] == pytest.approx(mod._cost_cny(1, 1, 1, 2))
+    assert resumed["spent_cny"] == pytest.approx(upper + mod._cost_cny(1, 1, 1, 2))
     assert (out / "corpus" / "t1" / "b1-draft.md").is_file()
 
     questions = _draft_payload()["questions"]
@@ -2566,7 +2567,7 @@ def test_interrupted_call_keeps_precharge_and_resume_replaces_it(tmp_path: Path,
     assert _flag(FakeLLM(note), tmp_path / "flag-inflight-ok.json") == 0
     settled = json.loads((tmp_path / ".x1-flag-spend.json").read_text(encoding="utf-8"))
     assert "inflight" not in settled
-    assert settled["spent_cny"] == pytest.approx(mod._cost_cny(1, 1, 1, 2))
+    assert settled["spent_cny"] == pytest.approx(flag_upper + mod._cost_cny(1, 1, 1, 2))
 
 
 def test_streak_stop_still_runs_checker(tmp_path: Path, capsys, monkeypatch):
@@ -2667,7 +2668,7 @@ def _plain_question(qid: str, as_of: str, text: str) -> dict:
 
 
 def test_replay_q1_and_colliding_filenames_commits_valid_batches(tmp_path: Path, capsys):
-    """连续回放真实回复形态：q1 题号、通用文件名。合法批次都落盘，撞名的批次停在 failed。"""
+    """连续回放：q1 题号、strategy_review_01.md 和裸 uuid。脚本改写路径后，合法批次都落盘。"""
     mod = _load_script()
     kept = (
         "## p1\n根据最新战略评估，本季度核心业务增长预期维持在年化12%。客户对现有产品线的满意度持续上升。\n\n"
@@ -2695,7 +2696,7 @@ def test_replay_q1_and_colliding_filenames_commits_valid_batches(tmp_path: Path,
         {
             "documents": [
                 _folded_doc(
-                    "corpus/t0/s1-d0-04-memo.md",
+                    "corpus/t0/strategy_review_01.md",
                     "s1-d0-04-memo",
                     "T0",
                     "S1",
@@ -2723,7 +2724,7 @@ def test_replay_q1_and_colliding_filenames_commits_valid_batches(tmp_path: Path,
         {
             "documents": [
                 _folded_doc(
-                    "corpus/t0/s2-d0-01-memo.md",
+                    "corpus/t0/c0ffee00abcd.md",
                     "s2-d0-01-memo",
                     "T0",
                     "S2",
@@ -2732,7 +2733,7 @@ def test_replay_q1_and_colliding_filenames_commits_valid_batches(tmp_path: Path,
                     kept,
                 ),
                 _folded_doc(
-                    "corpus/t1/s2-d0-01-memo.md",
+                    "corpus/t1/c0ffee00abcd.md",
                     "s2-d0-01-memo",
                     "T1",
                     "S2",
@@ -2769,34 +2770,110 @@ def test_replay_q1_and_colliding_filenames_commits_valid_batches(tmp_path: Path,
     prompt = fake.calls[0]["messages"][0]["content"]
     assert "题目 id 必须形如 s1-d0-04-q1" in prompt
     assert "文件名必须是 <doc_id>.md" in prompt
+    assert "目标文件已存在时，该批校验失败" not in prompt
     assert '"path":"corpus/t0/s1-d0-04-memo.md"' in prompt
     manifest = _manifest(out)
     assert manifest["batches"]["s1-d0-04"]["status"] == "ok"
-    assert manifest["batches"]["s1-d0-05"]["status"] == "failed"
-    assert "文件名必须是" in manifest["batches"]["s1-d0-05"]["error"]
+    assert manifest["batches"]["s1-d0-05"]["status"] == "ok"
     assert manifest["batches"]["s2-d0-01"]["status"] == "ok"
     assert manifest["batches"]["s1-d0"]["status"] == "failed"
     assert "已存在" in manifest["batches"]["s1-d0"]["error"]
     assert all(rec["status"] != "committing" for rec in manifest["batches"].values())
     assert (out / "corpus" / "t0" / "s1-d0-04-memo.md").is_file()
+    assert (out / "corpus" / "t0" / "s1-d0-05-memo.md").is_file()
     assert (out / "corpus" / "t0" / "s2-d0-01-memo.md").is_file()
     assert (out / "corpus" / "t1" / "s2-d0-01-memo.md").is_file()
     assert not (out / "corpus" / "t0" / "strategy_review_01.md").exists()
+    assert not (out / "corpus" / "t0" / "c0ffee00abcd.md").exists()
     written = [item["id"] for item in json.loads((out / "questions.json").read_text(encoding="utf-8"))["queries"]]
-    assert written == ["s1-d0-04-q1", "s2-d0-01-q1"]
+    assert written == ["s1-d0-04-q1", "s1-d0-05-q1", "s2-d0-01-q1"]
 
-    retry = QueueLLM(
-        [
-            json.dumps(payloads[1], ensure_ascii=False),
-            json.dumps(payloads[3], ensure_ascii=False),
-        ]
-    )
+    retry = QueueLLM([json.dumps(payloads[3], ensure_ascii=False)])
     assert _generate(mod, tmp_path, retry, cfg, out, spec=_spec(batches)) == 1
-    assert retry.index == 2
+    assert retry.index == 1
     resumed = _manifest(out)
     assert resumed["batches"]["s1-d0-04"]["status"] == "ok"
+    assert resumed["batches"]["s1-d0-05"]["status"] == "ok"
     assert resumed["batches"]["s2-d0-01"]["status"] == "ok"
-    assert resumed["batches"]["s1-d0-05"]["status"] == "failed"
     assert resumed["batches"]["s1-d0"]["status"] == "failed"
     assert all(rec["status"] != "committing" for rec in resumed["batches"].values())
     assert (out / "corpus" / "t0" / "s1-d0-04-memo.md").is_file()
+
+
+def test_manifest_anomaly_exits_before_call(tmp_path: Path, capsys):
+    mod = _load_script()
+    cfg = _write_json(tmp_path / "config.json", _cfg())
+    batch = _batch()
+    upper = mod._cost_cny(mod._input_token_upper(mod._build_batch_prompt(batch)), mod._output_token_upper(batch), 1, 2)
+    cases = {
+        "two-inflight": {
+            "spent_cny": upper * 2,
+            "batches": {
+                "b1": {"status": "inflight", "cost_cny": upper},
+                "b2": {"status": "inflight", "cost_cny": upper},
+            },
+        },
+        "held-below-upper": {
+            "spent_cny": 0,
+            "batches": {"b1": {"status": "inflight", "cost_cny": 0}},
+        },
+        "held-above-spent": {
+            "spent_cny": 1,
+            "batches": {"b1": {"status": "inflight", "cost_cny": 10}},
+        },
+        "negative-spent": {"spent_cny": -1, "batches": {}},
+    }
+    for name, body in cases.items():
+        out = tmp_path / name
+        out.mkdir()
+        marker = out / ".x1-drafts-manifest.json"
+        marker.write_text(json.dumps(body, ensure_ascii=False), encoding="utf-8")
+        blob = marker.read_bytes()
+        fake = FakeLLM("不应调用")
+        code = _generate(mod, tmp_path, fake, cfg, out, spec=_spec([batch]))
+        assert code == 1
+        assert fake.calls == []
+        assert "清单异常" in capsys.readouterr().err
+        assert marker.read_bytes() == blob
+
+
+def test_flag_ledger_anomaly_exits_before_call(tmp_path: Path, capsys):
+    mod = _load_script()
+    questions = _draft_payload()["questions"]
+    qpath = _write_json(tmp_path / "questions.json", questions)
+    cfg = _write_json(tmp_path / "config.json", _cfg())
+    spec_path = _write_json(
+        tmp_path / "flag-anomaly-spec.json",
+        {"flag_pricing": _pricing_block("单测抽检占位，不是脚本内置标价")},
+    )
+    ledger_path = tmp_path / ".x1-flag-spend.json"
+    cases = [
+        {"spent_cny": -1},
+        {"spent_cny": 0, "inflight": True, "held_cny": 0},
+        {"spent_cny": 1, "inflight": True, "held_cny": 5},
+        {"spent_cny": 1, "inflight": "yes", "held_cny": 1},
+    ]
+    for body in cases:
+        ledger_path.write_text(json.dumps(body, ensure_ascii=False), encoding="utf-8")
+        blob = ledger_path.read_bytes()
+        fake = FakeLLM("不应调用")
+        code = mod.main(
+            [
+                "flag",
+                "--config",
+                str(cfg),
+                "--in",
+                str(qpath),
+                "--sidecar",
+                str(tmp_path / "flag-anomaly.json"),
+                "--spec",
+                str(spec_path),
+                "--max-cny",
+                "100",
+            ],
+            llm_client=fake,
+        )
+        assert code == 1
+        assert fake.calls == []
+        assert "清单异常" in capsys.readouterr().err
+        assert ledger_path.read_bytes() == blob
