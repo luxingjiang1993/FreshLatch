@@ -1208,9 +1208,9 @@ def test_estimate_only_skips_model_and_requires_pricing(tmp_path: Path, capsys):
 def test_budget_stops_before_next_batch(tmp_path: Path, capsys):
     mod = _load_script()
     batches = [
-        _batch(batch_id="p1", topic="第一批"),
-        _batch(batch_id="p2", topic="第二批"),
-        _batch(batch_id="p3", topic="第三批"),
+        _batch(batch_id="b1", topic="第一批"),
+        _batch(batch_id="b2", topic="第二批"),
+        _batch(batch_id="b3", topic="第三批"),
     ]
     payloads = [
         _batch_payload(batch, doc_id=f"{batch['batch_id']}-doc", qid=f"q-{batch['batch_id']}")
@@ -1219,25 +1219,29 @@ def test_budget_stops_before_next_batch(tmp_path: Path, capsys):
     spec = _spec(batches)
     spec["pricing"]["input_cny_per_million"] = 1
     spec["pricing"]["output_cny_per_million"] = 1
+    upper_in = mod._input_token_upper(mod._build_batch_prompt(batches[0]))
+    upper_out = mod._output_token_upper(batches[0])
+    cap = mod._cost_cny(upper_in, upper_out, 1, 1)
     fake = QueueLLM(
         [json.dumps(item, ensure_ascii=False) for item in payloads],
-        prompt_each=1_000_000,
+        prompt_each=upper_in - 1,
+        completion_each=upper_out - 1,
     )
     cfg = _write_json(tmp_path / "config.json", _cfg())
     out = tmp_path / "budget"
-    code = _generate(mod, tmp_path, fake, cfg, out, spec=spec, max_cny="1")
+    code = _generate(mod, tmp_path, fake, cfg, out, spec=spec, max_cny=repr(cap))
     captured = capsys.readouterr()
     assert code != 0
     assert "max-cny" in captured.err
     assert fake.index == 1
-    assert (out / "corpus" / "t1" / "p1-doc.md").is_file()
-    assert not (out / "corpus" / "t1" / "p2-doc.md").exists()
-    assert not (out / "corpus" / "t1" / "p3-doc.md").exists()
+    assert (out / "corpus" / "t1" / "b1-doc.md").is_file()
+    assert not (out / "corpus" / "t1" / "b2-doc.md").exists()
+    assert not (out / "corpus" / "t1" / "b3-doc.md").exists()
     manifest = json.loads((out / ".x1-drafts-manifest.json").read_text(encoding="utf-8"))
     assert manifest["stop_reason"] == "budget"
-    assert manifest["spent_cny"] >= 1
-    assert manifest["batches"]["p1"]["status"] == "ok"
-    assert "p2" not in manifest["batches"]
+    assert manifest["spent_cny"] == pytest.approx(cap)
+    assert manifest["batches"]["b1"]["status"] == "ok"
+    assert "b2" not in manifest["batches"]
 
 
 def test_resume_skips_completed_batches(tmp_path: Path):
@@ -1340,7 +1344,22 @@ def test_example_spec_targets_synthetic_chunks(tmp_path: Path):
     assert spec["flag_pricing"]["input_cny_per_million"] is None
     assert spec["flag_pricing"]["output_cny_per_million"] is None
     assert isinstance(spec["flag_pricing"]["source"], str) and spec["flag_pricing"]["source"].strip()
+    by_genre: dict[str, int] = {}
+    gap_facts = [
+        "数据出境安全评估结果有效期由令11的2年改为令16的3年；到期可在届满前60个工作日内申请延长3年，不再重新申报",
+        "非关基运营者申报安全评估的个人信息门槛：令11为自上年1月1日起累计10万人；令16为自当年1月1日起累计100万人以上（不含敏感）或1万人以上敏感个人信息",
+        "标准合同区间：令13为不满10万人；令16为10万人以上、不满100万人（不含敏感）或不满1万人敏感个人信息，并可走个人信息保护认证",
+        "令16第五条新增豁免：当年累计不满10万人个人信息（不含敏感）免予申报、标准合同和认证；另有合同履行、跨境人力资源管理、紧急情况等场景",
+        "2023公司法第四十七条：有限责任公司股东认缴出资须自成立之日起五年内缴足；2018法第二十六条无此期限",
+        "2023公司法自2024年7月1日起施行，出资期限超过规定的存量公司应逐步调整（第二百六十六条）；2018法自2006年1月1日起施行",
+        "未按期出资：2018法向已足额出资股东承担违约责任；2023法改为对公司损失承担赔偿责任，并新增董事会核查催缴、宽限期不少于六十日后失权、加速到期、未届期转让由受让人缴纳",
+    ]
+    seen_facts: list[str] = []
+    gap_chunks = 0
     for batch in spec["batches"]:
+        files = batch["n_docs"] * (2 if batch.get("pair") is True else 1)
+        by_genre[batch["genre"]] = by_genre.get(batch["genre"], 0) + files * batch["chunks_per_doc"]
+        assert mod._output_token_upper(batch) <= mod.MODEL_MAX_OUTPUT_TOKENS["qwen-flash"]
         assert 2 <= batch["chunks_per_doc"] <= 6
         if batch["genre"] in {"S1", "S2", "S3"}:
             assert batch.get("pair") is True
@@ -1349,6 +1368,21 @@ def test_example_spec_targets_synthetic_chunks(tmp_path: Path):
             assert batch["as_of"] == "T1"
             assert batch["must_include"]
             assert batch.get("pair") is not True
+            blob = "\n".join(batch["must_include"])
+            if batch["domain"] in {"D1", "D2"}:
+                gap_chunks += files * batch["chunks_per_doc"]
+                seen_facts.extend(batch["must_include"])
+            else:
+                assert batch["domain"] in {"D0", "D3"}
+                assert "清洗" not in blob
+                assert "不拆块" not in blob
+                assert "200" not in blob
+    assert by_genre["S1"] == 108
+    assert by_genre["S2"] == 84
+    assert by_genre["S3"] == 84
+    assert 20 <= gap_chunks <= 24
+    for fact in gap_facts:
+        assert fact in seen_facts
     fake = FakeLLM("不应调用")
     cfg = _write_json(tmp_path / "config.json", _cfg())
     code = _generate(
@@ -1530,20 +1564,24 @@ def test_spend_carries_across_resume(tmp_path: Path, capsys):
     spec = _spec([first])
     spec["pricing"]["input_cny_per_million"] = 1
     spec["pricing"]["output_cny_per_million"] = 1
+    upper_in = mod._input_token_upper(mod._build_batch_prompt(first))
+    upper_out = mod._output_token_upper(first)
+    cap = mod._cost_cny(upper_in, upper_out, 1, 1)
     fake = QueueLLM(
         [json.dumps(_batch_payload(first, doc_id="b1-doc", qid="q1"), ensure_ascii=False)],
-        prompt_each=1_000_000,
+        prompt_each=upper_in - 1,
+        completion_each=upper_out - 1,
     )
     cfg = _write_json(tmp_path / "config.json", _cfg())
     out = tmp_path / "carry"
-    assert _generate(mod, tmp_path, fake, cfg, out, spec=spec, max_cny="1") == 0
+    assert _generate(mod, tmp_path, fake, cfg, out, spec=spec, max_cny=repr(cap)) == 0
     spent = _manifest(out)["spent_cny"]
-    assert spent >= 1
+    assert spent == pytest.approx(cap)
     more = _spec([first, second])
     more["pricing"] = spec["pricing"]
     more["flag_pricing"] = spec["flag_pricing"]
     again = FakeLLM("不应调用")
-    code = _generate(mod, tmp_path, again, cfg, out, spec=more, max_cny="1")
+    code = _generate(mod, tmp_path, again, cfg, out, spec=more, max_cny=repr(cap))
     assert code != 0
     assert again.calls == []
     assert "max-cny" in capsys.readouterr().err
@@ -1668,6 +1706,11 @@ def test_doc_id_blocks_license_and_collisions(tmp_path: Path, capsys):
     code, err, fake, _out = _run(_draft_payload(body=non_pn), out_name="bad-heading")
     assert code != 0 and "块 id 必须是 pN" in err
 
+    sub = _doc_body().replace("仅作草稿。", "仅作草稿。\n### 小节\n补充一句合成说明。", 1)
+    code, err, fake, out = _run(_draft_payload(body=sub), out_name="subhead")
+    assert code == 0, err
+    assert "### 小节" in (out / "corpus" / "t1" / "b1-draft.md").read_text(encoding="utf-8")
+
     empty = _doc_body().replace("顾问备忘里写了渠道改口后的报价口径，仅作草稿。", "", 1)
     code, err, fake, _out = _run(_draft_payload(body=empty), out_name="empty-block")
     assert code != 0 and "块正文为空" in err
@@ -1678,6 +1721,11 @@ def test_doc_id_blocks_license_and_collisions(tmp_path: Path, capsys):
     nbs = _draft_payload(body=_doc_body().replace("仅作草稿。", "仅作草稿。详见 stats.gov.cn。", 1))
     code, err, fake, out = _run(nbs, out_name="nbs-body")
     assert code != 0 and fake.calls and "stats.gov.cn" in err
+    assert not (out / "corpus" / "t1" / "b1-draft.md").exists()
+
+    bureau = _draft_payload(body=_doc_body().replace("仅作草稿。", "仅作草稿。据统计局公告改过口径。", 1))
+    code, err, fake, out = _run(bureau, out_name="bureau-only")
+    assert code != 0 and fake.calls and "统计局" in err
     assert not (out / "corpus" / "t1" / "b1-draft.md").exists()
 
     limited = _batch(max_chars_per_chunk=5, n_questions=2)
@@ -1726,19 +1774,30 @@ def test_doc_id_collision_in_run_out_and_public_corpus(tmp_path: Path, capsys):
     assert "已存在" in capsys.readouterr().err
     assert len(again.calls) == 1
 
-    public = ROOT / "data" / "exp" / "x1" / "corpus" / "t0" / "p2-gdp-national.md"
+    reserved = _batch(batch_id="p1", as_of="T0", domain="D1", genre="S1", topic="保留前缀")
+    reserved_fake = FakeLLM("不应调用")
+    code_reserved = _generate(
+        mod, tmp_path, reserved_fake, cfg, tmp_path / "reserved-p1", spec=_spec([reserved])
+    )
+    assert code_reserved != 0
+    assert reserved_fake.calls == []
+    assert "p1/p2" in capsys.readouterr().err
+    assert mod._validate_batch(_batch(batch_id="p10"), 0) is None
+
+    public = ROOT / "data" / "exp" / "x1" / "corpus" / "t1" / "p1-cac-o16.md"
     before = public.read_bytes()
-    hit = _batch(batch_id="p2", as_of="T0", domain="D3", genre="S1", topic="与已入库文档撞号")
-    body = _doc_body(doc_id="p2-gdp-national", as_of="T0", domain="D3", genre="S1")
-    payload = _batch_payload(hit, doc_id="p2-gdp-national", qid="q-hit", body=body)
-    payload["documents"][0]["path"] = "corpus/t0/p2-gdp-national.md"
+    hit = _batch(batch_id="b1", as_of="T0", domain="D1", genre="S1", topic="另一快照撞公开 doc_id")
+    body = _doc_body(doc_id="p1-cac-o16", as_of="T0", domain="D1", genre="S1")
+    payload = _batch_payload(hit, doc_id="p1-cac-o16", qid="q-hit", body=body)
+    payload["documents"][0]["path"] = "corpus/t0/p1-cac-o16.md"
     hit_fake = FakeLLM(json.dumps(payload, ensure_ascii=False))
     hit_out = tmp_path / "collide-public"
     code_hit = _generate(mod, tmp_path, hit_fake, cfg, hit_out, spec=_spec([hit]))
     assert code_hit != 0
-    assert "已存在" in capsys.readouterr().err
+    assert "已存在于公开语料" in capsys.readouterr().err
+    assert len(hit_fake.calls) == 1
     assert public.read_bytes() == before
-    assert not (hit_out / "corpus" / "t0" / "p2-gdp-national.md").exists()
+    assert not (hit_out / "corpus" / "t0" / "p1-cac-o16.md").exists()
 
 
 def test_pair_writes_t0_and_t1(tmp_path: Path, capsys):
@@ -1856,3 +1915,275 @@ def test_flag_fail_closed_budget_usage_and_exception(tmp_path: Path, capsys):
     assert captured.err.strip().splitlines()[-1] == "错误: 抽检调用失败: 抽检失败"
     assert "Traceback" not in captured.err
     assert json.loads(boom_path.read_text(encoding="utf-8"))["status"] == "failed"
+
+
+def test_output_upper_over_model_limit_refuses_spec(tmp_path: Path, capsys):
+    mod = _load_script()
+    batch = _batch(n_docs=4, chunks_per_doc=3, max_chars_per_chunk=800, n_questions=8, pair=True)
+    del batch["as_of"]
+    fake = FakeLLM("不应调用")
+    cfg = _write_json(tmp_path / "config.json", _cfg())
+    code = _generate(mod, tmp_path, fake, cfg, tmp_path / "too-wide", spec=_spec([batch]), extra=["--estimate-only"])
+    assert code != 0
+    assert "请拆分" in capsys.readouterr().err
+    assert fake.calls == []
+
+
+def test_estimate_only_reports_budget(tmp_path: Path, capsys):
+    mod = _load_script()
+    fake = FakeLLM("不应调用")
+    cfg = _write_json(tmp_path / "config.json", _cfg(draft_temperature=None, draft_seed=None))
+    code = _generate(
+        mod,
+        tmp_path,
+        fake,
+        cfg,
+        tmp_path / "est-over",
+        extra=["--estimate-only"],
+        max_cny="0",
+    )
+    printed = capsys.readouterr().out
+    assert code != 0
+    assert fake.calls == []
+    assert "budget=over" in printed
+    assert "total_cny=" in printed
+    assert "max_batch_output_tokens=" in printed
+
+
+def test_usage_over_upper_stops(tmp_path: Path, capsys):
+    mod = _load_script()
+
+    class _Huge(FakeLLM):
+        def chat(self, *args, **kwargs):
+            super().chat(*args, **kwargs)
+            self.token_usage.add(10_000_000, 10_000_000)
+
+    fake = _Huge(json.dumps(_draft_payload(), ensure_ascii=False))
+    cfg = _write_json(tmp_path / "config.json", _cfg())
+    out = tmp_path / "over-usage"
+    code = _generate(mod, tmp_path, fake, cfg, out)
+    assert code == 1
+    assert "usage_over_upper" in capsys.readouterr().err
+    manifest = _manifest(out)
+    assert manifest["stop_reason"] == "usage_over_upper"
+    assert manifest["batches"]["b1"]["status"] == "failed"
+    assert manifest["batches"]["b1"]["error"] == "usage_over_upper"
+    assert not (out / "corpus" / "t1" / "b1-draft.md").exists()
+
+
+def test_crash_after_questions_json_recovers_ids(tmp_path: Path, monkeypatch):
+    mod = _load_script()
+    real = mod._atomic_write_text
+    gate = {"boom": True}
+
+    def _wrapped(path, text):
+        real(path, text)
+        if gate["boom"] and Path(path).name == "questions.json" and "b2-q1" in text:
+            raise BaseException("questions written")
+
+    monkeypatch.setattr(mod, "_atomic_write_text", _wrapped)
+    cfg = _write_json(tmp_path / "config.json", _cfg())
+    batches = [_batch(batch_id="b1", topic="第一批"), _batch(batch_id="b2", topic="第二批")]
+    payloads = [
+        _batch_payload(batches[0], doc_id="b1-doc", qid="b1-q1"),
+        _batch_payload(batches[1], doc_id="b2-doc", qid="b2-q1"),
+    ]
+    out = tmp_path / "crash-questions"
+    both = QueueLLM([json.dumps(item, ensure_ascii=False) for item in payloads])
+    with pytest.raises(BaseException, match="questions written"):
+        _generate(mod, tmp_path, both, cfg, out, spec=_spec(batches))
+    assert _manifest(out)["batches"]["b1"]["status"] == "ok"
+    assert _manifest(out)["batches"]["b2"]["status"] == "committing"
+    assert _manifest(out)["batches"]["b2"]["question_ids"] == ["b2-q1"]
+    written = [item["id"] for item in json.loads((out / "questions.json").read_text(encoding="utf-8"))["queries"]]
+    assert written.count("b1-q1") == 1
+    assert written.count("b2-q1") == 1
+    gate["boom"] = False
+    retry = QueueLLM([json.dumps(payloads[1], ensure_ascii=False)])
+    assert _generate(mod, tmp_path, retry, cfg, out, spec=_spec(batches)) == 0
+    again = [item["id"] for item in json.loads((out / "questions.json").read_text(encoding="utf-8"))["queries"]]
+    assert again.count("b1-q1") == 1
+    assert again.count("b2-q1") == 1
+    assert _manifest(out)["batches"]["b1"]["status"] == "ok"
+    assert _manifest(out)["batches"]["b2"]["status"] == "ok"
+
+
+def test_discard_refuses_non_doc_paths(tmp_path: Path):
+    mod = _load_script()
+    out = tmp_path / "out"
+    raw = out / "raw" / "b1.txt"
+    raw.parent.mkdir(parents=True)
+    raw.write_text("keep", encoding="utf-8")
+    questions = out / "questions.json"
+    questions.write_text("{}\n", encoding="utf-8")
+    manifest = out / ".x1-drafts-manifest.json"
+    manifest.write_text("{}\n", encoding="utf-8")
+    assert mod._discard_committing(out, {"paths": ["raw/b1.txt"]}, set())
+    assert raw.read_text(encoding="utf-8") == "keep"
+    assert mod._discard_committing(out, {"paths": ["questions.json"]}, set())
+    assert questions.is_file()
+    assert mod._discard_committing(out, {"paths": [".x1-drafts-manifest.json"]}, set())
+    assert manifest.is_file()
+
+
+def test_flag_refuses_when_output_upper_exceeds_model_limit(tmp_path: Path, capsys):
+    mod = _load_script()
+    questions = {"queries": [{"id": f"q{i}", "query": "草稿"} for i in range(257)]}
+    qpath = _write_json(tmp_path / "many-questions.json", questions)
+    cfg = _write_json(tmp_path / "config.json", _cfg())
+    fake = FakeLLM("不应调用")
+    code = mod.main(
+        [
+            "flag",
+            "--config",
+            str(cfg),
+            "--in",
+            str(qpath),
+            "--sidecar",
+            str(tmp_path / "too-many.json"),
+            *_flag_extra(tmp_path, "flag-too-many.json"),
+        ],
+        llm_client=fake,
+    )
+    assert code != 0
+    assert fake.calls == []
+    assert "请减少题目" in capsys.readouterr().err
+    assert not (tmp_path / "too-many.json").exists()
+
+
+def test_flag_spend_cumulative_per_input_dir(tmp_path: Path, capsys):
+    mod = _load_script()
+    questions = _draft_payload()["questions"]
+    qpath = _write_json(tmp_path / "questions.json", questions)
+    cfg = _write_json(tmp_path / "config.json", _cfg())
+    spec_path = _write_json(
+        tmp_path / "flag-ledger-spec.json",
+        {"flag_pricing": _pricing_block("单测抽检占位，不是脚本内置标价")},
+    )
+    note = json.dumps({"id": "draft-q1", "suspicion": "x", "reason": "y", "severity": "low"}, ensure_ascii=False)
+
+    def _flag(fake, sidecar: Path, max_cny: str):
+        return mod.main(
+            [
+                "flag",
+                "--config",
+                str(cfg),
+                "--in",
+                str(qpath),
+                "--sidecar",
+                str(sidecar),
+                "--spec",
+                str(spec_path),
+                "--max-cny",
+                max_cny,
+            ],
+            llm_client=fake,
+        )
+
+    first = FakeLLM(note)
+    second = FakeLLM(note)
+    assert _flag(first, tmp_path / "side-a.json", "100") == 0
+    assert _flag(second, tmp_path / "side-b.json", "100") == 0
+    side_a = json.loads((tmp_path / "side-a.json").read_text(encoding="utf-8"))
+    side_b = json.loads((tmp_path / "side-b.json").read_text(encoding="utf-8"))
+    assert side_b["spent_cny"] > side_a["spent_cny"]
+    ledger = json.loads((tmp_path / ".x1-flag-spend.json").read_text(encoding="utf-8"))
+    assert ledger["spent_cny"] == pytest.approx(side_b["spent_cny"])
+    refused = FakeLLM("不应调用")
+    code = _flag(refused, tmp_path / "side-c.json", str(ledger["spent_cny"]))
+    assert code != 0
+    assert refused.calls == []
+    assert "max-cny" in capsys.readouterr().err
+
+
+def _chat_completion(content: str, *, prompt_tokens: int = 4, completion_tokens: int = 6) -> dict:
+    return {
+        "id": "chatcmpl-test",
+        "object": "chat.completion",
+        "created": 0,
+        "model": "qwen-flash",
+        "choices": [
+            {
+                "index": 0,
+                "message": {"role": "assistant", "content": content},
+                "finish_reason": "stop",
+            }
+        ],
+        "usage": {
+            "prompt_tokens": prompt_tokens,
+            "completion_tokens": completion_tokens,
+            "total_tokens": prompt_tokens + completion_tokens,
+        },
+    }
+
+
+def test_real_client_pins_first_request_and_does_not_retry_500(tmp_path: Path, monkeypatch, capsys):
+    import httpx
+    import openai
+    import freshlatch.llm as llm_mod
+
+    mod = _load_script()
+    bodies: list[dict] = []
+
+    def ok_handler(request: httpx.Request) -> httpx.Response:
+        body = json.loads(request.content.decode("utf-8"))
+        bodies.append(body)
+        if body.get("model") == "qwen-plus":
+            content = json.dumps(
+                {"id": "draft-q1", "suspicion": "x", "reason": "y", "severity": "low"},
+                ensure_ascii=False,
+            )
+        else:
+            content = json.dumps(_draft_payload(), ensure_ascii=False)
+        return httpx.Response(200, json=_chat_completion(content))
+
+    def factory(**kw):
+        return openai.OpenAI(http_client=httpx.Client(transport=httpx.MockTransport(ok_handler)), **kw)
+
+    monkeypatch.setattr(llm_mod, "OpenAI", factory)
+    cfg = _write_json(tmp_path / "config.json", _cfg())
+    out = tmp_path / "pinned"
+    llm = LLMClient(api_key="test", base_url="http://127.0.0.1:9")
+    assert not hasattr(llm, "_client") or llm._client is None
+    assert _generate(mod, tmp_path, llm, cfg, out) == 0
+    assert bodies
+    first = bodies[0]
+    assert first["max_tokens"] == mod._output_token_upper(_batch())
+    assert first["enable_thinking"] is False
+    qpath = out / "questions.json"
+    flag_llm = LLMClient(api_key="test", base_url="http://127.0.0.1:9")
+    code = mod.main(
+        [
+            "flag",
+            "--config",
+            str(cfg),
+            "--in",
+            str(qpath),
+            "--sidecar",
+            str(tmp_path / "pinned-flag.json"),
+            *_flag_extra(tmp_path, "pinned-flag-spec.json"),
+        ],
+        llm_client=flag_llm,
+    )
+    assert code == 0
+    flag_body = bodies[-1]
+    assert flag_body["model"] == "qwen-plus"
+    assert isinstance(flag_body["max_tokens"], int) and flag_body["max_tokens"] > 0
+    assert flag_body["enable_thinking"] is False
+
+    attempts = {"n": 0}
+
+    def err_handler(request: httpx.Request) -> httpx.Response:
+        attempts["n"] += 1
+        return httpx.Response(500, json={"error": {"message": "boom", "type": "server_error"}})
+
+    def err_factory(**kw):
+        return openai.OpenAI(http_client=httpx.Client(transport=httpx.MockTransport(err_handler)), **kw)
+
+    monkeypatch.setattr(llm_mod, "OpenAI", err_factory)
+    boom = LLMClient(api_key="test", base_url="http://127.0.0.1:9")
+    code_boom = _generate(mod, tmp_path, boom, cfg, tmp_path / "retry-once")
+    captured = capsys.readouterr()
+    assert code_boom == 1
+    assert attempts["n"] == 1
+    assert "Traceback" not in captured.err

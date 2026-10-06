@@ -15,7 +15,6 @@ import json
 import math
 import os
 import re
-import shutil
 import sys
 import tempfile
 from pathlib import Path, PurePosixPath, PureWindowsPath
@@ -43,6 +42,12 @@ SIDECAR_MARKER = "x1_flag_sidecar"
 
 DRAFT_MODEL = "qwen-flash"
 FLAG_MODEL = "qwen-plus"
+# qwen-flash / qwen-plus 最大输出 token。来源：help.aliyun.com/zh/model-studio/qwen-flash 与 qwen-plus，2026-10-06。
+MODEL_MAX_OUTPUT_TOKENS = {
+    "qwen-flash": 32768,
+    "qwen-plus": 32768,
+}
+FLAG_LEDGER_NAME = ".x1-flag-spend.json"
 GOLD_PLACEHOLDER = "TODO-owner"
 GOLD_QUESTION_KEYS = ("relevant", "answer_points", "distractors", "qtype")
 NOTE_FIELDS = ("id", "suspicion", "reason", "severity")
@@ -71,9 +76,14 @@ EST_OUTPUT_TOKENS_PER_QUESTION = 128
 PUBLIC_CORPUS = ROOT / "data" / "exp" / "x1" / "corpus"
 PUBLIC_TRAPS = ROOT / "data" / "exp" / "x1" / "traps"
 _BATCH_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,80}$")
+# p1 / p2 以及紧跟分隔符的前缀留给手写公开文档；p10、p21 不在此列。
+_RESERVED_BATCH_RE = re.compile(r"(?i)^p[12](?:[-._]|$)")
 _BLOCK_ID_RE = re.compile(r"^p\d+$")
-_H2_LINE_RE = re.compile(r"^##[^\n]*", re.MULTILINE)
-_NBS_MARKERS = ("国家统计局", "stats.gov.cn")
+# 只有「## 」一级标题是块边界；### 小节留在块正文里。
+_H2_LINE_RE = re.compile(r"^##(?!#)[^\n]*", re.MULTILINE)
+_NBS_MARKERS = ("统计局", "stats.gov.cn")
+_DOC_BUCKETS = frozenset({"corpus", "traps"})
+_DOC_SNAPSHOTS = frozenset({"t0", "t1"})
 
 
 class DraftShapeError(ValueError):
@@ -421,12 +431,6 @@ def _write_manifest(dest: Path, fields: dict[str, Any]) -> None:
     )
 
 
-def _replace_out(staging: Path, out: Path) -> None:
-    if out.exists():
-        shutil.rmtree(out)
-    shutil.copytree(staging, out)
-
-
 def _is_int(value: Any) -> bool:
     return isinstance(value, int) and not isinstance(value, bool)
 
@@ -495,6 +499,8 @@ def _validate_batch(batch: Any, index: int) -> str | None:
     batch_id = batch["batch_id"]
     if not isinstance(batch_id, str) or not _BATCH_ID_RE.fullmatch(batch_id):
         return f"batches[{index}] batch_id 非法"
+    if _RESERVED_BATCH_RE.match(batch_id):
+        return f"batches[{index}] batch_id 前缀 p1/p2 保留给手写公开文档"
     if batch["genre"] not in BATCH_GENRES:
         return f"batches[{index}] genre 必须是 S1–S7"
     if batch["domain"] not in BATCH_DOMAINS:
@@ -520,6 +526,12 @@ def _validate_batch(batch: Any, index: int) -> str | None:
             return f"batches[{index}] S6 的 must_include 必须是非空字符串列表"
         if not all(isinstance(item, str) and item.strip() for item in items):
             return f"batches[{index}] S6 的 must_include 必须是非空字符串列表"
+    upper = _output_token_upper(batch)
+    limit = MODEL_MAX_OUTPUT_TOKENS[DRAFT_MODEL]
+    if upper > limit:
+        return (
+            f"batches[{index}] {batch['batch_id']} 输出上界 {upper} 超过 {DRAFT_MODEL} 上限 {limit}，请拆分该批"
+        )
     return None
 
 
@@ -542,6 +554,11 @@ def _load_spec(path: Path) -> dict[str, Any] | str:
         if bid in seen:
             return f"batch_id 重复: {bid}"
         seen.add(bid)
+    slots = sum(_question_allowance(batch) for batch in batches)
+    flag_limit = MODEL_MAX_OUTPUT_TOKENS[FLAG_MODEL]
+    flag_upper = _flag_output_upper(slots)
+    if flag_upper > flag_limit:
+        return f"抽检输出上界 {flag_upper} 超过 {FLAG_MODEL} 上限 {flag_limit}，请减少题目后再抽检"
     return data
 
 
@@ -641,7 +658,10 @@ def _build_batch_prompt(batch: dict[str, Any]) -> str:
     if batch["genre"] == "S7":
         lines.append("本批是检索陷阱文档，路径必须在 traps 下，不要写入 corpus。")
     if batch["genre"] == "S6":
-        lines.append("本批是 P1 缺口事实，只复述 must_include，不得自拟法律门槛或日期。")
+        if batch["domain"] in {"D1", "D2"}:
+            lines.append("本批复述监管变更要点，只写 must_include 里的事实，不得自拟法律门槛或日期。")
+        else:
+            lines.append("本批是变更要点与补丁记录，只写 must_include 里的合成事实，不要写法律门槛。")
     if "n_questions" in batch:
         lines.append(f"题目数量必须等于 {int(batch['n_questions'])}。")
     if "max_chars_per_chunk" in batch:
@@ -668,9 +688,12 @@ def _estimate_spec(spec: dict[str, Any]) -> dict[str, Any] | str:
     input_tokens = 0
     output_tokens = 0
     question_slots = 0
+    max_batch_output = 0
     for batch in spec["batches"]:
         input_tokens += _input_token_upper(_build_batch_prompt(batch))
-        output_tokens += _output_token_upper(batch)
+        batch_out = _output_token_upper(batch)
+        output_tokens += batch_out
+        max_batch_output = max(max_batch_output, batch_out)
         question_slots += _question_allowance(batch)
     cny = _cost_cny(input_tokens, output_tokens, in_price, out_price)
     flag_input = _input_token_upper(_flag_skeleton()) + question_slots * 64
@@ -686,10 +709,13 @@ def _estimate_spec(spec: dict[str, Any]) -> dict[str, Any] | str:
         "flag_output_tokens": flag_output,
         "flag_cny": flag_cny,
         "flag_pricing_source": flag_source,
+        "max_batch_output_tokens": max_batch_output,
     }
 
 
-def _format_estimate(est: dict[str, Any]) -> str:
+def _format_estimate(est: dict[str, Any], max_cny: float) -> str:
+    total = float(est["cny"]) + float(est["flag_cny"])
+    budget = "ok" if total <= max_cny else "over"
     return (
         f"batches={est['batches']}\n"
         f"input_tokens={est['input_tokens']} 估\n"
@@ -700,6 +726,10 @@ def _format_estimate(est: dict[str, Any]) -> str:
         f"flag_output_tokens={est['flag_output_tokens']} 估\n"
         f"flag_cny={est['flag_cny']:.8f} 估\n"
         f"flag_pricing_source={est['flag_pricing_source']}\n"
+        f"total_cny={total:.8f} 估\n"
+        f"max_batch_output_tokens={est['max_batch_output_tokens']}\n"
+        f"max_cny={max_cny:.8f}\n"
+        f"budget={budget}\n"
     )
 
 
@@ -775,7 +805,7 @@ def _validate_markdown(content: str, batch: dict[str, Any], *, as_of: str) -> li
         return "genre 与批次不一致"
     lowered = content.lower()
     if any(marker.lower() in lowered for marker in _NBS_MARKERS):
-        return "合成文档不得提及国家统计局或 stats.gov.cn"
+        return "合成文档不得提及国家统计局、统计局或 stats.gov.cn"
     if "attribution" in meta or "data_source_url" in meta:
         return "合成文档不得包含 attribution 或 data_source_url"
     doc_id = meta["doc_id"]
@@ -788,12 +818,14 @@ def _validate_batch_documents(
     documents: list[dict[str, str]],
     batch: dict[str, Any],
     seen: set[tuple[str, str]],
+    public_doc_ids: set[str] | None = None,
 ) -> str | None:
     expected_files = _file_count(batch)
     if len(documents) != expected_files:
         return f"文档数 {len(documents)} != n_docs {batch['n_docs']}" if not _is_pair(batch) else (
             f"文档数 {len(documents)} != 2*n_docs {expected_files}"
         )
+    public = public_doc_ids or set()
     paths = [item["path"] for item in documents]
     if len(paths) != len(set(paths)):
         return "documents 路径重复"
@@ -802,6 +834,9 @@ def _validate_batch_documents(
     for item in documents:
         rel = PurePosixPath(item["path"])
         meta, _body = _split_frontmatter(item["content"])
+        doc_id_early = str(meta.get("doc_id", "")).strip()
+        if doc_id_early and doc_id_early in public:
+            return f"doc_id 已存在于公开语料: {doc_id_early}"
         as_of = str(meta.get("as_of", "")).strip()
         if _is_pair(batch):
             if as_of not in BATCH_AS_OF:
@@ -927,13 +962,22 @@ def _resume_action(manifest: dict[str, Any], batch: dict[str, Any], fields: dict
     return "skip"
 
 
+def _recorded_doc_rel_ok(rel: str) -> bool:
+    """恢复时只删本批记下来的文档：corpus|traps / t0|t1 / 文件名.md。"""
+    posix = PurePosixPath(rel)
+    if posix.suffix.lower() != ".md" or len(posix.parts) != 3:
+        return False
+    bucket, snap, _name = posix.parts
+    return bucket in _DOC_BUCKETS and snap in _DOC_SNAPSHOTS
+
+
 def _discard_committing(out: Path, rec: dict[str, Any], seen: set[tuple[str, str]]) -> str | None:
     paths = rec.get("paths")
     if not isinstance(paths, list):
         return "committing 记录缺少 paths"
     out_resolved = out.resolve()
     for rel in paths:
-        if not isinstance(rel, str) or _document_path_syntax_error(rel):
+        if not isinstance(rel, str) or _document_path_syntax_error(rel) or not _recorded_doc_rel_ok(rel):
             return f"committing 路径非法: {rel}"
         target = (out / rel).resolve()
         if not _strictly_inside(target, out_resolved):
@@ -953,6 +997,54 @@ def _discard_committing(out: Path, rec: dict[str, Any], seen: set[tuple[str, str
             seen.discard((doc_id, as_of))
         target.unlink()
     return None
+
+
+def _drop_committing_question_ids(
+    out: Path,
+    batches: dict[str, Any],
+    queries: list[dict[str, Any]],
+) -> list[dict[str, Any]] | str:
+    """committing 批次的题目 id 从 questions.json 里摘掉，避免续跑报题目冲突。"""
+    drop: set[str] = set()
+    for rec in batches.values():
+        if not isinstance(rec, dict) or rec.get("status") != "committing":
+            continue
+        qids = rec.get("question_ids")
+        if not isinstance(qids, list):
+            continue
+        for qid in qids:
+            if isinstance(qid, str) and qid:
+                drop.add(qid)
+    if not drop:
+        return queries
+    kept = [item for item in queries if item.get("id") not in drop]
+    qpath = out / "questions.json"
+    if qpath.is_file() and len(kept) != len(queries):
+        try:
+            _atomic_write_text(
+                qpath,
+                json.dumps({"queries": kept}, ensure_ascii=False, indent=2) + "\n",
+            )
+        except OSError as exc:
+            return f"questions.json 无法回滚: {exc}"
+    return kept
+
+
+def _discard_open_commits(out: Path, batches: dict[str, Any]) -> str | None:
+    seen: set[tuple[str, str]] = set()
+    for rec in batches.values():
+        if isinstance(rec, dict) and rec.get("status") == "committing":
+            err = _discard_committing(out, rec, seen)
+            if err:
+                return err
+    return None
+
+
+def _public_doc_ids() -> set[str] | str:
+    found = _scan_doc_keys([PUBLIC_CORPUS, PUBLIC_TRAPS])
+    if isinstance(found, str):
+        return found
+    return {doc_id for doc_id, _as_of in found}
 
 
 def _manifest_body(state: dict[str, Any]) -> dict[str, Any]:
@@ -1051,13 +1143,23 @@ class _NoThinkingCreate:
 
 
 def _pin_create(llm: Any, limits: dict[str, Any]) -> _NoThinkingCreate | None:
-    """只碰已经注入的内部客户端，避免触发 LLMClient.client 去构造真实 SDK。"""
-    inner = getattr(llm, "_client", None)
+    """先经 LLMClient.client 拿到真实 SDK，再钉 max_tokens、关思考、max_retries=0。
+
+    构造 OpenAI 客户端本身不发 HTTP。假客户端没有 client 属性时保持原样。
+    """
+    if isinstance(llm, LLMClient):
+        inner = llm.client
+    else:
+        inner = getattr(llm, "_client", None)
     if inner is None:
         return None
     inner.max_retries = 0
     completions = inner.chat.completions
-    wrapper = _NoThinkingCreate(completions.create, limits)
+    current = completions.create
+    if isinstance(current, _NoThinkingCreate):
+        current.limits = limits
+        return current
+    wrapper = _NoThinkingCreate(current, limits)
     completions.create = wrapper
     return wrapper
 
@@ -1129,7 +1231,9 @@ def _run_generate(args: argparse.Namespace, llm_client: Any) -> int:
         if isinstance(estimated, str):
             print(f"错误: {estimated}", file=sys.stderr)
             return 1
-        print(_format_estimate(estimated), end="")
+        print(_format_estimate(estimated, max_cny), end="")
+        if estimated["cny"] + estimated["flag_cny"] > max_cny:
+            return 1
         return 0
     decoded = _require_draft_decoding(cfg)
     if isinstance(decoded, str):
@@ -1160,12 +1264,24 @@ def _run_generate(args: argparse.Namespace, llm_client: Any) -> int:
     if isinstance(loaded_questions, str):
         print(f"错误: {loaded_questions}", file=sys.stderr)
         return 1
-    queries = loaded_questions
+    rolled = _drop_committing_question_ids(out, prev_batches, loaded_questions)
+    if isinstance(rolled, str):
+        print(f"错误: {rolled}", file=sys.stderr)
+        return 1
+    queries = rolled
+    discard_err = _discard_open_commits(out, prev_batches)
+    if discard_err:
+        print(f"错误: {discard_err}", file=sys.stderr)
+        return 1
     seen_ids: set[str] = set()
     for item in queries:
         qid = item.get("id")
         if isinstance(qid, str):
             seen_ids.add(qid)
+    public_ids = _public_doc_ids()
+    if isinstance(public_ids, str):
+        print(f"错误: {public_ids}", file=sys.stderr)
+        return 1
     seen_docs = _scan_doc_keys([out, PUBLIC_CORPUS, PUBLIC_TRAPS])
     if isinstance(seen_docs, str):
         print(f"错误: {seen_docs}", file=sys.stderr)
@@ -1340,6 +1456,12 @@ def _run_generate(args: argparse.Namespace, llm_client: Any) -> int:
             prompt_tokens=delta_prompt,
             completion_tokens=delta_completion,
         )
+        if delta_prompt > upper_in or delta_completion > upper_out:
+            state["batches"][batch_id]["error"] = "usage_over_upper"
+            state["stop_reason"] = "usage_over_upper"
+            _flush_manifest(out, state)
+            print(f"错误: 批次 {batch_id}: usage_over_upper", file=sys.stderr)
+            return 1
         if _finish_reason(message) == "length":
             state["batches"][batch_id]["error"] = "finish_reason=length"
             _flush_manifest(out, state)
@@ -1355,7 +1477,7 @@ def _run_generate(args: argparse.Namespace, llm_client: Any) -> int:
         except DraftShapeError as exc:
             _fail_batch(batch_id, raw_text, str(exc), fields, fingerprint)
             continue
-        doc_err = _validate_batch_documents(payload["documents"], batch, seen_docs)
+        doc_err = _validate_batch_documents(payload["documents"], batch, seen_docs, public_ids)
         if doc_err:
             _fail_batch(batch_id, raw_text, doc_err, fields, fingerprint)
             continue
@@ -1386,6 +1508,7 @@ def _run_generate(args: argparse.Namespace, llm_client: Any) -> int:
             prompt_tokens=delta_prompt,
             completion_tokens=delta_completion,
             paths=rels,
+            question_ids=list(id_result),
         )
         _flush_manifest(out, state)
         merged_queries = queries + payload["questions"]["queries"]
@@ -1463,11 +1586,38 @@ def _flag_output_upper(n_questions: int) -> int:
     return max(EST_OUTPUT_TOKENS_PER_CHUNK, n_questions * EST_OUTPUT_TOKENS_PER_QUESTION)
 
 
-def _read_flag_spent(sidecar: Path) -> float:
-    if not sidecar.is_file() or not _is_script_sidecar(sidecar):
+def _flag_input_dir(inp: Path) -> Path:
+    return inp if inp.is_dir() else inp.parent
+
+
+def _flag_ledger_path(inp: Path) -> Path:
+    return _flag_input_dir(inp) / FLAG_LEDGER_NAME
+
+
+def _read_flag_ledger(inp: Path) -> float | str:
+    """花费按输入目录累计，换 sidecar 路径不会把账本清零。"""
+    path = _flag_ledger_path(inp)
+    if not path.exists():
         return 0.0
-    data = json.loads(sidecar.read_text(encoding="utf-8"))
-    return float(data.get("spent_cny") or 0.0)
+    if not path.is_file():
+        return "抽检花费账本不是文件"
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        return f"抽检花费账本无法解析: {exc}"
+    if not isinstance(data, dict):
+        return "抽检花费账本无法解析"
+    spent = data.get("spent_cny", 0.0)
+    if isinstance(spent, bool) or not isinstance(spent, (int, float)) or not math.isfinite(float(spent)):
+        return "抽检花费账本无法解析"
+    return float(spent)
+
+
+def _write_flag_ledger(inp: Path, spent: float) -> None:
+    path = _flag_ledger_path(inp)
+    if is_forbidden_sidecar(path):
+        raise OSError("抽检花费账本落在禁写目录")
+    _atomic_write_text(path, json.dumps({"spent_cny": spent}, ensure_ascii=False, indent=2) + "\n")
 
 
 def _write_flag_payload(sidecar: Path, payload: dict[str, Any]) -> None:
@@ -1504,13 +1654,27 @@ def _run_flag(args: argparse.Namespace, llm_client: Any) -> int:
         print(f"错误: {flag_pricing}", file=sys.stderr)
         return 1
     in_price, out_price, price_source = flag_pricing
-    questions = _load_flag_questions(Path(args.inp))
+    inp = Path(args.inp)
+    if is_forbidden_sidecar(_flag_ledger_path(inp)):
+        print("错误: 抽检花费账本不得落在禁写目录", file=sys.stderr)
+        return 1
+    questions = _load_flag_questions(inp)
     slim = [{"id": q.get("id"), "query": q.get("query")} for q in questions]
     prompt = _flag_prompt(slim)
     upper_in = _input_token_upper(prompt)
     upper_out = _flag_output_upper(len(slim))
+    flag_limit = MODEL_MAX_OUTPUT_TOKENS[FLAG_MODEL]
+    if upper_out > flag_limit:
+        print(
+            f"错误: 抽检输出上界 {upper_out} 超过 {FLAG_MODEL} 上限 {flag_limit}，请减少题目后再抽检",
+            file=sys.stderr,
+        )
+        return 1
     upper_cny = _cost_cny(upper_in, upper_out, in_price, out_price)
-    spent = _read_flag_spent(sidecar)
+    spent = _read_flag_ledger(inp)
+    if isinstance(spent, str):
+        print(f"错误: {spent}", file=sys.stderr)
+        return 1
     if spent + upper_cny > max_cny:
         print("错误: 累计花费已达 --max-cny，停止后续批次", file=sys.stderr)
         return 1
@@ -1519,6 +1683,24 @@ def _run_flag(args: argparse.Namespace, llm_client: Any) -> int:
     wrapper = _pin_create(client, limits)
     flag_temperature = 0.0
     decoding = DecodingParams(model=FLAG_MODEL, temperature=flag_temperature)
+
+    def _record(status: str, error: str | None, spent_now: float, notes: Any) -> None:
+        _write_flag_ledger(inp, spent_now)
+        payload: dict[str, Any] = {
+            SIDECAR_MARKER: True,
+            "model": FLAG_MODEL,
+            "flag_thinking": False,
+            "temperature": flag_temperature,
+            "status": status,
+            "spent_cny": spent_now,
+            "max_cny": max_cny,
+            "pricing_source": price_source,
+            "notes": notes,
+        }
+        if error is not None:
+            payload["error"] = error
+        _write_flag_payload(sidecar, payload)
+
     before_prompt, before_completion = _usage_pair(client)
     try:
         message = client.chat(
@@ -1528,45 +1710,21 @@ def _run_flag(args: argparse.Namespace, llm_client: Any) -> int:
     except Exception as exc:
         line = str(exc).strip().splitlines()
         detail = line[0] if line else type(exc).__name__
-        _write_flag_payload(
-            sidecar,
-            {
-                SIDECAR_MARKER: True,
-                "model": FLAG_MODEL,
-                "flag_thinking": False,
-                "temperature": flag_temperature,
-                "status": "failed",
-                "error": detail,
-                "spent_cny": spent + upper_cny,
-                "max_cny": max_cny,
-                "pricing_source": price_source,
-                "notes": [],
-            },
-        )
+        _record("failed", detail, spent + upper_cny, [])
         print(f"错误: 抽检调用失败: {detail}", file=sys.stderr)
         return 1
     after_prompt, after_completion = _usage_pair(client)
     delta_prompt = max(0, after_prompt - before_prompt)
     delta_completion = max(0, after_completion - before_completion)
     if delta_prompt == 0 and delta_completion == 0:
-        _write_flag_payload(
-            sidecar,
-            {
-                SIDECAR_MARKER: True,
-                "model": FLAG_MODEL,
-                "flag_thinking": False,
-                "temperature": flag_temperature,
-                "status": "failed",
-                "error": "用量缺失或为 0",
-                "spent_cny": spent + upper_cny,
-                "max_cny": max_cny,
-                "pricing_source": price_source,
-                "notes": [],
-            },
-        )
+        _record("failed", "用量缺失或为 0", spent + upper_cny, [])
         print("错误: 抽检用量缺失或为 0", file=sys.stderr)
         return 1
     cost = _cost_cny(delta_prompt, delta_completion, in_price, out_price)
+    if delta_prompt > upper_in or delta_completion > upper_out:
+        _record("failed", "usage_over_upper", spent + cost, [])
+        print("错误: 抽检 usage_over_upper", file=sys.stderr)
+        return 1
     finish = None
     if wrapper is not None and wrapper.last_finish_reason:
         finish = wrapper.last_finish_reason
@@ -1575,21 +1733,7 @@ def _run_flag(args: argparse.Namespace, llm_client: Any) -> int:
         if isinstance(value, str):
             finish = value
     if finish == "length":
-        _write_flag_payload(
-            sidecar,
-            {
-                SIDECAR_MARKER: True,
-                "model": FLAG_MODEL,
-                "flag_thinking": False,
-                "temperature": flag_temperature,
-                "status": "failed",
-                "error": "finish_reason=length",
-                "spent_cny": spent + cost,
-                "max_cny": max_cny,
-                "pricing_source": price_source,
-                "notes": [],
-            },
-        )
+        _record("failed", "finish_reason=length", spent + cost, [])
         print("错误: 抽检 finish_reason=length", file=sys.stderr)
         return 1
     try:
@@ -1597,18 +1741,7 @@ def _run_flag(args: argparse.Namespace, llm_client: Any) -> int:
     except json.JSONDecodeError:
         notes = {"suspicion": getattr(message, "content", "") or ""}
     notes = _whitelist_notes(notes)
-    payload = {
-        SIDECAR_MARKER: True,
-        "model": FLAG_MODEL,
-        "flag_thinking": False,
-        "temperature": decoding.temperature,
-        "status": "ok",
-        "spent_cny": spent + cost,
-        "max_cny": max_cny,
-        "pricing_source": price_source,
-        "notes": notes,
-    }
-    _write_flag_payload(sidecar, payload)
+    _record("ok", None, spent + cost, notes)
     return 0
 
 
