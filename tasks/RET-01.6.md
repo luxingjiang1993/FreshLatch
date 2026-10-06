@@ -68,3 +68,4 @@ python scripts/build_dense_index.py --corpus data/exp/x1/corpus --traps data/exp
 ## Blocked by
 - RET-01.4
 - RET-01.5
+- 主人冻结确认：`docs/evidence/retrieve-x1/PREREG.md` 中的 `owner_freeze: confirmed` 已合入 `main`
