@@ -440,6 +440,9 @@ def test_generate_uses_flash_decoding_params(tmp_path: Path):
     assert "不得以版权原文为模板整段改写" in prompt
     assert "不得给出金标" in prompt
     assert "只返回 JSON" in prompt
+    assert "不要另给 frontmatter 字段" in prompt
+    assert "as_of: T1" in prompt
+    assert "禁止写成日期" in prompt
     assert "qtype" not in prompt
     assert "^b1-[a-z0-9-]+$" in prompt
     assert (out / ".x1-drafts-manifest.json").is_file()
@@ -2187,3 +2190,254 @@ def test_real_client_pins_first_request_and_does_not_retry_500(tmp_path: Path, m
     assert code_boom == 1
     assert attempts["n"] == 1
     assert "Traceback" not in captured.err
+
+
+def _s1_model_payload(*, snapshot_as_of: bool, gold: bool = False, yaml_and_object: bool = False) -> dict:
+    """由真实 qwen-flash 回复裁出来的夹具。金标已去掉，as_of 只在 snapshot_as_of 时改成 T0/T1。"""
+    bodies = {
+        "a": (
+            "## p1\n根据最新战略评估，本季度核心业务增长预期维持在年化12%。市场反馈显示，客户对现有产品线的满意度持续上升。\n\n"
+            "## p2\n外部环境分析表明，主要竞争者近期未有重大技术突破。建议维持当前资源投入策略。\n\n"
+            "## p3\n财务模型预测显示，若保持现有运营效率，下季度净利润率将稳定。风险控制机制运行良好。\n"
+        ),
+        "a1": (
+            "## p1\n最新战略评估显示，核心业务增长预期已下调至年化7%。客户满意度调查揭示服务响应延迟问题加剧。\n\n"
+            "## p2\n外部环境变化显著，主要竞争者已完成关键技术迭代。原判断窗口期已关闭。\n\n"
+            "## p3\n财务模型更新后显示，因运营效率下降，下季度净利润率可能下降。内部审计发现流程违规事件。\n"
+        ),
+        "b": (
+            "## p1\n本季度战略重点仍为巩固现有客户关系。客户留存率数据显示，高价值客户续约率保持在高位。\n\n"
+            "## p2\n供应链稳定性评估认为，关键原材料供应充足，无短期中断风险。\n\n"
+            "## p3\n人力资源规划显示，技术岗位空缺率高于行业平均。招聘渠道优化方案已在试点阶段。\n"
+        ),
+        "b1": (
+            "## p1\n客户关系维护面临挑战，高价值客户续约率已下滑，部分大客户提出终止合作意向。\n\n"
+            "## p2\n供应链出现严重波动，关键原材料采购周期延长，区域配送中心因物流中断暂停运营。\n\n"
+            "## p3\n技术岗位空缺率远超行业水平。原有招聘渠道失效，人才短缺已影响项目交付进度。\n"
+        ),
+    }
+    specs = [
+        ("corpus/t0/strategy_review_memo_t0.md", "s1-d0-01-memo-a", "T0", "已签发顾问备忘：两周后待复验的战略判断（T0）", "a"),
+        ("corpus/t1/strategy_review_memo_t1.md", "s1-d0-01-memo-a", "T1", "已签发顾问备忘：两周后待复验的战略判断（T1）", "a1"),
+        ("corpus/t0/strategy_review_memo_t0_b.md", "s1-d0-01-memo-b", "T0", "已签发顾问备忘：两周后待复验的战略判断（T0）-B", "b"),
+        ("corpus/t1/strategy_review_memo_t1_b.md", "s1-d0-01-memo-b", "T1", "已签发顾问备忘：两周后待复验的战略判断（T1）-B", "b1"),
+    ]
+    documents = []
+    for path, doc_id, snap, title, key in specs:
+        frontmatter = {
+            "doc_id": doc_id,
+            "as_of": snap if snapshot_as_of else "2024-06-15",
+            "source_type": "private",
+            "title": title,
+            "provenance": "synthetic",
+            "license": "synthetic",
+            "domain": "D0",
+            "genre": "S1",
+        }
+        if gold:
+            frontmatter["relevant"] = ["secret-gold-anchor"]
+            frontmatter["answer_points"] = ["secret-gold-point"]
+            frontmatter["distractors"] = ["secret-gold-trap"]
+            frontmatter["qtype"] = "secret-gold-type"
+            frontmatter["relevant_ids"] = ["secret-gold-nested"]
+        content = bodies[key]
+        if yaml_and_object:
+            content = "---\ndoc_id: s1-d0-01-memo-a\nas_of: T0\n---\n" + content
+        documents.append({"path": path, "content": content, "frontmatter": frontmatter})
+    questions = [
+        {"id": "q1", "query": "T0 文档里核心业务增长预期后来有没有被改写？", "category": "fact_recall", "eval_intent": "verify_factual_consistency", "as_of": "T1"},
+        {"id": "q2", "query": "T1 文档里研发进度相对 T0 有什么变化？", "category": "comparison", "eval_intent": "assess_revised_assessment", "as_of": "T1"},
+        {"id": "q3", "query": "客户留存率在两份备忘里是否对不上？", "category": "contradiction_detection", "eval_intent": "detect_inconsistencies", "as_of": "T0"},
+        {"id": "q4", "query": "供应链状况在两份备忘里是否一致？", "category": "alignment_check", "eval_intent": "evaluate_consistency_across_versions", "as_of": "T0"},
+    ]
+    return {"documents": documents, "questions": {"queries": questions}}
+
+
+def _s1_pair_batch() -> dict:
+    return {
+        "batch_id": "s1-d0-01",
+        "genre": "S1",
+        "domain": "D0",
+        "n_docs": 2,
+        "chunks_per_doc": 3,
+        "topic": "已签发顾问备忘：两周后待复验的战略判断",
+        "pair": True,
+    }
+
+
+def test_frontmatter_object_with_snapshot_as_of_validates(tmp_path: Path):
+    mod = _load_script()
+    payload = _s1_model_payload(snapshot_as_of=True, gold=True)
+    fake = FakeLLM(json.dumps(payload, ensure_ascii=False))
+    cfg = _write_json(tmp_path / "config.json", _cfg())
+    out = tmp_path / "folded"
+    assert _generate(mod, tmp_path, fake, cfg, out, spec=_spec([_s1_pair_batch()])) == 0
+    assert len(fake.calls) == 1
+    prompt = fake.calls[0]["messages"][0]["content"]
+    assert "不要另给 frontmatter 字段" in prompt
+    assert "as_of: T1" in prompt
+    assert '"path":"corpus/t1/b1-memo.md"' in prompt
+    t0 = (out / "corpus" / "t0" / "strategy_review_memo_t0.md").read_text(encoding="utf-8")
+    t1 = (out / "corpus" / "t1" / "strategy_review_memo_t1.md").read_text(encoding="utf-8")
+    assert t0.startswith("---\n")
+    assert "as_of: T0\n" in t0
+    assert "as_of: T1\n" in t1
+    blob = "\n".join(path.read_text(encoding="utf-8") for path in (out / "corpus").rglob("*.md"))
+    for banned in ("secret-gold", "qtype:", "relevant:", "answer_points", "distractors"):
+        assert banned not in blob
+    questions = (out / "questions.json").read_text(encoding="utf-8")
+    assert "secret-gold" not in questions
+
+
+def test_dated_as_of_still_rejected(tmp_path: Path, capsys):
+    mod = _load_script()
+    payload = _s1_model_payload(snapshot_as_of=False)
+    fake = FakeLLM(json.dumps(payload, ensure_ascii=False))
+    cfg = _write_json(tmp_path / "config.json", _cfg())
+    out = tmp_path / "dated"
+    code = _generate(mod, tmp_path, fake, cfg, out, spec=_spec([_s1_pair_batch()]))
+    err = capsys.readouterr().err
+    assert code != 0
+    assert len(fake.calls) == 1
+    assert "as_of 与目录或批次不一致" in err
+    assert "frontmatter 缺键" not in err
+    assert not (out / "corpus" / "t0" / "strategy_review_memo_t0.md").exists()
+    assert _manifest(out)["batches"]["s1-d0-01"]["status"] == "failed"
+
+    s2_batch = {
+        "batch_id": "s2-d0-03",
+        "genre": "S2",
+        "domain": "D0",
+        "n_docs": 2,
+        "chunks_per_doc": 3,
+        "topic": "访谈与渠道纪要",
+        "pair": True,
+    }
+    s2_body = (
+        "## p1\n公司A在2023年第三季度财报中披露，其核心业务收入同比增长。管理层表示这一趋势还将持续。\n\n"
+        "## p2\n根据内部渠道纪要，公司A的海外分支机构在欧洲市场实现突破。\n\n"
+        "## p3\n在近期的投资者访谈中，首席执行官明确指出公司正加速推进数字化转型。\n"
+    )
+    s2_docs = []
+    for folder, doc_id in (
+        ("t0", "s2-d0-03-0a1b2c3d4e5f"),
+        ("t1", "s2-d0-03-0a1b2c3d4e5f"),
+        ("t0", "s2-d0-03-1b2c3d4e5f6a"),
+        ("t1", "s2-d0-03-1b2c3d4e5f6a"),
+    ):
+        s2_docs.append(
+            {
+                "path": f"corpus/{folder}/{doc_id.split('-', 3)[-1]}.md",
+                "content": s2_body,
+                "frontmatter": {
+                    "doc_id": doc_id,
+                    "as_of": "2024-04-01",
+                    "source_type": "private",
+                    "title": "公司A业绩与战略方向",
+                    "provenance": "synthetic",
+                    "license": "synthetic",
+                    "domain": "D0",
+                    "genre": "S2",
+                },
+            }
+        )
+    s2_payload = {
+        "documents": s2_docs,
+        "questions": {
+            "queries": [
+                {"id": "sq1", "query": "公司A核心业务收入后来怎么说？", "category": "factoid", "eval_intent": "direct", "as_of": "2024-04-01"}
+            ]
+        },
+    }
+    s2_fake = FakeLLM(json.dumps(s2_payload, ensure_ascii=False))
+    s2_out = tmp_path / "dated-s2"
+    code_s2 = _generate(mod, tmp_path, s2_fake, cfg, s2_out, spec=_spec([s2_batch]))
+    assert code_s2 != 0
+    assert "as_of 与目录或批次不一致" in capsys.readouterr().err
+    assert s2_fake.calls
+    assert not (s2_out / "corpus" / "t0").exists() or not any((s2_out / "corpus").rglob("*.md"))
+
+
+def test_frontmatter_object_and_yaml_block_rejected(tmp_path: Path, capsys):
+    mod = _load_script()
+    payload = _s1_model_payload(snapshot_as_of=True, yaml_and_object=True)
+    fake = FakeLLM(json.dumps(payload, ensure_ascii=False))
+    cfg = _write_json(tmp_path / "config.json", _cfg())
+    out = tmp_path / "both"
+    code = _generate(mod, tmp_path, fake, cfg, out, spec=_spec([_s1_pair_batch()]))
+    err = capsys.readouterr().err
+    assert code != 0
+    assert len(fake.calls) == 1
+    assert "不能同时给出 frontmatter 对象和 content 里的 YAML 块" in err
+    assert not (out / "corpus" / "t0" / "strategy_review_memo_t0.md").exists()
+
+
+def test_three_consecutive_validation_failures_stop(tmp_path: Path, capsys):
+    mod = _load_script()
+    batches = [_batch(batch_id=f"b{i}", topic=f"第{i}批") for i in range(1, 5)]
+    payloads = []
+    for batch in batches:
+        payloads.append(
+            {
+                "documents": [
+                    {
+                        "path": f"corpus/t1/{batch['batch_id']}-draft.md",
+                        "content": "## p1\n合成正文没有 YAML。\n## p2\n另一段。\n",
+                        "frontmatter": {
+                            "doc_id": f"{batch['batch_id']}-draft",
+                            "as_of": "2024-06-15",
+                            "source_type": "private",
+                            "title": "日期快照",
+                            "provenance": "synthetic",
+                            "license": "synthetic",
+                            "domain": "D0",
+                            "genre": "S1",
+                        },
+                    }
+                ],
+                "questions": {"queries": [{"id": f"{batch['batch_id']}-q", "query": "问", "category": "c", "eval_intent": "e", "as_of": "T1"}]},
+            }
+        )
+    fake = QueueLLM([json.dumps(item, ensure_ascii=False) for item in payloads])
+    cfg = _write_json(tmp_path / "config.json", _cfg())
+    out = tmp_path / "streak"
+    code = _generate(mod, tmp_path, fake, cfg, out, spec=_spec(batches))
+    err = capsys.readouterr().err
+    assert code == 1
+    assert fake.index == 3
+    assert err.count("错误: 连续 3 批校验失败，停止") == 1
+    assert "Traceback" not in err
+    manifest = _manifest(out)
+    assert manifest["stop_reason"] == "consecutive_validation"
+    assert manifest["batches"]["b1"]["status"] == "failed"
+    assert manifest["batches"]["b2"]["status"] == "failed"
+    assert manifest["batches"]["b3"]["status"] == "failed"
+    assert "b4" not in manifest["batches"]
+
+
+def test_failed_batches_retry_when_prompt_changes(tmp_path: Path, monkeypatch, capsys):
+    mod = _load_script()
+    batch = _s1_pair_batch()
+    cfg = _write_json(tmp_path / "config.json", _cfg())
+    out = tmp_path / "scratch"
+    bad = FakeLLM(json.dumps(_s1_model_payload(snapshot_as_of=False), ensure_ascii=False))
+    assert _generate(mod, tmp_path, bad, cfg, out, spec=_spec([batch])) == 1
+    failed = _manifest(out)["batches"]["s1-d0-01"]
+    assert failed["status"] == "failed"
+    old_sha = failed["prompt_sha256"]
+    real = mod._build_batch_prompt
+
+    def _changed(item):
+        return real(item) + "\n提示已更新。"
+
+    monkeypatch.setattr(mod, "_build_batch_prompt", _changed)
+    good = FakeLLM(json.dumps(_s1_model_payload(snapshot_as_of=True), ensure_ascii=False))
+    code = _generate(mod, tmp_path, good, cfg, out, spec=_spec([batch]))
+    err = capsys.readouterr().err
+    assert "解码参数与清单不一致" not in err
+    assert code == 0
+    assert len(good.calls) == 1
+    rec = _manifest(out)["batches"]["s1-d0-01"]
+    assert rec["status"] == "ok"
+    assert rec["prompt_sha256"] != old_sha
+    assert (out / "corpus" / "t0" / "strategy_review_memo_t0.md").is_file()

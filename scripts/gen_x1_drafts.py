@@ -48,6 +48,7 @@ MODEL_MAX_OUTPUT_TOKENS = {
     "qwen-plus": 32768,
 }
 FLAG_LEDGER_NAME = ".x1-flag-spend.json"
+CONSECUTIVE_VALIDATION_LIMIT = 3
 GOLD_PLACEHOLDER = "TODO-owner"
 GOLD_QUESTION_KEYS = ("relevant", "answer_points", "distractors", "qtype")
 NOTE_FIELDS = ("id", "suspicion", "reason", "severity")
@@ -310,6 +311,62 @@ def _strictly_inside(path: Path, root: Path) -> bool:
     return path.is_relative_to(root) and path != root
 
 
+def _content_has_frontmatter_block(content: str) -> bool:
+    return content.lstrip("\ufeff").lstrip().startswith("---")
+
+
+def _yaml_scalar(value: Any) -> str | None:
+    if isinstance(value, bool):
+        return "true" if value else "false"
+    if isinstance(value, (int, float)) and not isinstance(value, bool):
+        return str(value)
+    if isinstance(value, str):
+        return value.replace("\r\n", " ").replace("\n", " ").replace("\r", " ").strip()
+    return None
+
+
+def _render_yaml_frontmatter(meta: dict[str, Any]) -> str:
+    """把 frontmatter 对象渲染成 content 开头的 YAML 块。不改写 as_of。"""
+    lines = ["---"]
+    for key, value in meta.items():
+        if not isinstance(key, str) or not key.strip() or ":" in key or any(ch in key for ch in "\r\n"):
+            raise DraftShapeError(f"frontmatter 键非法: {key}")
+        scalar = _yaml_scalar(value)
+        if scalar is None:
+            raise DraftShapeError(f"frontmatter 值必须是标量: {key}")
+        lines.append(f"{key}: {scalar}")
+    lines.append("---")
+    return "\n".join(lines) + "\n"
+
+
+def _absorb_frontmatter_objects(documents: Any) -> Any:
+    """content 没有 YAML 块时，把 frontmatter 对象折进去。两者都有则拒绝。"""
+    if not isinstance(documents, list):
+        return documents
+    folded: list[Any] = []
+    for i, item in enumerate(documents):
+        if not isinstance(item, dict) or "frontmatter" not in item:
+            folded.append(item)
+            continue
+        copied = dict(item)
+        frontmatter = copied.pop("frontmatter")
+        if not isinstance(frontmatter, dict):
+            raise DraftShapeError(f"documents[{i}] frontmatter 必须是对象")
+        content = copied.get("content", "")
+        if content is None:
+            content = ""
+        if not isinstance(content, str):
+            raise DraftShapeError(f"documents[{i}] content 必须是字符串")
+        if _content_has_frontmatter_block(content):
+            raise DraftShapeError(f"documents[{i}] 不能同时给出 frontmatter 对象和 content 里的 YAML 块")
+        cleaned = _strip_nested_gold(frontmatter)
+        if not isinstance(cleaned, dict):
+            cleaned = {}
+        copied["content"] = _render_yaml_frontmatter(cleaned) + content
+        folded.append(copied)
+    return folded
+
+
 def _normalize_documents(documents: Any) -> list[dict[str, str]]:
     if documents is None:
         return []
@@ -343,7 +400,7 @@ def _normalize_generate_payload(payload: Any) -> dict[str, Any]:
     if questions is None:
         raise DraftShapeError("无法从模型输出解析题目列表")
     if isinstance(payload, dict):
-        documents = _normalize_documents(payload.get("documents"))
+        documents = _normalize_documents(_absorb_frontmatter_objects(payload.get("documents")))
     else:
         documents = []
     normalized_qs = [_normalize_question(q) if isinstance(q, dict) else {} for q in questions]
@@ -633,16 +690,19 @@ def _build_batch_prompt(batch: dict[str, Any]) -> str:
         "合成正文必须自写，不得以版权原文为模板整段改写。",
         "不得给出金标。",
         "只返回 JSON。",
-        "只返回 JSON 对象：documents 数组（元素含 path 与 content），以及带 queries 数组的 questions 对象（必须使用 queries 包装）。",
-        "每道题只给 id、query、category、eval_intent、as_of。",
+        "只返回 JSON 对象：documents 数组（元素只含 path 与 content），以及带 queries 数组的 questions 对象（必须使用 queries 包装）。",
+        "每道题只给 id、query、category、eval_intent、as_of。题目的 as_of 只能是 T0 或 T1，不要写日期。",
         f"本批 batch_id={batch['batch_id']}。",
         f"doc_id 必须匹配 ^{batch['batch_id']}-[a-z0-9-]+$。",
         f"genre={batch['genre']}，domain={batch['domain']}。",
         f"n_docs={batch['n_docs']}，每份文档 chunks_per_doc={batch['chunks_per_doc']} 个块。",
         f"topic：{batch['topic']}",
-        "frontmatter 必须包含 doc_id、as_of（与目录一致）、source_type（只允许 private、public、internal）、title、provenance: synthetic、license: synthetic、domain、genre。",
+        "每份文档的 content 必须以 YAML frontmatter 开头：第一行 ---，接着每行一个「键: 值」，再一行 ---。不要另给 frontmatter 字段。",
+        "frontmatter 必须包含 doc_id、as_of、source_type（只允许 private、public、internal）、title、provenance: synthetic、license: synthetic、domain、genre。",
+        "t0/ 目录下 as_of 必须是 T0，t1/ 目录下 as_of 必须是 T1，禁止写成日期。",
         "license 只能是 synthetic。",
         "正文必须是 2 到 6 个独立的 ## pN 块，块 id 形如 p1，不得重复，块正文不得为空，块数等于 chunks_per_doc。",
+        '单份文档示例：{"path":"corpus/t1/b1-memo.md","content":"---\\ndoc_id: b1-memo\\nas_of: T1\\nsource_type: private\\ntitle: 示例\\nprovenance: synthetic\\nlicense: synthetic\\ndomain: D0\\ngenre: S1\\n---\\n## p1\\n合成正文。\\n## p2\\n另一段。\\n"}',
     ]
     if pair:
         bucket = "traps" if batch["genre"] == "S7" else "corpus"
@@ -651,9 +711,10 @@ def _build_batch_prompt(batch: dict[str, Any]) -> str:
         )
         lines.append(f"路径分别位于 {bucket}/t0/ 与 {bucket}/t1/ 下，只一层文件名，扩展名 .md。")
         lines.append(f"documents 长度必须等于 {int(batch['n_docs']) * 2}。")
+        lines.append("同一 doc_id 的两份文档：t0/ 里 as_of 写 T0，t1/ 里 as_of 写 T1，不要写日期。")
     else:
         dest = _expected_rel_dir(batch["genre"], batch["as_of"])
-        lines.append(f"as_of={batch['as_of']}。")
+        lines.append(f"as_of={batch['as_of']}，不要写成日期。")
         lines.append(f"每份文档路径必须位于 {dest}/ 下，只一层文件名，扩展名 .md。")
     if batch["genre"] == "S7":
         lines.append("本批是检索陷阱文档，路径必须在 traps 下，不要写入 corpus。")
@@ -953,6 +1014,7 @@ def _resume_action(manifest: dict[str, Any], batch: dict[str, Any], fields: dict
     if rec.get("status") == "committing":
         return "recover"
     if rec.get("status") != "ok":
+        # failed 可以换提示重跑。只有 ok 才要求解码参数和指纹一致。
         return "run"
     for key, value in fields.items():
         if rec.get(key) != value:
@@ -1381,10 +1443,23 @@ def _run_generate(args: argparse.Namespace, llm_client: Any) -> int:
         )
         print(f"错误: 批次 {batch_id}: {error}；{RAW_GOLD_NOTE}", file=sys.stderr)
 
+    validation_streak = 0
+
+    def _stop_if_validation_streak() -> bool:
+        nonlocal validation_streak
+        validation_streak += 1
+        if validation_streak < CONSECUTIVE_VALIDATION_LIMIT:
+            return False
+        state["stop_reason"] = "consecutive_validation"
+        _flush_manifest(out, state)
+        print("错误: 连续 3 批校验失败，停止", file=sys.stderr)
+        return True
+
     for batch, prompt, fields, fingerprint in plans:
         batch_id = batch["batch_id"]
         action = _resume_action({"batches": state["batches"]}, batch, fields, fingerprint)
         if action == "skip":
+            validation_streak = 0
             continue
         upper_in = _input_token_upper(prompt)
         upper_out = _output_token_upper(batch)
@@ -1471,15 +1546,21 @@ def _run_generate(args: argparse.Namespace, llm_client: Any) -> int:
             parsed = _parse_json_content(raw_text)
         except json.JSONDecodeError as exc:
             _fail_batch(batch_id, raw_text, f"模型输出不是 JSON: {exc}", fields, fingerprint)
+            if _stop_if_validation_streak():
+                return 1
             continue
         try:
             payload = _normalize_generate_payload(parsed)
         except DraftShapeError as exc:
             _fail_batch(batch_id, raw_text, str(exc), fields, fingerprint)
+            if _stop_if_validation_streak():
+                return 1
             continue
         doc_err = _validate_batch_documents(payload["documents"], batch, seen_docs, public_ids)
         if doc_err:
             _fail_batch(batch_id, raw_text, doc_err, fields, fingerprint)
+            if _stop_if_validation_streak():
+                return 1
             continue
         id_result = _question_ids(payload["questions"]["queries"], seen_ids)
         if isinstance(id_result, str):
@@ -1487,6 +1568,8 @@ def _run_generate(args: argparse.Namespace, llm_client: Any) -> int:
             if "冲突" in id_result:
                 state["stop_reason"] = "id_conflict"
                 break
+            if _stop_if_validation_streak():
+                return 1
             continue
         if "n_questions" in batch and len(id_result) != int(batch["n_questions"]):
             _fail_batch(
@@ -1496,7 +1579,10 @@ def _run_generate(args: argparse.Namespace, llm_client: Any) -> int:
                 fields,
                 fingerprint,
             )
+            if _stop_if_validation_streak():
+                return 1
             continue
+        validation_streak = 0
         rels = [PurePosixPath(item["path"]).as_posix() for item in payload["documents"]]
         _put_batch(
             batch_id,
