@@ -1,725 +1,425 @@
 {
-  "note": "合成 chunk 目标 474（S1–S7 与 P2，按 RET-01 语料来源表相对 600 chunk 的占比；P1 公开条文不在本文件）。pricing 的单价必须由人填写，脚本不内置价格。",
+  "note": "合成 chunk 目标不少于 520（S1–S7；公开约 140 与合成合计达到 660）。S1–S3 用 pair 一次写出 T0 与 T1。S6 只写 T1，并带上 P1 缺口事实。pricing 与 flag_pricing 的单价必须由人填写，脚本不内置价格。",
   "pricing": {
     "input_cny_per_million": null,
     "output_cny_per_million": null,
-    "source": "由人填写每百万 token 的 input/output 人民币标价及来源页；本示例不是报价"
+    "source": "由人填写 qwen-flash 每百万 token 的 input/output 人民币标价及来源页；本示例不是报价"
+  },
+  "flag_pricing": {
+    "input_cny_per_million": null,
+    "output_cny_per_million": null,
+    "source": "由人填写 qwen-plus 每百万 token 的 input/output 人民币标价及来源页；本示例不是报价"
   },
   "batches": [
     {
-      "batch_id": "s1-d0-t0-01",
+      "batch_id": "s1-d0-01",
       "genre": "S1",
       "domain": "D0",
-      "as_of": "T0",
-      "n_docs": 4,
+      "n_docs": 6,
       "chunks_per_doc": 3,
-      "topic": "已签发顾问备忘：两周后待复验的战略判断，合成叙述（D0 T0）"
+      "n_questions": 12,
+      "max_chars_per_chunk": 800,
+      "topic": "已签发顾问备忘：两周后待复验的战略判断，合成叙述（D0，T0 与 T1 成对）",
+      "pair": true
     },
     {
-      "batch_id": "s1-d0-t0-02",
+      "batch_id": "s1-d0-02",
       "genre": "S1",
       "domain": "D0",
-      "as_of": "T0",
+      "n_docs": 4,
+      "chunks_per_doc": 3,
+      "n_questions": 8,
+      "max_chars_per_chunk": 800,
+      "topic": "已签发顾问备忘：两周后待复验的战略判断，合成叙述（D0，T0 与 T1 成对）",
+      "pair": true
+    },
+    {
+      "batch_id": "s1-d1-01",
+      "genre": "S1",
+      "domain": "D1",
       "n_docs": 3,
       "chunks_per_doc": 3,
-      "topic": "已签发顾问备忘：两周后待复验的战略判断，合成叙述（D0 T0）"
+      "n_questions": 6,
+      "max_chars_per_chunk": 800,
+      "topic": "已签发顾问备忘：两周后待复验的战略判断，合成叙述（D1，T0 与 T1 成对）",
+      "pair": true
     },
     {
-      "batch_id": "s1-d1-t0-03",
-      "genre": "S1",
-      "domain": "D1",
-      "as_of": "T0",
-      "n_docs": 2,
-      "chunks_per_doc": 3,
-      "topic": "已签发顾问备忘：两周后待复验的战略判断，合成叙述（D1 T0）"
-    },
-    {
-      "batch_id": "s1-d2-t0-04",
+      "batch_id": "s1-d2-01",
       "genre": "S1",
       "domain": "D2",
-      "as_of": "T0",
-      "n_docs": 2,
-      "chunks_per_doc": 3,
-      "topic": "已签发顾问备忘：两周后待复验的战略判断，合成叙述（D2 T0）"
-    },
-    {
-      "batch_id": "s1-d3-t0-05",
-      "genre": "S1",
-      "domain": "D3",
-      "as_of": "T0",
       "n_docs": 3,
       "chunks_per_doc": 3,
-      "topic": "已签发顾问备忘：两周后待复验的战略判断，合成叙述（D3 T0）"
+      "n_questions": 6,
+      "max_chars_per_chunk": 800,
+      "topic": "已签发顾问备忘：两周后待复验的战略判断，合成叙述（D2，T0 与 T1 成对）",
+      "pair": true
     },
     {
-      "batch_id": "s1-d0-t1-06",
+      "batch_id": "s1-d3-01",
       "genre": "S1",
-      "domain": "D0",
-      "as_of": "T1",
-      "n_docs": 4,
+      "domain": "D3",
+      "n_docs": 2,
       "chunks_per_doc": 3,
-      "topic": "已签发顾问备忘：两周后待复验的战略判断，合成叙述（D0 T1）"
+      "n_questions": 4,
+      "max_chars_per_chunk": 800,
+      "topic": "已签发顾问备忘：两周后待复验的战略判断，合成叙述（D3，T0 与 T1 成对）",
+      "pair": true
     },
     {
-      "batch_id": "s1-d0-t1-07",
-      "genre": "S1",
+      "batch_id": "s2-d0-01",
+      "genre": "S2",
       "domain": "D0",
-      "as_of": "T1",
+      "n_docs": 5,
+      "chunks_per_doc": 3,
+      "n_questions": 10,
+      "max_chars_per_chunk": 800,
+      "topic": "访谈与渠道纪要，含同快照改口，合成叙述（D0，T0 与 T1 成对）",
+      "pair": true
+    },
+    {
+      "batch_id": "s2-d0-02",
+      "genre": "S2",
+      "domain": "D0",
       "n_docs": 3,
       "chunks_per_doc": 3,
-      "topic": "已签发顾问备忘：两周后待复验的战略判断，合成叙述（D0 T1）"
+      "n_questions": 6,
+      "max_chars_per_chunk": 800,
+      "topic": "访谈与渠道纪要，含同快照改口，合成叙述（D0，T0 与 T1 成对）",
+      "pair": true
     },
     {
-      "batch_id": "s1-d1-t1-08",
-      "genre": "S1",
+      "batch_id": "s2-d1-01",
+      "genre": "S2",
       "domain": "D1",
-      "as_of": "T1",
+      "n_docs": 2,
+      "chunks_per_doc": 3,
+      "n_questions": 4,
+      "max_chars_per_chunk": 800,
+      "topic": "访谈与渠道纪要，含同快照改口，合成叙述（D1，T0 与 T1 成对）",
+      "pair": true
+    },
+    {
+      "batch_id": "s2-d2-01",
+      "genre": "S2",
+      "domain": "D2",
+      "n_docs": 2,
+      "chunks_per_doc": 3,
+      "n_questions": 4,
+      "max_chars_per_chunk": 800,
+      "topic": "访谈与渠道纪要，含同快照改口，合成叙述（D2，T0 与 T1 成对）",
+      "pair": true
+    },
+    {
+      "batch_id": "s2-d3-01",
+      "genre": "S2",
+      "domain": "D3",
+      "n_docs": 2,
+      "chunks_per_doc": 3,
+      "n_questions": 4,
+      "max_chars_per_chunk": 800,
+      "topic": "访谈与渠道纪要，含同快照改口，合成叙述（D3，T0 与 T1 成对）",
+      "pair": true
+    },
+    {
+      "batch_id": "s3-d0-01",
+      "genre": "S3",
+      "domain": "D0",
+      "n_docs": 5,
+      "chunks_per_doc": 3,
+      "n_questions": 10,
+      "max_chars_per_chunk": 800,
+      "topic": "竞品价目与报价快照，合成叙述（D0，T0 与 T1 成对）",
+      "pair": true
+    },
+    {
+      "batch_id": "s3-d0-02",
+      "genre": "S3",
+      "domain": "D0",
       "n_docs": 3,
       "chunks_per_doc": 3,
-      "topic": "已签发顾问备忘：两周后待复验的战略判断，合成叙述（D1 T1）"
+      "n_questions": 6,
+      "max_chars_per_chunk": 800,
+      "topic": "竞品价目与报价快照，合成叙述（D0，T0 与 T1 成对）",
+      "pair": true
     },
     {
-      "batch_id": "s1-d2-t1-09",
-      "genre": "S1",
-      "domain": "D2",
-      "as_of": "T1",
-      "n_docs": 2,
-      "chunks_per_doc": 3,
-      "topic": "已签发顾问备忘：两周后待复验的战略判断，合成叙述（D2 T1）"
-    },
-    {
-      "batch_id": "s1-d3-t1-10",
-      "genre": "S1",
-      "domain": "D3",
-      "as_of": "T1",
-      "n_docs": 2,
-      "chunks_per_doc": 3,
-      "topic": "已签发顾问备忘：两周后待复验的战略判断，合成叙述（D3 T1）"
-    },
-    {
-      "batch_id": "s2-d0-t0-01",
-      "genre": "S2",
-      "domain": "D0",
-      "as_of": "T0",
-      "n_docs": 4,
-      "chunks_per_doc": 3,
-      "topic": "访谈与渠道纪要，含同快照改口，合成叙述（D0 T0）"
-    },
-    {
-      "batch_id": "s2-d0-t0-02",
-      "genre": "S2",
-      "domain": "D0",
-      "as_of": "T0",
-      "n_docs": 1,
-      "chunks_per_doc": 3,
-      "topic": "访谈与渠道纪要，含同快照改口，合成叙述（D0 T0）"
-    },
-    {
-      "batch_id": "s2-d1-t0-03",
-      "genre": "S2",
-      "domain": "D1",
-      "as_of": "T0",
-      "n_docs": 2,
-      "chunks_per_doc": 3,
-      "topic": "访谈与渠道纪要，含同快照改口，合成叙述（D1 T0）"
-    },
-    {
-      "batch_id": "s2-d2-t0-04",
-      "genre": "S2",
-      "domain": "D2",
-      "as_of": "T0",
-      "n_docs": 2,
-      "chunks_per_doc": 3,
-      "topic": "访谈与渠道纪要，含同快照改口，合成叙述（D2 T0）"
-    },
-    {
-      "batch_id": "s2-d3-t0-05",
-      "genre": "S2",
-      "domain": "D3",
-      "as_of": "T0",
-      "n_docs": 1,
-      "chunks_per_doc": 3,
-      "topic": "访谈与渠道纪要，含同快照改口，合成叙述（D3 T0）"
-    },
-    {
-      "batch_id": "s2-d0-t1-06",
-      "genre": "S2",
-      "domain": "D0",
-      "as_of": "T1",
-      "n_docs": 4,
-      "chunks_per_doc": 3,
-      "topic": "访谈与渠道纪要，含同快照改口，合成叙述（D0 T1）"
-    },
-    {
-      "batch_id": "s2-d0-t1-07",
-      "genre": "S2",
-      "domain": "D0",
-      "as_of": "T1",
-      "n_docs": 1,
-      "chunks_per_doc": 3,
-      "topic": "访谈与渠道纪要，含同快照改口，合成叙述（D0 T1）"
-    },
-    {
-      "batch_id": "s2-d1-t1-08",
-      "genre": "S2",
-      "domain": "D1",
-      "as_of": "T1",
-      "n_docs": 1,
-      "chunks_per_doc": 3,
-      "topic": "访谈与渠道纪要，含同快照改口，合成叙述（D1 T1）"
-    },
-    {
-      "batch_id": "s2-d2-t1-09",
-      "genre": "S2",
-      "domain": "D2",
-      "as_of": "T1",
-      "n_docs": 2,
-      "chunks_per_doc": 3,
-      "topic": "访谈与渠道纪要，含同快照改口，合成叙述（D2 T1）"
-    },
-    {
-      "batch_id": "s2-d3-t1-10",
-      "genre": "S2",
-      "domain": "D3",
-      "as_of": "T1",
-      "n_docs": 2,
-      "chunks_per_doc": 3,
-      "topic": "访谈与渠道纪要，含同快照改口，合成叙述（D3 T1）"
-    },
-    {
-      "batch_id": "s3-d0-t0-01",
-      "genre": "S3",
-      "domain": "D0",
-      "as_of": "T0",
-      "n_docs": 4,
-      "chunks_per_doc": 3,
-      "topic": "竞品价目与报价快照，合成叙述（D0 T0）"
-    },
-    {
-      "batch_id": "s3-d0-t0-02",
-      "genre": "S3",
-      "domain": "D0",
-      "as_of": "T0",
-      "n_docs": 1,
-      "chunks_per_doc": 3,
-      "topic": "竞品价目与报价快照，合成叙述（D0 T0）"
-    },
-    {
-      "batch_id": "s3-d1-t0-03",
+      "batch_id": "s3-d1-01",
       "genre": "S3",
       "domain": "D1",
-      "as_of": "T0",
       "n_docs": 2,
       "chunks_per_doc": 3,
-      "topic": "竞品价目与报价快照，合成叙述（D1 T0）"
+      "n_questions": 4,
+      "max_chars_per_chunk": 800,
+      "topic": "竞品价目与报价快照，合成叙述（D1，T0 与 T1 成对）",
+      "pair": true
     },
     {
-      "batch_id": "s3-d2-t0-04",
+      "batch_id": "s3-d2-01",
       "genre": "S3",
       "domain": "D2",
-      "as_of": "T0",
       "n_docs": 2,
       "chunks_per_doc": 3,
-      "topic": "竞品价目与报价快照，合成叙述（D2 T0）"
+      "n_questions": 4,
+      "max_chars_per_chunk": 800,
+      "topic": "竞品价目与报价快照，合成叙述（D2，T0 与 T1 成对）",
+      "pair": true
     },
     {
-      "batch_id": "s3-d3-t0-05",
+      "batch_id": "s3-d3-01",
       "genre": "S3",
       "domain": "D3",
-      "as_of": "T0",
-      "n_docs": 1,
-      "chunks_per_doc": 3,
-      "topic": "竞品价目与报价快照，合成叙述（D3 T0）"
-    },
-    {
-      "batch_id": "s3-d0-t1-06",
-      "genre": "S3",
-      "domain": "D0",
-      "as_of": "T1",
-      "n_docs": 4,
-      "chunks_per_doc": 3,
-      "topic": "竞品价目与报价快照，合成叙述（D0 T1）"
-    },
-    {
-      "batch_id": "s3-d0-t1-07",
-      "genre": "S3",
-      "domain": "D0",
-      "as_of": "T1",
-      "n_docs": 1,
-      "chunks_per_doc": 3,
-      "topic": "竞品价目与报价快照，合成叙述（D0 T1）"
-    },
-    {
-      "batch_id": "s3-d1-t1-08",
-      "genre": "S3",
-      "domain": "D1",
-      "as_of": "T1",
-      "n_docs": 1,
-      "chunks_per_doc": 3,
-      "topic": "竞品价目与报价快照，合成叙述（D1 T1）"
-    },
-    {
-      "batch_id": "s3-d2-t1-09",
-      "genre": "S3",
-      "domain": "D2",
-      "as_of": "T1",
       "n_docs": 2,
       "chunks_per_doc": 3,
-      "topic": "竞品价目与报价快照，合成叙述（D2 T1）"
-    },
-    {
-      "batch_id": "s3-d3-t1-10",
-      "genre": "S3",
-      "domain": "D3",
-      "as_of": "T1",
-      "n_docs": 2,
-      "chunks_per_doc": 3,
-      "topic": "竞品价目与报价快照，合成叙述（D3 T1）"
+      "n_questions": 4,
+      "max_chars_per_chunk": 800,
+      "topic": "竞品价目与报价快照，合成叙述（D3，T0 与 T1 成对）",
+      "pair": true
     },
     {
       "batch_id": "s4-d0-t0-01",
       "genre": "S4",
       "domain": "D0",
-      "as_of": "T0",
-      "n_docs": 4,
+      "n_docs": 6,
       "chunks_per_doc": 3,
-      "topic": "内部测算与成本模型版本，合成叙述（D0 T0）"
+      "n_questions": 6,
+      "max_chars_per_chunk": 800,
+      "topic": "内部测算与成本模型版本，合成叙述（D0 T0）",
+      "as_of": "T0"
     },
     {
-      "batch_id": "s4-d1-t0-02",
-      "genre": "S4",
-      "domain": "D1",
-      "as_of": "T0",
-      "n_docs": 1,
-      "chunks_per_doc": 3,
-      "topic": "内部测算与成本模型版本，合成叙述（D1 T0）"
-    },
-    {
-      "batch_id": "s4-d2-t0-03",
-      "genre": "S4",
-      "domain": "D2",
-      "as_of": "T0",
-      "n_docs": 1,
-      "chunks_per_doc": 3,
-      "topic": "内部测算与成本模型版本，合成叙述（D2 T0）"
-    },
-    {
-      "batch_id": "s4-d3-t0-04",
-      "genre": "S4",
-      "domain": "D3",
-      "as_of": "T0",
-      "n_docs": 2,
-      "chunks_per_doc": 3,
-      "topic": "内部测算与成本模型版本，合成叙述（D3 T0）"
-    },
-    {
-      "batch_id": "s4-d0-t1-05",
+      "batch_id": "s4-d0-t1-02",
       "genre": "S4",
       "domain": "D0",
-      "as_of": "T1",
-      "n_docs": 4,
+      "n_docs": 6,
       "chunks_per_doc": 3,
-      "topic": "内部测算与成本模型版本，合成叙述（D0 T1）"
+      "n_questions": 6,
+      "max_chars_per_chunk": 800,
+      "topic": "内部测算与成本模型版本，合成叙述（D0 T1）",
+      "as_of": "T1"
     },
     {
-      "batch_id": "s4-d1-t1-06",
+      "batch_id": "s4-d1-t0-03",
       "genre": "S4",
       "domain": "D1",
-      "as_of": "T1",
-      "n_docs": 2,
+      "n_docs": 4,
       "chunks_per_doc": 3,
-      "topic": "内部测算与成本模型版本，合成叙述（D1 T1）"
+      "n_questions": 4,
+      "max_chars_per_chunk": 800,
+      "topic": "内部测算与成本模型版本，合成叙述（D1 T0）",
+      "as_of": "T0"
     },
     {
-      "batch_id": "s4-d2-t1-07",
+      "batch_id": "s4-d2-t1-04",
       "genre": "S4",
       "domain": "D2",
-      "as_of": "T1",
-      "n_docs": 1,
+      "n_docs": 4,
       "chunks_per_doc": 3,
-      "topic": "内部测算与成本模型版本，合成叙述（D2 T1）"
+      "n_questions": 4,
+      "max_chars_per_chunk": 800,
+      "topic": "内部测算与成本模型版本，合成叙述（D2 T1）",
+      "as_of": "T1"
     },
     {
-      "batch_id": "s4-d3-t1-08",
+      "batch_id": "s4-d3-t0-05",
       "genre": "S4",
       "domain": "D3",
-      "as_of": "T1",
-      "n_docs": 1,
+      "n_docs": 4,
       "chunks_per_doc": 3,
-      "topic": "内部测算与成本模型版本，合成叙述（D3 T1）"
+      "n_questions": 4,
+      "max_chars_per_chunk": 800,
+      "topic": "内部测算与成本模型版本，合成叙述（D3 T0）",
+      "as_of": "T0"
     },
     {
       "batch_id": "s5-d0-t0-01",
       "genre": "S5",
       "domain": "D0",
-      "as_of": "T0",
-      "n_docs": 4,
+      "n_docs": 6,
       "chunks_per_doc": 3,
-      "topic": "二手转述与汇编，引用旧数，合成叙述（D0 T0）"
+      "n_questions": 6,
+      "max_chars_per_chunk": 800,
+      "topic": "二手转述与汇编，引用旧数，合成叙述（D0 T0）",
+      "as_of": "T0"
     },
     {
-      "batch_id": "s5-d1-t0-02",
-      "genre": "S5",
-      "domain": "D1",
-      "as_of": "T0",
-      "n_docs": 1,
-      "chunks_per_doc": 3,
-      "topic": "二手转述与汇编，引用旧数，合成叙述（D1 T0）"
-    },
-    {
-      "batch_id": "s5-d2-t0-03",
-      "genre": "S5",
-      "domain": "D2",
-      "as_of": "T0",
-      "n_docs": 1,
-      "chunks_per_doc": 3,
-      "topic": "二手转述与汇编，引用旧数，合成叙述（D2 T0）"
-    },
-    {
-      "batch_id": "s5-d3-t0-04",
-      "genre": "S5",
-      "domain": "D3",
-      "as_of": "T0",
-      "n_docs": 2,
-      "chunks_per_doc": 3,
-      "topic": "二手转述与汇编，引用旧数，合成叙述（D3 T0）"
-    },
-    {
-      "batch_id": "s5-d0-t1-05",
+      "batch_id": "s5-d0-t1-02",
       "genre": "S5",
       "domain": "D0",
-      "as_of": "T1",
       "n_docs": 4,
       "chunks_per_doc": 3,
-      "topic": "二手转述与汇编，引用旧数，合成叙述（D0 T1）"
+      "n_questions": 4,
+      "max_chars_per_chunk": 800,
+      "topic": "二手转述与汇编，引用旧数，合成叙述（D0 T1）",
+      "as_of": "T1"
     },
     {
-      "batch_id": "s5-d1-t1-06",
+      "batch_id": "s5-d1-t1-03",
       "genre": "S5",
       "domain": "D1",
-      "as_of": "T1",
-      "n_docs": 2,
-      "chunks_per_doc": 3,
-      "topic": "二手转述与汇编，引用旧数，合成叙述（D1 T1）"
-    },
-    {
-      "batch_id": "s5-d2-t1-07",
-      "genre": "S5",
-      "domain": "D2",
-      "as_of": "T1",
-      "n_docs": 1,
-      "chunks_per_doc": 3,
-      "topic": "二手转述与汇编，引用旧数，合成叙述（D2 T1）"
-    },
-    {
-      "batch_id": "s5-d3-t1-08",
-      "genre": "S5",
-      "domain": "D3",
-      "as_of": "T1",
-      "n_docs": 1,
-      "chunks_per_doc": 3,
-      "topic": "二手转述与汇编，引用旧数，合成叙述（D3 T1）"
-    },
-    {
-      "batch_id": "s6-d0-t0-01",
-      "genre": "S6",
-      "domain": "D0",
-      "as_of": "T0",
       "n_docs": 4,
       "chunks_per_doc": 3,
-      "topic": "变更要点与补丁记录，合成叙述（D0 T0）"
+      "n_questions": 4,
+      "max_chars_per_chunk": 800,
+      "topic": "二手转述与汇编，引用旧数，合成叙述（D1 T1）",
+      "as_of": "T1"
     },
     {
-      "batch_id": "s6-d0-t0-02",
+      "batch_id": "s5-d2-t0-04",
+      "genre": "S5",
+      "domain": "D2",
+      "n_docs": 3,
+      "chunks_per_doc": 3,
+      "n_questions": 3,
+      "max_chars_per_chunk": 800,
+      "topic": "二手转述与汇编，引用旧数，合成叙述（D2 T0）",
+      "as_of": "T0"
+    },
+    {
+      "batch_id": "s5-d3-t1-05",
+      "genre": "S5",
+      "domain": "D3",
+      "n_docs": 3,
+      "chunks_per_doc": 3,
+      "n_questions": 3,
+      "max_chars_per_chunk": 800,
+      "topic": "二手转述与汇编，引用旧数，合成叙述（D3 T1）",
+      "as_of": "T1"
+    },
+    {
+      "batch_id": "s6-d0-t1-01",
       "genre": "S6",
       "domain": "D0",
-      "as_of": "T0",
-      "n_docs": 1,
+      "n_docs": 6,
       "chunks_per_doc": 3,
-      "topic": "变更要点与补丁记录，合成叙述（D0 T0）"
+      "n_questions": 6,
+      "max_chars_per_chunk": 800,
+      "topic": "P1 公开条文缺口的合成补记，只复述 must_include，不得自拟门槛或日期（D0 T1）",
+      "as_of": "T1",
+      "must_include": [
+        "令 13 第四条清洗后不足 200 字不拆块",
+        "2023 公司法第二百二十五条清洗后不足 200 字不拆块",
+        "令 16、令 20 只有 T1"
+      ]
     },
     {
-      "batch_id": "s6-d1-t0-03",
+      "batch_id": "s6-d0-t1-02",
+      "genre": "S6",
+      "domain": "D0",
+      "n_docs": 6,
+      "chunks_per_doc": 3,
+      "n_questions": 6,
+      "max_chars_per_chunk": 800,
+      "topic": "P1 公开条文缺口的合成补记，只复述 must_include，不得自拟门槛或日期（D0 T1）",
+      "as_of": "T1",
+      "must_include": [
+        "令 13 第四条清洗后不足 200 字不拆块",
+        "2023 公司法第二百二十五条清洗后不足 200 字不拆块",
+        "令 16、令 20 只有 T1"
+      ]
+    },
+    {
+      "batch_id": "s6-d1-t1-03",
       "genre": "S6",
       "domain": "D1",
-      "as_of": "T0",
-      "n_docs": 1,
-      "chunks_per_doc": 3,
-      "topic": "变更要点与补丁记录，合成叙述（D1 T0）"
-    },
-    {
-      "batch_id": "s6-d2-t0-04",
-      "genre": "S6",
-      "domain": "D2",
-      "as_of": "T0",
-      "n_docs": 2,
-      "chunks_per_doc": 3,
-      "topic": "变更要点与补丁记录，合成叙述（D2 T0）"
-    },
-    {
-      "batch_id": "s6-d3-t0-05",
-      "genre": "S6",
-      "domain": "D3",
-      "as_of": "T0",
-      "n_docs": 1,
-      "chunks_per_doc": 3,
-      "topic": "变更要点与补丁记录，合成叙述（D3 T0）"
-    },
-    {
-      "batch_id": "s6-d0-t1-06",
-      "genre": "S6",
-      "domain": "D0",
-      "as_of": "T1",
       "n_docs": 4,
       "chunks_per_doc": 3,
-      "topic": "变更要点与补丁记录，合成叙述（D0 T1）"
-    },
-    {
-      "batch_id": "s6-d1-t1-07",
-      "genre": "S6",
-      "domain": "D1",
+      "n_questions": 4,
+      "max_chars_per_chunk": 800,
+      "topic": "P1 公开条文缺口的合成补记，只复述 must_include，不得自拟门槛或日期（D1 T1）",
       "as_of": "T1",
-      "n_docs": 2,
-      "chunks_per_doc": 3,
-      "topic": "变更要点与补丁记录，合成叙述（D1 T1）"
+      "must_include": [
+        "令 13 第四条清洗后不足 200 字不拆块",
+        "2023 公司法第二百二十五条清洗后不足 200 字不拆块",
+        "令 16、令 20 只有 T1"
+      ]
     },
     {
-      "batch_id": "s6-d2-t1-08",
+      "batch_id": "s6-d2-t1-04",
       "genre": "S6",
       "domain": "D2",
-      "as_of": "T1",
-      "n_docs": 1,
+      "n_docs": 4,
       "chunks_per_doc": 3,
-      "topic": "变更要点与补丁记录，合成叙述（D2 T1）"
+      "n_questions": 4,
+      "max_chars_per_chunk": 800,
+      "topic": "P1 公开条文缺口的合成补记，只复述 must_include，不得自拟门槛或日期（D2 T1）",
+      "as_of": "T1",
+      "must_include": [
+        "令 13 第四条清洗后不足 200 字不拆块",
+        "2023 公司法第二百二十五条清洗后不足 200 字不拆块",
+        "令 16、令 20 只有 T1"
+      ]
     },
     {
-      "batch_id": "s6-d3-t1-09",
+      "batch_id": "s6-d3-t1-05",
       "genre": "S6",
       "domain": "D3",
-      "as_of": "T1",
-      "n_docs": 2,
+      "n_docs": 4,
       "chunks_per_doc": 3,
-      "topic": "变更要点与补丁记录，合成叙述（D3 T1）"
+      "n_questions": 4,
+      "max_chars_per_chunk": 800,
+      "topic": "P1 公开条文缺口的合成补记，只复述 must_include，不得自拟门槛或日期（D3 T1）",
+      "as_of": "T1",
+      "must_include": [
+        "令 13 第四条清洗后不足 200 字不拆块",
+        "2023 公司法第二百二十五条清洗后不足 200 字不拆块",
+        "令 16、令 20 只有 T1"
+      ]
     },
     {
       "batch_id": "s7-d0-t0-01",
       "genre": "S7",
       "domain": "D0",
-      "as_of": "T0",
-      "n_docs": 4,
+      "n_docs": 6,
       "chunks_per_doc": 3,
-      "topic": "检索陷阱专用文档：词面撞车、同快照冲突陈述、元陈述，合成叙述（D0 T0）"
+      "n_questions": 6,
+      "max_chars_per_chunk": 800,
+      "topic": "检索陷阱专用文档：词面撞车、同快照冲突陈述、元陈述，合成叙述（D0 T0）",
+      "as_of": "T0"
     },
     {
-      "batch_id": "s7-d0-t0-02",
+      "batch_id": "s7-d0-t1-02",
       "genre": "S7",
       "domain": "D0",
-      "as_of": "T0",
-      "n_docs": 1,
+      "n_docs": 6,
       "chunks_per_doc": 3,
-      "topic": "检索陷阱专用文档：词面撞车、同快照冲突陈述、元陈述，合成叙述（D0 T0）"
+      "n_questions": 6,
+      "max_chars_per_chunk": 800,
+      "topic": "检索陷阱专用文档：词面撞车、同快照冲突陈述、元陈述，合成叙述（D0 T1）",
+      "as_of": "T1"
     },
     {
       "batch_id": "s7-d1-t0-03",
       "genre": "S7",
       "domain": "D1",
-      "as_of": "T0",
-      "n_docs": 2,
-      "chunks_per_doc": 3,
-      "topic": "检索陷阱专用文档：词面撞车、同快照冲突陈述、元陈述，合成叙述（D1 T0）"
-    },
-    {
-      "batch_id": "s7-d2-t0-04",
-      "genre": "S7",
-      "domain": "D2",
-      "as_of": "T0",
-      "n_docs": 2,
-      "chunks_per_doc": 3,
-      "topic": "检索陷阱专用文档：词面撞车、同快照冲突陈述、元陈述，合成叙述（D2 T0）"
-    },
-    {
-      "batch_id": "s7-d3-t0-05",
-      "genre": "S7",
-      "domain": "D3",
-      "as_of": "T0",
-      "n_docs": 1,
-      "chunks_per_doc": 3,
-      "topic": "检索陷阱专用文档：词面撞车、同快照冲突陈述、元陈述，合成叙述（D3 T0）"
-    },
-    {
-      "batch_id": "s7-d0-t1-06",
-      "genre": "S7",
-      "domain": "D0",
-      "as_of": "T1",
       "n_docs": 4,
       "chunks_per_doc": 3,
-      "topic": "检索陷阱专用文档：词面撞车、同快照冲突陈述、元陈述，合成叙述（D0 T1）"
+      "n_questions": 4,
+      "max_chars_per_chunk": 800,
+      "topic": "检索陷阱专用文档：词面撞车、同快照冲突陈述、元陈述，合成叙述（D1 T0）",
+      "as_of": "T0"
     },
     {
-      "batch_id": "s7-d0-t1-07",
-      "genre": "S7",
-      "domain": "D0",
-      "as_of": "T1",
-      "n_docs": 1,
-      "chunks_per_doc": 3,
-      "topic": "检索陷阱专用文档：词面撞车、同快照冲突陈述、元陈述，合成叙述（D0 T1）"
-    },
-    {
-      "batch_id": "s7-d1-t1-08",
-      "genre": "S7",
-      "domain": "D1",
-      "as_of": "T1",
-      "n_docs": 1,
-      "chunks_per_doc": 3,
-      "topic": "检索陷阱专用文档：词面撞车、同快照冲突陈述、元陈述，合成叙述（D1 T1）"
-    },
-    {
-      "batch_id": "s7-d2-t1-09",
+      "batch_id": "s7-d2-t1-04",
       "genre": "S7",
       "domain": "D2",
-      "as_of": "T1",
-      "n_docs": 2,
-      "chunks_per_doc": 3,
-      "topic": "检索陷阱专用文档：词面撞车、同快照冲突陈述、元陈述，合成叙述（D2 T1）"
-    },
-    {
-      "batch_id": "s7-d3-t1-10",
-      "genre": "S7",
-      "domain": "D3",
-      "as_of": "T1",
-      "n_docs": 2,
-      "chunks_per_doc": 3,
-      "topic": "检索陷阱专用文档：词面撞车、同快照冲突陈述、元陈述，合成叙述（D3 T1）"
-    },
-    {
-      "batch_id": "p2-d0-t0-01",
-      "genre": "P2",
-      "domain": "D0",
-      "as_of": "T0",
       "n_docs": 4,
       "chunks_per_doc": 3,
-      "topic": "全国 GDP 初步核算到修订或最终核实，叙述自写，不得整段改写公告原文（D0 T0）",
-      "must_include": [
-        "2023 年修订后 1294272 亿元、比初步核算增 33690 亿元",
-        "2024 年最终核实 1348066 亿元、比初步核算减 1018 亿元"
-      ]
+      "n_questions": 4,
+      "max_chars_per_chunk": 800,
+      "topic": "检索陷阱专用文档：词面撞车、同快照冲突陈述、元陈述，合成叙述（D2 T1）",
+      "as_of": "T1"
     },
     {
-      "batch_id": "p2-d0-t0-02",
-      "genre": "P2",
-      "domain": "D0",
-      "as_of": "T0",
-      "n_docs": 1,
-      "chunks_per_doc": 3,
-      "topic": "全国 GDP 初步核算到修订或最终核实，叙述自写，不得整段改写公告原文（D0 T0）",
-      "must_include": [
-        "2023 年修订后 1294272 亿元、比初步核算增 33690 亿元",
-        "2024 年最终核实 1348066 亿元、比初步核算减 1018 亿元"
-      ]
-    },
-    {
-      "batch_id": "p2-d1-t0-03",
-      "genre": "P2",
-      "domain": "D1",
-      "as_of": "T0",
-      "n_docs": 2,
-      "chunks_per_doc": 3,
-      "topic": "全国 GDP 初步核算到修订或最终核实，叙述自写，不得整段改写公告原文（D1 T0）",
-      "must_include": [
-        "2023 年修订后 1294272 亿元、比初步核算增 33690 亿元",
-        "2024 年最终核实 1348066 亿元、比初步核算减 1018 亿元"
-      ]
-    },
-    {
-      "batch_id": "p2-d2-t0-04",
-      "genre": "P2",
-      "domain": "D2",
-      "as_of": "T0",
-      "n_docs": 2,
-      "chunks_per_doc": 3,
-      "topic": "全国 GDP 初步核算到修订或最终核实，叙述自写，不得整段改写公告原文（D2 T0）",
-      "must_include": [
-        "2023 年修订后 1294272 亿元、比初步核算增 33690 亿元",
-        "2024 年最终核实 1348066 亿元、比初步核算减 1018 亿元"
-      ]
-    },
-    {
-      "batch_id": "p2-d3-t0-05",
-      "genre": "P2",
+      "batch_id": "s7-d3-t1-05",
+      "genre": "S7",
       "domain": "D3",
-      "as_of": "T0",
-      "n_docs": 1,
-      "chunks_per_doc": 3,
-      "topic": "全国 GDP 初步核算到修订或最终核实，叙述自写，不得整段改写公告原文（D3 T0）",
-      "must_include": [
-        "2023 年修订后 1294272 亿元、比初步核算增 33690 亿元",
-        "2024 年最终核实 1348066 亿元、比初步核算减 1018 亿元"
-      ]
-    },
-    {
-      "batch_id": "p2-d0-t1-06",
-      "genre": "P2",
-      "domain": "D0",
-      "as_of": "T1",
       "n_docs": 4,
       "chunks_per_doc": 3,
-      "topic": "全国 GDP 初步核算到修订或最终核实，叙述自写，不得整段改写公告原文（D0 T1）",
-      "must_include": [
-        "2023 年修订后 1294272 亿元、比初步核算增 33690 亿元",
-        "2024 年最终核实 1348066 亿元、比初步核算减 1018 亿元"
-      ]
-    },
-    {
-      "batch_id": "p2-d0-t1-07",
-      "genre": "P2",
-      "domain": "D0",
-      "as_of": "T1",
-      "n_docs": 1,
-      "chunks_per_doc": 3,
-      "topic": "全国 GDP 初步核算到修订或最终核实，叙述自写，不得整段改写公告原文（D0 T1）",
-      "must_include": [
-        "2023 年修订后 1294272 亿元、比初步核算增 33690 亿元",
-        "2024 年最终核实 1348066 亿元、比初步核算减 1018 亿元"
-      ]
-    },
-    {
-      "batch_id": "p2-d1-t1-08",
-      "genre": "P2",
-      "domain": "D1",
-      "as_of": "T1",
-      "n_docs": 1,
-      "chunks_per_doc": 3,
-      "topic": "全国 GDP 初步核算到修订或最终核实，叙述自写，不得整段改写公告原文（D1 T1）",
-      "must_include": [
-        "2023 年修订后 1294272 亿元、比初步核算增 33690 亿元",
-        "2024 年最终核实 1348066 亿元、比初步核算减 1018 亿元"
-      ]
-    },
-    {
-      "batch_id": "p2-d2-t1-09",
-      "genre": "P2",
-      "domain": "D2",
-      "as_of": "T1",
-      "n_docs": 2,
-      "chunks_per_doc": 3,
-      "topic": "全国 GDP 初步核算到修订或最终核实，叙述自写，不得整段改写公告原文（D2 T1）",
-      "must_include": [
-        "2023 年修订后 1294272 亿元、比初步核算增 33690 亿元",
-        "2024 年最终核实 1348066 亿元、比初步核算减 1018 亿元"
-      ]
-    },
-    {
-      "batch_id": "p2-d3-t1-10",
-      "genre": "P2",
-      "domain": "D3",
-      "as_of": "T1",
-      "n_docs": 2,
-      "chunks_per_doc": 3,
-      "topic": "全国 GDP 初步核算到修订或最终核实，叙述自写，不得整段改写公告原文（D3 T1）",
-      "must_include": [
-        "2023 年修订后 1294272 亿元、比初步核算增 33690 亿元",
-        "2024 年最终核实 1348066 亿元、比初步核算减 1018 亿元"
-      ]
+      "n_questions": 4,
+      "max_chars_per_chunk": 800,
+      "topic": "检索陷阱专用文档：词面撞车、同快照冲突陈述、元陈述，合成叙述（D3 T1）",
+      "as_of": "T1"
     }
   ]
 }
