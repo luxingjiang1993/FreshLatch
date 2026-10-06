@@ -32,12 +32,17 @@ FORBIDDEN_OUT_ROOTS = (
 )
 RETRIEVE_X1 = ROOT / "data" / "eval" / "retrieve_x1.json"
 MARKER_NAME = ".x1-drafts-manifest.json"
+SIDECAR_MARKER = "x1_flag_sidecar"
 
 DRAFT_MODEL = "qwen-flash"
 FLAG_MODEL = "qwen-plus"
 GOLD_PLACEHOLDER = "TODO-owner"
-GOLD_KEYS = ("relevant", "answer_points", "distractors")
+GOLD_QUESTION_KEYS = ("relevant", "answer_points", "distractors")
 NOTE_FIELDS = ("id", "suspicion", "reason", "severity")
+
+
+class DraftShapeError(ValueError):
+    """模型草稿 JSON 形状非法，应写 raw-response 后非 0 退出。"""
 
 
 def _resolved(path: Path) -> Path:
@@ -78,6 +83,32 @@ def is_forbidden_sidecar(path: Path) -> bool:
     if _forbidden_resolved(resolved):
         return True
     return _forbidden_resolved(resolved.parent)
+
+
+def _is_script_sidecar(path: Path) -> bool:
+    """已有文件必须带本脚本写入的标记，才允许覆盖。"""
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError):
+        return False
+    return isinstance(data, dict) and data.get(SIDECAR_MARKER) is True
+
+
+def _can_write_sidecar(path: Path) -> str | None:
+    """返回拒绝原因；None 表示可以写入。"""
+    if is_forbidden_sidecar(path):
+        return (
+            "错误: --sidecar 不得写成 data/eval/retrieve_x1.json，"
+            "也不得落在禁写目录或其祖先下"
+        )
+    if path.suffix.lower() != ".json":
+        return "错误: --sidecar 必须以 .json 结尾"
+    if path.exists():
+        if path.is_dir():
+            return "错误: --sidecar 已存在且是目录"
+        if not _is_script_sidecar(path):
+            return "错误: --sidecar 已存在且不是本脚本写入的抽检文件，拒绝覆盖"
+    return None
 
 
 def _can_overwrite_out(out: Path) -> str | None:
@@ -140,26 +171,105 @@ def _whitelist_notes(obj: Any) -> Any:
     return obj
 
 
-def _scrub_question_gold(questions: Any) -> Any:
-    """金标由人终定：草稿里的 relevant / answer_points / distractors 一律改成占位。"""
-    if isinstance(questions, dict):
-        qs = questions.get("queries", questions)
-        if isinstance(qs, list):
-            for item in qs:
-                if isinstance(item, dict):
-                    for key in GOLD_KEYS:
-                        item[key] = GOLD_PLACEHOLDER
-            if "queries" in questions:
-                questions["queries"] = qs
-            return questions
-        return questions
-    if isinstance(questions, list):
-        for item in questions:
-            if isinstance(item, dict):
-                for key in GOLD_KEYS:
-                    item[key] = GOLD_PLACEHOLDER
-        return {"queries": questions}
-    return {"queries": []}
+def _is_gold_key(key: str) -> bool:
+    low = str(key).lower()
+    if low.startswith("relevant"):
+        return True
+    return low in {"answer_points", "distractors"}
+
+
+def _strip_nested_gold(obj: Any) -> Any:
+    """去掉任意深度的金标键，避免非标准嵌套泄漏。"""
+    if isinstance(obj, dict):
+        return {k: _strip_nested_gold(v) for k, v in obj.items() if not _is_gold_key(k)}
+    if isinstance(obj, list):
+        return [_strip_nested_gold(x) for x in obj]
+    return obj
+
+
+def _looks_like_question(obj: Any) -> bool:
+    return isinstance(obj, dict) and ("id" in obj or "query" in obj)
+
+
+def _as_question_list(value: Any) -> list[dict] | None:
+    if isinstance(value, list):
+        if all(isinstance(x, dict) for x in value):
+            return value
+        return None
+    if _looks_like_question(value):
+        return [value]
+    return None
+
+
+def _extract_questions(payload: Any) -> list[dict] | None:
+    """把模型输出归一成题目对象列表；无法识别则返回 None。"""
+    if isinstance(payload, list):
+        return _as_question_list(payload)
+    if not isinstance(payload, dict):
+        return None
+    if "queries" in payload:
+        return _as_question_list(payload.get("queries"))
+    q = payload.get("questions")
+    if isinstance(q, dict) and "queries" in q:
+        return _as_question_list(q.get("queries"))
+    extracted = _as_question_list(q) if q is not None else None
+    if extracted is not None:
+        return extracted
+    if _looks_like_question(payload) and "documents" not in payload:
+        return [payload]
+    if "documents" in payload and q is None:
+        return []
+    return None
+
+
+def _normalize_question(item: dict[str, Any]) -> dict[str, Any]:
+    cleaned = _strip_nested_gold(item)
+    if not isinstance(cleaned, dict):
+        cleaned = {}
+    for key in GOLD_QUESTION_KEYS:
+        cleaned[key] = GOLD_PLACEHOLDER
+    return cleaned
+
+
+def _normalize_documents(documents: Any) -> list[dict[str, str]]:
+    if documents is None:
+        return []
+    if not isinstance(documents, list):
+        raise DraftShapeError("documents 必须是列表")
+    out: list[dict[str, str]] = []
+    for i, item in enumerate(documents):
+        if not isinstance(item, dict):
+            raise DraftShapeError(f"documents[{i}] 必须是对象")
+        if "path" not in item:
+            raise DraftShapeError(f"documents[{i}] 缺少 path")
+        raw_path = item["path"]
+        if not isinstance(raw_path, str) or not raw_path.strip():
+            raise DraftShapeError(f"documents[{i}] path 必须是非空字符串")
+        rel = Path(raw_path)
+        if rel.is_absolute() or ".." in rel.parts:
+            raise DraftShapeError(f"documents[{i}] 路径非法: {raw_path}")
+        content = item.get("content", "")
+        if content is None:
+            content = ""
+        if not isinstance(content, str):
+            raise DraftShapeError(f"documents[{i}] content 必须是字符串")
+        out.append({"path": raw_path, "content": content})
+    return out
+
+
+def _normalize_generate_payload(payload: Any) -> dict[str, Any]:
+    questions = _extract_questions(payload)
+    if questions is None:
+        raise DraftShapeError("无法从模型输出解析题目列表")
+    if isinstance(payload, dict):
+        documents = _normalize_documents(payload.get("documents"))
+    else:
+        documents = []
+    normalized_qs = [_normalize_question(q) if isinstance(q, dict) else {} for q in questions]
+    return {
+        "documents": documents,
+        "questions": {"queries": normalized_qs},
+    }
 
 
 def _materialize_drafts(payload: dict[str, Any], dest: Path) -> Path:
@@ -167,19 +277,14 @@ def _materialize_drafts(payload: dict[str, Any], dest: Path) -> Path:
     corpus = dest / "corpus"
     traps = dest / "traps"
     traps.mkdir(parents=True, exist_ok=True)
-    for item in payload.get("documents") or []:
+    for item in payload["documents"]:
         rel = Path(item["path"])
-        if rel.is_absolute() or ".." in rel.parts:
-            raise ValueError(f"非法草稿路径: {rel}")
         target = dest / rel
-        if is_forbidden_out(target):
-            raise ValueError(f"草稿路径落在禁写目录: {rel}")
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(item["content"], encoding="utf-8")
-    questions = _scrub_question_gold(payload.get("questions") or {"queries": []})
     qpath = dest / "questions.json"
     qpath.write_text(
-        json.dumps(questions, ensure_ascii=False, indent=2) + "\n",
+        json.dumps(payload["questions"], ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
     )
     if not corpus.exists():
@@ -249,9 +354,34 @@ def _pin_flag_thinking_off(llm: Any) -> None:
     completions.create = _NoThinkingCreate(completions.create)
 
 
-def _write_raw_response(out: Path, text: str) -> None:
+def _write_failure_out(
+    out: Path,
+    raw_text: str,
+    *,
+    model: str,
+    temperature: float,
+    seed: int,
+    recorded_at: str,
+    token_usage: dict[str, Any],
+    error: str,
+) -> None:
+    """失败路径也写清单，以便同一 --out 可以再次覆盖。"""
+    if out.exists() and (out / MARKER_NAME).is_file():
+        shutil.rmtree(out)
     out.mkdir(parents=True, exist_ok=True)
-    (out / "raw-response.txt").write_text(text, encoding="utf-8")
+    (out / "raw-response.txt").write_text(raw_text, encoding="utf-8")
+    _write_manifest(
+        out,
+        {
+            "model": model,
+            "temperature": temperature,
+            "seed": seed,
+            "recorded_at": recorded_at,
+            "token_usage": token_usage,
+            "checker_exit": None,
+            "checker_error": error,
+        },
+    )
 
 
 def _run_generate(args: argparse.Namespace, llm_client: Any) -> int:
@@ -279,24 +409,38 @@ def _run_generate(args: argparse.Namespace, llm_client: Any) -> int:
                 "role": "user",
                 "content": (
                     "生成 x1 实验的文档与题目草稿 JSON。"
-                    "只返回 documents 与 questions。"
-                    "题目只给 id、query、category、eval_intent、as_of；金标由人终定。"
+                    "只返回 JSON 对象：documents 数组，以及带 queries 数组的 questions 对象"
+                    "（必须使用 queries 包装）。"
+                    "每道题只给 id、query、category、eval_intent、as_of；金标由人终定。"
                 ),
             }
         ],
         decoding=decoding,
     )
     raw_text = getattr(message, "content", "") or ""
+
+    def _fail(error: str) -> int:
+        _write_failure_out(
+            out,
+            raw_text,
+            model=draft_model,
+            temperature=temperature,
+            seed=seed,
+            recorded_at=decoding.recorded_at,
+            token_usage=_token_usage_dict(client),
+            error=error,
+        )
+        print(f"错误: {error}", file=sys.stderr)
+        return 1
+
     try:
         payload = _parse_json_content(raw_text)
     except json.JSONDecodeError as exc:
-        _write_raw_response(out, raw_text)
-        print(f"错误: 模型输出不是 JSON: {exc}", file=sys.stderr)
-        return 1
-    if not isinstance(payload, dict):
-        _write_raw_response(out, raw_text)
-        print("错误: 模型输出不是 JSON 对象", file=sys.stderr)
-        return 1
+        return _fail(f"模型输出不是 JSON: {exc}")
+    try:
+        payload = _normalize_generate_payload(payload)
+    except DraftShapeError as exc:
+        return _fail(str(exc))
     with tempfile.TemporaryDirectory(prefix="x1-drafts-") as tmp:
         staging = Path(tmp) / "bundle"
         qpath = _materialize_drafts(payload, staging)
@@ -341,12 +485,9 @@ def _load_flag_questions(inp: Path) -> list[dict[str, Any]]:
 
 def _run_flag(args: argparse.Namespace, llm_client: Any) -> int:
     sidecar = Path(args.sidecar)
-    if is_forbidden_sidecar(sidecar):
-        print(
-            "错误: --sidecar 不得写成 data/eval/retrieve_x1.json，"
-            "也不得落在禁写目录或其祖先下",
-            file=sys.stderr,
-        )
+    deny = _can_write_sidecar(sidecar)
+    if deny:
+        print(deny, file=sys.stderr)
         return 1
     cfg = _load_config(Path(args.config))
     if cfg.get("flag_model") != FLAG_MODEL:
@@ -380,6 +521,7 @@ def _run_flag(args: argparse.Namespace, llm_client: Any) -> int:
         notes = {"suspicion": getattr(message, "content", "") or ""}
     notes = _whitelist_notes(notes)
     payload = {
+        SIDECAR_MARKER: True,
         "model": FLAG_MODEL,
         "flag_thinking": False,
         "temperature": decoding.temperature,

@@ -241,6 +241,7 @@ def test_flag_sidecar_whitelists_note_fields(tmp_path: Path):
     assert data["model"] == "qwen-plus"
     assert data["flag_thinking"] is False
     assert data["temperature"] == 0.0
+    assert data["x1_flag_sidecar"] is True
     notes = data["notes"]
     assert notes == {
         "id": "draft-q1",
@@ -377,6 +378,7 @@ def test_generate_uses_flash_decoding_params(tmp_path: Path):
     assert d.temperature == 0.7
     assert d.seed == 11
     prompt = fake.calls[0]["messages"][0]["content"]
+    assert "queries" in prompt
     assert "relevant" not in prompt
     assert "answer_points" not in prompt
     assert "distractors" not in prompt
@@ -472,6 +474,7 @@ def test_non_json_writes_raw_and_exits_nonzero(tmp_path: Path, capsys):
     assert "Traceback" not in captured.err
     assert "Traceback" not in captured.out
     assert (out / "raw-response.txt").read_text(encoding="utf-8") == "这不是 JSON"
+    assert (out / ".x1-drafts-manifest.json").is_file()
 
 
 def test_flag_passes_enable_thinking_false_to_create(tmp_path: Path):
@@ -566,3 +569,238 @@ def test_sidecar_under_data_rejected(tmp_path: Path):
     assert code != 0
     assert fake.calls == []
     assert not sidecar.exists()
+
+
+def test_sidecar_llm_py_rejected(tmp_path: Path):
+    mod = _load_script()
+    fake = FakeLLM(json.dumps({"id": "q", "suspicion": "x"}, ensure_ascii=False))
+    cfg = _write_json(tmp_path / "config.json", _cfg())
+    qpath = _write_json(tmp_path / "questions.json", _draft_payload()["questions"])
+    target = ROOT / "src" / "freshlatch" / "llm.py"
+    before = target.read_bytes()
+    code = mod.main(
+        [
+            "flag",
+            "--config",
+            str(cfg),
+            "--in",
+            str(qpath),
+            "--sidecar",
+            str(target),
+        ],
+        llm_client=fake,
+    )
+    assert code != 0
+    assert fake.calls == []
+    assert target.read_bytes() == before
+
+
+def test_sidecar_existing_plain_json_rejected(tmp_path: Path):
+    mod = _load_script()
+    fake = FakeLLM(json.dumps({"id": "q", "suspicion": "x"}, ensure_ascii=False))
+    cfg = _write_json(tmp_path / "config.json", _cfg())
+    qpath = _write_json(tmp_path / "questions.json", _draft_payload()["questions"])
+    sidecar = tmp_path / "notes.json"
+    sidecar.write_text('{"foo": 1}\n', encoding="utf-8")
+    code = mod.main(
+        [
+            "flag",
+            "--config",
+            str(cfg),
+            "--in",
+            str(qpath),
+            "--sidecar",
+            str(sidecar),
+        ],
+        llm_client=fake,
+    )
+    assert code != 0
+    assert fake.calls == []
+    assert json.loads(sidecar.read_text(encoding="utf-8")) == {"foo": 1}
+
+
+def _assert_todo_questions(out: Path) -> dict:
+    qtext = (out / "questions.json").read_text(encoding="utf-8")
+    written = json.loads(qtext)
+    assert "queries" in written
+    for item in written["queries"]:
+        assert item["relevant"] == "TODO-owner"
+        assert item["distractors"] == "TODO-owner"
+        assert item["answer_points"] == "TODO-owner"
+    return written
+
+
+def test_questions_list_without_queries_wrapper(tmp_path: Path):
+    mod = _load_script()
+    q = _draft_payload()["questions"]["queries"][0]
+    payload = {"documents": _draft_payload()["documents"], "questions": [q]}
+    fake = FakeLLM(json.dumps(payload, ensure_ascii=False))
+    cfg = _write_json(tmp_path / "config.json", _cfg())
+    out = tmp_path / "drafts"
+    code = mod.main(
+        ["generate", "--config", str(cfg), "--out", str(out)],
+        llm_client=fake,
+    )
+    assert code == 0
+    _assert_todo_questions(out)
+    assert "draft-doc#p1@T1" not in (out / "questions.json").read_text(encoding="utf-8")
+    assert (out / "corpus" / "t1" / "draft-doc.md").is_file()
+
+
+def test_top_level_question_list_normalized(tmp_path: Path):
+    mod = _load_script()
+    q = _draft_payload()["questions"]["queries"][0]
+    fake = FakeLLM(json.dumps([q], ensure_ascii=False))
+    cfg = _write_json(tmp_path / "config.json", _cfg())
+    out = tmp_path / "drafts"
+    code = mod.main(
+        ["generate", "--config", str(cfg), "--out", str(out)],
+        llm_client=fake,
+    )
+    assert code == 0
+    written = _assert_todo_questions(out)
+    assert written["queries"][0]["id"] == "draft-q1"
+    assert "draft-doc#p1@T1" not in (out / "questions.json").read_text(encoding="utf-8")
+
+
+def test_single_question_object_normalized(tmp_path: Path):
+    mod = _load_script()
+    q = _draft_payload()["questions"]["queries"][0]
+    payload = {"documents": _draft_payload()["documents"], "questions": q}
+    fake = FakeLLM(json.dumps(payload, ensure_ascii=False))
+    cfg = _write_json(tmp_path / "config.json", _cfg())
+    out = tmp_path / "drafts"
+    code = mod.main(
+        ["generate", "--config", str(cfg), "--out", str(out)],
+        llm_client=fake,
+    )
+    assert code == 0
+    _assert_todo_questions(out)
+    assert "draft-doc#p1@T1" not in (out / "questions.json").read_text(encoding="utf-8")
+
+
+def test_nested_relevant_replaced_at_question_level(tmp_path: Path):
+    mod = _load_script()
+    q = {
+        "id": "draft-q1",
+        "query": "渠道纪要里报价口径后来怎么改口",
+        "qtype": "paraphrase",
+        "category": "hard",
+        "eval_intent": "草稿",
+        "as_of": "T1",
+        "nested": {
+            "relevant": ["secret-gold-id"],
+            "relevant_ids": ["also-secret"],
+        },
+        "gold": {
+            "answer_points": ["不该留下"],
+            "distractors": ["也不该留下"],
+        },
+    }
+    payload = {"documents": _draft_payload()["documents"], "questions": {"queries": [q]}}
+    fake = FakeLLM(json.dumps(payload, ensure_ascii=False))
+    cfg = _write_json(tmp_path / "config.json", _cfg())
+    out = tmp_path / "drafts"
+    code = mod.main(
+        ["generate", "--config", str(cfg), "--out", str(out)],
+        llm_client=fake,
+    )
+    assert code == 0
+    qtext = (out / "questions.json").read_text(encoding="utf-8")
+    written = _assert_todo_questions(out)
+    item = written["queries"][0]
+    assert "relevant" not in item.get("nested", {})
+    assert "relevant_ids" not in item.get("nested", {})
+    assert "answer_points" not in item.get("gold", {})
+    assert "distractors" not in item.get("gold", {})
+    assert "secret-gold-id" not in qtext
+    assert "also-secret" not in qtext
+    assert "不该留下" not in qtext
+
+
+def test_document_missing_path_writes_raw(tmp_path: Path, capsys):
+    mod = _load_script()
+    payload = {
+        "documents": [{"content": "无路径正文"}],
+        "questions": _draft_payload()["questions"],
+    }
+    fake = FakeLLM(json.dumps(payload, ensure_ascii=False))
+    cfg = _write_json(tmp_path / "config.json", _cfg())
+    out = tmp_path / "drafts"
+    code = mod.main(
+        ["generate", "--config", str(cfg), "--out", str(out)],
+        llm_client=fake,
+    )
+    captured = capsys.readouterr()
+    assert code == 1
+    assert "Traceback" not in captured.err
+    assert "缺少 path" in captured.err
+    assert (out / "raw-response.txt").is_file()
+    assert (out / ".x1-drafts-manifest.json").is_file()
+    assert not (out / "questions.json").is_file()
+
+
+def test_document_escape_path_writes_raw(tmp_path: Path, capsys):
+    mod = _load_script()
+    payload = {
+        "documents": [{"path": "../freshlatch/llm.py", "content": "不该写出"}],
+        "questions": _draft_payload()["questions"],
+    }
+    fake = FakeLLM(json.dumps(payload, ensure_ascii=False))
+    cfg = _write_json(tmp_path / "config.json", _cfg())
+    out = tmp_path / "drafts"
+    llm_path = ROOT / "src" / "freshlatch" / "llm.py"
+    before = llm_path.read_bytes()
+    code = mod.main(
+        ["generate", "--config", str(cfg), "--out", str(out)],
+        llm_client=fake,
+    )
+    captured = capsys.readouterr()
+    assert code == 1
+    assert "Traceback" not in captured.err
+    assert "路径非法" in captured.err
+    assert llm_path.read_bytes() == before
+    assert (out / "raw-response.txt").is_file()
+    assert not (out / "questions.json").is_file()
+
+
+def test_documents_non_list_writes_raw(tmp_path: Path, capsys):
+    mod = _load_script()
+    payload = {
+        "documents": {"path": "corpus/t1/draft-doc.md", "content": "x"},
+        "questions": _draft_payload()["questions"],
+    }
+    fake = FakeLLM(json.dumps(payload, ensure_ascii=False))
+    cfg = _write_json(tmp_path / "config.json", _cfg())
+    out = tmp_path / "drafts"
+    code = mod.main(
+        ["generate", "--config", str(cfg), "--out", str(out)],
+        llm_client=fake,
+    )
+    captured = capsys.readouterr()
+    assert code == 1
+    assert "Traceback" not in captured.err
+    assert "documents 必须是列表" in captured.err
+    assert (out / "raw-response.txt").is_file()
+    assert not (out / "questions.json").is_file()
+
+
+def test_non_json_then_rerun_same_out(tmp_path: Path):
+    mod = _load_script()
+    cfg = _write_json(tmp_path / "config.json", _cfg())
+    out = tmp_path / "drafts"
+    first = FakeLLM("这不是 JSON")
+    code1 = mod.main(
+        ["generate", "--config", str(cfg), "--out", str(out)],
+        llm_client=first,
+    )
+    assert code1 != 0
+    assert (out / ".x1-drafts-manifest.json").is_file()
+    second = FakeLLM(json.dumps(_draft_payload(), ensure_ascii=False))
+    code2 = mod.main(
+        ["generate", "--config", str(cfg), "--out", str(out)],
+        llm_client=second,
+    )
+    assert code2 == 0
+    assert (out / "questions.json").is_file()
+    assert (out / "corpus" / "t1" / "draft-doc.md").is_file()
