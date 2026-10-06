@@ -36,6 +36,8 @@ One-line boundary: **sell voiding and gaps — not faster summaries, not auto de
 
 **V2 = 发前钩子 + 主张台账**（ADR-0031 · 冒烟 / 采用层）。Client Memo UI+CLI 同闸 + 入站 `POST /api/publish-hook/check`（本机默认 + 可选 token）+ 主张台账只读投影（discard∪renew）。硬 Exit 见 `docs/evidence/v2/ACCEPTANCE.md`；关门摘要见 `docs/evidence/v2/V2-DoD-CLOSE.md`。档=冒烟·采用层；**不**硬绑「可发」；`curl`/TestClient ≠ 开放 webhook/插件平台已交付；不报采用率；不升格 Hard-Gold。
 
+**I3 = 面试加固三轨**（ADR-0032 · 冒烟 / 面试加固）。政策旁路 · B′合成夹具 · Hard-Gold 骨架。硬 Exit 见 `docs/evidence/i3/ACCEPTANCE.md`；关门摘要见 `docs/evidence/i3/I3-DoD-CLOSE.md`。档=冒烟/面试加固；**不是**改臂授权、政策平台或真事故复盘。
+
 ---
 
 ## What you get
@@ -103,7 +105,11 @@ Honest snapshot of this public repo:
 | **V1.5 (smoke)** | Evidence-bound form patch seam is in-repo（propose/confirm + reverify + export）. See `docs/evidence/v15/`. **薄对话** remains Out. Not Hard-Gold. |
 | **I2 (smoke)** | Security demos in-repo：ACL tenant filter · injection fail-closed · poison metadata drop. See `docs/evidence/i2/` + `docs/security.md`. ≠ #4. Not penetration cert / Hard-Gold. |
 | **V2 (smoke / adoption)** | Publish hook + claim ledger in-repo：Memo UI/CLI gate · inbound check allow/deny · read-only discard∪renew ledger. See `docs/evidence/v2/`. `curl` ≠ webhook/plugin platform Done. Not Hard-Gold; does not hard-bind「可发」. |
-| **Known gaps** | Retrieval is still BM25-first (production default `bm25`). Some modules (e.g. memory hygiene) exist in code but are not all on the default main path. A whitelist thin URL (`www.mckinsey.com`) exists for the T1 ingest demo; open-ended live web and an open crawler are still not built. Thin dialogue / chat-as-verdict is deliberately not shipped in V1.5. Word/Notion/open webhook platforms remain Backlog C′ (not V2 Done). |
+| **I3 (smoke / interview hardening)** | Policy bypass · B′ fixtures · Hard-Gold skeleton in-repo. See `docs/evidence/i3/`. Not arm-change authorization / policy platform / real-incident postmortem. |
+| **Hard-Gold** | #259 same-corpus rerun **passed the gate**; production default still `bm25`; **not switched**. Next hop = Gate implementation ticket human-final or freeze bm25. See `docs/evidence/hard-gold-arm/`. Do not cite as “already hybrid”. |
+| **Known gaps** | Retrieval is still BM25-first (production default `bm25`). Some modules (e.g. memory hygiene) exist in code but are not all on the default main path. A whitelist thin URL (`www.mckinsey.com`) exists for the T1 ingest demo; open-ended live web and an open crawler are still not built. Thin dialogue / chat-as-verdict is deliberately not shipped in V1.5. Word/Notion/open webhook platforms remain Backlog C′ (not V2 Done). Next hop: arm-change Gate human-final **or** freeze `bm25`; C′ stays backlog. |
+
+Layer identity: smoke / adoption / interview hardening — **not** closed statistical measurement.
 
 For engineering acceptance boundaries, read `docs/evidence/` and root `CONTEXT.md`. This README is not a certification.
 
@@ -148,7 +154,7 @@ Corpus ingest example: `PYTHONPATH=src python scripts/ingest_corpus.py`
 
 ## Roadmap
 
-Next: make retrieval (RAG) a measurable subsystem, tighten click-back evidence contracts, then either wire or cut half-activated modules. Live web, if any, is **ingest to T1 disk → then reverify** — not open-ended Q&A as the product. Details live in repo docs and ADRs under `docs/`.
+Next hop: Hard-Gold **passed** (#259) but **did not switch** the production arm — Gate human-final to change `PRODUCTION_RETRIEVAL_MODE`, or freeze `bm25`. C′ (Word/Notion/open webhook) remains backlog. Live web, if any, is **ingest to T1 disk → then reverify** — not open-ended Q&A as the product. Details live in repo docs and ADRs under `docs/`.
 
 ---
 

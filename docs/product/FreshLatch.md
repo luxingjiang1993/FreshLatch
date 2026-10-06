@@ -20,7 +20,7 @@
 
 **美国经济买方：** 独立 consultant、sales engineer、policy researcher。预算是 research / proposal integrity，不是 Copilot 席位。定价 $29–49/月个人，团队按席 + 按复验次数。
 
-**日活：** 做课题、要对自己上周附件负责的人。经济买方常常就是日活。
+**日活：** 做课题、要对自己上周附件负责的人。经济买方常常就是日活。以上定价与日活是立项切片 / 合成语境的设计意向，**不是已在售 SaaS**。
 
 **明确拒绝：** 只要更快摘要的增长团队；要企业 SSO 全家桶的采购；要自动商业裁决的买方；要无限记忆的 Agent 平台采购。
 
@@ -34,12 +34,12 @@ JTBD：**给我一份能指回 T0 与 T1 原文的复验单：哪些仍成立、
 
 ## 4. 产品怎么跑
 
-一次复验有六段。Lead、Critic、Forensic 默认是 Agent。过期绿灯闸、隔离闸、人审名单是 Workflow。Auditor 可以是短循环 Agent，不得拥有放行权。
+一次复验有六段。Lead、Critic、Forensic 默认是 Agent。过期绿灯闸、隔离闸、人审名单是 Workflow。Auditor 是闸路径上的单轮 structured-output 判定（ADR-0009），不得拥有放行权，不经 Lead `spawn_auditor`。
 
-1. **Lead Reverifier（真 Agent）：** 看见 T0 主张、已检索的 T0/T1 块、作废名单、隔离中的记忆 id、缺口。下一步由模型决定：改写查询、按 `as_of=T0|T1` 换源、read 原文、`reverify_claim`、`mark_stale`、`mark_gap`、`spawn_critic`、`spawn_auditor`、`spawn_forensic`、`finish_reverify`。ground truth 是原文，不是模型记忆。
+1. **Lead Reverifier（真 Agent）：** 看见 T0 主张、已检索的 T0/T1 块、作废名单、隔离中的记忆 id、缺口。检索串由**主张查询变换**产出，Lead **不得**自由改写查询。下一步由模型决定：按 `as_of=T0|T1` 换源、read 原文、`reverify_claim`、`mark_stale`、`mark_gap`、`spawn_critic`、`spawn_forensic`、`finish_reverify`。ground truth 是原文，不是模型记忆。
 2. **Critic（真 Agent）：** 只找「主张已死」的反证。不得强化「仍然成立」。动态决定检索什么。
 3. **Forensic（真 Agent，小模块）：** 只审本课题长期记忆。找死事实、互斥条目、无源条目。不得改主张正文，不得放行。
-4. **Auditor（短循环 Agent + 规则闸）：** 判定 `fresh` / `stale` / `unknown`。`stale` 与 `unknown` 不得保持绿灯（代码强制）。
+4. **Auditor（闸路径单轮判定 + 规则闸，ADR-0009；stale 路径 ADR-0010）：** 判定 `fresh` / `stale` / `unknown`。不经 Lead `spawn_auditor`。`stale` 与 `unknown` 不得保持绿灯（代码强制）。
 5. **Scribe / 复验单 UI（Workflow）：** 只排版。主界面是复验单，不是聊天框，也不是记忆列表。
 6. **HumanLatch（Workflow）：** 人点「作废」或「续命（必须带 T1 evidence_id）」。隔离记忆也要人确认后才移出召回。Agent 不得自己把红灯改回绿灯，不得自己删除记忆。
 
@@ -73,14 +73,14 @@ Demo 只用合成材料。界面标明 synthetic。准备材料不是法律意�
 | 角色 | 类型 | 职责 | 禁止 |
 |------|------|------|------|
 | Runner | Workflow | 预算、步数、作废名单、隔离名单、LangGraph checkpoint | 编造仍成立；最终商业裁决 |
-| Lead | 真 Agent | 自主规划复验，决定是否派 Critic / Auditor / Forensic | 无 T1 原文把 stale 改 fresh；放行 |
+| Lead | 真 Agent | 自主规划复验；查询串走主张查询变换；决定是否派 Critic / Forensic | 自由改写检索串；`spawn_auditor`；无 T1 原文把 stale 改 fresh；放行 |
 | Critic | 真 Agent | 找已死主张 | 强化原主张；放行 |
 | Forensic | 真 Agent | 审长期记忆：死事实、矛盾、无源 | 改主张正文；删除；放行 |
-| Auditor | 短循环 Agent | 判定 fresh / stale / unknown | 改主张正文；放行 |
+| Auditor | 闸路径单轮判定 | 判定 fresh / stale / unknown（ADR-0009） | 改主张正文；放行；由 Lead `spawn_auditor` 才在场 |
 | 规则闸 | Workflow | stale / unknown 不得绿灯；dead / contradictory / unverified 不得召回 | 扮演调查 |
 | HumanLatch | Workflow | 作废、续命、确认隔离 | 自动续命；自动抹记忆 |
 
-派驻必须由 Lead 根据中间结果决定，不是固定「第 3 步一定召唤」。
+Critic / Forensic 派驻必须由 Lead 根据中间结果决定，不是固定「第 3 步一定召唤」。Auditor 不在派驻清单里。
 
 ## 8. 数据与记忆
 
@@ -114,7 +114,7 @@ Demo 只用合成材料。界面标明 synthetic。准备材料不是法律意�
 - `mark_stale(claim_id, reason)`
 - `mark_gap(description)`
 - `spawn_critic(focus)`
-- `spawn_auditor(claim_id)`
+- ~~`spawn_auditor(claim_id)`~~（ADR-0009 废止；Auditor 不经 Lead spawn）
 - `finish_reverify()`
 
 刑侦小模块：
@@ -137,7 +137,7 @@ Skill 文件：
 
 栈：Python 3.11、OpenAI 兼容 chat.completions + tools、FastAPI 或 Streamlit、Pydantic v2。LangGraph 只用于 checkpoint / interrupt 等人续命，图不是 Agent。不要 Docker。不要 Kubernetes。
 
-步数护栏：Lead 最多 18 轮，Critic 最多 8 轮，Forensic 最多 8 轮，Auditor 最多 6 轮，单次检索预算 24。
+步数护栏：Lead 最多 18 轮，Critic 最多 8 轮，Forensic 最多 8 轮，Auditor 为闸路径单轮判定（无 Lead 步数预算），单次检索预算 24。
 
 ## 10. 12 周切片
 
@@ -218,7 +218,7 @@ Forensic 自己决定先查哪条、要不要 `retrieve(as_of=T1)`、要不要 `
 
 - **0:00–0:40** 「Answers and dockets expire. FreshLatch is a reverify latch. Lead loops on T0 and T1. A critic hunts dead claims. Stale cannot stay green. Renew requires a T1 span.」
 - **0:40–2:00** 2026 记忆层已标配，staleness 仍未解决。本产品卖作废，不卖记住更多。
-- **2:00–4:30** 现场：`as_of=T1` 改写检索 → 主张从绿变红 → Critic 反证 → 作废重跑 → freshness 金标。
+- **2:00–4:30** 现场：主张查询变换后按 `as_of=T1` 换源 → 主张从绿变红 → Critic 反证 → 作废重跑 → freshness 金标。
 - **4:30–6:30** 无 T1 闸；fail-closed；Critic 不得把死主张判活；L1 复验 / L0 续命。
 - **6:30–8:00** must_stale。无工具对照必须假绿。
 - **8:00–9:00** 侧栏演示一条无源记忆被移出召回。强调这是可靠性模块。

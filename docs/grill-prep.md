@@ -2,9 +2,11 @@
 
 > 用途：开 `grill-with-docs` / `grilling` 前给 coding agent 与你自己用。  
 > 配套执行路线图：`docs/roadmap.md`（v3.1）。  
-> 开场提示词模板：[prompts/grill-with-docs-freshlatch.md](./prompts/grill-with-docs-freshlatch.md)
+> 开场提示词模板：[prompts/grill-with-docs-freshlatch.md](./prompts/grill-with-docs-freshlatch.md)  
+> **身份：** 本页是 **历史阅读包**（V1 及后续阶段已实现）。现行 frontier 见 `docs/roadmap.md` 文首 NOW：Hard-Gold #259 已过线、未换臂、改臂 Gate 人终收或冻 bm25；C′ 为 backlog。
 
-> 原则：路线图定阶段与边界；本页定「读什么」和「必须先烤死什么」——**未钉死前不要 implement V1**。
+> 原则：路线图定阶段与边界；本页定「读什么」和「必须先烤死什么」。  
+> ~~未钉死前不要 implement V1~~（不再作为现行禁令）。
 
 ---
 

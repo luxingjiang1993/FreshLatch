@@ -1,12 +1,13 @@
-# FreshLatch 实施规格(W1–W4)
+# FreshLatch 实施规格汇编
 
+> **历史规格横幅：** 本目录含 W1–W4 开工汇编及后续阶段卷。实施中如与本卷冲突，以已接受 **ADR** + 根目录 `CONTEXT.md` 为准。
 > 工单:[汇编全部决策 → W1–W4 实施规格 #13](https://github.com/luxingjiang1993/FreshLatch/issues/13)
-> 性质:全部前置决议(工单 #2–#12,对应 ADR-0001–0007 与 11 份评估文档)的**汇编**,不含新决策;实施中如与本规格冲突,以工单决议评论 + ADR 为准,冲突须回填本规格。
+> 性质:前置决议的**汇编**(后期卷另有独立 to-spec);不含新决策。
 > 语言:全中文,技术词保留英文原词;术语以 `CONTEXT.md` 词表为准。
 
 ## 目的地
 
-W4 开工前决策完备的实施规格:复验主链(W1–W2)、Critic 与评测闸(W3–W4)、HumanLatch 最小闭环的全部技术决策已拍完,本规格可直接拆单实施。
+覆盖复验主链、发前闭环、评测与面试加固等已拍板规格,供拆单与 onboarding。W1–W4 卷是早期汇编,不是「全书止于此」。
 
 ## 规格分卷
 
@@ -17,7 +18,7 @@ W4 开工前决策完备的实施规格:复验主链(W1–W2)、Critic 与评测
 | 2 | [02-数据schema与语料清单.md](02-数据schema与语料清单.md) | docket / 主张 / 语料 / chunk / gold.json schema 与 12 主张清单 |
 | 3 | [03-工具表与白名单.md](03-工具表与白名单.md) | 工具签名、阶段白名单、focus 词表、fail-closed 校验 |
 | 4 | [04-评测纪律.md](04-评测纪律.md) | 金标 runner、假绿对照、双 gate 测试、CI、复现两层 |
-| 5 | [05-UI与交互.md](05-UI与交互.md) | 复验单形态、点回原文、作废/重跑、续命占位、四条红线 |
+| 5 | [05-UI与交互.md](05-UI与交互.md) | 复验单形态、点回原文、作废/重跑、续命(该卷历史正文仍有占位句;现行已实装)、四条红线 |
 | 6 | [06-护栏预算与成本.md](06-护栏预算与成本.md) | Guardrails、步数/检索预算、模型与成本注记 |
 | 7 | [07-验收-W1-W4.md](07-验收-W1-W4.md) | W1–W2 验收清单、W3 预检、W4 终审锁定判据与分级止损预案 |
 | 8 | [08-拆单建议.md](08-拆单建议.md) | W1–W4 实施工单切分建议(供 to-tickets 或实施会话用) |
@@ -33,6 +34,7 @@ W4 开工前决策完备的实施规格:复验主链(W1–W2)、Critic 与评测
 | 18 | [18-must-fresh-c5-反事实敏感性.md](18-must-fresh-c5-反事实敏感性.md) | L3 后 c5 误 stale：敏感性/反事实升格为现时推翻；教义+薄启发式；禁改 gold；与 §19 分票 |
 | 19 | [19-must-unknown-c10-缺口误stale.md](19-must-unknown-c10-缺口误stale.md) | L3 后 c10 误 stale：缺口/无新测量 paraphrase 击穿元陈述词表；标记增补；禁改 gold；与 §18 分票 |
 | 20 | [20-PhaseI3-InterviewHardening.md](20-PhaseI3-InterviewHardening.md) | Phase I3 面试加固三轨(#8 政策旁路 · B′夹具 · Hard-Gold骨架;ADR-0032;[#248](https://github.com/luxingjiang1993/FreshLatch/issues/248)) |
+| 21 | [21-文档口径对齐与onboarding修订.md](21-文档口径对齐与onboarding修订.md) | 文档回填：README/路线图/早期规格与 ADR+代码对齐（不改臂、无新决议） |
 
 ## 决议来源索引(本规格各节的权威出处)
 

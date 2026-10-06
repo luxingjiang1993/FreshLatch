@@ -1,6 +1,7 @@
 """工具表 + 角色白名单常量。禁令唯一真相在代码(白名单 fail-closed,ADR-0001)。
 
-阶段挂载(§1.2):W1–W2 Lead 白名单无 spawn_critic;W1–W4 无 spawn_auditor 与记忆卫生工具。
+默认 Lead 白名单是 LEAD_TOOLS_W3(含 spawn_critic,不含 spawn_auditor)。
+spawn_auditor 符号保留但 ADR-0009 废止:Auditor 走闸路径单轮判定,不经 Lead spawn。
 未挂载 = 模型物理上不可见,不需要「返回未实装」的运行时分支。
 """
 
@@ -76,7 +77,7 @@ _TOOL_DEFS: dict[str, dict] = {
         {"focus": {"type": "string", "description": f"可选:{'/'.join(FOCUS_DIMENSIONS)},省略=不限方向"}},
         []),
     "spawn_auditor": _fn(
-        "spawn_auditor", "派驻 Auditor 做单轮判定(W5–W8 挂载)",
+        "spawn_auditor", "废止(ADR-0009/0010):勿调用。Auditor 由闸路径单轮判定,不经 Lead spawn",
         {"claim_id": {"type": "string"}}, ["claim_id"]),
     "spawn_forensic": _fn(
         "spawn_forensic", "派驻 Forensic 审核长期记忆(只传记忆条目集,深度恒 1)",
@@ -139,7 +140,7 @@ def tool_specs(names: list[str]) -> list[dict]:
 
 # -- 角色白名单(阶段挂载视图)----------------------------------------------------
 
-# W1–W2 Lead:无 spawn_critic(Critic W3 才启用)、无 spawn_auditor(W5–W8)、无记忆卫生工具(W9-W12)
+# 历史 W1 视图(无 spawn_critic)。现行默认 Lead = LEAD_TOOLS_W3,不含 spawn_auditor。
 LEAD_TOOLS_W1: tuple[str, ...] = (
     "retrieve", "read_source", "reverify_claim", "mark_stale", "mark_gap", "finish_reverify",
 )
@@ -149,7 +150,7 @@ LEAD_TOOLS_W9: tuple[str, ...] = LEAD_TOOLS_W3 + ("list_memories", "spawn_forens
 # Critic:只许判死不许判活、无放行、无 spawn(深度恒 1)
 CRITIC_TOOLS: tuple[str, ...] = ("retrieve", "read_source", "mark_stale", "report_finding")
 
-# Auditor(W5–W8):单轮判定 SOP,唯一出口 verdict,不得拥有放行权
+# Auditor(W5–W8 历史挂载视图):单轮判定 SOP。现行不经 Lead spawn_auditor(ADR-0009)。
 AUDITOR_TOOLS: tuple[str, ...] = ("verdict",)
 
 # Forensic(W9-W12):记忆审核专用，可访问记忆相关工具，不能改主张或放行
