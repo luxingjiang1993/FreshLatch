@@ -40,6 +40,16 @@ x1 需要而旧函数没有的部分写在新模块：
 - `--out` 下写 `retrieve-x1-arm-compare.md` 与同名 `.json`。行必须包含「总体」「lexical」「paraphrase」「multi_hop」「trap+adversarial」
 - 不调用 `python -m freshlatch.eval`，不调用 `rerank_lexical`
 
+### 计分范围
+
+主指标与护栏分开。不改 `sqlite_store.retrieve` 的 `as_of` 过滤，不改 `PRODUCTION_RETRIEVAL_MODE`。
+
+- R@10、MRR@10、干扰命中@10、逐题胜平负、multi_hop 全命中：只统计 `score_role` 缺省或为 `arm` 的题。`score_role: guardrail` 的跨快照旧版题不进这些数
+- 护栏单独输出：每道 guardrail 题是 T1 查询，返回列表里 `as_of` 为 T0 的块数必须为 0 才算过。护栏失败不改写主 R@10，但要在报告里单独成行。单测用假向量覆盖「T1 池里不出现 T0 块则过、混进 T0 块则不过」
+- **conflict-pair ordering accuracy**：题上有 `conflict_pair.in_force` 与 `conflict_pair.superseded`（同一 `as_of`）时，现行条排名严格高于被取代条的配对占比。被取代条不在返回列表、现行条在，算正确；两者都不在，或只有被取代条在，算不正确。报告单列，不并进 R@10。这种题若 `score_role` 为 `arm`，仍同时进入主指标
+- 可选诊断：提供一个缺省关闭的开关，关掉本次 x1 跑分的 `as_of` 过滤。缺省不跑。跑了则写到单独文件或主报告的单独一节，不得覆盖主 R@10 / MRR。单测只断言缺省不跑、跑了则与主数字分开。不发网络。诊断不改生产检索
+- 三个子集与 0.2 / 0.35 / 0.5 的门命中数是 RET-01.4 / RET-01.6 的报告义务。本票的逐题 JSON 要带上足够字段（qtype、evidence 序、`score_role`），让 RESULT 能按 PREREG 划分子集。子集本身的「稳健」标签不在本票用假向量宣布
+
 单测建一个 tmp 小语料，用与 `tests/unit/test_i3_hard_gold.py` 中 `_write_dummy_dense` 相同的手法写占位 vec（`pack_vec`，非全零，dim 可以是 8）。不调用 `embed_texts`。断言分型聚合、全命中、干扰命中、模式诚实，以及 `PRODUCTION_RETRIEVAL_MODE == "bm25"`。
 
 ## Agent Guards
@@ -50,11 +60,12 @@ x1 需要而旧函数没有的部分写在新模块：
   2. Given tmp fixture 与一份含正确指纹的临时 PREREG，When `python scripts/run_retrieve_x1.py --check-only --corpus <tmp>/corpus --traps <tmp>/traps --questions <tmp>/questions.json --config <tmp>/config.json --prereg <tmp>/PREREG.md`，Then 退出码 0。指纹被改一个字符后同一命令退出非 0。
   3. Given `--dense-db data/dense/index.sqlite`，When 解析参数，Then 退出非 0，且该文件的 mtime 不变（测试不要真的去碰仓库里的这个路径；用字符串比较加一个「若路径等于生产默认库则拒绝」的纯函数即可）。
   4. Given 本票 diff，When `git diff --stat main -- src/freshlatch/store/base.py src/freshlatch/eval/__main__.py src/freshlatch/eval/retrieve_eval.py src/freshlatch/store/embeddings.py src/freshlatch/store/ingest.py src/freshlatch/llm.py docs/evidence/hard-gold-arm data/eval/retrieve_hard_gold.json data/corpus data/traps reports/dense-rebuild.md "reports/retrieve-hard-gold-*"`，Then 输出为空。开工前与收工后各跑 `python -c "import hashlib; from pathlib import Path; p=Path('data/dense/index.sqlite'); print('absent' if not p.is_file() else hashlib.sha256(p.read_bytes()).hexdigest(), 'absent' if not p.is_file() else p.stat().st_mtime)"`，两行相同。
+  5. Given tmp 假向量语料里有一道 `score_role: guardrail` 的 T1 题、一道带 `conflict_pair` 的同快照题，When 跑分函数，Then 护栏题不进入主 R@10 的分母；T1 结果里出现 T0 块则护栏失败；conflict-pair ordering accuracy 单独给出，且不改主 R@10。缺省不跑关掉 `as_of` 的诊断。
 - **Provenance**:
   - Kind: adapt
   - Source: `src/freshlatch/eval/retrieve_eval.py#run_arm_compare,recall_at_k,mrr_at_k,arm_pass_line,_p95_ms,_attach_vecs`；`src/freshlatch/store/ingest.py#load_corpus`；`tests/unit/test_i3_hard_gold.py#_write_dummy_dense`（只借鉴占位 vec 的写法，不把该测试文件放进验收命令）；`src/freshlatch/store/embed_cache.py`（RET-01.2）；`src/freshlatch/eval/x1_checks.py`（RET-01.1）
   - Pin: 仓内现行文件（main@`18b5172`）
-  - What changed: 新模块增加分型、全命中、干扰命中、延迟与成本列；查询嵌入走 `embed_cache`；两个目录都用 `load_corpus`
+  - What changed: 新模块增加分型、全命中、干扰命中、延迟与成本列；查询嵌入走 `embed_cache`；两个目录都用 `load_corpus`。主 R@10 不含护栏题。另计护栏通过/失败与 conflict-pair ordering accuracy。关掉 `as_of` 的诊断缺省不跑，且不覆盖主数字
   - Why not copy as-is: `run_arm_compare` 只出单一 R@10，查询嵌入走 `_cached_query_embedder`，traps 经 `load_trap_corpus` 不核对 `as_of`。直接跑还会碰到默认的 `data/dense/index.sqlite`
   - License note: 仓内代码。仓库根目录无 `LICENSE` 文件
 - **Tests**: added（`tests/unit/test_retrieve_x1.py`）
@@ -79,7 +90,7 @@ x1 需要而旧函数没有的部分写在新模块：
 - paths:
 
 ## Handoff
-`2026-10-06 | RET-01.5 | blocked | 等 RET-01.1 与 RET-01.2。不要等语料才写脚本；不要在本票出真分`
+`2026-10-06 | RET-01.5 | blocked | 等 RET-01.1 与 RET-01.2。计分范围已按护栏 / conflict-pair 分开。不要等语料才写脚本；不要在本票出真分`
 
 ## Blocked by
 - RET-01.1

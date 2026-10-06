@@ -20,7 +20,7 @@
 | 1 | RET-01.1 | 许可 / 去污染 / 题集结构检查 | 无 | `/implement` |
 | 2 | RET-01.2 | embedding 内容哈希缓存；`build_dense_index.py` 可选路径 | 无 | `/implement` |
 | 3 | RET-01.7 | `scripts/gen_x1_drafts.py`（含抽检子命令） | RET-01.1 | `/implement` |
-| 4 | RET-01.3 | 混合语料、`SOURCES.md`、`config.json`、人定金标 | RET-01.1、RET-01.2、RET-01.7；主人锁定去污染阈值；主人定条文摘录清单 | **整张是人步骤，禁止 `/implement`** |
+| 4 | RET-01.3 | 混合语料、`SOURCES.md`、`config.json`、人定金标 | RET-01.1、RET-01.2、RET-01.7。去污染阈值与 P1 摘录清单已批准。仍开放：陷阱操作化定义；冻结前 flk.npc.gov.cn 核对 | **整张是人步骤，禁止 `/implement`** |
 | 5 | RET-01.4 | `PREREG.md` 正文与三行指纹 | RET-01.3 | `/implement` 只写文档 |
 | 5b | RET-01.4 冻结确认 | 主人写入 `owner_freeze: confirmed` 并合入 `main` | RET-01.4 的文档已写好 | **人步骤** |
 | 6 | RET-01.5 | 分型打分与 `scripts/run_retrieve_x1.py`（假向量；不跑真分） | RET-01.1、RET-01.2。不依赖 RET-01.7。可与 3、4 并行 | `/implement` |
@@ -80,11 +80,14 @@ python -c "import hashlib; from pathlib import Path; p=Path('data/dense/index.sq
 
 ## 已锁决策（主人已定，子票不得改口）
 
-- 语料混合 = 合成 + 部分公开宽松许可文本，配比以下表为目标。硬门槛：corpus + traps 合计 **≥600 chunk**；合成正文（`provenance: synthetic`）≥60%；公开原文（`provenance: public`）≤40%。表内 76% / 24% 是目标，不是第二套门槛。
-- 题集 `qtype ∈ {lexical, paraphrase, multi_hop}`，**每个 qtype ≥30，合计 n≥90**，目标 n=90–120。`category ∈ {trap, adversarial}` 的题 ≥30%（沿用 `docs/hard-gold.md` 的预登记口径，分母是题数）。
-- `multi_hop` 的 `relevant` ≥2 个锚，且来自 ≥2 个不同 `doc_id`。现 hard 集里 `hard-trap-conflict-1` 的两个锚同属 `trap-conflict`，不能当作 multi_hop 的形状样例。
-- hybrid 领先阈值 **Δ≥0.10**：该型 R@10（hybrid − bm25）≥ 0.10 为领先，≤ −0.10 为落后，其余持平。`arm_pass_line` 只作参考列，不作改臂授权。hybrid 不赢是合格结果。
-- 去污染分两套，算法在 RET-01.1。`lexical`：清洗后的**整段 query** 长度 ≥8 且作为子串出现在任一 relevant 块的清洗正文里，才算污染。只共享一个法规标题（例如 10 字的「数据出境安全评估办法」）不算。`paraphrase` / `multi_hop`：只走字符 8-gram 重合率，**严格大于** `decontam_8gram_max` 才算污染。该阈值候选 0.5 **尚未批准**，在主人写入之前保持 `null`，不得拿 0.5 当默认。
+- 语料混合 = 合成 + 部分公开宽松许可文本，配比以下表为目标。硬门槛：corpus + traps 合计 **≥600 chunk**；合成正文（`provenance: synthetic`）≥60%；公开原文（`provenance: public`）≤40%。表内约 79% / 21% 是目标，不是第二套门槛。旧的 24% 公开目标不再凑满：P1 按 RET-01.3 的 A+B 清单实装约 138 chunk（按 660 计约 20.9%），缺口约 20 chunk 用合成 S6 变更要点补。
+- 题集 `qtype ∈ {lexical, paraphrase, multi_hop}`，**每个 qtype ≥30，合计 n≥90**，目标 n=90–120。`category ∈ {trap, adversarial}` 的题 ≥30%（沿用 `docs/hard-gold.md` 的预登记口径，分母是臂对比题的题数，不含 `score_role: guardrail`）。
+- `multi_hop` 的 `relevant` ≥2 个锚，且来自 ≥2 个不同 `doc_id`（`@T0` / `@T1` 不算第二个文档）。现 hard 集里 `hard-trap-conflict-1` 的两个锚同属 `trap-conflict`，不能当作 multi_hop 的形状样例。另加硬检查：`answer_points`（≥2 条）不得同时出现在同一个 chunk；出现则该题不能作为 multi_hop 通过（单跳捷径）。细则在 RET-01.1。
+- hybrid 领先阈值 **Δ≥0.10**：该型 R@10（hybrid − bm25）≥ 0.10 为领先，≤ −0.10 为落后，其余持平。`arm_pass_line` 只作参考列，不作改臂授权。hybrid 不赢是合格结果。主 R@10 / MRR 不含跨快照旧版陷阱。
+- 去污染分两套，算法在 RET-01.1。计算重合之前，先从 query 去掉法规名白名单（点名法规是合法的）。`lexical`：清洗后的**整段 query** 长度 ≥8 且作为子串出现在任一 relevant 块的清洗正文里，才算污染。`paraphrase` / `multi_hop`：只走字符 8-gram 重合率，**严格大于** `decontam_8gram_max` 才算污染，等于阈值不判。主人已批准 `decontam_8gram_max` = **0.2**。`data/exp/x1/config.json` 在 main 上还不存在，本决议不创建它；RET-01.3 创建时写入 `0.2`。检查器在缺键或 JSON `null` 时仍退出码 2，不得把 0.2 或 0.5 当缺省代入。0.5 只留在预登记的临时敏感度对照里，不进正式配置。字符 LCS / 问句长度 ≥ 0.8 是复核旗标，不是门。
+- 检索按 `as_of` 过滤。本实验不改这道过滤，不改生产臂。跨快照旧版陷阱（现有 `trap-supersede-1` 这一类：T1 问句的干扰在另一快照）不进三臂 recall / MRR，改到单独的通过/失败护栏：T1 查询对旧快照块的命中必须为 0。同快照冲突条文作 hard negative，并计 **conflict-pair ordering accuracy**（现行条文排在被取代条文之前的配对占比）。关掉 `as_of` 的诊断消融单独报告，不进主结论。指标归属由 RET-01.4 预锁。不改 `data/corpus/**`、`data/traps/**` 与 `data/eval/retrieve_traps.json`。
+- 法规标题与条号只放 frontmatter，正文从条文本身起。把标题前置进 chunk（contextual retrieval）不在本期：三臂同样不做，留给以后的消融。
+- 公司法按主题拆成约 4–5 类 doc，每个快照文件 2–6 个 chunk，`doc_id` 稳定。主题与 C1–C10 / G1–G14 在 RET-01.3。
 - 预算帽 **¥10**，写入 `config.json` 的 `budget_cny_max`。超限停跑。
 - Embedding：`text-embedding-v4`，维度 **1024**，与 `reports/dense-rebuild.md` 已记录的 dim=1024 对齐。不换模型、不传 `text_type` / `instruct` / sparse。内容哈希缓存键含 model 与 dim。
 - 草稿生成：`qwen-flash`（`src/freshlatch/llm.py` 的 `DEFAULT_MODEL`）。`qwen-plus` **非思考**只标记可疑标注，不写 gold。这是主人批准的、对 `docs/spec/06-护栏预算与成本.md` §6.5「开发期统一 qwen-flash」的例外，只用于离线抽检，不进入 Lead 循环。gold（`relevant` / `distractors` / `qtype`）由人终定；另一人复核 ≥20%，记入 PREREG。
@@ -98,21 +101,18 @@ python -c "import hashlib; from pathlib import Path; p=Path('data/dense/index.sq
 | 体裁 | 来源 | 许可 | 目标占比 | 主要练的题型 |
 |------|------|------|----------|----------------|
 | S1 已签发顾问备忘（T0 签发 + T1 待复验） | 合成，D0–D3 | `synthetic` | 14% | multi_hop、paraphrase |
-| S2 访谈 / 渠道纪要（含改口） | 合成 | `synthetic` | 10% | paraphrase、取代陷阱 |
-| S3 竞品价目 / 报价快照 | 合成 | `synthetic` | 10% | lexical、取代陷阱 |
+| S2 访谈 / 渠道纪要（含改口） | 合成 | `synthetic` | 10% | paraphrase、同快照改口。跨快照旧版只进护栏 |
+| S3 竞品价目 / 报价快照 | 合成 | `synthetic` | 10% | lexical、同快照旧价。跨快照旧版只进护栏 |
 | S4 内部测算 / 成本模型版本 | 合成 | `synthetic` | 8% | lexical、维度错配 |
 | S5 二手转述 / 汇编（引用旧数） | 合成 | `synthetic` | 8% | 词面撞车、语义近邻旧事实 |
-| S6 变更要点 / 补丁记录 | 合成 | `synthetic` | 6% | multi_hop、元陈述陷阱 |
+| S6 变更要点 / 补丁记录 | 合成 | `synthetic` | 9% | multi_hop、元陈述陷阱。含补 P1 缺口的约 20 chunk |
 | S7 检索陷阱专用文档 | 合成 | `synthetic` | 10% | trap / adversarial 的语料载体。题数 ≥30% 是另一分母，见下 |
-| P1 法规版本对正文 | 公开，D1 / D2 | `PRC-Copyright-Art5` | 24% | lexical、paraphrase、multi_hop、取代 / 同快照冲突 |
-| P2 官方统计初值→终值，叙述自写 | 数据来自国家统计局公告，D3 | `synthetic`（注明出处） | 10% | lexical、multi_hop、取代陷阱 |
+| P1 法规版本对正文 | 公开，D1 / D2 | `PRC-Copyright-Art5` | 21% | lexical、paraphrase、multi_hop、同快照冲突。跨快照旧版只进护栏 |
+| P2 官方统计初值→终值，叙述自写 | 数据来自国家统计局公告，D3 | `synthetic`（注明出处） | 10% | lexical、multi_hop。跨快照旧版只进护栏 |
 
-合计目标：合成正文 76%（S1–S7 66% + P2 10%），公开原文 24%。D0 约占合成部分一半，以便和现有东南亚 SMB 客服主题连续。S7 的 10% 是 **chunk** 占比；`trap`+`adversarial` ≥30% 是 **题数** 占比。
+合计目标：合成正文约 79%（S1–S7 69% + P2 10%），公开原文约 21%。D0 约占合成部分一半，以便和现有东南亚 SMB 客服主题连续。S7 的 10% 是 **chunk** 占比；`trap`+`adversarial` ≥30% 是 **题数** 占比（分母不含护栏题）。
 
-P1 候选对（具体摘哪些条，主人待定，不是已批准的摘录清单）：
-
-- 网信办《数据出境安全评估办法》（令第 11 号，2022）与《个人信息出境标准合同办法》（令第 13 号，2023）相对《促进和规范数据跨境流动规定》（令第 16 号，2024）。草稿指出新规有「不一致者适用新规」的条款，摘录时对照官网正文核对条号。
-- 《公司法》2018 第四次修正相对 2023 修订（草稿说明出资期限从认缴表述改为五年内缴足）。条号以官网正文为准，入库前核对。
+P1 摘录已批准，逐条表在 RET-01.3（清单 A+B，不收把令 11 / 13 / 16 收成全文的清单 C）。来源是令 11、令 13、令 16，另加令 20《个人信息出境认证办法》（2026-01-01 施行）。公司法按 RET-01.3 的主题 doc 拆，不整部入库。条号以官网正文为准。冻结前到 https://flk.npc.gov.cn/ 核对有无后续修正；这项核对仍是开放的人步骤。未列入 `SOURCES.md` 的条文不得入库。
 
 P2 候选（本票默认，除非主人在 RET-01.3 开工前改口）：全国 GDP 初步核算 → 修订 / 最终核实。草稿所引数字（2023 年修订后 1294272 亿元、比初步核算增 33690 亿元；2024 年最终核实 1348066 亿元、比初步核算减 1018 亿元）**仓内无副本**。RET-01.3 写入前对照统计局公告，不符则以官网为准并记入 `SOURCES.md`。
 
@@ -129,17 +129,19 @@ frontmatter 在现有 `doc_id` / `as_of` / `source_type` / `title` 之外增加�
 
 切块沿用 `## pN`。目录是 `t0/` 与 `t1/`。x1 入库走 `load_corpus`（断言 `as_of` 与目录一致）。不要为了 x1 去改 `load_trap_corpus`（该函数不断言 `as_of`）。
 
-干扰不偏袒任何一臂：词面撞车、语义近邻但事实不同、T0→T1 取代、同快照冲突、元陈述（CONTEXT「检索陷阱三类」：快照取代、同快照冲突陈述、元陈述）、维度错配、近重复版本。字段风格沿用 `data/eval/retrieve_traps.json` 的 `distractors` 与 `eval_intent`。
+干扰不偏袒任何一臂：词面撞车、语义近邻但事实不同、同快照冲突、元陈述（CONTEXT「检索陷阱三类」：快照取代、同快照冲突陈述、元陈述）、维度错配、近重复版本。T0→T1 跨快照旧版可以出题，但不进臂的 recall / MRR，只进护栏。字段风格沿用 `data/eval/retrieve_traps.json` 的 `distractors` 与 `eval_intent`。不改该文件，也不改 `data/traps/**`。
 
 固定参数：`top_k=10`；RRF k=60（`freshlatch.store.pipeline.RRF_K`）。随机步骤的 temperature / seed / model 必须出现在配置里；托管端点不保证逐字复现，复现以入库产物 + checksum 为准。
 
 ## 主人待定（不得代锁）
 
-下列三项是主人决策。子票不得把候选值写成已生效默认。
+下列事项仍未签核，或核对尚未发生。子票不得把它们写成已生效。
 
-1. **去污染阈值**。草稿建议初值 `0.5`，**尚未批准**。`decontam_8gram_max` 在主人写入数字之前保持 JSON `null`。检查脚本见到 `null` 或缺键必须失败。RET-01.3 完成与 RET-01.4 冻结都等这个数。
-2. **P1 具体摘录哪些条**，以及是否另加 1–2 组同类法规版本对。条号与官网正文不一致时以官网为准。未列入 `SOURCES.md` 的条文不得入库。阻塞 RET-01.3。
-3. **免费额度与端点计费**。中国站「每模型 100 万 tokens、开通后 90 天」对本账号是否仍有效：未核实。是否开通 Batch：未核实。仓内端点是 `https://dashscope.aliyuncs.com/compatible-mode/v1`（`DASHSCOPE_BASE_URL`、`embeddings._ENDPOINT`）。它和文档里的 `{WorkspaceId}.cn-beijing.maas.aliyuncs.com` 是否同一标价：未核实。RET-01.6 按北京地域标价估算并执行 ¥10 帽，报告里这两项写「未核实」，不得写成已用免费额度抵扣。
+1. **免费额度与端点计费**。中国站「每模型 100 万 tokens、开通后 90 天」对本账号是否仍有效：未核实。是否开通 Batch：未核实。仓内端点是 `https://dashscope.aliyuncs.com/compatible-mode/v1`（`DASHSCOPE_BASE_URL`、`embeddings._ENDPOINT`）。它和文档里的 `{WorkspaceId}.cn-beijing.maas.aliyuncs.com` 是否同一标价：未核实。RET-01.6 按北京地域标价估算并执行 ¥10 帽，报告里这两项写「未核实」，不得写成已用免费额度抵扣。
+2. **陷阱类型的操作化定义**。建议稿里的三类（同快照冲突、取代、未重测）主人尚未签核。已批准的只有计分规则：跨快照旧版进护栏、同快照冲突作 hard negative、conflict-pair ordering accuracy、`as_of` 关闭的诊断不进主结论。不得把未签的三类定义抄进 PREREG 当成已批准。
+3. **flk 后续修正核对**。https://flk.npc.gov.cn/ 上，令 11 / 13 / 16 / 20 与公司法 2023 在入库冻结前有没有再修订：尚未核对。RET-01.3 的人在冻结前做，结果写入 `SOURCES.md`。不得预写「无修正」。
+
+已批准、不再待定：`decontam_8gram_max` = 0.2；P1 用 A+B（含令 20），不把公开占比凑到 24%。检查器在阈值缺键或 `null` 时仍退出码 2。
 
 草稿里其余未决项，本票也不代锁：
 
@@ -175,12 +177,12 @@ temperature 与 seed 没有被主人指定成某个数。生成脚本在二者�
 9. S7 的 10% 与题集 trap/adversarial ≥30% 分母不同。草稿表格末列「保证 ≥30% 占比」容易读成 S7 的 chunk 份额，此处拆开。
 10. 草稿中的单一新模块拆成 `x1_checks.py`（RET-01.1）、`embed_cache.py`（RET-01.2）、`retrieve_typed.py`（RET-01.5）、`scripts/gen_x1_drafts.py`（RET-01.7）。
 11. `scripts/build_dense_index.py` 当前没有命令行参数。路径是模块级常量 `CORPUS`、`TRAPS`、`DB`、`REPORT`。
-12. 去污染候选 0.5 不得成为代码或配置的默认生效值。`lexical` 用整段 query 子串规则；8-gram 重合率只用于 `paraphrase` / `multi_hop`。
+12. 去污染的批准值是 0.2，但不得变成代码缺省：键缺失或 `null` 时检查器退出码 2，不得代入 0.2 或 0.5。`lexical` 用整段 query 子串规则；8-gram 重合率只用于 `paraphrase` / `multi_hop`。正式 `config.json` 由 RET-01.3 写入 0.2。0.5 不是缺省，只作临时敏感度对照。
 13. 查询向量不复用 `retrieve_eval._cached_query_embedder`。x1 的查询嵌入建在 RET-01.2 的 `embed_cache` 上。语料与 traps 都用 `load_corpus`，不用 `load_trap_corpus`。
 
 ## 配置键（名字锁死，值的空位见主人待定）
 
-`data/exp/x1/config.json` 由 RET-01.3 创建。检查逻辑见 RET-01.1：低于已锁下限的配置视为失败；`decontam_8gram_max` 为 `null` 时失败。
+`data/exp/x1/config.json` 由 RET-01.3 创建。main 上还没有这个文件，本决议不新建它。检查逻辑见 RET-01.1：低于已锁下限的配置视为失败；`decontam_8gram_max` 缺键或为 `null` 时退出码 2，不得代入已批准的 0.2。
 
 - `top_k`: 10
 - `rrf_k`: 60
@@ -191,7 +193,7 @@ temperature 与 seed 没有被主人指定成某个数。生成脚本在二者�
 - `draft_seed`: 人填写前为 `null`
 - `flag_model`: `qwen-plus`
 - `flag_thinking`: false
-- `decontam_8gram_max`: 主人批准前为 `null`
+- `decontam_8gram_max`: 主人已批准 **0.2**。文件创建前没有这个键。检查器不得在缺键或 `null` 时自行填 0.2
 - `lead_delta`: 0.10
 - `budget_cny_max`: 10
 - `min_chunks`: 600
@@ -207,6 +209,8 @@ temperature 与 seed 没有被主人指定成某个数。生成脚本在二者�
 按行：总体、lexical、paraphrase、multi_hop、trap+adversarial。按列：R@10、MRR@10、multi_hop 全命中 R@10（非该型写 n/a）、干扰命中@10、hybrid 相对 bm25 的逐题胜/平/负、p50/p95 查询延迟（`time.perf_counter`，百分位算法沿用 `retrieve_eval._p95_ms`）、embed 调用次数、缓存命中、embed token（`embed_texts` 不回传 usage，按字符估算并标「估」）、LLM token（复跑路径应为 0）、估算成本（CNY）。dense / hybrid 列须满足 `last_retrieval_mode` 与请求臂一致，口径同 `run_arm_compare`。
 
 本实验不把 `hybrid+rerank` 列为第四臂。
+
+主表的 R@10、MRR@10 不含跨快照旧版陷阱。另列，不并进主 R@10：护栏（T1 查询命中旧快照块数，通过 = 0）、conflict-pair ordering accuracy、三个预登记子集（8-gram 比例 = 0、比例 ≤ 0.1、字符 LCS < 0.8；n ≥ 15 才讨论稳健）、RET-01.7 草稿上 0.2 / 0.35 / 0.5 的去污染命中数。关掉 `as_of` 的诊断若跑了，单独一节，不进主结论。
 
 ## 模型与成本（草稿估算，仓内未复核单价）
 
@@ -236,9 +240,11 @@ token 假设（64.7、1.39、query 12.1 等）无仓内留档。RET-01.6 用账�
 - 白名单外文本；把 `excerpt_only` 摘录当模板
 - 把本轮结论写成「已证明 hybrid 最优」或改臂授权
 - 换 embedding 模型或维度
+- 把法规标题前置到 chunk 正文（contextual retrieval）。三臂都做或都不做；本期都不做
+- 为了让跨快照旧版陷阱进入召回而改掉 `as_of` 过滤。诊断消融只能另节报告
 
 ## Handoff
-`2026-10-06 | RET-01 | draft | 评审已折入。RET-01.1 与 RET-01.2 可 /implement。阈值与条文清单仍待主人，阻塞 RET-01.3`
+`2026-10-06 | RET-01 | draft | 去污染 0.2 与 P1 A+B 清单已折入子票。RET-01.1 与 RET-01.2 可 /implement。RET-01.3 仍是人步骤；陷阱操作化定义未签，flk 核对未做`
 
 ## Blocked by
 None（本索引票）。与 #260 互不阻塞。
