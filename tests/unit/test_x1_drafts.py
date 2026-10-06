@@ -2806,24 +2806,33 @@ def test_manifest_anomaly_exits_before_call(tmp_path: Path, capsys):
     batch = _batch()
     upper = mod._cost_cny(mod._input_token_upper(mod._build_batch_prompt(batch)), mod._output_token_upper(batch), 1, 2)
     cases = {
-        "two-inflight": {
-            "spent_cny": upper * 2,
-            "batches": {
-                "b1": {"status": "inflight", "cost_cny": upper},
-                "b2": {"status": "inflight", "cost_cny": upper},
+        "two-inflight": (
+            {
+                "spent_cny": upper * 2,
+                "batches": {
+                    "b1": {"status": "inflight", "cost_cny": upper},
+                    "b2": {"status": "inflight", "cost_cny": upper},
+                },
             },
-        },
-        "held-below-upper": {
-            "spent_cny": 0,
-            "batches": {"b1": {"status": "inflight", "cost_cny": 0}},
-        },
-        "held-above-spent": {
-            "spent_cny": 1,
-            "batches": {"b1": {"status": "inflight", "cost_cny": 10}},
-        },
-        "negative-spent": {"spent_cny": -1, "batches": {}},
+            "inflight",
+        ),
+        "held-above-spent": (
+            {
+                "spent_cny": 1,
+                "batches": {"b1": {"status": "inflight", "cost_cny": 10}},
+            },
+            "spent_cny",
+        ),
+        "negative-spent": ({"spent_cny": -1, "batches": {}}, "spent_cny"),
+        "zeroed-spent": (
+            {
+                "spent_cny": 0,
+                "batches": {"b1": {"status": "ok", "cost_cny": 1.5}},
+            },
+            "spent_cny",
+        ),
     }
-    for name, body in cases.items():
+    for name, (body, field) in cases.items():
         out = tmp_path / name
         out.mkdir()
         marker = out / ".x1-drafts-manifest.json"
@@ -2831,9 +2840,10 @@ def test_manifest_anomaly_exits_before_call(tmp_path: Path, capsys):
         blob = marker.read_bytes()
         fake = FakeLLM("不应调用")
         code = _generate(mod, tmp_path, fake, cfg, out, spec=_spec([batch]))
+        err = capsys.readouterr().err
         assert code == 1
         assert fake.calls == []
-        assert "清单异常" in capsys.readouterr().err
+        assert f"清单异常: {field}" in err
         assert marker.read_bytes() == blob
 
 
@@ -2848,12 +2858,12 @@ def test_flag_ledger_anomaly_exits_before_call(tmp_path: Path, capsys):
     )
     ledger_path = tmp_path / ".x1-flag-spend.json"
     cases = [
-        {"spent_cny": -1},
-        {"spent_cny": 0, "inflight": True, "held_cny": 0},
-        {"spent_cny": 1, "inflight": True, "held_cny": 5},
-        {"spent_cny": 1, "inflight": "yes", "held_cny": 1},
+        ({"spent_cny": -1}, "spent_cny"),
+        ({"spent_cny": 1, "inflight": True, "held_cny": 5}, "spent_cny"),
+        ({"spent_cny": 1, "inflight": "yes", "held_cny": 1}, "inflight"),
+        ({"spent_cny": 0, "inflight": True, "held_cny": 1}, "spent_cny"),
     ]
-    for body in cases:
+    for body, field in cases:
         ledger_path.write_text(json.dumps(body, ensure_ascii=False), encoding="utf-8")
         blob = ledger_path.read_bytes()
         fake = FakeLLM("不应调用")
@@ -2873,7 +2883,149 @@ def test_flag_ledger_anomaly_exits_before_call(tmp_path: Path, capsys):
             ],
             llm_client=fake,
         )
+        err = capsys.readouterr().err
         assert code == 1
         assert fake.calls == []
-        assert "清单异常" in capsys.readouterr().err
+        assert f"清单异常: {field}" in err
         assert ledger_path.read_bytes() == blob
+
+
+class _KeyboardInterruptLLM(FakeLLM):
+    def chat(self, *args, **kwargs):
+        raise KeyboardInterrupt
+
+
+def _flag_upper_cny(mod, questions: dict) -> float:
+    slim = [{"id": item.get("id"), "query": item.get("query")} for item in questions["queries"]]
+    return mod._cost_cny(
+        mod._input_token_upper(mod._flag_prompt(slim)),
+        mod._flag_output_upper(len(slim)),
+        1,
+        2,
+    )
+
+
+def test_resume_after_prompt_grew_keeps_held_plus_real(tmp_path: Path, capsys, monkeypatch):
+    mod = _load_script()
+    batch = _batch()
+    cfg = _write_json(tmp_path / "config.json", _cfg())
+    out = tmp_path / "prompt-grew"
+    assert _generate(mod, tmp_path, _KeyboardInterruptLLM("不会返回"), cfg, out, spec=_spec([batch])) == 130
+    assert "调用被中断" in capsys.readouterr().err
+    held = _manifest(out)["spent_cny"]
+    real = mod._build_batch_prompt
+
+    def _longer(item):
+        return real(item) + "\n多一行提示。"
+
+    monkeypatch.setattr(mod, "_build_batch_prompt", _longer)
+    new_upper = mod._cost_cny(
+        mod._input_token_upper(mod._build_batch_prompt(batch)),
+        mod._output_token_upper(batch),
+        1,
+        2,
+    )
+    assert new_upper > held
+    again = FakeLLM(json.dumps(_draft_payload(), ensure_ascii=False))
+    assert _generate(mod, tmp_path, again, cfg, out, spec=_spec([batch])) == 0
+    assert len(again.calls) == 1
+    resumed = _manifest(out)
+    assert resumed["batches"]["b1"]["status"] == "ok"
+    assert resumed["spent_cny"] == pytest.approx(held + mod._cost_cny(1, 1, 1, 2))
+    assert (out / "corpus" / "t1" / "b1-draft.md").is_file()
+
+
+def test_resume_after_output_price_change_keeps_held_plus_real(tmp_path: Path, capsys):
+    mod = _load_script()
+    batch = _batch()
+    cfg = _write_json(tmp_path / "config.json", _cfg())
+    out = tmp_path / "price-changed"
+    assert _generate(mod, tmp_path, _KeyboardInterruptLLM("不会返回"), cfg, out, spec=_spec([batch])) == 130
+    capsys.readouterr()
+    held = _manifest(out)["spent_cny"]
+    resume_spec = _spec([batch])
+    resume_spec["pricing"]["output_cny_per_million"] = 9
+    new_upper = mod._cost_cny(
+        mod._input_token_upper(mod._build_batch_prompt(batch)),
+        mod._output_token_upper(batch),
+        1,
+        9,
+    )
+    assert new_upper > held
+    again = FakeLLM(json.dumps(_draft_payload(), ensure_ascii=False))
+    assert _generate(mod, tmp_path, again, cfg, out, spec=resume_spec) == 0
+    assert len(again.calls) == 1
+    resumed = _manifest(out)
+    assert resumed["batches"]["b1"]["status"] == "ok"
+    assert resumed["spent_cny"] == pytest.approx(held + mod._cost_cny(1, 1, 1, 9))
+
+
+def test_resume_after_inflight_batch_leaves_spec_keeps_sunk_spend(tmp_path: Path, capsys):
+    mod = _load_script()
+    first = _batch()
+    second = _batch(batch_id="b2", topic="另一批渠道纪要")
+    cfg = _write_json(tmp_path / "config.json", _cfg())
+    out = tmp_path / "batch-left"
+    assert _generate(mod, tmp_path, _KeyboardInterruptLLM("不会返回"), cfg, out, spec=_spec([first])) == 130
+    capsys.readouterr()
+    held = _manifest(out)["batches"]["b1"]["cost_cny"]
+    payload = _batch_payload(second, doc_id="b2-draft", qid="q1")
+    again = FakeLLM(json.dumps(payload, ensure_ascii=False))
+    assert _generate(mod, tmp_path, again, cfg, out, spec=_spec([second])) == 0
+    assert len(again.calls) == 1
+    resumed = _manifest(out)
+    assert resumed["batches"]["b1"]["status"] == "sunk"
+    assert resumed["batches"]["b1"]["cost_cny"] == pytest.approx(held)
+    assert resumed["batches"]["b2"]["status"] == "ok"
+    assert resumed["spent_cny"] == pytest.approx(held + mod._cost_cny(1, 1, 1, 2))
+    assert not (out / "corpus" / "t1" / "b1-draft.md").exists()
+    assert (out / "corpus" / "t1" / "b2-draft.md").is_file()
+
+
+def test_flag_resume_after_question_added_keeps_held_plus_real(tmp_path: Path, capsys):
+    mod = _load_script()
+    questions = _draft_payload()["questions"]
+    box = tmp_path / "flag-grew"
+    qpath = _write_json(box / "questions.json", questions)
+    cfg = _write_json(tmp_path / "config.json", _cfg())
+    spec_path = _write_json(
+        tmp_path / "flag-grew-spec.json",
+        {"flag_pricing": _pricing_block("单测抽检占位，不是脚本内置标价")},
+    )
+    held_upper = _flag_upper_cny(mod, questions)
+
+    def _flag(fake, sidecar: Path):
+        return mod.main(
+            [
+                "flag",
+                "--config",
+                str(cfg),
+                "--in",
+                str(qpath),
+                "--sidecar",
+                str(sidecar),
+                "--spec",
+                str(spec_path),
+                "--max-cny",
+                "100",
+            ],
+            llm_client=fake,
+        )
+
+    assert _flag(_KeyboardInterruptLLM("不会返回"), box / "flag-inflight.json") == 130
+    assert "调用被中断" in capsys.readouterr().err
+    ledger_path = box / ".x1-flag-spend.json"
+    ledger = json.loads(ledger_path.read_text(encoding="utf-8"))
+    assert ledger["inflight"] is True
+    assert ledger["spent_cny"] == pytest.approx(held_upper)
+    questions["queries"].append({"id": "draft-q2", "query": "多出来的一问"})
+    qpath.write_text(json.dumps(questions, ensure_ascii=False), encoding="utf-8")
+    assert _flag_upper_cny(mod, questions) > held_upper
+    note = json.dumps(
+        {"id": "draft-q1", "suspicion": "x", "reason": "y", "severity": "low"},
+        ensure_ascii=False,
+    )
+    assert _flag(FakeLLM(note), box / "flag-ok.json") == 0
+    settled = json.loads(ledger_path.read_text(encoding="utf-8"))
+    assert "inflight" not in settled
+    assert settled["spent_cny"] == pytest.approx(held_upper + mod._cost_cny(1, 1, 1, 2))

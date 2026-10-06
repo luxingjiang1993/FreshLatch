@@ -1098,40 +1098,60 @@ def _finite_money(value: Any) -> float | None:
     return number
 
 
-def _held_charge_error(spent: float, held: float, upper: float) -> str | None:
-    """inflight 上界必须非负、不超过已记花费，并且不低于该批当前上界。"""
-    if spent < 0 or held < 0 or held > spent + 1e-9 or held + 1e-9 < upper:
-        return "清单异常"
+def _held_charge_error(spent: float, held: float, *, held_field: str = "cost_cny") -> str | None:
+    """已记花费非负，且 0 ≤ 预扣 ≤ 花费。中断之后提示或单价可能变了，预扣可以低于当前上界。"""
+    if spent < 0:
+        return "清单异常: spent_cny"
+    if held < 0:
+        return f"清单异常: {held_field}"
+    if held > spent + 1e-9:
+        return "清单异常: spent_cny"
     return None
 
 
-def _manifest_anomaly(
-    batches: dict[str, Any],
-    plans: list[tuple[dict[str, Any], str, dict[str, Any], str]],
-    in_price: float,
-    out_price: float,
-    spent: float,
-) -> str | None:
+def _recorded_cost_total(batches: dict[str, Any]) -> float | str:
+    """各批已记 cost_cny 之和，含 sunk 与 inflight。非法金额返回字段名。"""
+    total = 0.0
+    for rec in batches.values():
+        if not isinstance(rec, dict) or "cost_cny" not in rec:
+            continue
+        cost = _finite_money(rec.get("cost_cny"))
+        if cost is None or cost < 0:
+            return "cost_cny"
+        total += cost
+    return total
+
+
+def _spend_below_recorded(spent: float, recorded: float) -> str | None:
+    """已记花费必须盖住各笔已记成本。手改把 spent_cny 清零、成本还在时落在这里。"""
+    if spent + 1e-9 < recorded:
+        return "清单异常: spent_cny"
+    return None
+
+
+def _manifest_anomaly(batches: dict[str, Any], spent: float) -> str | None:
     if not math.isfinite(spent) or spent < 0:
-        return "清单异常"
+        return "清单异常: spent_cny"
     inflight = [
         bid
         for bid, rec in batches.items()
         if isinstance(rec, dict) and rec.get("status") == "inflight"
     ]
     if len(inflight) > 1:
-        return "清单异常"
-    if not inflight:
-        return None
-    bid = inflight[0]
-    rec = batches[bid]
-    held = _finite_money(rec.get("cost_cny")) if isinstance(rec, dict) else None
-    plan = next((item for item in plans if item[0]["batch_id"] == bid), None)
-    if held is None or plan is None:
-        return "清单异常"
-    batch, prompt, _fields, _fingerprint = plan
-    upper = _cost_cny(_input_token_upper(prompt), _output_token_upper(batch), in_price, out_price)
-    return _held_charge_error(spent, held, upper)
+        return "清单异常: inflight"
+    if inflight:
+        rec = batches[inflight[0]]
+        held = _finite_money(rec.get("cost_cny")) if isinstance(rec, dict) else None
+        if held is None:
+            return "清单异常: cost_cny"
+        # 该批已经不在本次 spec 里也不拒绝，调用方把它标成 sunk，预扣留在 spent_cny。
+        charge_err = _held_charge_error(spent, held)
+        if charge_err:
+            return charge_err
+    recorded = _recorded_cost_total(batches)
+    if isinstance(recorded, str):
+        return f"清单异常: {recorded}"
+    return _spend_below_recorded(spent, recorded)
 
 
 def _resume_action(manifest: dict[str, Any], batch: dict[str, Any], fields: dict[str, Any], fingerprint: str) -> str:
@@ -1443,6 +1463,21 @@ def _run_generate(args: argparse.Namespace, llm_client: Any) -> int:
     in_price, out_price, price_source = pricing
     prev = _load_manifest(out)
     prev_batches = prev.get("batches") if isinstance(prev.get("batches"), dict) else {}
+    if "spent_cny" in prev:
+        spent_loaded = _finite_money(prev.get("spent_cny"))
+        if spent_loaded is None or spent_loaded < 0:
+            print("错误: 清单异常: spent_cny", file=sys.stderr)
+            return 1
+    else:
+        spent_loaded = 0.0
+    anomaly = _manifest_anomaly(prev_batches, spent_loaded)
+    if anomaly:
+        print(f"错误: {anomaly}", file=sys.stderr)
+        return 1
+    for rec in prev_batches.values():
+        if isinstance(rec, dict) and rec.get("status") == "inflight":
+            # 中断预扣留在 spent_cny 里，包括清单里已经没有的批次。清掉 inflight 后，这次调用按新的上界再扣。
+            rec["status"] = "sunk"
     plans: list[tuple[dict[str, Any], str, dict[str, Any], str]] = []
     for batch in spec["batches"]:
         prompt = _build_batch_prompt(batch)
@@ -1479,21 +1514,6 @@ def _run_generate(args: argparse.Namespace, llm_client: Any) -> int:
         print(f"错误: {seen_docs}", file=sys.stderr)
         return 1
     prev_usage = prev.get("token_usage") if isinstance(prev.get("token_usage"), dict) else {}
-    if "spent_cny" in prev:
-        spent_loaded = _finite_money(prev.get("spent_cny"))
-        if spent_loaded is None or spent_loaded < 0:
-            print("错误: 清单异常", file=sys.stderr)
-            return 1
-    else:
-        spent_loaded = 0.0
-    anomaly = _manifest_anomaly(prev_batches, plans, in_price, out_price, spent_loaded)
-    if anomaly:
-        print(f"错误: {anomaly}", file=sys.stderr)
-        return 1
-    for rec in prev_batches.values():
-        if isinstance(rec, dict) and rec.get("status") == "inflight":
-            # 中断预扣留在 spent_cny 里。清掉 inflight 后，这次调用按新的上界再扣。
-            rec["status"] = "sunk"
     decoding = DecodingParams(model=draft_model, temperature=temperature, seed=seed)
     state: dict[str, Any] = {
         "model": draft_model,
@@ -1620,7 +1640,7 @@ def _run_generate(args: argparse.Namespace, llm_client: Any) -> int:
                 print(f"错误: 批次 {batch_id}: {discard_err}", file=sys.stderr)
                 return 1
         if state["spent_cny"] < 0:
-            print("错误: 清单异常", file=sys.stderr)
+            print("错误: 清单异常: spent_cny", file=sys.stderr)
             return 1
         held_in, held_out, held_cny = upper_in, upper_out, upper_cny
         _apply_usage(held_in, held_out, held_cny)
@@ -1685,7 +1705,7 @@ def _run_generate(args: argparse.Namespace, llm_client: Any) -> int:
         cost = _cost_cny(delta_prompt, delta_completion, in_price, out_price)
         settled_spent = state["spent_cny"] + cost - held_cny
         if settled_spent < 0:
-            print("错误: 清单异常", file=sys.stderr)
+            print("错误: 清单异常: spent_cny", file=sys.stderr)
             return 1
         state["spent_cny"] = settled_spent
         usage = state["token_usage"]
@@ -1873,16 +1893,16 @@ def _read_flag_ledger(inp: Path) -> tuple[float, float, bool] | str:
     if not isinstance(data, dict):
         return "抽检花费账本无法解析"
     if "inflight" in data and data.get("inflight") is not True and data.get("inflight") is not False:
-        return "清单异常"
+        return "清单异常: inflight"
     spent = _finite_money(data.get("spent_cny", 0.0))
     if spent is None or spent < 0:
-        return "清单异常"
+        return "清单异常: spent_cny"
     inflight = data.get("inflight") is True
     held = 0.0
     if inflight:
         held_value = _finite_money(data.get("held_cny"))
         if held_value is None:
-            return "清单异常"
+            return "清单异常: held_cny"
         held = held_value
     return spent, held, inflight
 
@@ -1955,10 +1975,16 @@ def _run_flag(args: argparse.Namespace, llm_client: Any) -> int:
         return 1
     spent, held, inflight = loaded
     if inflight:
-        charge_err = _held_charge_error(spent, held, upper_cny)
+        charge_err = _held_charge_error(spent, held, held_field="held_cny")
         if charge_err:
             print(f"错误: {charge_err}", file=sys.stderr)
             return 1
+    # 抽检账本没有逐批记录。inflight 时已记成本就是 held_cny，花费不得低于它。
+    cover_err = _spend_below_recorded(spent, held if inflight else 0.0)
+    if cover_err:
+        print(f"错误: {cover_err}", file=sys.stderr)
+        return 1
+    if inflight:
         # 旧的预扣留下，清掉 inflight 后再按这次调用重新预扣。
         _write_flag_ledger(inp, spent)
     if spent + upper_cny > max_cny:
@@ -1997,7 +2023,7 @@ def _run_flag(args: argparse.Namespace, llm_client: Any) -> int:
     held = upper_cny
     charged = spent + upper_cny
     if charged < 0:
-        print("错误: 清单异常", file=sys.stderr)
+        print("错误: 清单异常: spent_cny", file=sys.stderr)
         return 1
     _record("inflight", None, charged, [], held_cny=held)
     before_prompt, before_completion = _usage_pair(client)
@@ -2025,7 +2051,7 @@ def _run_flag(args: argparse.Namespace, llm_client: Any) -> int:
     cost = _cost_cny(delta_prompt, delta_completion, in_price, out_price)
     settled = charged - held + cost
     if settled < 0:
-        print("错误: 清单异常", file=sys.stderr)
+        print("错误: 清单异常: spent_cny", file=sys.stderr)
         return 1
     if delta_prompt > upper_in or delta_completion > upper_out:
         _record("failed", "usage_over_upper", settled, [])
