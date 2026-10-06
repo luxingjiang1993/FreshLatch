@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import os
 import sqlite3
 import sys
 import time
@@ -28,7 +29,6 @@ from freshlatch.eval.x1_checks import check_x1
 from freshlatch.store.base import PRODUCTION_RETRIEVAL_MODE, InMemoryStore, chunk_evidence_id
 from freshlatch.store.checksum import aggregate_checksum, sha256_hex
 from freshlatch.store.embed_cache import EMBED_CACHE_TABLE, embed_texts_cached, make_embed_cache_key
-from freshlatch.store.embeddings import EMBED_MODEL
 from freshlatch.store.ingest import load_corpus
 from freshlatch.store.pipeline import RRF_K
 
@@ -36,21 +36,60 @@ from freshlatch.store.pipeline import RRF_K
 CHARS_PER_TOKEN = 1.39
 CNY_PER_MILLION_TOKENS = 0.5
 TOP_K = 10
+QUERY_EMBED_BATCH = 8
 PRODUCTION_DENSE_DB_POSIX = "data/dense/index.sqlite"
 ROW_LABELS = ("总体", "lexical", "paraphrase", "multi_hop", "trap+adversarial")
+ARMS = ("bm25", "dense", "hybrid")
 PREREG_FP_KEYS = (
     "corpus_aggregate_sha256",
     "questions_aggregate_sha256",
     "config_sha256",
 )
+REQUIRED_SCORE_KEYS = (
+    "embed_model",
+    "embed_dim",
+    "budget_cny_max",
+    "top_k",
+    "rrf_k",
+)
+AS_OF_ALLOWED = frozenset({"T0", "T1"})
+
+
+def _norm_posix(path: str | Path) -> str:
+    """纯字符串规范化：折叠 . / .. / 多余斜杠，统一大小写。不 stat。"""
+    replaced = str(path).replace("\\", "/")
+    return os.path.normcase(os.path.normpath(replaced)).replace("\\", "/").lower()
 
 
 def is_production_dense_db(path: str | Path) -> bool:
-    """路径是否等于生产默认库。只做字符串比较，不 stat、不打开该文件。"""
-    raw = str(path).replace("\\", "/").rstrip("/")
-    if raw == PRODUCTION_DENSE_DB_POSIX:
+    """路径是否等于生产默认库。只做规范化字符串比较，不 stat、不打开该文件。"""
+    raw = _norm_posix(path)
+    target = _norm_posix(PRODUCTION_DENSE_DB_POSIX)
+    if raw == target:
         return True
-    return raw.endswith("/" + PRODUCTION_DENSE_DB_POSIX)
+    return raw.endswith("/" + target)
+
+
+def same_path(left: str | Path, right: str | Path) -> bool:
+    return _norm_posix(left) == _norm_posix(right)
+
+
+def reject_protected_sqlite_paths(
+    *,
+    cache_path: Path | str | None = None,
+    dense_db: Path | str | None = None,
+) -> None:
+    """拒绝 cache/dense-db 指向生产库，或二者为同一路径。"""
+    if dense_db is not None and is_production_dense_db(dense_db):
+        raise ValueError("拒绝使用生产默认 dense 库 data/dense/index.sqlite")
+    if cache_path is not None and is_production_dense_db(cache_path):
+        raise ValueError("拒绝 --cache 指向生产默认 dense 库 data/dense/index.sqlite")
+    if (
+        cache_path is not None
+        and dense_db is not None
+        and same_path(cache_path, dense_db)
+    ):
+        raise ValueError("拒绝 --cache 与 --dense-db 为同一路径")
 
 
 def score_role_of(question: dict[str, Any]) -> str:
@@ -59,6 +98,30 @@ def score_role_of(question: dict[str, Any]) -> str:
     if role is None or role == "":
         return "arm"
     return str(role)
+
+
+def require_as_of(question: dict[str, Any]) -> str:
+    """题必须带 as_of∈{T0,T1}；护栏题必须是 T1。"""
+    as_of = question.get("as_of")
+    qid = question.get("id", "?")
+    if as_of not in AS_OF_ALLOWED:
+        raise ValueError(f"{qid} as_of 必须为 T0 或 T1")
+    if score_role_of(question) == "guardrail" and as_of != "T1":
+        raise ValueError(f"{qid} 护栏题 as_of 必须为 T1")
+    return str(as_of)
+
+
+def load_score_config(config: dict | Path | str) -> dict[str, Any]:
+    """打分/估算用配置。缺键或 null 失败，不代填。top_k 必须 10，rrf_k 必须等于 RRF_K。"""
+    cfg = _load_config(config)
+    for key in REQUIRED_SCORE_KEYS:
+        if key not in cfg or cfg[key] is None:
+            raise ValueError(f"配置缺键 {key}")
+    if int(cfg["top_k"]) != TOP_K:
+        raise ValueError(f"top_k 必须为 {TOP_K}，得到 {cfg['top_k']}")
+    if int(cfg["rrf_k"]) != RRF_K:
+        raise ValueError(f"rrf_k 必须为 {RRF_K}，得到 {cfg['rrf_k']}")
+    return cfg
 
 
 def _mean(xs: list[float]) -> float:
@@ -173,23 +236,16 @@ def count_uncached(
     model: str,
     dim: int,
 ) -> tuple[int, int, int]:
-    """返回 (uncached_chars, n_miss, n_hit)。不调用 embed_texts。"""
+    """返回 (uncached_chars, n_miss, n_hit)。只读打开缓存，不 CREATE，不调用 embed_texts。"""
     if not texts:
         return 0, 0, 0
-    found: set[str] = set()
     conn = None
     path = Path(cache_path) if cache_path is not None else None
     if path is not None and path.is_file():
-        conn = sqlite3.connect(path)
+        uri = f"file:{path.as_posix()}?mode=ro"
         try:
-            conn.execute(
-                f"CREATE TABLE IF NOT EXISTS {EMBED_CACHE_TABLE} ("
-                "key TEXT PRIMARY KEY NOT NULL,"
-                "vec BLOB NOT NULL"
-                ")"
-            )
-        except sqlite3.Error:
-            conn.close()
+            conn = sqlite3.connect(uri, uri=True)
+        except sqlite3.OperationalError:
             conn = None
     miss_chars = 0
     n_miss = 0
@@ -203,14 +259,16 @@ def count_uncached(
             seen.add(key)
             hit = False
             if conn is not None:
-                row = conn.execute(
-                    f"SELECT 1 FROM {EMBED_CACHE_TABLE} WHERE key = ?",
-                    (key,),
-                ).fetchone()
-                hit = row is not None
+                try:
+                    row = conn.execute(
+                        f"SELECT 1 FROM {EMBED_CACHE_TABLE} WHERE key = ?",
+                        (key,),
+                    ).fetchone()
+                    hit = row is not None
+                except sqlite3.OperationalError:
+                    hit = False
             if hit:
                 n_hit += 1
-                found.add(key)
             else:
                 n_miss += 1
                 miss_chars += len(text)
@@ -296,10 +354,12 @@ class _CountingEmbedder:
         self.inner = inner
         self.calls = 0
         self.n_texts = 0
+        self.max_batch = 0
 
     def __call__(self, texts: list[str]) -> list[list[float]]:
         self.calls += 1
         self.n_texts += len(texts)
+        self.max_batch = max(self.max_batch, len(texts))
         if self.inner is None:
             from freshlatch.store.embeddings import embed_texts
 
@@ -315,7 +375,7 @@ def make_cached_query_embedder(
     dim: int,
     embed_fn: Callable[[list[str]], list[list[float]]] | None = None,
 ) -> tuple[Callable[[str], list[float]], _CountingEmbedder]:
-    """查询向量只走 embed_cache。禁止使用 retrieve_eval._cached_query_embedder。"""
+    """查询向量只走 embed_cache。按 QUERY_EMBED_BATCH 分批，禁止一次塞进全部 query。"""
     counter = _CountingEmbedder(embed_fn)
     unique: list[str] = []
     seen: set[str] = set()
@@ -323,14 +383,18 @@ def make_cached_query_embedder(
         if q not in seen:
             seen.add(q)
             unique.append(q)
-    vecs = embed_texts_cached(
-        unique,
-        dim=dim,
-        cache_path=cache_path,
-        model=model,
-        embed_fn=counter,
-    )
-    mapping = {text: vec for text, vec in zip(unique, vecs)}
+    mapping: dict[str, list[float]] = {}
+    for start in range(0, len(unique), QUERY_EMBED_BATCH):
+        batch = unique[start:start + QUERY_EMBED_BATCH]
+        vecs = embed_texts_cached(
+            batch,
+            dim=dim,
+            cache_path=cache_path,
+            model=model,
+            embed_fn=counter,
+        )
+        for text, vec in zip(batch, vecs):
+            mapping[text] = vec
 
     def embed(query: str) -> list[float]:
         return mapping[query]
@@ -344,7 +408,8 @@ def _empty_arm_metrics() -> dict[str, Any]:
         "R@10": 0.0,
         "MRR@10": 0.0,
         "multi_hop_full_hit@10": None,
-        "distractor_hit@10": 0.0,
+        "distractor_hit@10": None,
+        "distractor_n": 0,
         "win": 0,
         "tie": 0,
         "loss": 0,
@@ -369,19 +434,21 @@ def _aggregate_arm(
         return out
     recs = [r["recall@10"] for r in rows]
     mrrs = [r["mrr@10"] for r in rows]
-    dist = [r["distractor_hit@10"] for r in rows]
+    dist = [r["distractor_hit@10"] for r in rows if r.get("has_distractors")]
     wtl = [r["wtl"] for r in rows]
     fulls = [r["full_hit@10"] for r in rows if r.get("qtype") == "multi_hop"]
     seen = sorted(set(modes))
-    honest = set(modes) == {expected_mode} if expected_mode != "bm25" else True
     if expected_mode == "bm25":
         honest = set(modes) <= {"bm25"}
+    else:
+        honest = set(modes) == {expected_mode}
     return {
         "n": len(rows),
         "R@10": _mean(recs),
         "MRR@10": _mean(mrrs),
         "multi_hop_full_hit@10": _mean(fulls) if full_hit_applicable and fulls else None,
-        "distractor_hit@10": _mean(dist),
+        "distractor_hit@10": _mean(dist) if dist else None,
+        "distractor_n": len(dist),
         "win": sum(1 for x in wtl if x == "win"),
         "tie": sum(1 for x in wtl if x == "tie"),
         "loss": sum(1 for x in wtl if x == "loss"),
@@ -390,6 +457,15 @@ def _aggregate_arm(
         "modes_seen": seen,
         "mode_honest": honest,
     }
+
+
+def _require_mode_honest(pool: dict[str, Any], *, label: str) -> None:
+    if not pool["dense_honest"] or not pool["hybrid_honest"]:
+        raise ValueError(
+            f"{label} dense/hybrid 列模式不诚实"
+            f"（dense={pool['buckets']['总体']['dense']['modes_seen']}"
+            f" hybrid={pool['buckets']['总体']['hybrid']['modes_seen']}），拒绝写入"
+        )
 
 
 def run_typed_compare(
@@ -403,17 +479,20 @@ def run_typed_compare(
     out_dir: Path | None,
     embed_fn: Callable[[list[str]], list[list[float]]] | None = None,
     disable_as_of: bool = False,
-    skip_estimate: bool = False,
 ) -> dict[str, Any]:
     """三臂分型打分。主数字始终带 as_of 过滤。disable_as_of 只额外出诊断，不覆盖主表。"""
-    if is_production_dense_db(dense_db):
-        raise ValueError("拒绝使用生产默认 dense 库 data/dense/index.sqlite")
-    cfg = _load_config(config)
-    model = str(cfg["embed_model"]) if cfg.get("embed_model") else EMBED_MODEL
-    dim = int(cfg["embed_dim"]) if cfg.get("embed_dim") is not None else 1024
-    budget = float(cfg["budget_cny_max"]) if cfg.get("budget_cny_max") is not None else 10.0
-    top_k = int(cfg["top_k"]) if cfg.get("top_k") is not None else TOP_K
+    reject_protected_sqlite_paths(cache_path=cache_path, dense_db=dense_db)
+    dense_path = Path(dense_db)
+    if not dense_path.is_file():
+        raise ValueError(f"dense-db 不是已有文件: {dense_path}")
+    cfg = load_score_config(config)
+    model = str(cfg["embed_model"])
+    dim = int(cfg["embed_dim"])
+    budget = float(cfg["budget_cny_max"])
+    top_k = int(cfg["top_k"])
     qs = _load_questions(questions)
+    for item in qs:
+        require_as_of(item)
 
     texts = unique_embed_texts(Path(corpus), Path(traps), questions)
     uncached_chars, n_miss, n_hit_est = count_uncached(
@@ -427,12 +506,12 @@ def run_typed_compare(
         "n_miss": n_miss,
         "n_hit": n_hit_est,
     }
-    if not skip_estimate and est_cny > budget:
+    if est_cny > budget:
         raise RuntimeError(f"est_cny={est_cny} 超过 budget_cny_max={budget}")
 
     store = InMemoryStore()
     n_chunks = ingest_x1_corpus(store, Path(corpus), Path(traps))
-    attached = _attach_vecs(store, Path(dense_db))
+    attached = _attach_vecs(store, dense_path)
     if attached != len(store._chunks) or attached == 0:
         raise ValueError("dense 索引未覆盖全部 chunk,拒绝把降级结果写成 dense/hybrid")
 
@@ -449,23 +528,26 @@ def run_typed_compare(
     def _run_pool(*, as_of_off: bool) -> dict[str, Any]:
         per_query: list[dict[str, Any]] = []
         guardrail_rows: list[dict[str, Any]] = []
-        conflict_ok = 0
         conflict_n = 0
-        arm_by_mode: dict[str, list[dict[str, Any]]] = {
-            "bm25": [],
-            "dense": [],
-            "hybrid": [],
-        }
-        lat_by_mode: dict[str, list[float]] = {"bm25": [], "dense": [], "hybrid": []}
-        modes_by_mode: dict[str, list[str]] = {"bm25": [], "dense": [], "hybrid": []}
+        conflict_ok = {mode: 0 for mode in ARMS}
+        arm_by_mode: dict[str, list[dict[str, Any]]] = {mode: [] for mode in ARMS}
+        lat_by_mode: dict[str, list[float]] = {mode: [] for mode in ARMS}
+        modes_by_mode: dict[str, list[str]] = {mode: [] for mode in ARMS}
 
         for item in qs:
             role = score_role_of(item)
-            as_of = None if as_of_off else item.get("as_of", "T1")
+            item_as_of = require_as_of(item)
+            as_of = None if as_of_off else item_as_of
             ranked_by_mode: dict[str, list[str]] = {}
             hits_by_mode: dict[str, list] = {}
             rec_by_mode: dict[str, float] = {}
-            for mode in ("bm25", "dense", "hybrid"):
+            mrr_by_mode: dict[str, float] = {}
+            full_by_mode: dict[str, float] = {}
+            dist_by_mode: dict[str, float | None] = {}
+            relevant = [str(x) for x in (item.get("relevant") or [])]
+            distractors = [str(x) for x in (item.get("distractors") or [])]
+            has_dist = len(distractors) > 0
+            for mode in ARMS:
                 store.bind_eval_retrieval_mode(None if mode == "bm25" else mode)
                 started = time.perf_counter()
                 hits = store.retrieve(
@@ -478,19 +560,23 @@ def run_typed_compare(
                 ranked = [chunk_evidence_id(c) for c in hits]
                 ranked_by_mode[mode] = ranked
                 hits_by_mode[mode] = hits
-                relevant = [str(x) for x in (item.get("relevant") or [])]
-                distractors = [str(x) for x in (item.get("distractors") or [])]
                 rec = recall_at_k(ranked, relevant, top_k)
                 rec_by_mode[mode] = rec
+                mrr_by_mode[mode] = mrr_at_k(ranked, relevant, top_k)
+                full_by_mode[mode] = _full_hit(ranked, relevant, top_k)
+                dist_by_mode[mode] = (
+                    _distractor_hit(ranked, distractors, top_k) if has_dist else None
+                )
                 row = {
                     "id": item.get("id"),
                     "qtype": item.get("qtype"),
                     "category": item.get("category"),
                     "score_role": role,
                     "recall@10": rec,
-                    "mrr@10": mrr_at_k(ranked, relevant, top_k),
-                    "full_hit@10": _full_hit(ranked, relevant, top_k),
-                    "distractor_hit@10": _distractor_hit(ranked, distractors, top_k),
+                    "mrr@10": mrr_by_mode[mode],
+                    "full_hit@10": full_by_mode[mode],
+                    "has_distractors": has_dist,
+                    "distractor_hit@10": dist_by_mode[mode] if has_dist else 0.0,
                     "wtl": "tie",
                     "latency_s": elapsed,
                     "last_retrieval_mode": got_mode,
@@ -503,29 +589,37 @@ def run_typed_compare(
             rec_by_mode["hybrid_vs_bm25"] = rec_by_mode["hybrid"] - rec_by_mode["bm25"]
             wtl = _win_tie_loss(rec_by_mode["hybrid"], rec_by_mode["bm25"])
             if role == "arm":
-                for mode in ("bm25", "dense", "hybrid"):
+                for mode in ARMS:
                     if arm_by_mode[mode] and arm_by_mode[mode][-1]["id"] == item.get("id"):
                         arm_by_mode[mode][-1]["wtl"] = wtl
 
             pair = item.get("conflict_pair")
-            pair_ok = None
+            pair_ok: dict[str, bool] | None = None
             if isinstance(pair, dict) and pair.get("in_force") and pair.get("superseded"):
-                pair_ok = conflict_pair_correct(ranked_by_mode["hybrid"], pair)
+                pair_ok = {}
                 conflict_n += 1
-                if pair_ok:
-                    conflict_ok += 1
+                for mode in ARMS:
+                    ok = conflict_pair_correct(ranked_by_mode[mode], pair)
+                    pair_ok[mode] = ok
+                    if ok:
+                        conflict_ok[mode] += 1
 
-            g_pass = None
-            t0_in_hits = 0
+            g_by_arm: dict[str, dict[str, Any]] | None = None
             if role == "guardrail":
-                g_hits = hits_by_mode["hybrid"]
-                t0_in_hits = sum(1 for c in g_hits if getattr(c, "as_of", None) == "T0")
-                g_pass = t0_in_hits == 0
+                g_by_arm = {}
+                for mode in ARMS:
+                    hits = hits_by_mode[mode]
+                    passed = guardrail_pass(hits, query_as_of=item_as_of)
+                    t0_hits = sum(
+                        1 for c in hits if getattr(c, "as_of", None) == "T0"
+                    )
+                    g_by_arm[mode] = {"pass": passed, "t0_hits": t0_hits}
                 guardrail_rows.append({
                     "id": item.get("id"),
-                    "pass": g_pass,
-                    "t0_hits": t0_in_hits,
-                    "as_of": item.get("as_of"),
+                    "as_of": item_as_of,
+                    "by_arm": g_by_arm,
+                    "pass": g_by_arm["hybrid"]["pass"],
+                    "t0_hits": g_by_arm["hybrid"]["t0_hits"],
                 })
 
             per_query.append({
@@ -533,23 +627,30 @@ def run_typed_compare(
                 "qtype": item.get("qtype"),
                 "category": item.get("category"),
                 "score_role": role,
-                "as_of": item.get("as_of"),
+                "as_of": item_as_of,
                 "ranked": ranked_by_mode,
                 "recall@10": rec_by_mode,
+                "mrr@10": mrr_by_mode,
+                "full_hit@10": full_by_mode,
+                "distractor_hit@10": dist_by_mode,
                 "conflict_pair_correct": pair_ok,
-                "guardrail_pass": g_pass,
-                "t0_hits": t0_in_hits if role == "guardrail" else None,
+                "guardrail_pass": (
+                    {m: g_by_arm[m]["pass"] for m in ARMS} if g_by_arm else None
+                ),
+                "t0_hits": (
+                    {m: g_by_arm[m]["t0_hits"] for m in ARMS} if g_by_arm else None
+                ),
             })
 
         buckets: dict[str, dict[str, Any]] = {}
         for label in ROW_LABELS:
             buckets[label] = {}
-            for mode in ("bm25", "dense", "hybrid"):
+            for mode in ARMS:
                 selected_rows = []
                 selected_lat = []
                 selected_modes = []
-                arm_items = [item for item in qs if score_role_of(item) == "arm"]
-                arm_index = {id(item): j for j, item in enumerate(arm_items)}
+                arm_items = [q for q in qs if score_role_of(q) == "arm"]
+                arm_index = {id(q): j for j, q in enumerate(arm_items)}
                 for item in qs:
                     if score_role_of(item) != "arm" or not _in_bucket(item, label):
                         continue
@@ -571,19 +672,20 @@ def run_typed_compare(
         bm25_r = buckets["总体"]["bm25"]["R@10"]
         dense_r = buckets["总体"]["dense"]["R@10"]
         hybrid_r = buckets["总体"]["hybrid"]["R@10"]
-        # 参考列：a0 取本轮 bm25，避免误用 hard-gold A0
         verdict = arm_pass_line(
             bm25=bm25_r, dense=dense_r, hybrid=hybrid_r, a0=bm25_r
         )
+        accuracy = {
+            mode: ((conflict_ok[mode] / conflict_n) if conflict_n else None)
+            for mode in ARMS
+        }
         return {
             "per_query": per_query,
             "buckets": buckets,
             "guardrail": guardrail_rows,
-            "conflict_pair_ordering_accuracy": (
-                (conflict_ok / conflict_n) if conflict_n else None
-            ),
+            "conflict_pair_ordering_accuracy": accuracy,
             "conflict_pair_n": conflict_n,
-            "conflict_pair_ok": conflict_ok,
+            "conflict_pair_ok": dict(conflict_ok),
             "dense_honest": dense_honest,
             "hybrid_honest": hybrid_honest,
             "arm_pass_line": verdict,
@@ -592,9 +694,11 @@ def run_typed_compare(
         }
 
     main = _run_pool(as_of_off=False)
+    _require_mode_honest(main, label="主表")
     diagnostic = None
     if disable_as_of:
         diagnostic = _run_pool(as_of_off=True)
+        _require_mode_honest(diagnostic, label="as_of 诊断")
 
     payload: dict[str, Any] = {
         "level": "实验/冒烟",
@@ -642,6 +746,14 @@ def _fmt_full(value: float | None) -> str:
     return f"{value:.4f}"
 
 
+def _fmt_dist(bucket: dict[str, Any]) -> str:
+    hit = bucket["distractor_hit@10"]
+    n = bucket["distractor_n"]
+    if hit is None:
+        return f"n/a (n={n})"
+    return f"{hit:.4f} (n={n})"
+
+
 def render_typed_report(payload: dict[str, Any], *, include_diagnostic: bool) -> str:
     main = payload["main"]
     lines = [
@@ -668,32 +780,45 @@ def render_typed_report(payload: dict[str, Any], *, include_diagnostic: bool) ->
         "|---|---|---|---|---|---|---|---|---|",
     ]
     for label in ROW_LABELS:
-        for mode in ("bm25", "dense", "hybrid"):
+        for mode in ARMS:
             b = main["buckets"][label][mode]
             wtl = f"{b['win']}/{b['tie']}/{b['loss']}" if mode == "hybrid" else "n/a"
             lines.append(
                 f"| {label} | {mode} | {b['R@10']:.4f} | {b['MRR@10']:.4f} | "
-                f"{_fmt_full(b['multi_hop_full_hit@10'])} | {b['distractor_hit@10']:.4f} | "
+                f"{_fmt_full(b['multi_hop_full_hit@10'])} | {_fmt_dist(b)} | "
                 f"{wtl} | {b['p50_ms']:.3f} | {b['p95_ms']:.3f} |"
             )
-    lines.extend(["", "## 护栏（不改写主 R@10）", ""])
+    lines.extend(["", "## 护栏（不改写主 R@10；分臂）", ""])
     if not main["guardrail"]:
         lines.append("- （无 guardrail 题）")
     else:
         for row in main["guardrail"]:
-            flag = "通过" if row["pass"] else "不通过"
-            lines.append(
-                f"- {row['id']}: {flag}（T1 结果中 T0 块数={row['t0_hits']}）"
-            )
+            for mode in ARMS:
+                arm = row["by_arm"][mode]
+                flag = "通过" if arm["pass"] else "不通过"
+                lines.append(
+                    f"- {row['id']} {mode}: {flag}（T1 结果中 T0 块数={arm['t0_hits']}）"
+                )
     acc = main["conflict_pair_ordering_accuracy"]
-    acc_s = "n/a" if acc is None else f"{acc:.4f}"
+    n_pair = main["conflict_pair_n"]
+    ok_map = main["conflict_pair_ok"]
     lines.extend([
         "",
-        "## conflict-pair ordering accuracy（单列，不并进 R@10）",
+        "## conflict-pair ordering accuracy（分臂单列，不并进 R@10）",
         "",
-        f"- {acc_s}（配对 n={main['conflict_pair_n']}，正确 {main['conflict_pair_ok']}）",
+    ])
+    if n_pair == 0:
+        lines.append("- n/a（配对 n=0）")
+    else:
+        for mode in ARMS:
+            val = acc[mode]
+            acc_s = "n/a" if val is None else f"{val:.4f}"
+            lines.append(
+                f"- {mode}: {acc_s}（配对 n={n_pair}，正确 {ok_map[mode]}）"
+            )
+    lines.extend([
         "",
-        "## 参考（arm_pass_line，失败不导致本脚本非 0）",
+        "## 参考（arm_pass_line，失败不导致本脚本非 0；模式不诚实除外）",
         "",
         f"- bm25_vs_a0: {main['arm_pass_line']['bm25_vs_a0']}（本轮 a0 取 bm25 自身，仅参考）",
         f"- hybrid_vs_min: {main['arm_pass_line']['hybrid_vs_min']}",
@@ -723,7 +848,7 @@ def render_diagnostic_section(diagnostic: dict[str, Any]) -> str:
         "|---|---|---|---|",
     ]
     for label in ROW_LABELS:
-        for mode in ("bm25", "dense", "hybrid"):
+        for mode in ARMS:
             b = diagnostic["buckets"][label][mode]
             lines.append(
                 f"| {label} | {mode} | {b['R@10']:.4f} | {b['MRR@10']:.4f} |"
@@ -758,8 +883,10 @@ def run_cli(argv: list[str] | None = None) -> int:
     questions = Path(args.questions)
     config = Path(args.config)
 
-    if args.dense_db is not None and is_production_dense_db(args.dense_db):
-        print("拒绝 --dense-db=data/dense/index.sqlite", file=sys.stderr)
+    try:
+        reject_protected_sqlite_paths(cache_path=args.cache, dense_db=args.dense_db)
+    except ValueError as exc:
+        print(str(exc), file=sys.stderr)
         return 1
 
     if args.check_only:
@@ -783,10 +910,14 @@ def run_cli(argv: list[str] | None = None) -> int:
         return result.exit_code
 
     if args.estimate_only:
-        cfg = _load_config(config)
-        model = str(cfg["embed_model"]) if cfg.get("embed_model") else EMBED_MODEL
-        dim = int(cfg["embed_dim"]) if cfg.get("embed_dim") is not None else 1024
-        budget = float(cfg["budget_cny_max"]) if cfg.get("budget_cny_max") is not None else 10.0
+        try:
+            cfg = load_score_config(config)
+        except ValueError as exc:
+            print(str(exc), file=sys.stderr)
+            return 1
+        model = str(cfg["embed_model"])
+        dim = int(cfg["embed_dim"])
+        budget = float(cfg["budget_cny_max"])
         texts = unique_embed_texts(corpus, traps, questions)
         uncached_chars, _n_miss, _n_hit = count_uncached(
             texts, cache_path=args.cache, model=model, dim=dim

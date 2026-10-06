@@ -5,13 +5,17 @@ from __future__ import annotations
 import json
 import math
 import os
+import sqlite3
 import subprocess
 import sys
 from pathlib import Path
 from types import SimpleNamespace
 
+import pytest
+
 from freshlatch.eval.retrieve_eval import _p95_ms, recall_at_k
 from freshlatch.eval.retrieve_typed import (
+    QUERY_EMBED_BATCH,
     compute_x1_fingerprints,
     conflict_pair_correct,
     count_uncached,
@@ -19,7 +23,11 @@ from freshlatch.eval.retrieve_typed import (
     fingerprints_match,
     guardrail_pass,
     is_production_dense_db,
+    load_score_config,
+    make_cached_query_embedder,
     parse_prereg_fingerprints,
+    reject_protected_sqlite_paths,
+    require_as_of,
     run_cli,
     run_typed_compare,
     score_role_of,
@@ -133,6 +141,11 @@ def test_is_production_dense_db_string_only():
     assert is_production_dense_db("data/dense/index.sqlite") is True
     assert is_production_dense_db(Path("data/dense/index.sqlite")) is True
     assert is_production_dense_db("/tmp/data/dense/index.sqlite") is True
+    assert is_production_dense_db("data/dense/./index.sqlite") is True
+    assert is_production_dense_db("data//dense/index.sqlite") is True
+    assert is_production_dense_db("data/dense/../dense/index.sqlite") is True
+    assert is_production_dense_db("DATA/DENSE/INDEX.SQLITE") is True
+    assert is_production_dense_db(r"data\dense\index.sqlite") is True
     assert is_production_dense_db("data/dense/x1-index.sqlite") is False
     assert is_production_dense_db("/tmp/x1-index.sqlite") is False
 
@@ -283,13 +296,23 @@ def test_typed_scoring_excludes_guardrail_and_splits_conflict(tmp_path, monkeypa
     assert g["pass"] is True
     assert g["t0_hits"] == 0
     assert main["conflict_pair_n"] == 1
-    assert main["conflict_pair_ordering_accuracy"] is not None
+    acc = main["conflict_pair_ordering_accuracy"]
+    assert acc["bm25"] == 0.0
+    assert acc["hybrid"] == 1.0
+    bm25 = main["buckets"]["总体"]["bm25"]
+    assert bm25["R@10"] == 1.0
+    assert bm25["MRR@10"] == 0.875
+    assert bm25["distractor_hit@10"] == 0.75
+    assert bm25["distractor_n"] == 4
     r10 = main["buckets"]["总体"]["hybrid"]["R@10"]
-    assert 0.0 <= r10 <= 1.0
+    assert r10 == 1.0
+    assert main["buckets"]["总体"]["hybrid"]["MRR@10"] == 1.0
     md = Path(payload["report_path"]).read_text(encoding="utf-8")
     for label in ("总体", "lexical", "paraphrase", "multi_hop", "trap+adversarial"):
         assert label in md
     assert "conflict-pair ordering accuracy" in md
+    assert "- bm25: 0.0000" in md
+    assert "- hybrid: 1.0000" in md
     assert "未跑" in md
     assert "参考" in md
     raw = json.loads(Path(payload["json_path"]).read_text(encoding="utf-8"))
@@ -385,7 +408,9 @@ def test_multi_hop_full_hit_and_distractor(tmp_path, monkeypatch):
     assert lex["multi_hop_full_hit@10"] is None
     trap = payload["main"]["buckets"]["trap+adversarial"]["hybrid"]
     assert trap["n"] == 2
-    assert 0.0 <= payload["main"]["buckets"]["总体"]["bm25"]["distractor_hit@10"] <= 1.0
+    dist = payload["main"]["buckets"]["总体"]["bm25"]["distractor_hit@10"]
+    assert dist == 0.75
+    assert payload["main"]["buckets"]["总体"]["bm25"]["distractor_n"] == 4
 
 
 def test_estimate_only_no_embed(tmp_path, monkeypatch):
@@ -587,6 +612,13 @@ def test_parse_prereg_ignores_other_hex_and_owner_freeze():
 
 
 def test_do_not_touch_git_diff_empty():
+    probe = subprocess.run(
+        ["git", "rev-parse", "--verify", "--quiet", "main^{commit}"],
+        cwd=ROOT,
+        check=False,
+    )
+    if probe.returncode != 0:
+        pytest.skip("无本地 main，AC4 是人工证据步骤")
     proc = subprocess.run(
         [
             "git", "diff", "--stat", "main", "--",
@@ -620,3 +652,242 @@ def test_score_role_default_arm():
 
 def test_recall_import_not_rewritten():
     assert recall_at_k(["a"], ["a"], 10) == 1.0
+
+
+def test_cli_rejects_cache_equal_production_or_dense_db(tmp_path):
+    cfg = tmp_path / "config.json"
+    cfg.write_text(json.dumps(_cfg()), encoding="utf-8")
+    other = tmp_path / "other.sqlite"
+    other.write_bytes(b"")
+    code_prod = run_cli([
+        "--estimate-only",
+        "--config", str(cfg),
+        "--corpus", str(tmp_path / "corpus"),
+        "--traps", str(tmp_path / "traps"),
+        "--questions", str(tmp_path / "q.json"),
+        "--cache", "data/dense/index.sqlite",
+    ])
+    assert code_prod == 1
+    code_same = run_cli([
+        "--config", str(cfg),
+        "--dense-db", str(other),
+        "--cache", str(other),
+        "--out", str(tmp_path / "out"),
+        "--prereg", str(tmp_path / "PREREG.md"),
+    ])
+    assert code_same == 1
+    with pytest.raises(ValueError):
+        reject_protected_sqlite_paths(
+            cache_path="data/dense/./index.sqlite", dense_db=tmp_path / "x.sqlite"
+        )
+    with pytest.raises(ValueError):
+        reject_protected_sqlite_paths(cache_path=other, dense_db=other)
+
+
+def test_count_uncached_is_read_only_and_missing_is_all_miss(tmp_path):
+    dummy = tmp_path / "not-cache.sqlite"
+    conn = sqlite3.connect(dummy)
+    conn.execute("CREATE TABLE other (k TEXT)")
+    conn.execute("INSERT INTO other VALUES ('x')")
+    conn.commit()
+    conn.close()
+    before = dummy.read_bytes()
+    uncached, miss, hit = count_uncached(
+        ["abc", "abc", "de"], cache_path=dummy, model="text-embedding-v4", dim=8
+    )
+    after = dummy.read_bytes()
+    assert before == after
+    tables = sqlite3.connect(dummy).execute(
+        "SELECT name FROM sqlite_master WHERE type='table'"
+    ).fetchall()
+    assert tables == [("other",)]
+    assert hit == 0
+    assert miss == 2
+    assert uncached == len("abc") + len("de")
+    missing = tmp_path / "absent.sqlite"
+    u2, m2, h2 = count_uncached(
+        ["zz"], cache_path=missing, model="text-embedding-v4", dim=8
+    )
+    assert not missing.exists()
+    assert (u2, m2, h2) == (2, 1, 0)
+
+
+def test_query_embed_batches_at_most_eight(tmp_path):
+    seen_sizes: list[int] = []
+
+    def fake(texts: list[str]) -> list[list[float]]:
+        seen_sizes.append(len(texts))
+        return [[1.0] + [0.0] * 7 for _ in texts]
+
+    queries = [f"问句{i:02d}独立文本" for i in range(12)]
+    cache = tmp_path / "cache.sqlite"
+    embedder, counter = make_cached_query_embedder(
+        queries,
+        cache_path=cache,
+        model="text-embedding-v4",
+        dim=DIM,
+        embed_fn=fake,
+    )
+    assert QUERY_EMBED_BATCH == 8
+    assert all(n <= 8 for n in seen_sizes)
+    assert counter.max_batch <= 8
+    assert len(seen_sizes) >= 2
+    assert embedder(queries[0])[0] == 1.0
+
+
+def test_conflict_pair_per_arm_bm25_zero_hybrid_one(tmp_path, monkeypatch):
+    monkeypatch.delenv("DASHSCOPE_API_KEY", raising=False)
+    monkeypatch.setattr("freshlatch.store.embeddings.embed_texts", _boom_embed)
+    corpus, traps, qpath, cfg, dense, cache = _score_fixture(tmp_path)
+    payload = run_typed_compare(
+        corpus=corpus,
+        traps=traps,
+        questions=qpath,
+        config=cfg,
+        dense_db=dense,
+        cache_path=cache,
+        out_dir=tmp_path / "out",
+        embed_fn=_fake_embed_match_first,
+    )
+    acc = payload["main"]["conflict_pair_ordering_accuracy"]
+    assert acc["bm25"] == 0.0
+    assert acc["hybrid"] == 1.0
+    row = next(r for r in payload["main"]["per_query"] if r["id"] == "arm-conflict")
+    assert row["conflict_pair_correct"]["bm25"] is False
+    assert row["conflict_pair_correct"]["hybrid"] is True
+    assert row["ranked"]["bm25"][0] == "doc-now#p2@T1"
+    assert row["ranked"]["hybrid"][0] == "doc-now#p1@T1"
+    md = Path(payload["report_path"]).read_text(encoding="utf-8")
+    assert "- bm25: 0.0000" in md
+    assert "- hybrid: 1.0000" in md
+
+
+def test_mode_fallback_raises_before_write(tmp_path, monkeypatch):
+    monkeypatch.delenv("DASHSCOPE_API_KEY", raising=False)
+    monkeypatch.setattr("freshlatch.store.embeddings.embed_texts", _boom_embed)
+    corpus, traps, qpath, cfg, dense, cache = _score_fixture(tmp_path)
+
+    def boom_query(q):
+        raise RuntimeError("断 embed")
+
+    import freshlatch.eval.retrieve_typed as mod
+
+    orig = mod.make_cached_query_embedder
+
+    def wrap(*args, **kwargs):
+        _embedder, counter = orig(*args, **kwargs)
+        return boom_query, counter
+
+    monkeypatch.setattr(mod, "make_cached_query_embedder", wrap)
+    out = tmp_path / "out-fallback"
+    with pytest.raises(ValueError, match="模式不诚实"):
+        mod.run_typed_compare(
+            corpus=corpus,
+            traps=traps,
+            questions=qpath,
+            config=cfg,
+            dense_db=dense,
+            cache_path=cache,
+            out_dir=out,
+            embed_fn=_fake_embed_match_first,
+        )
+    assert not (out / "retrieve-x1-arm-compare.md").is_file()
+
+
+def test_missing_config_keys_and_wrong_top_k_fail(tmp_path):
+    with pytest.raises(ValueError, match="缺键"):
+        load_score_config({})
+    cfg = _cfg()
+    cfg["top_k"] = 3
+    with pytest.raises(ValueError, match="top_k"):
+        load_score_config(cfg)
+    cfg2 = _cfg()
+    cfg2["rrf_k"] = 1
+    with pytest.raises(ValueError, match="rrf_k"):
+        load_score_config(cfg2)
+    empty = tmp_path / "empty.json"
+    empty.write_text("{}", encoding="utf-8")
+    (tmp_path / "corpus" / "t0").mkdir(parents=True)
+    (tmp_path / "corpus" / "t1").mkdir(parents=True)
+    (tmp_path / "traps" / "t0").mkdir(parents=True)
+    (tmp_path / "traps" / "t1").mkdir(parents=True)
+    q = tmp_path / "q.json"
+    q.write_text(json.dumps({"queries": []}), encoding="utf-8")
+    code = run_cli([
+        "--estimate-only",
+        "--config", str(empty),
+        "--corpus", str(tmp_path / "corpus"),
+        "--traps", str(tmp_path / "traps"),
+        "--questions", str(q),
+    ])
+    assert code != 0
+
+
+def test_as_of_required_and_guardrail_must_be_t1():
+    with pytest.raises(ValueError, match="as_of"):
+        require_as_of({"id": "q1", "query": "x"})
+    with pytest.raises(ValueError, match="护栏"):
+        require_as_of({"id": "g", "as_of": "T0", "score_role": "guardrail"})
+    assert require_as_of({"id": "ok", "as_of": "T1"}) == "T1"
+
+
+def test_r10_unchanged_if_conflict_pair_field_stripped(tmp_path, monkeypatch):
+    monkeypatch.delenv("DASHSCOPE_API_KEY", raising=False)
+    monkeypatch.setattr("freshlatch.store.embeddings.embed_texts", _boom_embed)
+    corpus, traps, qpath, cfg, dense, cache = _score_fixture(tmp_path)
+    with_pair = run_typed_compare(
+        corpus=corpus,
+        traps=traps,
+        questions=qpath,
+        config=cfg,
+        dense_db=dense,
+        cache_path=cache,
+        out_dir=tmp_path / "a",
+        embed_fn=_fake_embed_match_first,
+    )
+    raw = json.loads(qpath.read_text(encoding="utf-8"))
+    for item in raw["queries"]:
+        item.pop("conflict_pair", None)
+    q2 = tmp_path / "questions-nopair.json"
+    q2.write_text(json.dumps(raw, ensure_ascii=False), encoding="utf-8")
+    without = run_typed_compare(
+        corpus=corpus,
+        traps=traps,
+        questions=q2,
+        config=cfg,
+        dense_db=dense,
+        cache_path=tmp_path / "cache2.sqlite",
+        out_dir=tmp_path / "b",
+        embed_fn=_fake_embed_match_first,
+    )
+    for mode in ("bm25", "dense", "hybrid"):
+        assert (
+            with_pair["main"]["buckets"]["总体"][mode]["R@10"]
+            == without["main"]["buckets"]["总体"][mode]["R@10"]
+        )
+    assert with_pair["main"]["conflict_pair_n"] == 1
+    assert without["main"]["conflict_pair_n"] == 0
+
+
+def test_distractor_mean_skips_empty(tmp_path, monkeypatch):
+    monkeypatch.delenv("DASHSCOPE_API_KEY", raising=False)
+    monkeypatch.setattr("freshlatch.store.embeddings.embed_texts", _boom_embed)
+    corpus, traps, qpath, cfg, dense, cache = _score_fixture(tmp_path)
+    raw = json.loads(qpath.read_text(encoding="utf-8"))
+    for item in raw["queries"]:
+        if item["id"] == "arm-para":
+            item["distractors"] = []
+    qpath.write_text(json.dumps(raw, ensure_ascii=False), encoding="utf-8")
+    payload = run_typed_compare(
+        corpus=corpus,
+        traps=traps,
+        questions=qpath,
+        config=cfg,
+        dense_db=dense,
+        cache_path=cache,
+        out_dir=tmp_path / "out",
+        embed_fn=_fake_embed_match_first,
+    )
+    bm25 = payload["main"]["buckets"]["总体"]["bm25"]
+    assert bm25["distractor_n"] == 3
+    assert bm25["distractor_hit@10"] == 1.0
