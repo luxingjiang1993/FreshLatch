@@ -5,6 +5,10 @@ reports/trajectories/*.jsonl
 data/*.db
 data/packs/**/*.db
 data/dense/
+# 根目录误落的 sqlite 产物(测试/演示)不得入库
+/*.db
+*.sqlite
+*.sqlite3
 
 # Claude Code 会话配置
 .claude/
@@ -12,6 +16,9 @@ data/dense/
 # Python 字节码
 __pycache__/
 *.pyc
+.coverage
+.pytest_cache/
+htmlcov/
 
 # 密钥与运行日志
 .env

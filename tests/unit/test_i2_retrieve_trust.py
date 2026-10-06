@@ -256,8 +256,12 @@ def test_sqlite_old_rows_default_trust_columns(tmp_path):
     assert hits[0].tenant_id == "default"
     assert hits[0].poison is False
     assert hits[0].untrusted is False
-    cols = {
-        row[1]
-        for row in sqlite3.connect(path).execute("PRAGMA table_info(chunks)")
-    }
+    conn = sqlite3.connect(path)
+    try:
+        cols = {
+            row[1]
+            for row in conn.execute("PRAGMA table_info(chunks)")
+        }
+    finally:
+        conn.close()
     assert {"tenant_id", "poison", "untrusted"} <= cols

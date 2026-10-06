@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 import sqlite3
+from contextlib import contextmanager
 from dataclasses import dataclass
-from typing import List, Optional
-from pathlib import Path
 from enum import Enum
+from pathlib import Path
+from typing import Iterator, List, Optional
 
 
 class MemoryStatus(Enum):
@@ -75,11 +76,16 @@ class LongTermMemoryStore:
             CREATE INDEX IF NOT EXISTS idx_memory_flags_memory ON memory_flags (memory_id);
             """)
 
-    def _conn(self) -> sqlite3.Connection:
-        """获取数据库连接"""
+    @contextmanager
+    def _conn(self) -> Iterator[sqlite3.Connection]:
+        """打开连接；退出时提交/回滚并关闭（sqlite3 的 with 不会 close）。"""
         conn = sqlite3.connect(self.db_path)
         conn.row_factory = sqlite3.Row  # 使结果可以通过列名访问
-        return conn
+        try:
+            with conn:
+                yield conn
+        finally:
+            conn.close()
 
     def add_memory_item(self, item: MemoryItem) -> None:
         """添加记忆条目"""
