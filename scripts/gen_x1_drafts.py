@@ -321,20 +321,28 @@ def _yaml_scalar(value: Any) -> str | None:
     if isinstance(value, (int, float)) and not isinstance(value, bool):
         return str(value)
     if isinstance(value, str):
-        return value.replace("\r\n", " ").replace("\n", " ").replace("\r", " ").strip()
+        # splitlines 覆盖 \n \r 以外的分隔符，避免标量里再拆出新键。
+        return " ".join(value.splitlines()).strip()
     return None
 
 
 def _render_yaml_frontmatter(meta: dict[str, Any]) -> str:
     """把 frontmatter 对象渲染成 content 开头的 YAML 块。不改写 as_of。"""
     lines = ["---"]
+    seen: set[str] = set()
     for key, value in meta.items():
-        if not isinstance(key, str) or not key.strip() or ":" in key or any(ch in key for ch in "\r\n"):
+        if not isinstance(key, str) or len(key.splitlines()) != 1:
             raise DraftShapeError(f"frontmatter 键非法: {key}")
+        stripped = key.strip()
+        if not stripped or ":" in stripped:
+            raise DraftShapeError(f"frontmatter 键非法: {key}")
+        if stripped in seen:
+            raise DraftShapeError(f"frontmatter 键重复: {stripped}")
+        seen.add(stripped)
         scalar = _yaml_scalar(value)
         if scalar is None:
-            raise DraftShapeError(f"frontmatter 值必须是标量: {key}")
-        lines.append(f"{key}: {scalar}")
+            raise DraftShapeError(f"frontmatter 值必须是标量: {stripped}")
+        lines.append(f"{stripped}: {scalar}")
     lines.append("---")
     return "\n".join(lines) + "\n"
 
@@ -682,6 +690,27 @@ def _input_token_upper(prompt: str) -> int:
     return len(prompt) * 2
 
 
+def _prompt_document_example(batch: dict[str, Any]) -> str:
+    """示例用本批的目录、genre、as_of 和 batch_id，文件名等于 doc_id.md。"""
+    as_of = "T1" if _is_pair(batch) else batch["as_of"]
+    doc_id = f"{batch['batch_id']}-memo"
+    path = f"{_expected_rel_dir(batch['genre'], as_of)}/{doc_id}.md"
+    content = (
+        f"---\n"
+        f"doc_id: {doc_id}\n"
+        f"as_of: {as_of}\n"
+        f"source_type: private\n"
+        f"title: 示例\n"
+        f"provenance: synthetic\n"
+        f"license: synthetic\n"
+        f"domain: {batch['domain']}\n"
+        f"genre: {batch['genre']}\n"
+        f"---\n"
+        f"## p1\n合成正文。\n## p2\n另一段。\n"
+    )
+    return json.dumps({"path": path, "content": content}, ensure_ascii=False, separators=(",", ":"))
+
+
 def _build_batch_prompt(batch: dict[str, Any]) -> str:
     """拼一批的用户提示。合成正文自写，不给金标，只要 JSON。must_include 原样塞进提示。"""
     pair = _is_pair(batch)
@@ -692,6 +721,7 @@ def _build_batch_prompt(batch: dict[str, Any]) -> str:
         "只返回 JSON。",
         "只返回 JSON 对象：documents 数组（元素只含 path 与 content），以及带 queries 数组的 questions 对象（必须使用 queries 包装）。",
         "每道题只给 id、query、category、eval_intent、as_of。题目的 as_of 只能是 T0 或 T1，不要写日期。",
+        f"题目 id 必须形如 {batch['batch_id']}-q1。",
         f"本批 batch_id={batch['batch_id']}。",
         f"doc_id 必须匹配 ^{batch['batch_id']}-[a-z0-9-]+$。",
         f"genre={batch['genre']}，domain={batch['domain']}。",
@@ -702,7 +732,8 @@ def _build_batch_prompt(batch: dict[str, Any]) -> str:
         "t0/ 目录下 as_of 必须是 T0，t1/ 目录下 as_of 必须是 T1，禁止写成日期。",
         "license 只能是 synthetic。",
         "正文必须是 2 到 6 个独立的 ## pN 块，块 id 形如 p1，不得重复，块正文不得为空，块数等于 chunks_per_doc。",
-        '单份文档示例：{"path":"corpus/t1/b1-memo.md","content":"---\\ndoc_id: b1-memo\\nas_of: T1\\nsource_type: private\\ntitle: 示例\\nprovenance: synthetic\\nlicense: synthetic\\ndomain: D0\\ngenre: S1\\n---\\n## p1\\n合成正文。\\n## p2\\n另一段。\\n"}',
+        "文件名必须是 <doc_id>.md。目录必须与 as_of 和 genre 一致。目标文件已存在时，该批校验失败。",
+        "单份文档示例：" + _prompt_document_example(batch),
     ]
     if pair:
         bucket = "traps" if batch["genre"] == "S7" else "corpus"
@@ -807,6 +838,26 @@ def _split_frontmatter(content: str) -> tuple[dict[str, str], str]:
     return meta, text[matched.end() :]
 
 
+def _duplicate_frontmatter_key(content: str) -> str | None:
+    """strip 之后撞名的键直接拒绝，避免后写的覆盖先写的。"""
+    text = content.replace("\r\n", "\n").replace("\r", "\n")
+    matched = META_RE.match(text)
+    if not matched:
+        return None
+    seen: set[str] = set()
+    for line in matched.group(1).splitlines():
+        if ":" not in line:
+            continue
+        key, _, _value = line.partition(":")
+        stripped = key.strip()
+        if not stripped:
+            continue
+        if stripped in seen:
+            return f"frontmatter 键重复: {stripped}"
+        seen.add(stripped)
+    return None
+
+
 def _doc_id_ok(doc_id: str, batch_id: str) -> bool:
     return re.fullmatch(rf"^{re.escape(batch_id)}-[a-z0-9-]+$", doc_id) is not None
 
@@ -848,7 +899,15 @@ def _validate_blocks(body: str, batch: dict[str, Any]) -> list[tuple[str, str]] 
 
 
 def _validate_markdown(content: str, batch: dict[str, Any], *, as_of: str) -> list[tuple[str, str]] | str:
+    duplicate = _duplicate_frontmatter_key(content)
+    if duplicate:
+        return duplicate
     meta, body = _split_frontmatter(content)
+    if "attribution" in meta or "data_source_url" in meta:
+        return "合成文档不得包含 attribution 或 data_source_url"
+    unknown = [key for key in meta if key not in FRONTMATTER_KEYS]
+    if unknown:
+        return "frontmatter 含未知键: " + ",".join(unknown)
     missing = [key for key in FRONTMATTER_KEYS if not str(meta.get(key, "")).strip()]
     if missing:
         return "frontmatter 缺键: " + ",".join(missing)
@@ -867,8 +926,6 @@ def _validate_markdown(content: str, batch: dict[str, Any], *, as_of: str) -> li
     lowered = content.lower()
     if any(marker.lower() in lowered for marker in _NBS_MARKERS):
         return "合成文档不得提及国家统计局、统计局或 stats.gov.cn"
-    if "attribution" in meta or "data_source_url" in meta:
-        return "合成文档不得包含 attribution 或 data_source_url"
     doc_id = meta["doc_id"]
     if not _doc_id_ok(doc_id, batch["batch_id"]):
         return f"doc_id 必须匹配 ^{batch['batch_id']}-[a-z0-9-]+$"
@@ -879,6 +936,7 @@ def _validate_batch_documents(
     documents: list[dict[str, str]],
     batch: dict[str, Any],
     seen: set[tuple[str, str]],
+    out: Path,
     public_doc_ids: set[str] | None = None,
 ) -> str | None:
     expected_files = _file_count(batch)
@@ -912,6 +970,10 @@ def _validate_batch_documents(
         if isinstance(checked, str):
             return checked
         doc_id = meta["doc_id"]
+        if rel.name != f"{doc_id}.md":
+            return f"文件名必须是 {doc_id}.md: {item['path']}"
+        if (out / rel).exists():
+            return f"文档路径已存在: {item['path']}"
         key = (doc_id, as_of)
         if key in seen or key in local:
             return f"doc_id 与 as_of 已存在: {doc_id} {as_of}"
@@ -934,6 +996,27 @@ def _validate_batch_documents(
             texts1 = [text for _ident, text in versions["T1"]]
             if texts0 == texts1:
                 return f"T1 必须改写已陈述事实: {doc_id}"
+    return None
+
+
+def _prefix_question_ids(queries: list[Any], batch_id: str) -> None:
+    """各批都回 q1 时，落盘前改成 {batch_id}-q1。已经带本批前缀的不再加。"""
+    prefix = f"{batch_id}-"
+    for item in queries:
+        if not isinstance(item, dict):
+            continue
+        qid = item.get("id")
+        if not isinstance(qid, str) or not qid.strip() or qid.startswith(prefix):
+            continue
+        item["id"] = prefix + qid
+
+
+def _question_as_of_error(queries: list[Any]) -> str | None:
+    for i, item in enumerate(queries):
+        if not isinstance(item, dict):
+            return f"题目不是对象: index {i}"
+        if item.get("as_of") not in BATCH_AS_OF:
+            return f"题目 as_of 必须是 T0 或 T1: index {i}"
     return None
 
 
@@ -1014,7 +1097,7 @@ def _resume_action(manifest: dict[str, Any], batch: dict[str, Any], fields: dict
     if rec.get("status") == "committing":
         return "recover"
     if rec.get("status") != "ok":
-        # failed 可以换提示重跑。只有 ok 才要求解码参数和指纹一致。
+        # failed 与 inflight 可以重跑。只有 ok 才要求解码参数和指纹一致。
         return "run"
     for key, value in fields.items():
         if rec.get(key) != value:
@@ -1452,7 +1535,7 @@ def _run_generate(args: argparse.Namespace, llm_client: Any) -> int:
             return False
         state["stop_reason"] = "consecutive_validation"
         _flush_manifest(out, state)
-        print("错误: 连续 3 批校验失败，停止", file=sys.stderr)
+        print(f"错误: 连续 {CONSECUTIVE_VALIDATION_LIMIT} 批校验失败，停止", file=sys.stderr)
         return True
 
     for batch, prompt, fields, fingerprint in plans:
@@ -1464,7 +1547,9 @@ def _run_generate(args: argparse.Namespace, llm_client: Any) -> int:
         upper_in = _input_token_upper(prompt)
         upper_out = _output_token_upper(batch)
         upper_cny = _cost_cny(upper_in, upper_out, in_price, out_price)
-        if state["spent_cny"] + upper_cny > max_cny:
+        prev_rec = state["batches"].get(batch_id)
+        already_inflight = isinstance(prev_rec, dict) and prev_rec.get("status") == "inflight"
+        if not already_inflight and state["spent_cny"] + upper_cny > max_cny:
             state["stop_reason"] = "budget"
             print("错误: 累计花费已达 --max-cny，停止后续批次", file=sys.stderr)
             break
@@ -1474,6 +1559,25 @@ def _run_generate(args: argparse.Namespace, llm_client: Any) -> int:
             if discard_err:
                 print(f"错误: 批次 {batch_id}: {discard_err}", file=sys.stderr)
                 return 1
+        if already_inflight:
+            held_in = int(prev_rec.get("prompt_tokens") or 0)
+            held_out = int(prev_rec.get("completion_tokens") or 0)
+            held_cny = float(prev_rec.get("cost_cny") or 0.0)
+        else:
+            # 调用前先把上界计入累计花费并落盘。中断后续跑保留这笔，不再加第二次。
+            held_in, held_out, held_cny = upper_in, upper_out, upper_cny
+            _apply_usage(held_in, held_out, held_cny)
+            _put_batch(
+                batch_id,
+                fields,
+                fingerprint,
+                status="inflight",
+                error=None,
+                cost_cny=held_cny,
+                prompt_tokens=held_in,
+                completion_tokens=held_out,
+            )
+            _flush_manifest(out, state)
         client = _client()
         _arm(client, upper_out)
         before_prompt, before_completion = _usage_pair(client)
@@ -1482,8 +1586,11 @@ def _run_generate(args: argparse.Namespace, llm_client: Any) -> int:
                 [{"role": "user", "content": prompt}],
                 decoding=decoding,
             )
+        except KeyboardInterrupt:
+            _flush_manifest(out, state)
+            print(f"错误: 批次 {batch_id}: 调用被中断", file=sys.stderr)
+            return 130
         except Exception as exc:
-            _apply_usage(upper_in, upper_out, upper_cny)
             line = str(exc).strip().splitlines()
             detail = line[0] if line else type(exc).__name__
             _put_batch(
@@ -1492,9 +1599,9 @@ def _run_generate(args: argparse.Namespace, llm_client: Any) -> int:
                 fingerprint,
                 status="failed",
                 error=detail,
-                cost_cny=upper_cny,
-                prompt_tokens=upper_in,
-                completion_tokens=upper_out,
+                cost_cny=held_cny,
+                prompt_tokens=held_in,
+                completion_tokens=held_out,
             )
             _flush_manifest(out, state)
             print(f"错误: 批次 {batch_id}: {detail}", file=sys.stderr)
@@ -1505,22 +1612,25 @@ def _run_generate(args: argparse.Namespace, llm_client: Any) -> int:
         state["recorded_at"] = decoding.recorded_at
         raw_text = getattr(message, "content", "") or ""
         if delta_prompt == 0 and delta_completion == 0:
-            _apply_usage(upper_in, upper_out, upper_cny)
             _put_batch(
                 batch_id,
                 fields,
                 fingerprint,
                 status="failed",
                 error="用量缺失或为 0",
-                cost_cny=upper_cny,
-                prompt_tokens=upper_in,
-                completion_tokens=upper_out,
+                cost_cny=held_cny,
+                prompt_tokens=held_in,
+                completion_tokens=held_out,
             )
             _flush_manifest(out, state)
             print(f"错误: 批次 {batch_id}: 用量缺失或为 0", file=sys.stderr)
             return 1
         cost = _cost_cny(delta_prompt, delta_completion, in_price, out_price)
-        _apply_usage(delta_prompt, delta_completion, cost)
+        state["spent_cny"] += cost - held_cny
+        usage = state["token_usage"]
+        usage["prompt_tokens"] += delta_prompt - held_in
+        usage["completion_tokens"] += delta_completion - held_out
+        usage["total_tokens"] = usage["prompt_tokens"] + usage["completion_tokens"]
         _put_batch(
             batch_id,
             fields,
@@ -1547,29 +1657,37 @@ def _run_generate(args: argparse.Namespace, llm_client: Any) -> int:
         except json.JSONDecodeError as exc:
             _fail_batch(batch_id, raw_text, f"模型输出不是 JSON: {exc}", fields, fingerprint)
             if _stop_if_validation_streak():
-                return 1
+                break
             continue
         try:
             payload = _normalize_generate_payload(parsed)
         except DraftShapeError as exc:
             _fail_batch(batch_id, raw_text, str(exc), fields, fingerprint)
             if _stop_if_validation_streak():
-                return 1
+                break
             continue
-        doc_err = _validate_batch_documents(payload["documents"], batch, seen_docs, public_ids)
+        doc_err = _validate_batch_documents(payload["documents"], batch, seen_docs, out, public_ids)
         if doc_err:
             _fail_batch(batch_id, raw_text, doc_err, fields, fingerprint)
             if _stop_if_validation_streak():
-                return 1
+                break
             continue
-        id_result = _question_ids(payload["questions"]["queries"], seen_ids)
+        queries_now = payload["questions"]["queries"]
+        as_of_err = _question_as_of_error(queries_now)
+        if as_of_err:
+            _fail_batch(batch_id, raw_text, as_of_err, fields, fingerprint)
+            if _stop_if_validation_streak():
+                break
+            continue
+        _prefix_question_ids(queries_now, batch_id)
+        id_result = _question_ids(queries_now, seen_ids)
         if isinstance(id_result, str):
             _fail_batch(batch_id, raw_text, id_result, fields, fingerprint)
             if "冲突" in id_result:
                 state["stop_reason"] = "id_conflict"
                 break
             if _stop_if_validation_streak():
-                return 1
+                break
             continue
         if "n_questions" in batch and len(id_result) != int(batch["n_questions"]):
             _fail_batch(
@@ -1580,7 +1698,7 @@ def _run_generate(args: argparse.Namespace, llm_client: Any) -> int:
                 fingerprint,
             )
             if _stop_if_validation_streak():
-                return 1
+                break
             continue
         validation_streak = 0
         rels = [PurePosixPath(item["path"]).as_posix() for item in payload["documents"]]
@@ -1680,11 +1798,11 @@ def _flag_ledger_path(inp: Path) -> Path:
     return _flag_input_dir(inp) / FLAG_LEDGER_NAME
 
 
-def _read_flag_ledger(inp: Path) -> float | str:
-    """花费按输入目录累计，换 sidecar 路径不会把账本清零。"""
+def _read_flag_ledger(inp: Path) -> tuple[float, float] | str:
+    """返回 (spent_cny, held_cny)。held_cny > 0 表示这笔上界已经计入 spent。"""
     path = _flag_ledger_path(inp)
     if not path.exists():
-        return 0.0
+        return 0.0, 0.0
     if not path.is_file():
         return "抽检花费账本不是文件"
     try:
@@ -1696,14 +1814,24 @@ def _read_flag_ledger(inp: Path) -> float | str:
     spent = data.get("spent_cny", 0.0)
     if isinstance(spent, bool) or not isinstance(spent, (int, float)) or not math.isfinite(float(spent)):
         return "抽检花费账本无法解析"
-    return float(spent)
+    held = 0.0
+    if data.get("inflight") is True:
+        raw_held = data.get("held_cny", 0.0)
+        if isinstance(raw_held, bool) or not isinstance(raw_held, (int, float)) or not math.isfinite(float(raw_held)):
+            return "抽检花费账本无法解析"
+        held = float(raw_held)
+    return float(spent), held
 
 
-def _write_flag_ledger(inp: Path, spent: float) -> None:
+def _write_flag_ledger(inp: Path, spent: float, *, held_cny: float | None = None) -> None:
     path = _flag_ledger_path(inp)
     if is_forbidden_sidecar(path):
         raise OSError("抽检花费账本落在禁写目录")
-    _atomic_write_text(path, json.dumps({"spent_cny": spent}, ensure_ascii=False, indent=2) + "\n")
+    body: dict[str, Any] = {"spent_cny": spent}
+    if held_cny is not None:
+        body["inflight"] = True
+        body["held_cny"] = held_cny
+    _atomic_write_text(path, json.dumps(body, ensure_ascii=False, indent=2) + "\n")
 
 
 def _write_flag_payload(sidecar: Path, payload: dict[str, Any]) -> None:
@@ -1757,11 +1885,12 @@ def _run_flag(args: argparse.Namespace, llm_client: Any) -> int:
         )
         return 1
     upper_cny = _cost_cny(upper_in, upper_out, in_price, out_price)
-    spent = _read_flag_ledger(inp)
-    if isinstance(spent, str):
-        print(f"错误: {spent}", file=sys.stderr)
+    loaded = _read_flag_ledger(inp)
+    if isinstance(loaded, str):
+        print(f"错误: {loaded}", file=sys.stderr)
         return 1
-    if spent + upper_cny > max_cny:
+    spent, held = loaded
+    if held <= 0 and spent + upper_cny > max_cny:
         print("错误: 累计花费已达 --max-cny，停止后续批次", file=sys.stderr)
         return 1
     client = llm_client or LLMClient()
@@ -1770,8 +1899,15 @@ def _run_flag(args: argparse.Namespace, llm_client: Any) -> int:
     flag_temperature = 0.0
     decoding = DecodingParams(model=FLAG_MODEL, temperature=flag_temperature)
 
-    def _record(status: str, error: str | None, spent_now: float, notes: Any) -> None:
-        _write_flag_ledger(inp, spent_now)
+    def _record(
+        status: str,
+        error: str | None,
+        spent_now: float,
+        notes: Any,
+        *,
+        held_cny: float | None = None,
+    ) -> None:
+        _write_flag_ledger(inp, spent_now, held_cny=held_cny)
         payload: dict[str, Any] = {
             SIDECAR_MARKER: True,
             "model": FLAG_MODEL,
@@ -1787,28 +1923,38 @@ def _run_flag(args: argparse.Namespace, llm_client: Any) -> int:
             payload["error"] = error
         _write_flag_payload(sidecar, payload)
 
+    if held > 0:
+        charged = spent
+    else:
+        held = upper_cny
+        charged = spent + upper_cny
+        _record("inflight", None, charged, [], held_cny=held)
     before_prompt, before_completion = _usage_pair(client)
     try:
         message = client.chat(
             [{"role": "user", "content": prompt}],
             decoding=decoding,
         )
+    except KeyboardInterrupt:
+        print("错误: 抽检调用被中断", file=sys.stderr)
+        return 130
     except Exception as exc:
         line = str(exc).strip().splitlines()
         detail = line[0] if line else type(exc).__name__
-        _record("failed", detail, spent + upper_cny, [])
+        _record("failed", detail, charged, [])
         print(f"错误: 抽检调用失败: {detail}", file=sys.stderr)
         return 1
     after_prompt, after_completion = _usage_pair(client)
     delta_prompt = max(0, after_prompt - before_prompt)
     delta_completion = max(0, after_completion - before_completion)
     if delta_prompt == 0 and delta_completion == 0:
-        _record("failed", "用量缺失或为 0", spent + upper_cny, [])
+        _record("failed", "用量缺失或为 0", charged, [])
         print("错误: 抽检用量缺失或为 0", file=sys.stderr)
         return 1
     cost = _cost_cny(delta_prompt, delta_completion, in_price, out_price)
+    settled = charged - held + cost
     if delta_prompt > upper_in or delta_completion > upper_out:
-        _record("failed", "usage_over_upper", spent + cost, [])
+        _record("failed", "usage_over_upper", settled, [])
         print("错误: 抽检 usage_over_upper", file=sys.stderr)
         return 1
     finish = None
@@ -1819,7 +1965,7 @@ def _run_flag(args: argparse.Namespace, llm_client: Any) -> int:
         if isinstance(value, str):
             finish = value
     if finish == "length":
-        _record("failed", "finish_reason=length", spent + cost, [])
+        _record("failed", "finish_reason=length", settled, [])
         print("错误: 抽检 finish_reason=length", file=sys.stderr)
         return 1
     try:
@@ -1827,7 +1973,7 @@ def _run_flag(args: argparse.Namespace, llm_client: Any) -> int:
     except json.JSONDecodeError:
         notes = {"suspicion": getattr(message, "content", "") or ""}
     notes = _whitelist_notes(notes)
-    _record("ok", None, spent + cost, notes)
+    _record("ok", None, settled, notes)
     return 0
 
 
