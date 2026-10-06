@@ -17,7 +17,7 @@
 - 分型领先：该型 R@10（hybrid − bm25）≥ `lead_delta`（0.10）为领先；≤ −0.10 为落后；其余持平
 - hybrid 不赢是合格归档，不是复跑失败
 - `arm_pass_line` 出现在将来的报告里时只作参考，不授权改臂
-- 跑分开始后改题、改 `decontam_8gram_max`、改 `lead_delta`、改语料、改下面的指标归属 = 本预登记作废
+- 跑分开始后改题、改 `decontam_8gram_max`、改 `lead_delta`、改语料、改 qtype 规则（qtype-kw-v1 的阈值 0.8、停用词表、分词器版本）、改下面的指标归属 = 本预登记作废
 - `decontam_8gram_max` 必须写成主人已批准的 **0.2**。比较是严格大于：比例 > 0.2 判污染，等于 0.2 不判。不得写 null，不得用「建议 0.5」代替这个数。0.5 不是正式门
 
 去污染的次要分析，事先写死，跑分后不得加口径：
@@ -58,7 +58,7 @@ owner_freeze: pending
 - `questions_aggregate_sha256`：`aggregate_checksum`，文件为 `data/eval/retrieve_x1.json`，`root=data/eval`
 - `config_sha256`：`sha256_hex` 对 `data/exp/x1/config.json` 的原始字节
 
-并抄录：`decontam_8gram_max` 的已批准数字 **0.2**（不得写 null，不得写「建议 0.5」来代替）、`lead_delta`、`top_k`、`rrf_k`、embed 模型与维度、draft 模型 / temperature / seed、flag 模型与非思考、各 qtype 的 n、trap/adversarial 比例、chunk 数、合成/公开比例、预算帽 ¥10、第二人复核 ≥20% 的范围与日期（来自 `SOURCES.md`）、草稿上 0.2 / 0.35 / 0.5 的命中数（来自 `SOURCES.md`）。flk 核对的日期与结论也从 `SOURCES.md` 抄来；SOURCES 里没有这一节就不要冻结。
+并抄录：`decontam_8gram_max` 的已批准数字 **0.2**（不得写 null，不得写「建议 0.5」来代替）、`lead_delta`、`top_k`、`rrf_k`、embed 模型与维度、draft 模型 / temperature / seed、flag 模型与非思考、各 qtype 的 n、trap/adversarial 比例、chunk 数、合成/公开比例、预算帽 ¥10、标注协议（两个独立模型标注者及其身份；主人审核范围：影响打分的分歧行数、抽样比例与种子 20261007、内容修正条数；规则合并的字段与规则版本；A / B 一致率与 κ；审核日期，均来自 `SOURCES.md`）、qtype 规则 qtype-kw-v1（阈值 0.8，分词器 jieba 0.42.1）及各 qtype 的 n、草稿上 0.2 / 0.35 / 0.5 的命中数（来自 `SOURCES.md`）。flk 核对的日期与结论也从 `SOURCES.md` 抄来；SOURCES 里没有这一节就不要冻结。
 
 免费额度与端点是否同价：写「未核实」，不要写成已经抵扣。
 
@@ -78,7 +78,7 @@ assert not missing, missing; print('prereg-fingerprints-ok')"
      Then 退出码 0。文件含 `decontam_8gram_max` 的数字 0.2，且不含 `owner_freeze: confirmed`（那一行等人写、并随后合入 `main`）。起草行保持 `owner_freeze: pending`。
   2. Given 该文件，When `python scripts/check_x1.py --corpus data/exp/x1/corpus --traps data/exp/x1/traps --questions data/eval/retrieve_x1.json --config data/exp/x1/config.json`，Then 退出码 0（正式阈值已是 0.2、去污染命中为 0）。
   3. Given 本票 diff，When `git diff --stat main -- src/freshlatch/store/base.py src/freshlatch/eval/__main__.py src/freshlatch/eval/retrieve_eval.py src/freshlatch/store/embeddings.py src/freshlatch/store/ingest.py src/freshlatch/llm.py docs/evidence/hard-gold-arm data/eval/retrieve_hard_gold.json data/corpus data/traps reports/dense-rebuild.md "reports/retrieve-hard-gold-*"`，Then 输出为空。本票新增路径只有 `docs/evidence/retrieve-x1/PREREG.md`。开工前与收工后各跑 `python -c "import hashlib; from pathlib import Path; p=Path('data/dense/index.sqlite'); print('absent' if not p.is_file() else hashlib.sha256(p.read_bytes()).hexdigest(), 'absent' if not p.is_file() else p.stat().st_mtime)"`，两行相同。
-  4. Given 该文件正文，When 人阅读，Then 写明三个子集（比例 = 0、比例 ≤ 0.1、LCS < 0.8）与 n≥15 才称稳健的规则，写明草稿上 0.2 / 0.35 / 0.5 的命中数，写明跨快照旧版只进护栏、conflict-pair ordering accuracy 不并进主 R@10、`as_of` 关闭的诊断不进主结论。陷阱三类操作化定义没有被写成已批准。LCS ≥ 0.8 被写成复核旗标，不是门。
+  4. Given 该文件正文，When 人阅读，Then 写明三个子集（比例 = 0、比例 ≤ 0.1、LCS < 0.8）与 n≥15 才称稳健的规则，写明草稿上 0.2 / 0.35 / 0.5 的命中数，写明跨快照旧版只进护栏、conflict-pair ordering accuracy 不并进主 R@10、`as_of` 关闭的诊断不进主结论。陷阱三类操作化定义没有被写成已批准。LCS ≥ 0.8 被写成复核旗标，不是门。写明 qtype 按 qtype-kw-v1 计算（关键词覆盖率 ≥ 0.8 或 r8 > 0.2 → lexical；multi_hop 结构 → multi_hop；其余 paraphrase），且 8-gram 只作去污染门。
 - **Tests**: waived（纯文档；指纹用已有 checksum 函数核对，不新增 pytest）
 - **Rollback**: 删除 `docs/evidence/retrieve-x1/PREREG.md`。若已有臂分数，回滚预登记等于宣布该轮分数无效，须在 RESULT 写明
 - **Do-not-touch**:

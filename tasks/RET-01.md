@@ -90,7 +90,7 @@ python -c "import hashlib; from pathlib import Path; p=Path('data/dense/index.sq
 - 公司法按主题拆成约 4–5 类 doc，每个快照文件 2–6 个 chunk，`doc_id` 稳定。主题与 C1–C10 / G1–G14 在 RET-01.3。
 - 预算帽 **¥10**，写入 `config.json` 的 `budget_cny_max`。超限停跑。
 - Embedding：`text-embedding-v4`，维度 **1024**，与 `reports/dense-rebuild.md` 已记录的 dim=1024 对齐。不换模型、不传 `text_type` / `instruct` / sparse。内容哈希缓存键含 model 与 dim。
-- 草稿生成：`qwen-flash`（`src/freshlatch/llm.py` 的 `DEFAULT_MODEL`）。`qwen-plus` **非思考**只标记可疑标注，不写 gold。这是主人批准的、对 `docs/spec/06-护栏预算与成本.md` §6.5「开发期统一 qwen-flash」的例外，只用于离线抽检，不进入 Lead 循环。gold（`relevant` / `distractors` / `qtype`）由人终定；另一人复核 ≥20%，记入 PREREG。
+- 草稿生成：`qwen-flash`（`src/freshlatch/llm.py` 的 `DEFAULT_MODEL`）。`qwen-plus` **非思考**只标记可疑标注，不写 gold。这是主人批准的、对 `docs/spec/06-护栏预算与成本.md` §6.5「开发期统一 qwen-flash」的例外，只用于离线抽检，不进入 Lead 循环。gold 按 RET-01.3 第 5 条的标注协议产生（两个独立模型标注 + 主人审核影响打分的分歧、约 20% 种子抽样与内容修正，其余按固定规则合并）；`qtype` 按 RET-01.3 第 3a 条计算；协议与来源记入 PREREG。
 - 层身份 = 实验 / 冒烟。不报方差，不作统计显著。
 - 生产臂保持 bm25。与 #260 互不阻塞。
 
