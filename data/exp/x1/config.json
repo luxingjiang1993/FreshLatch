@@ -1,0 +1,19 @@
+{
+  "top_k": 10,
+  "rrf_k": 60,
+  "embed_model": "text-embedding-v4",
+  "embed_dim": 1024,
+  "draft_model": "qwen-flash",
+  "draft_temperature": null,
+  "draft_seed": null,
+  "flag_model": "qwen-plus",
+  "flag_thinking": false,
+  "decontam_8gram_max": 0.2,
+  "lead_delta": 0.10,
+  "budget_cny_max": 10,
+  "min_chunks": 600,
+  "min_per_qtype": 30,
+  "min_trap_adversarial_ratio": 0.30,
+  "min_synthetic_ratio": 0.60,
+  "max_public_ratio": 0.40
+}
