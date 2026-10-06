@@ -12,7 +12,7 @@ import json
 import shutil
 import sys
 import tempfile
-from pathlib import Path
+from pathlib import Path, PurePosixPath, PureWindowsPath
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -39,6 +39,7 @@ FLAG_MODEL = "qwen-plus"
 GOLD_PLACEHOLDER = "TODO-owner"
 GOLD_QUESTION_KEYS = ("relevant", "answer_points", "distractors")
 NOTE_FIELDS = ("id", "suspicion", "reason", "severity")
+RAW_GOLD_NOTE = "raw-response.txt 可能含模型自拟金标，不得当标签使用"
 
 
 class DraftShapeError(ValueError):
@@ -231,6 +232,40 @@ def _normalize_question(item: dict[str, Any]) -> dict[str, Any]:
     return cleaned
 
 
+def _document_path_syntax_error(raw_path: str) -> str | None:
+    """拒绝盘符、UNC、反斜杠、.. 以及会落到暂存根的 '.'。Linux / Windows 同一套检查。"""
+    if "\\" in raw_path:
+        return f"路径非法: {raw_path}"
+    for cls in (PurePosixPath, PureWindowsPath):
+        parsed = cls(raw_path)
+        if parsed.drive or parsed.anchor or parsed.root:
+            return f"路径非法: {raw_path}"
+        if ".." in parsed.parts:
+            return f"路径非法: {raw_path}"
+        if not parsed.parts:
+            return f"路径非法: {raw_path}"
+    rel = Path(raw_path)
+    if rel.is_absolute() or ".." in rel.parts:
+        return f"路径非法: {raw_path}"
+    return None
+
+
+def _document_paths_collide(rel_paths: list[str]) -> bool:
+    """同一批草稿里，某文件路径是另一文件的父目录。"""
+    parts_list = [PurePosixPath(p).parts for p in rel_paths]
+    for i, a in enumerate(parts_list):
+        for j, b in enumerate(parts_list):
+            if i == j:
+                continue
+            if a and b and len(a) < len(b) and b[: len(a)] == a:
+                return True
+    return False
+
+
+def _strictly_inside(path: Path, root: Path) -> bool:
+    return path.is_relative_to(root) and path != root
+
+
 def _normalize_documents(documents: Any) -> list[dict[str, str]]:
     if documents is None:
         return []
@@ -245,15 +280,17 @@ def _normalize_documents(documents: Any) -> list[dict[str, str]]:
         raw_path = item["path"]
         if not isinstance(raw_path, str) or not raw_path.strip():
             raise DraftShapeError(f"documents[{i}] path 必须是非空字符串")
-        rel = Path(raw_path)
-        if rel.is_absolute() or ".." in rel.parts:
-            raise DraftShapeError(f"documents[{i}] 路径非法: {raw_path}")
+        syntax = _document_path_syntax_error(raw_path)
+        if syntax:
+            raise DraftShapeError(f"documents[{i}] {syntax}")
         content = item.get("content", "")
         if content is None:
             content = ""
         if not isinstance(content, str):
             raise DraftShapeError(f"documents[{i}] content 必须是字符串")
         out.append({"path": raw_path, "content": content})
+    if _document_paths_collide([item["path"] for item in out]):
+        raise DraftShapeError("documents 路径文件与目录冲突")
     return out
 
 
@@ -274,22 +311,44 @@ def _normalize_generate_payload(payload: Any) -> dict[str, Any]:
 
 def _materialize_drafts(payload: dict[str, Any], dest: Path) -> Path:
     dest.mkdir(parents=True, exist_ok=True)
+    staging_resolved = dest.resolve()
     corpus = dest / "corpus"
     traps = dest / "traps"
     traps.mkdir(parents=True, exist_ok=True)
-    for item in payload["documents"]:
-        rel = Path(item["path"])
-        target = dest / rel
-        target.parent.mkdir(parents=True, exist_ok=True)
-        target.write_text(item["content"], encoding="utf-8")
-    qpath = dest / "questions.json"
-    qpath.write_text(
-        json.dumps(payload["questions"], ensure_ascii=False, indent=2) + "\n",
-        encoding="utf-8",
-    )
-    if not corpus.exists():
-        corpus.mkdir(parents=True, exist_ok=True)
-    return qpath
+    try:
+        planned: list[tuple[dict[str, str], Path]] = []
+        for item in payload["documents"]:
+            target = (dest / item["path"]).resolve()
+            if not _strictly_inside(target, staging_resolved):
+                raise DraftShapeError(f"路径非法: {item['path']}")
+            planned.append((item, target))
+        file_targets = [target for _item, target in planned]
+        dir_targets: set[Path] = set()
+        for target in file_targets:
+            parent = target.parent
+            while parent != staging_resolved:
+                if not parent.is_relative_to(staging_resolved):
+                    raise DraftShapeError("路径非法: 解析后逃出暂存目录")
+                dir_targets.add(parent)
+                nxt = parent.parent
+                if nxt == parent:
+                    break
+                parent = nxt
+        if set(file_targets) & dir_targets:
+            raise DraftShapeError("documents 路径文件与目录冲突")
+        for item, target in planned:
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text(item["content"], encoding="utf-8")
+        qpath = dest / "questions.json"
+        qpath.write_text(
+            json.dumps(payload["questions"], ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        if not corpus.exists():
+            corpus.mkdir(parents=True, exist_ok=True)
+        return qpath
+    except OSError as exc:
+        raise DraftShapeError(f"写入草稿失败: {exc}") from exc
 
 
 def _print_checker(result) -> None:
@@ -380,6 +439,7 @@ def _write_failure_out(
             "token_usage": token_usage,
             "checker_exit": None,
             "checker_error": error,
+            "raw_response_note": RAW_GOLD_NOTE,
         },
     )
 
@@ -430,7 +490,7 @@ def _run_generate(args: argparse.Namespace, llm_client: Any) -> int:
             token_usage=_token_usage_dict(client),
             error=error,
         )
-        print(f"错误: {error}", file=sys.stderr)
+        print(f"错误: {error}；{RAW_GOLD_NOTE}", file=sys.stderr)
         return 1
 
     try:
@@ -443,7 +503,12 @@ def _run_generate(args: argparse.Namespace, llm_client: Any) -> int:
         return _fail(str(exc))
     with tempfile.TemporaryDirectory(prefix="x1-drafts-") as tmp:
         staging = Path(tmp) / "bundle"
-        qpath = _materialize_drafts(payload, staging)
+        try:
+            qpath = _materialize_drafts(payload, staging)
+        except DraftShapeError as exc:
+            return _fail(str(exc))
+        except OSError as exc:
+            return _fail(f"写入草稿失败: {exc}")
         checker_exit: int | None = None
         checker_error: str | None = None
         try:
