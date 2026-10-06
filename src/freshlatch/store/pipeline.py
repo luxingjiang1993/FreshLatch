@@ -1,7 +1,9 @@
-"""多 stage 打分管线:recall(BM25+jieba) → [vector 融合,空实现] → [rerank,空实现]。
+"""多 stage 打分管线:recall(BM25+jieba) → vector 融合 → rerank。
 
-后两级本期空实现(透传):vec 列已在 schema。生产默认仍是 BM25;
-评测可跑 dense/hybrid/rerank 由后续票填实,无增益不得改生产默认(ADR-0003 修订 #156)。
+生产默认仍是 BM25 透传:`run_pipeline` 走 recall_bm25,后两级 stage_vector_fuse /
+stage_rerank 只截断、不改臂。评测臂已可跑 dense(rank_dense)、hybrid(rrf_fuse)、
+rerank(rerank_lexical),由评测入口按臂调用,不是「本期空实现、后续票填实」。
+无增益不得改生产默认(ADR-0003 修订 #156)。
 """
 
 from __future__ import annotations
