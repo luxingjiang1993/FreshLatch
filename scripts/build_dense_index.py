@@ -35,7 +35,7 @@ X1_EMBED_DIM = 1024
 
 
 class RebuildPathError(ValueError):
-    """显式路径违反隔离规则：禁止指向默认 dense 库，或缺少缓存路径。"""
+    """显式路径违反隔离规则：缺 --db/--cache/--report，或三者指向默认路径。"""
 
 
 @dataclass(frozen=True)
@@ -47,8 +47,16 @@ class RebuildPaths:
     cache: Path | None
 
 
+def _resolved(path: Path) -> Path:
+    return path.expanduser().resolve()
+
+
 def parse_rebuild_paths(argv: list[str]) -> RebuildPaths:
-    """解析可选路径。argv 不含程序名。空列表 = 模块常量且不启用缓存。"""
+    """解析可选路径。argv 不含程序名。空列表 = 模块常量且不启用缓存。
+
+    只要传了任何参数，就必须显式给出 --db、--cache、--report，
+    且三者都不能解析到默认 DB / REPORT。缺一或撞默认则报错，不开始构建。
+    """
     parser = argparse.ArgumentParser(prog="build_dense_index.py")
     parser.add_argument("--corpus", type=Path, default=None)
     parser.add_argument("--traps", type=Path, default=None)
@@ -56,22 +64,37 @@ def parse_rebuild_paths(argv: list[str]) -> RebuildPaths:
     parser.add_argument("--report", type=Path, default=None)
     parser.add_argument("--cache", type=Path, default=None)
     args = parser.parse_args(argv)
-    if args.db is not None:
-        db = args.db.expanduser().resolve()
-        if db == DB.expanduser().resolve():
-            raise RebuildPathError(
-                "禁止把 --db 指到默认 data/dense/index.sqlite"
-            )
-        if args.cache is None:
-            raise RebuildPathError("非默认 --db 必须同时传入 --cache")
-    else:
-        db = DB
+    if not argv:
+        return RebuildPaths(
+            corpus=CORPUS, traps=TRAPS, db=DB, report=REPORT, cache=None
+        )
+    missing = [
+        flag
+        for flag, value in (
+            ("--db", args.db),
+            ("--cache", args.cache),
+            ("--report", args.report),
+        )
+        if value is None
+    ]
+    if missing:
+        raise RebuildPathError(
+            "传入参数时必须显式给出 --db、--cache、--report，缺少: "
+            + "、".join(missing)
+        )
+    db = _resolved(args.db)
+    cache = _resolved(args.cache)
+    report = _resolved(args.report)
+    forbidden = {_resolved(DB), _resolved(REPORT)}
+    for flag, path in (("--db", db), ("--cache", cache), ("--report", report)):
+        if path in forbidden:
+            raise RebuildPathError(f"{flag} 不能指向默认路径")
     return RebuildPaths(
         corpus=CORPUS if args.corpus is None else args.corpus,
         traps=TRAPS if args.traps is None else args.traps,
         db=db,
-        report=REPORT if args.report is None else args.report,
-        cache=None if args.cache is None else args.cache,
+        report=report,
+        cache=cache,
     )
 
 

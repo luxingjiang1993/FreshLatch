@@ -74,12 +74,14 @@ def embed_texts_cached(
                     raise ValueError(
                         f"嵌入维度不符: got {len(vec)} want {dim}"
                     )
+                blob = pack_vec(vec)
                 conn.execute(
                     f"INSERT INTO {EMBED_CACHE_TABLE} (key, vec) VALUES (?, ?)",
-                    (key, pack_vec(vec)),
+                    (key, blob),
                 )
                 conn.commit()
-                found[key] = vec
+                # 冷启动也走 unpack，与热启动逐位一致
+                found[key] = unpack_vec(blob)
         return [found[key] for key in keys]
     finally:
         conn.close()

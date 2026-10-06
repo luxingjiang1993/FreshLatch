@@ -20,17 +20,24 @@ from freshlatch.store.embed_cache import (
 )
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+_SCRIPT_MOD_NAME = "build_dense_index_ret01_2"
 
 
 def _load_rebuild_script():
     path = REPO_ROOT / "scripts" / "build_dense_index.py"
-    spec = importlib.util.spec_from_file_location("build_dense_index_ret01_2", path)
+    spec = importlib.util.spec_from_file_location(_SCRIPT_MOD_NAME, path)
     assert spec is not None and spec.loader is not None
     mod = importlib.util.module_from_spec(spec)
     # dataclass 在 from __future__ import annotations 下需要模块已登记
     sys.modules[spec.name] = mod
     spec.loader.exec_module(mod)
     return mod
+
+
+@pytest.fixture(autouse=True)
+def _unload_rebuild_script():
+    yield
+    sys.modules.pop(_SCRIPT_MOD_NAME, None)
 
 
 def _cache_has_key(cache_path: Path, key: str) -> bool:
@@ -65,7 +72,11 @@ def test_explicit_db_equal_default_is_rejected(tmp_path):
         mod.parse_rebuild_paths(["--db", default_db])
     relative = "data/dense/index.sqlite"
     with pytest.raises(mod.RebuildPathError):
-        mod.parse_rebuild_paths(["--db", relative, "--cache", str(tmp_path / "c.sqlite")])
+        mod.parse_rebuild_paths([
+            "--db", relative,
+            "--cache", str(tmp_path / "c.sqlite"),
+            "--report", str(tmp_path / "r.md"),
+        ])
 
 
 def test_non_default_db_requires_cache(tmp_path):
@@ -74,10 +85,39 @@ def test_non_default_db_requires_cache(tmp_path):
     with pytest.raises(mod.RebuildPathError):
         mod.parse_rebuild_paths(["--db", other])
     cache = str(tmp_path / "embed-cache.sqlite")
-    paths = mod.parse_rebuild_paths(["--db", other, "--cache", cache])
+    report = str(tmp_path / "rebuild.md")
+    paths = mod.parse_rebuild_paths(
+        ["--db", other, "--cache", cache, "--report", report]
+    )
     assert paths.db.resolve() == Path(other).resolve()
-    assert paths.cache == Path(cache)
+    assert paths.cache.resolve() == Path(cache).resolve()
+    assert paths.report.resolve() == Path(report).resolve()
     assert paths.db.resolve() != mod.DB.resolve()
+
+
+def test_any_args_require_non_default_db_cache_report(tmp_path):
+    mod = _load_rebuild_script()
+    other_db = str(tmp_path / "other-index.sqlite")
+    cache = str(tmp_path / "embed-cache.sqlite")
+    report = str(tmp_path / "rebuild.md")
+    with pytest.raises(mod.RebuildPathError):
+        mod.parse_rebuild_paths(["--corpus", str(tmp_path / "corpus")])
+    with pytest.raises(mod.RebuildPathError):
+        mod.parse_rebuild_paths(["--db", other_db, "--cache", cache])
+    with pytest.raises(mod.RebuildPathError):
+        mod.parse_rebuild_paths(
+            [
+                "--db", other_db,
+                "--cache", cache,
+                "--report", str(mod.REPORT),
+            ]
+        )
+    paths = mod.parse_rebuild_paths(
+        ["--db", other_db, "--cache", cache, "--report", report]
+    )
+    assert paths.cache is not None
+    assert paths.db.resolve() != mod.DB.resolve()
+    assert paths.report.resolve() != mod.REPORT.resolve()
 
 
 def test_cache_key_matches_locked_formula():
