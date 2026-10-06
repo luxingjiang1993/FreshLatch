@@ -10,6 +10,43 @@ Repo: [luxingjiang1993/FreshLatch](https://github.com/luxingjiang1993/FreshLatch
 
 ---
 
+## Snapshot (portfolio)
+
+| | |
+|--|--|
+| **Offline tests** | `874 passed, 3 skipped` — `python -m pytest tests/ -q`（本机实测；CI 同命令，零 LLM） |
+| **Coverage** | `src/freshlatch` **80%** line coverage（`pytest --cov=freshlatch`；不含大模型调用） |
+| **Architecture** | 四闸总览：[`docs/现状四闸-结构图.html`](docs/现状四闸-结构图.html) · 词表 [`CONTEXT.md`](CONTEXT.md) |
+| **Honest boundary** | 冒烟 / 采用层 / 面试加固 — **不是**已关闭的统计测量；**不**宣称 W12 过线或 SaaS 上线 |
+
+Layer identity: smoke ≠ Hard-Gold. Evidence and acceptance live under `docs/evidence/`.
+
+---
+
+## Quick start
+
+**Requires:** Python 3.11+. For the LLM main chain, put at least `DASHSCOPE_API_KEY` (OpenAI-compatible) in a root `.env`. Deterministic unit tests do not need a real key.
+
+```powershell
+# Windows PowerShell — console UTF-8
+$OutputEncoding = [Console]::OutputEncoding = [Text.UTF8Encoding]::new()
+
+cd <repo-root>
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+
+$env:PYTHONPATH = "src"
+python -m pytest tests/ -q     # 权威离线闸（与 CI 一致）
+python -m freshlatch.ui.app    # Reverify Sheet → http://127.0.0.1:8000
+```
+
+Unix equivalent: `source .venv/bin/activate`, `export PYTHONPATH=src`. The primary CTA is **Start reverify**, not "Generate answer."
+
+Corpus ingest example: `PYTHONPATH=src python scripts/ingest_corpus.py`
+
+---
+
 ## The problem
 
 Consultants, researchers, and strategy leads ship a defensible judgment. Then the world moves: competitor pricing, regulatory stance, interview reversals. Someone still forwards the **old green** attachment. Getting that wrong once is career risk.
@@ -32,7 +69,7 @@ One-line boundary: **sell voiding and gaps — not faster summaries, not auto de
 
 **V1.5 = Evidence-bound 表单补丁**（ADR-0029 · 冒烟）。对「需补丁」主张：正文替换 + 必填已入库 T1 + 人确认才应用 + 强制单条再验；独立 `propose_patch` / `confirm_patch`（**不**扩 HumanLatch）。**薄对话本期 Out**（不实装、不 stub；对话不改正式裁决）。发前 UX **无** C|T 开关。硬 Exit 见 `docs/evidence/v15/ACCEPTANCE.md`；关门摘要见 `docs/evidence/v15/V15-DoD-CLOSE.md`。档=冒烟；不升格 Hard-Gold。
 
-**I2 = 安全三例**（ADR-0030 · 冒烟 / 面试安全轮）。越权召回 · 间接注入 · 检索投毒各一例可复现（确定性硬门；注入另 1× Lead→Auditor 冒烟）。薄表 `docs/security.md`；硬 Exit `docs/evidence/i2/ACCEPTANCE.md`；关门摘要 `docs/evidence/i2/I2-DoD-CLOSE.md`。**≠ idea #4**。档=冒烟；不是渗透认证，不报安全通过率/方差，不升格 Hard-Gold。
+**I2 = 安全三例**（ADR-0030 · 冒烟 / 面试安全轮）。越权召回 · 间接注入 · 检索投毒各一例可复现（确定性硬门；注入另 1× Lead→Auditor 冒烟）。薄表 `docs/security.md`；硬 Exit `docs/evidence/i2/ACCEPTANCE.md`；关门摘要见 `docs/evidence/i2/I2-DoD-CLOSE.md`。**≠ idea #4**。档=冒烟；不是渗透认证，不报安全通过率/方差，不升格 Hard-Gold。
 
 **V2 = 发前钩子 + 主张台账**（ADR-0031 · 冒烟 / 采用层）。Client Memo UI+CLI 同闸 + 入站 `POST /api/publish-hook/check`（本机默认 + 可选 token）+ 主张台账只读投影（discard∪renew）。硬 Exit 见 `docs/evidence/v2/ACCEPTANCE.md`；关门摘要见 `docs/evidence/v2/V2-DoD-CLOSE.md`。档=冒烟·采用层；**不**硬绑「可发」；`curl`/TestClient ≠ 开放 webhook/插件平台已交付；不报采用率；不升格 Hard-Gold。
 
@@ -91,6 +128,8 @@ Under the hood: Lead / Critic / Auditor plus a rules gate. For visitors, remembe
 
 Default demo thesis (synthetic): *"Does the judgment on entering the Southeast Asia SMB AI customer-support market in the next 12 months still hold?"*
 
+Diagram: [`docs/现状四闸-结构图.html`](docs/现状四闸-结构图.html).
+
 ---
 
 ## Current status
@@ -111,31 +150,7 @@ Honest snapshot of this public repo:
 
 Layer identity: smoke / adoption / interview hardening — **not** closed statistical measurement.
 
-For engineering acceptance boundaries, read `docs/evidence/` and root `CONTEXT.md`. This README is not a certification.
-
----
-
-## Quick start
-
-**Requires:** Python 3.11+. For the LLM main chain, put at least `DASHSCOPE_API_KEY` (OpenAI-compatible) in a root `.env`. Deterministic unit tests do not need a real key.
-
-```powershell
-# Windows PowerShell — console UTF-8
-$OutputEncoding = [Console]::OutputEncoding = [Text.UTF8Encoding]::new()
-
-cd <repo-root>
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
-
-$env:PYTHONPATH = "src"
-python -m pytest -q          # unit tests
-python -m freshlatch.ui.app  # Reverify Sheet → http://127.0.0.1:8000
-```
-
-Unix equivalent: `source .venv/bin/activate`, `export PYTHONPATH=src`. The primary CTA is **Start reverify**, not "Generate answer."
-
-Corpus ingest example: `PYTHONPATH=src python scripts/ingest_corpus.py`
+For engineering acceptance boundaries, read `docs/evidence/` and root `CONTEXT.md`. This README is not a certification. Historical W12 writeups (explicitly non-certifying) live under [`docs/evidence/w12/`](docs/evidence/w12/).
 
 ---
 
@@ -146,6 +161,7 @@ Corpus ingest example: `PYTHONPATH=src python scripts/ingest_corpus.py`
 | Product brief & boundaries | [`docs/product/FreshLatch.md`](docs/product/FreshLatch.md) |
 | Charter slice (CN) | [`docs/product/FreshLatch-立项切片.md`](docs/product/FreshLatch-立项切片.md) |
 | Glossary (claim / T0·T1 / gate / HumanLatch) | [`CONTEXT.md`](CONTEXT.md) |
+| Architecture diagram | [`docs/现状四闸-结构图.html`](docs/现状四闸-结构图.html) |
 | Architecture & specs | [`docs/spec/README.md`](docs/spec/README.md) |
 | Evidence & acceptance | [`docs/evidence/`](docs/evidence/) |
 | Agent / contributor norms | [`AGENTS.md`](AGENTS.md) |
