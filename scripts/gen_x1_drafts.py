@@ -771,8 +771,14 @@ def _build_batch_prompt(batch: dict[str, Any]) -> str:
             lines.append("本批复述监管变更要点，只写 must_include 里的事实，不得自拟法律门槛或日期。")
         else:
             lines.append("本批是变更要点与补丁记录，只写 must_include 里的合成事实，不要写法律门槛。")
-        lines.append(_chunk_count_line(n_chunks))
         lines.append("段数要求不改 must_include：这些事实仍须原样写入，不得为了凑段数改写或删掉。")
+        facts = batch.get("must_include")
+        if isinstance(facts, list) and len(facts) == 1:
+            lines.append(
+                "p1 完整写出 must_include 事实；其余段只写背景、适用范围或影响说明，不得新增门槛、日期、金额或其他数字，也不要拆开或改写 must_include 事实。"
+            )
+        else:
+            lines.append("不得新增门槛、日期、金额或其他数字，也不要拆开或改写 must_include 事实。")
     if "n_questions" in batch:
         lines.append(f"题目数量必须等于 {int(batch['n_questions'])}。")
     if "max_chars_per_chunk" in batch:
@@ -1186,10 +1192,11 @@ def _resume_action(manifest: dict[str, Any], batch: dict[str, Any], fields: dict
     if rec.get("status") != "ok":
         # failed 与 inflight 可以重跑。只有 ok 才核对解码参数和批次规格。
         return "run"
+    # ok 批次固定在当初记下的提示摘要上：只改提示不会重跑。
+    # 改 spec、温度、seed 或模型仍报「解码参数与清单不一致」并退出。
     for key in ("draft_model", "draft_temperature", "draft_seed"):
         if rec.get(key) != fields.get(key):
             return "mismatch"
-    # 提示正文变了会改 prompt_sha256，从而改指纹。已 ok 的批次按当初记下的提示摘要核对规格，不重跑。
     recorded_sha = rec.get("prompt_sha256")
     if not isinstance(recorded_sha, str):
         return "mismatch"

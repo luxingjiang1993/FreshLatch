@@ -3077,12 +3077,30 @@ def test_prompt_states_exact_chunk_count_including_pair_and_s6():
     )
     prompt_s6 = mod._build_batch_prompt(s6)
     sentence = "每篇 content 正文恰好 3 段，标题依次为 `## p1` … `## p3`，不多不少。"
-    assert prompt_s6.count(sentence) >= 2
+    assert prompt_s6.count(sentence) == 1
     assert "只写 must_include 里的事实，不得自拟法律门槛或日期。" in prompt_s6
     assert "must_include（原样遵守，不要改写这些事实）：" in prompt_s6
     assert fact in prompt_s6
     assert "不得为了凑段数改写或删掉" in prompt_s6
+    assert (
+        "p1 完整写出 must_include 事实；其余段只写背景、适用范围或影响说明，不得新增门槛、日期、金额或其他数字，也不要拆开或改写 must_include 事实。"
+        in prompt_s6
+    )
     assert _example_section_count(prompt_s6) == 3
+    multi = _batch(
+        batch_id="s6-multi",
+        genre="S6",
+        domain="D3",
+        as_of="T1",
+        chunks_per_doc=3,
+        topic="多条事实",
+        must_include=[fact, "另一条已有事实"],
+    )
+    prompt_multi = mod._build_batch_prompt(multi)
+    assert prompt_multi.count(sentence) == 1
+    assert "不得新增门槛、日期、金额或其他数字，也不要拆开或改写 must_include 事实。" in prompt_multi
+    assert "p1 完整写出 must_include 事实" not in prompt_multi
+    assert "不要写法律门槛" in prompt_multi
 
 
 def _s6_reply(batch_id: str, domain: str, title: str, paragraphs: list[str], question: str) -> dict:
