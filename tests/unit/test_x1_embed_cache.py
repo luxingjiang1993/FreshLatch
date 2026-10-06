@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import importlib.util
 import sqlite3
+import sys
 from pathlib import Path
 
 import pytest
@@ -26,6 +27,8 @@ def _load_rebuild_script():
     spec = importlib.util.spec_from_file_location("build_dense_index_ret01_2", path)
     assert spec is not None and spec.loader is not None
     mod = importlib.util.module_from_spec(spec)
+    # dataclass 在 from __future__ import annotations 下需要模块已登记
+    sys.modules[spec.name] = mod
     spec.loader.exec_module(mod)
     return mod
 
