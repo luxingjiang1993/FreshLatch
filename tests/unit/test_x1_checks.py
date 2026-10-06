@@ -1,7 +1,7 @@
 """RET-01.1：x1 许可、去污染与题集结构检查。
 
-不读 DASHSCOPE_API_KEY，不打开 data/dense/index.sqlite。
-测试一律用 tmp fixture，不创建 data/exp/x1/config.json。
+不读模型密钥环境变量，不打开 dense 索引文件。
+测试一律用 tmp fixture，不创建正式实验配置文件。
 """
 
 from __future__ import annotations
@@ -482,13 +482,12 @@ def test_p2_requires_stats_attribution(tmp_path: Path):
 
 
 def test_tests_do_not_touch_secrets_or_dense_index():
-    src = Path(__file__).read_text(encoding="utf-8")
-    assert "DASHSCOPE_API_KEY" not in src
-    assert "index.sqlite" not in src
     impl = (ROOT / "src" / "freshlatch" / "eval" / "x1_checks.py").read_text(
         encoding="utf-8"
     )
-    assert "DASHSCOPE_API_KEY" not in impl
+    assert "DASHSCOPE" not in impl
+    assert "index.sqlite" not in impl
+    assert "environ" not in impl
     assert "decontam_8gram_max" in impl
     assert "0.2" not in impl
     assert "0.5" not in impl
