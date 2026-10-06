@@ -111,7 +111,8 @@ def test_gate_is_pure_no_llm_import_side_effect():
 
     import freshlatch.publish_hook as mod
 
-    tree = ast.parse(open(mod.__file__, encoding="utf-8").read())
+    with open(mod.__file__, encoding="utf-8") as f:
+        tree = ast.parse(f.read())
     imported: set[str] = set()
     for node in ast.walk(tree):
         if isinstance(node, ast.Import):

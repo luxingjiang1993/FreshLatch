@@ -8,6 +8,7 @@
 from __future__ import annotations
 
 import sqlite3
+from contextlib import contextmanager
 
 import pytest
 
@@ -166,8 +167,15 @@ def test_prune_rounds_keeps_recent_five(tmp_path):
 # -- checkpoint 清理(ADR-0006 §9)-----------------------------------------------------
 
 
+@contextmanager
 def sqlite3_conn(path):
-    return sqlite3.connect(path)
+    """测试用连接：提交/回滚后必须 close，避免 ResourceWarning。"""
+    conn = sqlite3.connect(path)
+    try:
+        with conn:
+            yield conn
+    finally:
+        conn.close()
 
 
 def test_prune_keeps_recent_five_threads(tmp_path):

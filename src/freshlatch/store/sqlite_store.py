@@ -8,7 +8,9 @@ rerun_log(重跑时间线取数,复验单卡片「重跑后仍红(第 N 次)」�
 from __future__ import annotations
 
 import sqlite3
+from contextlib import contextmanager
 from pathlib import Path
+from typing import Iterator
 
 from freshlatch.models import AsOf
 from freshlatch.store.base import (
@@ -159,10 +161,16 @@ class SQLiteStore(RetrievalStore):
                 if name not in existing:
                     conn.execute(f"ALTER TABLE {table} ADD COLUMN {name} {decl}")
 
-    def _conn(self) -> sqlite3.Connection:
+    @contextmanager
+    def _conn(self) -> Iterator[sqlite3.Connection]:
+        """打开连接；退出时提交/回滚并关闭（sqlite3 的 with 不会 close）。"""
         conn = sqlite3.connect(self.path)
         conn.row_factory = sqlite3.Row
-        return conn
+        try:
+            with conn:
+                yield conn
+        finally:
+            conn.close()
 
     # -- 写入 -----------------------------------------------------------------
 

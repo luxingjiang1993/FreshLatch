@@ -697,9 +697,13 @@ def test_count_uncached_is_read_only_and_missing_is_all_miss(tmp_path):
     )
     after = dummy.read_bytes()
     assert before == after
-    tables = sqlite3.connect(dummy).execute(
-        "SELECT name FROM sqlite_master WHERE type='table'"
-    ).fetchall()
+    conn = sqlite3.connect(dummy)
+    try:
+        tables = conn.execute(
+            "SELECT name FROM sqlite_master WHERE type='table'"
+        ).fetchall()
+    finally:
+        conn.close()
     assert tables == [("other",)]
     assert hit == 0
     assert miss == 2

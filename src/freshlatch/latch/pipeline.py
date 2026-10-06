@@ -241,22 +241,26 @@ class HumanLatch:
         # 表名以 sqlite_master 探测为准(pin 版 3.1.1 = checkpoints/writes);
         # thread_id 时间戳字典序即时序。
         candidates = ("checkpoints", "writes")
-        with sqlite3.connect(self.checkpoint_path) as conn:
-            existing = {r[0] for r in conn.execute(
-                "SELECT name FROM sqlite_master WHERE type='table'").fetchall()}
-            tables = [t for t in candidates if t in existing]
-            if "checkpoints" not in tables:
-                return 0
-            rows = conn.execute(
-                "SELECT DISTINCT thread_id FROM checkpoints WHERE thread_id LIKE ?"
-                " ORDER BY thread_id DESC",
-                (prefix + "%",),
-            ).fetchall()
-            stale = [r[0] for r in rows[keep:]]
-            for tid in stale:
-                for table in tables:
-                    conn.execute(f"DELETE FROM {table} WHERE thread_id = ?", (tid,))
-        return len(stale)
+        conn = sqlite3.connect(self.checkpoint_path)
+        try:
+            with conn:
+                existing = {r[0] for r in conn.execute(
+                    "SELECT name FROM sqlite_master WHERE type='table'").fetchall()}
+                tables = [t for t in candidates if t in existing]
+                if "checkpoints" not in tables:
+                    return 0
+                rows = conn.execute(
+                    "SELECT DISTINCT thread_id FROM checkpoints WHERE thread_id LIKE ?"
+                    " ORDER BY thread_id DESC",
+                    (prefix + "%",),
+                ).fetchall()
+                stale = [r[0] for r in rows[keep:]]
+                for tid in stale:
+                    for table in tables:
+                        conn.execute(f"DELETE FROM {table} WHERE thread_id = ?", (tid,))
+            return len(stale)
+        finally:
+            conn.close()
 
     # -- langgraph 面(全部收口在本模块:模块外零 langgraph import)---------------------
 

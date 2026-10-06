@@ -249,10 +249,14 @@ def test_loader_does_not_import_or_rewrite_gates(tmp_path):
         distractor_docket=pack.distractor_docket,
     )
     store = open_pack_store(alt)
-    cols = {
-        row[0]
-        for row in sqlite3.connect(store.path).execute("PRAGMA table_info(documents)")
-    }
+    conn = sqlite3.connect(store.path)
+    try:
+        cols = {
+            row[0]
+            for row in conn.execute("PRAGMA table_info(documents)")
+        }
+    finally:
+        conn.close()
     assert "pack_id" not in cols
     assert before == (rule_gate.rule_gate, human_latch.apply_decisions)
 
@@ -260,17 +264,20 @@ def test_loader_does_not_import_or_rewrite_gates(tmp_path):
 def test_sqlite_schema_columns_frozen_without_pack_id(tmp_path):
     store = SQLiteStore(tmp_path / "schema.db")
     conn = sqlite3.connect(store.path)
-    tables = {
-        row[0]
-        for row in conn.execute(
-            "SELECT name FROM sqlite_master WHERE type='table'"
-        )
-    }
-    assert set(SQLITE_COLUMNS) <= tables
-    for table, expected in SQLITE_COLUMNS.items():
-        got = {row[1] for row in conn.execute(f"PRAGMA table_info({table})")}
-        assert got == expected
-        assert "pack_id" not in got
+    try:
+        tables = {
+            row[0]
+            for row in conn.execute(
+                "SELECT name FROM sqlite_master WHERE type='table'"
+            )
+        }
+        assert set(SQLITE_COLUMNS) <= tables
+        for table, expected in SQLITE_COLUMNS.items():
+            got = {row[1] for row in conn.execute(f"PRAGMA table_info({table})")}
+            assert got == expected
+            assert "pack_id" not in got
+    finally:
+        conn.close()
 
 
 def test_focus_and_claim_fields_frozen():

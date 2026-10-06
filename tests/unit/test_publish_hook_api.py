@@ -166,7 +166,8 @@ def test_default_bind_host_is_loopback():
     assert HOOK_DEFAULT_BIND_HOST == "127.0.0.1"
     assert HOOK_BIND_HOST_ENV == "FRESHLATCH_BIND_HOST"
     # __main__ 启动路径必须引用默认本机绑定(文档/契约落点)
-    src = open(appmod.__file__, encoding="utf-8").read()
+    with open(appmod.__file__, encoding="utf-8") as f:
+        src = f.read()
     tree = ast.parse(src)
     main_src = None
     for node in tree.body:
@@ -183,7 +184,8 @@ def test_default_bind_host_is_loopback():
 
 def test_api_layer_delegates_same_gate_no_parallel_if():
     """HTTP 适配层须调用 evaluate_publish_hook,禁止平行 if/else 出口。"""
-    src = open(appmod.__file__, encoding="utf-8").read()
+    with open(appmod.__file__, encoding="utf-8") as f:
+        src = f.read()
     assert "evaluate_publish_hook(" in src
     assert '@app.post("/api/publish-hook/check")' in src
     # 禁止出站通知 webhook 顶替 check;禁止 OpenManus WS 平台化字面
