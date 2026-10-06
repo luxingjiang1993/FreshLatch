@@ -21,7 +21,7 @@
 - 生成文档与题目草稿只用 `draft_model`（锁死 `qwen-flash`）。temperature 与 seed 从配置读取。二者任一为 `null` 或未传入：退出非 0，禁止落到 `DecodingParams` 的 temperature 0 默认
 - 抽检子命令只用 `flag_model`（`qwen-plus`）且 `flag_thinking` 必须为 false。输出写到调用方指定的 sidecar JSON（建议路径 `data/exp/x1/flag-notes.json`，由人步骤决定是否入库）。sidecar 不得包含对 `relevant` 的改写。脚本不得写 `data/eval/retrieve_x1.json`
 - 没有 `--out` 时退出非 0。`--out` 不得位于 `data/corpus`、`data/traps`、`data/eval`、`docs/evidence/hard-gold-arm`、`reports` 之下
-- 草稿落盘前调用 RET-01.1 的检查函数，把违规打印出来。写草稿时去污染阈值仍未设置，检查器退出码 2 是预期结果：打印这些输出，不把退出码 2 当成致命错误，草稿仍写入 `--out`。退出码 1 的结构或许可违规同样打印，并且仍然只写 `--out`，不写正式语料目录
+- 草稿落盘前调用 RET-01.1 的检查函数，把违规打印出来。主人已批准 `decontam_8gram_max` = 0.2，但正式 `config.json` 由 RET-01.3 创建。本脚本见到缺键或 `null` 时，检查器退出码 2 仍是预期结果：打印这些输出，不把退出码 2 当成致命错误，草稿仍写入 `--out`。不得在调用检查器之前把 0.2 填进配置或当作缺省传入。退出码 1 的结构或许可违规同样打印，并且仍然只写 `--out`，不写正式语料目录
 - 单测注入假 `LLMClient`，断言：未传 temperature 时不调用模型；抽检结果不含 gold 字段写入；测试进程不发 HTTP
 
 托管模型的 seed 不作为复现手段。本票不声称重跑脚本会得到同一篇草稿。
@@ -33,7 +33,7 @@
   1. Given 单测，When `python -m compileall -q src` 且 `python -m pytest tests/unit/test_x1_drafts.py tests/unit/test_x1_checks.py -q`，Then 退出码 0。无 DashScope 请求。
   2. Given `draft_temperature` 为 `null`，When 运行生成脚本的参数解析，Then 退出非 0 且假客户端调用次数为 0。
   3. Given 抽检子命令与假 `qwen-plus` 客户端，When 写出 sidecar，Then 文件里没有被写成 gold 的 `relevant`，且请求记录里的模型名是 `qwen-plus`、思考开关为关。
-  4. Given 配置里 `decontam_8gram_max` 为 `null`，检查器返回退出码 2，When 生成脚本写草稿，Then 它打印检查器输出，退出码 2 不导致脚本失败，`--out` 里仍有草稿。
+  4. Given 配置里 `decontam_8gram_max` 为 `null`，检查器返回退出码 2，When 生成脚本写草稿，Then 它打印检查器输出，退出码 2 不导致脚本失败，`--out` 里仍有草稿。脚本没有把 0.2 写进那份配置，也没有把 0.2 当作缺省传给检查器。
   5. Given 本票 diff，When `git diff --stat main -- src/freshlatch/store/base.py src/freshlatch/eval/__main__.py src/freshlatch/eval/retrieve_eval.py src/freshlatch/store/embeddings.py src/freshlatch/store/ingest.py src/freshlatch/llm.py docs/evidence/hard-gold-arm data/eval/retrieve_hard_gold.json data/corpus data/traps reports/dense-rebuild.md "reports/retrieve-hard-gold-*"`，Then 输出为空。开工前与收工后各跑 `python -c "import hashlib; from pathlib import Path; p=Path('data/dense/index.sqlite'); print('absent' if not p.is_file() else hashlib.sha256(p.read_bytes()).hexdigest(), 'absent' if not p.is_file() else p.stat().st_mtime)"`，两行相同。
 - **Provenance**:
   - Kind: adapt
