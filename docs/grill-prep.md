@@ -1,10 +1,12 @@
 # Grill 前置阅读清单 + 待钉决策清单
 
-> 用途：开 `grill-with-docs` / `grilling` 前给 coding agent 与你自己用。  
+> **本页是历史阅读包**（V1 及后续阶段已实现：I0 / I1 / V1.5 / I2 / V2 / I3）。下文保留当时 grill 记录与已钉决议，供核对，不是现行开工禁令表。  
 > 配套执行路线图：`docs/roadmap.md`（v3.1）。  
 > 开场提示词模板：[prompts/grill-with-docs-freshlatch.md](./prompts/grill-with-docs-freshlatch.md)
-
-> 原则：路线图定阶段与边界；本页定「读什么」和「必须先烤死什么」——**未钉死前不要 implement V1**。
+>
+> **现行 frontier** 以 `docs/roadmap.md` 文首 **NOW** 为准：Hard-Gold 过线未换臂（#258 复跑未过线 · 冻 bm25 · 未换臂）；改臂属 Gate（人终收，或冻 bm25）。**C′ 为 backlog**，不是本页 frontier。
+>
+> 原则（历史）：路线图定阶段与边界；本页定「读什么」和「必须先烤死什么」——~~未钉死前不要 implement V1~~（该句不再是现行禁令；V1 已实现）。
 
 ---
 
@@ -12,7 +14,7 @@
 
 1. 先读完 §1 阅读包（agent 可自行打开仓内文件；找得到的事实不要问用户）。  
 2. 以 `docs/roadmap.md` 为设计树根。  
-3. 本页 §2 是 **第一轮 frontier 推荐题**（可整轮抛出）；§3 是后续轮才解封的题。  
+3. 本页 §2 是当时 V1 **第一轮 frontier**（历史记录）；§3 是当时后续轮才解封的题。**现行 frontier** 见文首与 `docs/roadmap.md` NOW，不是本节。  
 4. 每轮产出：更新本页勾选 + 必要时写 ADR / glossary（`grill-with-docs` → grilling + domain-modeling）。  
 5. **共享理解确认前**：不改产品代码；I0 纯文档/表可与 grill 并行。
 
@@ -564,3 +566,4 @@ BOI / GenAI 暂行办法 / 个保审计办法 — 见会话记录；适合 `regu
 | 2026-10-03 | **I3 Round 1–3** 全认；共享理解确认；评估+ADR-0032+CONTEXT+roadmap 落盘；下一跳 to-spec |
 | 2026-10-03 | **I3 to-spec**：`docs/spec/20-PhaseI3-InterviewHardening.md`；[#248](https://github.com/luxingjiang1993/FreshLatch/issues/248)；下一跳 to-tickets |
 | 2026-10-03 | **I3 to-tickets + enrich**：#249–#253；Frontier #249；`.scratch/i3-tickets/INDEX.md` |
+| 2026-10-06 | **DOC-05**：文首改为历史阅读包；划掉「未钉死前不要 implement V1」现行禁令；现行 frontier 指向 `docs/roadmap.md` 文首 NOW（Hard-Gold 过线未换臂 / 改臂 Gate 人终收或冻 bm25；C′ backlog） |
