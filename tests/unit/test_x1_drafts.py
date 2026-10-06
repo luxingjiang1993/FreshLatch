@@ -5,18 +5,21 @@
 
 from __future__ import annotations
 
+import hashlib
 import importlib.util
 import json
+import socket
 import sys
 from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
 
-from freshlatch.llm import DecodingParams, TokenUsage
+from freshlatch.llm import DecodingParams, LLMClient, TokenUsage
 
 ROOT = Path(__file__).resolve().parents[2]
 _SCRIPT_MOD_NAME = "gen_x1_drafts_ret01_7"
+EVAL_X1 = ROOT / "data" / "eval" / "retrieve_x1.json"
 
 
 def _load_script():
@@ -60,6 +63,13 @@ def _write_json(path: Path, obj) -> Path:
     return path
 
 
+def _file_fp(path: Path):
+    if not path.is_file():
+        return ("absent", None, None)
+    st = path.stat()
+    return ("present", hashlib.sha256(path.read_bytes()).hexdigest(), st.st_mtime)
+
+
 class FakeLLM:
     """注入用假客户端：记录调用，不触网。"""
 
@@ -70,13 +80,11 @@ class FakeLLM:
         self.token_usage = TokenUsage()
 
     def chat(self, messages, *, tools=None, decoding=None, response_format=None):
-        thinking = False
         self.calls.append(
             {
                 "messages": messages,
                 "decoding": decoding,
                 "tools": tools,
-                "thinking": thinking,
                 "response_format": response_format,
             }
         )
@@ -84,21 +92,30 @@ class FakeLLM:
         return SimpleNamespace(content=self.content)
 
 
-def _draft_payload() -> dict:
-    body = (
-        "---\n"
-        "doc_id: draft-doc\n"
-        "as_of: T1\n"
-        "source_type: private\n"
-        "title: 草稿文档\n"
-        "provenance: synthetic\n"
-        "license: synthetic\n"
-        "domain: D0\n"
-        "genre: S1\n"
-        "---\n"
-        "## p1\n"
-        "顾问备忘里写了渠道改口后的报价口径，仅作草稿。\n"
-    )
+def _doc_body(**meta_over) -> str:
+    meta = {
+        "doc_id": "draft-doc",
+        "as_of": "T1",
+        "source_type": "private",
+        "title": "草稿文档",
+        "provenance": "synthetic",
+        "license": "synthetic",
+        "domain": "D0",
+        "genre": "S1",
+    }
+    meta.update(meta_over)
+    lines = ["---"]
+    for k, v in meta.items():
+        if v is None:
+            continue
+        lines.append(f"{k}: {v}")
+    lines.append("---")
+    lines.append("## p1")
+    lines.append("顾问备忘里写了渠道改口后的报价口径，仅作草稿。")
+    return "\n".join(lines) + "\n"
+
+
+def _draft_payload(*, body: str | None = None, questions_over: dict | None = None) -> dict:
     questions = {
         "queries": [
             {
@@ -107,14 +124,22 @@ def _draft_payload() -> dict:
                 "qtype": "paraphrase",
                 "category": "hard",
                 "relevant": ["draft-doc#p1@T1"],
-                "distractors": [],
+                "distractors": ["trap-doc#p1@T1"],
+                "answer_points": ["改口后的报价口径"],
                 "eval_intent": "草稿",
                 "as_of": "T1",
             }
         ]
     }
+    if questions_over:
+        questions["queries"][0].update(questions_over)
     return {
-        "documents": [{"path": "corpus/t1/draft-doc.md", "content": body}],
+        "documents": [
+            {
+                "path": "corpus/t1/draft-doc.md",
+                "content": body if body is not None else _doc_body(),
+            }
+        ],
         "questions": questions,
     }
 
@@ -122,6 +147,20 @@ def _draft_payload() -> dict:
 class _BoomOpenAI:
     def __init__(self, *args, **kwargs):
         raise AssertionError("测试进程不得构造真实 OpenAI 客户端")
+
+
+class _RecordingInner:
+    """记录 chat.completions.create 的 kwargs，不发网络。"""
+
+    def __init__(self, content: str) -> None:
+        self.kwargs_list: list[dict] = []
+        self._content = content
+        self.chat = SimpleNamespace(completions=SimpleNamespace(create=self.create))
+
+    def create(self, **kwargs):
+        self.kwargs_list.append(kwargs)
+        msg = SimpleNamespace(content=self._content)
+        return SimpleNamespace(usage=None, choices=[SimpleNamespace(message=msg)])
 
 
 def test_missing_out_exits_nonzero_without_llm(tmp_path: Path):
@@ -162,7 +201,7 @@ def test_missing_seed_exits_nonzero_without_llm(tmp_path: Path):
     assert fake.calls == []
 
 
-def test_flag_sidecar_has_no_gold_relevant(tmp_path: Path):
+def test_flag_sidecar_whitelists_note_fields(tmp_path: Path):
     mod = _load_script()
     questions = _draft_payload()["questions"]
     qpath = _write_json(tmp_path / "questions.json", questions)
@@ -173,7 +212,13 @@ def test_flag_sidecar_has_no_gold_relevant(tmp_path: Path):
             {
                 "id": "draft-q1",
                 "suspicion": "锚可能不对",
+                "reason": "证据对不上正文",
+                "severity": "high",
                 "relevant": ["should-not-be-written"],
+                "distractors": ["also-gold"],
+                "qtype": "paraphrase",
+                "answer_points": ["不该出现"],
+                "relevant_ids": ["x"],
             },
             ensure_ascii=False,
         )
@@ -191,22 +236,22 @@ def test_flag_sidecar_has_no_gold_relevant(tmp_path: Path):
         llm_client=fake,
     )
     assert code == 0
-    assert sidecar.is_file()
     dumped = sidecar.read_text(encoding="utf-8")
     data = json.loads(dumped)
-    assert "relevant" not in dumped
-    assert "should-not-be-written" not in dumped
-    assert "gold" not in json.dumps(data, ensure_ascii=False).lower()
-    assert fake.calls, "抽检必须调用假客户端"
-    for call in fake.calls:
-        d = call["decoding"]
-        assert isinstance(d, DecodingParams)
-        assert d.model == "qwen-plus"
-        assert call["thinking"] is False
-    assert mod.last_flag_requests
-    for rec in mod.last_flag_requests:
-        assert rec["model"] == "qwen-plus"
-        assert rec["thinking"] is False
+    assert data["model"] == "qwen-plus"
+    assert data["flag_thinking"] is False
+    assert data["temperature"] == 0.0
+    notes = data["notes"]
+    assert notes == {
+        "id": "draft-q1",
+        "suspicion": "锚可能不对",
+        "reason": "证据对不上正文",
+        "severity": "high",
+    }
+    for banned in ("relevant", "distractors", "qtype", "answer_points", "relevant_ids", "should-not-be-written"):
+        assert banned not in dumped
+    assert fake.calls
+    assert fake.calls[0]["decoding"].model == "qwen-plus"
 
 
 def test_null_decontam_prints_checker_and_still_writes(tmp_path: Path, capsys):
@@ -218,6 +263,7 @@ def test_null_decontam_prints_checker_and_still_writes(tmp_path: Path, capsys):
     out = tmp_path / "drafts"
     captured: dict = {}
     real_check = mod.check_x1
+    before_x1 = _file_fp(EVAL_X1)
 
     def _wrap(corpus_dir, traps_dir, questions, config, **kwargs):
         captured["config"] = config
@@ -249,8 +295,7 @@ def test_null_decontam_prints_checker_and_still_writes(tmp_path: Path, capsys):
     assert "decontam_8gram_max" not in captured["kwargs"]
     src = (ROOT / "scripts" / "gen_x1_drafts.py").read_text(encoding="utf-8")
     assert "0.2" not in src
-    eval_gold = ROOT / "data" / "eval" / "retrieve_x1.json"
-    assert not eval_gold.is_file()
+    assert _file_fp(EVAL_X1) == before_x1
 
 
 def test_forbidden_out_rejected(tmp_path: Path):
@@ -265,6 +310,55 @@ def test_forbidden_out_rejected(tmp_path: Path):
     assert code != 0
     assert fake.calls == []
     assert not forbidden.exists()
+
+
+def test_out_repo_root_rejected(tmp_path: Path):
+    mod = _load_script()
+    fake = FakeLLM(json.dumps(_draft_payload(), ensure_ascii=False))
+    cfg = _write_json(tmp_path / "config.json", _cfg())
+    corpus = ROOT / "data" / "corpus"
+    before = sorted(p.relative_to(ROOT) for p in corpus.rglob("*") if p.is_file())
+    code = mod.main(
+        ["generate", "--config", str(cfg), "--out", str(ROOT)],
+        llm_client=fake,
+    )
+    assert code != 0
+    assert fake.calls == []
+    after = sorted(p.relative_to(ROOT) for p in corpus.rglob("*") if p.is_file())
+    assert before == after
+
+
+def test_out_data_dir_rejected(tmp_path: Path):
+    mod = _load_script()
+    fake = FakeLLM(json.dumps(_draft_payload(), ensure_ascii=False))
+    cfg = _write_json(tmp_path / "config.json", _cfg())
+    data = ROOT / "data"
+    before = sorted(p.relative_to(data) for p in data.rglob("*") if p.is_file())
+    code = mod.main(
+        ["generate", "--config", str(cfg), "--out", str(data)],
+        llm_client=fake,
+    )
+    assert code != 0
+    assert fake.calls == []
+    after = sorted(p.relative_to(data) for p in data.rglob("*") if p.is_file())
+    assert before == after
+
+
+def test_nonempty_out_without_marker_rejected(tmp_path: Path):
+    mod = _load_script()
+    fake = FakeLLM(json.dumps(_draft_payload(), ensure_ascii=False))
+    cfg = _write_json(tmp_path / "config.json", _cfg())
+    out = tmp_path / "existing"
+    out.mkdir()
+    keep = out / "keep-me.txt"
+    keep.write_text("preserve", encoding="utf-8")
+    code = mod.main(
+        ["generate", "--config", str(cfg), "--out", str(out)],
+        llm_client=fake,
+    )
+    assert code != 0
+    assert fake.calls == []
+    assert keep.read_text(encoding="utf-8") == "preserve"
 
 
 def test_generate_uses_flash_decoding_params(tmp_path: Path):
@@ -282,16 +376,148 @@ def test_generate_uses_flash_decoding_params(tmp_path: Path):
     assert d.model == "qwen-flash"
     assert d.temperature == 0.7
     assert d.seed == 11
+    prompt = fake.calls[0]["messages"][0]["content"]
+    assert "relevant" not in prompt
+    assert "answer_points" not in prompt
+    assert "distractors" not in prompt
+    assert (out / ".x1-drafts-manifest.json").is_file()
+
+
+def test_model_relevant_rewritten_to_todo_owner(tmp_path: Path, capsys):
+    mod = _load_script()
+    payload = _draft_payload()
+    assert payload["questions"]["queries"][0]["relevant"] == ["draft-doc#p1@T1"]
+    fake = FakeLLM(json.dumps(payload, ensure_ascii=False))
+    cfg = _write_json(tmp_path / "config.json", _cfg(decontam_8gram_max=0.35))
+    out = tmp_path / "drafts"
+    code = mod.main(
+        ["generate", "--config", str(cfg), "--out", str(out)],
+        llm_client=fake,
+    )
+    printed = capsys.readouterr().out
+    assert code == 0
+    qtext = (out / "questions.json").read_text(encoding="utf-8")
+    assert "TODO-owner" in qtext
+    written = json.loads(qtext)
+    item = written["queries"][0]
+    assert item["relevant"] == "TODO-owner"
+    assert item["distractors"] == "TODO-owner"
+    assert item["answer_points"] == "TODO-owner"
+    assert "draft-doc#p1@T1" not in qtext
+    assert "checker_exit=1" in printed
+    assert "relevant 必须是列表" in printed
+
+
+def test_checker_exit_1_still_writes(tmp_path: Path, capsys):
+    mod = _load_script()
+    fake = FakeLLM(json.dumps(_draft_payload(), ensure_ascii=False))
+    cfg = _write_json(tmp_path / "config.json", _cfg(decontam_8gram_max=0.35))
+    out = tmp_path / "drafts"
+    code = mod.main(
+        ["generate", "--config", str(cfg), "--out", str(out)],
+        llm_client=fake,
+    )
+    printed = capsys.readouterr().out
+    assert code == 0
+    assert "checker_exit=1" in printed
+    assert (out / "questions.json").is_file()
+    assert (out / "corpus" / "t1" / "draft-doc.md").is_file()
+
+
+def test_as_of_mismatch_still_writes(tmp_path: Path, capsys):
+    mod = _load_script()
+    payload = _draft_payload(body=_doc_body(as_of="T0"))
+    fake = FakeLLM(json.dumps(payload, ensure_ascii=False))
+    cfg = _write_json(tmp_path / "config.json", _cfg())
+    out = tmp_path / "drafts"
+    code = mod.main(
+        ["generate", "--config", str(cfg), "--out", str(out)],
+        llm_client=fake,
+    )
+    printed = capsys.readouterr().out
+    assert code == 0
+    assert "checker_error=AssertionError" in printed
+    assert (out / "corpus" / "t1" / "draft-doc.md").is_file()
+    body = (out / "corpus" / "t1" / "draft-doc.md").read_text(encoding="utf-8")
+    assert "as_of: T0" in body
+
+
+def test_missing_doc_id_still_writes(tmp_path: Path, capsys):
+    mod = _load_script()
+    payload = _draft_payload(body=_doc_body(doc_id=None))
+    fake = FakeLLM(json.dumps(payload, ensure_ascii=False))
+    cfg = _write_json(tmp_path / "config.json", _cfg())
+    out = tmp_path / "drafts"
+    code = mod.main(
+        ["generate", "--config", str(cfg), "--out", str(out)],
+        llm_client=fake,
+    )
+    printed = capsys.readouterr().out
+    assert code == 0
+    assert "checker_error=KeyError" in printed
+    assert (out / "corpus" / "t1" / "draft-doc.md").is_file()
+
+
+def test_non_json_writes_raw_and_exits_nonzero(tmp_path: Path, capsys):
+    mod = _load_script()
+    fake = FakeLLM("这不是 JSON")
+    cfg = _write_json(tmp_path / "config.json", _cfg())
+    out = tmp_path / "drafts"
+    code = mod.main(
+        ["generate", "--config", str(cfg), "--out", str(out)],
+        llm_client=fake,
+    )
+    captured = capsys.readouterr()
+    assert code != 0
+    assert "Traceback" not in captured.err
+    assert "Traceback" not in captured.out
+    assert (out / "raw-response.txt").read_text(encoding="utf-8") == "这不是 JSON"
+
+
+def test_flag_passes_enable_thinking_false_to_create(tmp_path: Path):
+    mod = _load_script()
+    questions = _draft_payload()["questions"]
+    qpath = _write_json(tmp_path / "questions.json", questions)
+    cfg = _write_json(tmp_path / "config.json", _cfg())
+    sidecar = tmp_path / "flag-notes.json"
+    inner = _RecordingInner(
+        json.dumps({"id": "draft-q1", "suspicion": "抽检"}, ensure_ascii=False)
+    )
+    llm = LLMClient(api_key="test-key", base_url="http://127.0.0.1:9")
+    llm.client = inner
+    code = mod.main(
+        [
+            "flag",
+            "--config",
+            str(cfg),
+            "--in",
+            str(qpath),
+            "--sidecar",
+            str(sidecar),
+        ],
+        llm_client=llm,
+    )
+    assert code == 0
+    assert inner.kwargs_list
+    kw = inner.kwargs_list[0]
+    assert kw["model"] == "qwen-plus"
+    assert kw.get("extra_body") == {"enable_thinking": False}
 
 
 def test_process_does_not_construct_openai(tmp_path: Path, monkeypatch):
-    import openai
+    import freshlatch.llm as llm_mod
 
-    monkeypatch.setattr(openai, "OpenAI", _BoomOpenAI)
+    monkeypatch.setattr(llm_mod, "OpenAI", _BoomOpenAI)
+
+    def _boom_connect(self, *args, **kwargs):
+        raise AssertionError("测试进程不得发 HTTP")
+
+    monkeypatch.setattr(socket.socket, "connect", _boom_connect)
     mod = _load_script()
     fake = FakeLLM(json.dumps(_draft_payload(), ensure_ascii=False))
     cfg = _write_json(tmp_path / "config.json", _cfg())
     out = tmp_path / "drafts"
+    before_x1 = _file_fp(EVAL_X1)
     assert (
         mod.main(
             ["generate", "--config", str(cfg), "--out", str(out)],
@@ -316,3 +542,27 @@ def test_process_does_not_construct_openai(tmp_path: Path, monkeypatch):
         )
         == 0
     )
+    assert _file_fp(EVAL_X1) == before_x1
+
+
+def test_sidecar_under_data_rejected(tmp_path: Path):
+    mod = _load_script()
+    fake = FakeLLM(json.dumps({"id": "q", "suspicion": "x"}, ensure_ascii=False))
+    cfg = _write_json(tmp_path / "config.json", _cfg())
+    qpath = _write_json(tmp_path / "questions.json", _draft_payload()["questions"])
+    sidecar = ROOT / "data" / "flag-notes.json"
+    code = mod.main(
+        [
+            "flag",
+            "--config",
+            str(cfg),
+            "--in",
+            str(qpath),
+            "--sidecar",
+            str(sidecar),
+        ],
+        llm_client=fake,
+    )
+    assert code != 0
+    assert fake.calls == []
+    assert not sidecar.exists()
