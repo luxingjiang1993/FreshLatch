@@ -14,7 +14,6 @@ from pathlib import Path
 import pytest
 
 from freshlatch.eval.x1_checks import (
-    LAW_NAMES,
     MAX_PUBLIC_RATIO,
     MIN_CHUNKS,
     MIN_PER_QTYPE,
