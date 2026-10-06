@@ -95,8 +95,21 @@ def _write_dummy_dense(db_path: Path) -> int:
     return n
 
 
-def test_hard_arm_compare_same_corpus_as_a0(tmp_path):
+def test_hard_arm_compare_same_corpus_as_a0(tmp_path, monkeypatch):
     """#259：同库下臂对比 BM25 列须与 A0 R@10 一致（容差 0 保险丝不再假 fail）。"""
+    monkeypatch.delenv("DASHSCOPE_API_KEY", raising=False)
+
+    def _fake_embed_texts(texts: list[str], *, timeout: float = 60.0) -> list[list[float]]:
+        """查询嵌入假向量：维度与 _write_dummy_dense 占位 vec 一致，不发网络。"""
+        dim = 8
+        vectors: list[list[float]] = []
+        for text in texts:
+            vec = [0.0] * dim
+            vec[sum(ord(ch) for ch in text) % dim] = 1.0
+            vectors.append(vec)
+        return vectors
+
+    monkeypatch.setattr("freshlatch.store.embeddings.embed_texts", _fake_embed_texts)
     a0_store = InMemoryStore()
     _ingest_eval_corpus(a0_store, CORPUS, trap_root=TRAPS)
     from freshlatch.eval.retrieve_eval import evaluate_retrieve, _load_json
