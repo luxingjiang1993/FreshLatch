@@ -3029,3 +3029,265 @@ def test_flag_resume_after_question_added_keeps_held_plus_real(tmp_path: Path, c
     settled = json.loads(ledger_path.read_text(encoding="utf-8"))
     assert "inflight" not in settled
     assert settled["spent_cny"] == pytest.approx(held_upper + mod._cost_cny(1, 1, 1, 2))
+
+
+def _example_section_count(prompt: str) -> int:
+    example = prompt.split("单份文档示例：", 1)[1].split("\n", 1)[0]
+    content = json.loads(example)["content"]
+    return sum(1 for line in content.splitlines() if line.startswith("## p"))
+
+
+def test_prompt_states_exact_chunk_count_including_pair_and_s6():
+    mod = _load_script()
+    two = _batch(chunks_per_doc=2)
+    prompt = mod._build_batch_prompt(two)
+    assert "每篇 content 正文恰好 2 段，标题依次为 `## p1` … `## p2`，不多不少。" in prompt
+    assert _example_section_count(prompt) == 2
+
+    four = _batch(batch_id="c4", chunks_per_doc=4, topic="四段备忘")
+    prompt4 = mod._build_batch_prompt(four)
+    assert "每篇 content 正文恰好 4 段，标题依次为 `## p1` … `## p4`，不多不少。" in prompt4
+    assert _example_section_count(prompt4) == 4
+    example4 = json.loads(prompt4.split("单份文档示例：", 1)[1].split("\n", 1)[0])["content"]
+    assert "## p5" not in example4
+
+    pair = {
+        "batch_id": "pair5",
+        "genre": "S2",
+        "domain": "D0",
+        "n_docs": 1,
+        "chunks_per_doc": 5,
+        "topic": "配对五段",
+        "pair": True,
+    }
+    prompt_pair = mod._build_batch_prompt(pair)
+    assert "每篇 content 正文恰好 5 段，标题依次为 `## p1` … `## p5`，不多不少。" in prompt_pair
+    assert "T0 与 T1 各自的正文都恰好 5 段，标题依次为 `## p1` … `## p5`，不多不少。" in prompt_pair
+    assert _example_section_count(prompt_pair) == 5
+
+    fact = "令16第五条新增个人信息出境豁免场景"
+    s6 = _batch(
+        batch_id="s6-d1-c4",
+        genre="S6",
+        domain="D1",
+        as_of="T1",
+        chunks_per_doc=3,
+        topic="监管豁免",
+        must_include=[fact],
+    )
+    prompt_s6 = mod._build_batch_prompt(s6)
+    sentence = "每篇 content 正文恰好 3 段，标题依次为 `## p1` … `## p3`，不多不少。"
+    assert prompt_s6.count(sentence) == 1
+    assert "只写 must_include 里的事实，不得自拟法律门槛或日期。" in prompt_s6
+    assert "must_include（原样遵守，不要改写这些事实）：" in prompt_s6
+    assert fact in prompt_s6
+    assert "不得为了凑段数改写或删掉" in prompt_s6
+    assert (
+        "p1 完整写出 must_include 事实；其余段只写背景、适用范围或影响说明，不得新增门槛、日期、金额或其他数字，也不要拆开或改写 must_include 事实。"
+        in prompt_s6
+    )
+    assert _example_section_count(prompt_s6) == 3
+    multi = _batch(
+        batch_id="s6-multi",
+        genre="S6",
+        domain="D3",
+        as_of="T1",
+        chunks_per_doc=3,
+        topic="多条事实",
+        must_include=[fact, "另一条已有事实"],
+    )
+    prompt_multi = mod._build_batch_prompt(multi)
+    assert prompt_multi.count(sentence) == 1
+    assert "不得新增门槛、日期、金额或其他数字，也不要拆开或改写 must_include 事实。" in prompt_multi
+    assert "p1 完整写出 must_include 事实" not in prompt_multi
+    assert "不要写法律门槛" in prompt_multi
+
+
+def _s6_reply(batch_id: str, domain: str, title: str, paragraphs: list[str], question: str) -> dict:
+    doc_id = f"{batch_id}-memo"
+    body = [
+        "---",
+        f"doc_id: {doc_id}",
+        "as_of: T1",
+        "source_type: private",
+        f"title: {title}",
+        "provenance: synthetic",
+        "license: synthetic",
+        f"domain: {domain}",
+        "genre: S6",
+        "---",
+    ]
+    for index, paragraph in enumerate(paragraphs, start=1):
+        body.append(f"## p{index}")
+        body.append(paragraph)
+    return {
+        "documents": [
+            {
+                "path": f"corpus/t1/{doc_id}.md",
+                "content": "\n".join(body) + "\n",
+            }
+        ],
+        "questions": {
+            "queries": [
+                {
+                    "id": f"{batch_id}-q1",
+                    "query": question,
+                    "category": "regulatory_change",
+                    "eval_intent": "fact_recall",
+                    "as_of": "T1",
+                }
+            ]
+        },
+    }
+
+
+def test_s6_wrong_section_counts_fail_with_expected_and_actual(tmp_path: Path, capsys):
+    """离线重放三批真实 qwen-flash 回复：6 段、6 段、2 段，期望都是 3 段。"""
+    mod = _load_script()
+    cases = [
+        (
+            "s6-d1-c4",
+            "D1",
+            6,
+            [
+                "根据令16第五条新增豁免规定，除关键信息基础设施运营者外，其他主体在满足特定条件时可免于开展个人信息出境安全评估申报、标准合同备案及认证程序。",
+                "豁免适用的量化门槛为：当年累计出境的个人信息数量不足十万人，且不包含敏感个人信息。该标准适用于非关键信息基础设施运营者主体。",
+                "此外，令16第五条明确列出若干具体豁免场景，包括但不限于合同履行所必需的跨境数据传输、跨境人力资源管理活动，以及应对突发紧急情况下的必要数据转移。",
+                "上述豁免仅限于非关键信息基础设施运营者，且不得扩大解释或用于规避监管要求。所有数据处理行为仍须遵循最小必要原则与合法正当目的要求。",
+                "特别提示：若涉及敏感个人信息，无论数量多少，均不适用本豁免条款，必须依法履行安全评估或标准合同等合规义务。",
+                "本备忘内容基于现行有效法规，仅作合规指引参考，实际执行应以主管部门最终解释为准。",
+            ],
+            "令16第五条新增了哪些个人信息出境的豁免场景？",
+        ),
+        (
+            "s6-d2-g1",
+            "D2",
+            6,
+            [
+                "根据2023公司法第四十七条，有限责任公司股东的认缴出资须自公司成立之日起五年内缴足。此规定为新设强制性期限要求。",
+                "相较之下，2018年公司法第二十六条并未设定具体的出资缴足期限，允许股东自行约定出资时间。",
+                "本次监管变更明确将认缴出资的最长期限限定为五年，强化了对公司资本真实性的监管要求。",
+                "该调整旨在防范股东利用无限期认缴制度规避出资责任，提升企业信用透明度与市场稳定性。",
+                "需注意，该条款仅适用于新设公司或未完成出资的存量公司，已履行出资义务的不溯及既往。",
+                "所有相关主体应依据2023公司法第四十七条重新审视公司章程中的出资安排，确保合规。",
+            ],
+            "2023公司法第四十七条对有限责任公司股东认缴出资期限有何具体要求？",
+        ),
+        (
+            "s6-d2-g2",
+            "D2",
+            2,
+            [
+                "新公司法（2023修订）于二〇二四年七月一日生效，第二百六十六条要求出资期限超出法定上限的存量公司逐步调整到位。",
+                "旧法（2018修正）的施行日期为二〇〇六年一月一日。",
+            ],
+            "新公司法（2023修订）的施行日期是什么？",
+        ),
+    ]
+    batches = []
+    payloads = []
+    for batch_id, domain, _count, paragraphs, question in cases:
+        batches.append(
+            _batch(
+                batch_id=batch_id,
+                genre="S6",
+                domain=domain,
+                as_of="T1",
+                chunks_per_doc=3,
+                topic=batch_id,
+                must_include=[paragraphs[0]],
+            )
+        )
+        payloads.append(
+            _s6_reply(
+                batch_id,
+                domain,
+                f"顾问备忘：{batch_id}",
+                paragraphs,
+                question,
+            )
+        )
+    fake = QueueLLM([json.dumps(item, ensure_ascii=False) for item in payloads])
+    cfg = _write_json(tmp_path / "config.json", _cfg())
+    out = tmp_path / "s6-sections"
+    code = _generate(mod, tmp_path, fake, cfg, out, spec=_spec(batches))
+    err = capsys.readouterr().err
+    assert code == 1
+    assert fake.index == 3
+    assert "期望 3 段，实得 6 段" in err
+    assert "期望 3 段，实得 2 段" in err
+    manifest = _manifest(out)
+    assert manifest["batches"]["s6-d1-c4"]["error"] == "期望 3 段，实得 6 段"
+    assert manifest["batches"]["s6-d2-g1"]["error"] == "期望 3 段，实得 6 段"
+    assert manifest["batches"]["s6-d2-g2"]["error"] == "期望 3 段，实得 2 段"
+    assert all(rec["status"] == "failed" for rec in manifest["batches"].values())
+    assert not (out / "corpus" / "t1" / "s6-d1-c4-memo.md").exists()
+    assert manifest["stop_reason"] == "consecutive_validation"
+
+
+def test_old_prompt_ok_batch_kept_when_prompt_changes(tmp_path: Path, monkeypatch, capsys):
+    mod = _load_script()
+    done = _batch(batch_id="done", topic="已完成")
+    failed = _batch(batch_id="failed", topic="校验失败后重跑")
+    todo = _batch(batch_id="todo", topic="尚未生成", domain="D2")
+    cfg = _write_json(tmp_path / "config.json", _cfg())
+    out = tmp_path / "prompt-resume"
+    real = mod._build_batch_prompt
+
+    def _old_prompt(item):
+        return real(item).replace(mod._chunk_count_line(int(item["chunks_per_doc"])), "块数等于 chunks_per_doc。")
+
+    monkeypatch.setattr(mod, "_build_batch_prompt", _old_prompt)
+    done_payload = _batch_payload(done, doc_id="done-doc", qid="q-done")
+    failed_body = _doc_body(
+        n_chunks=6,
+        doc_id="failed-doc",
+        title="段数过多",
+        domain="D0",
+        genre="S1",
+        as_of="T1",
+    )
+    failed_payload = {
+        "documents": [{"path": "corpus/t1/failed-doc.md", "content": failed_body}],
+        "questions": _batch_payload(failed, doc_id="failed-doc", qid="q-failed")["questions"],
+    }
+    first = QueueLLM(
+        [json.dumps(done_payload, ensure_ascii=False), json.dumps(failed_payload, ensure_ascii=False)]
+    )
+    assert _generate(mod, tmp_path, first, cfg, out, spec=_spec([done, failed])) == 1
+    assert first.index == 2
+    before = _manifest(out)
+    assert before["batches"]["done"]["status"] == "ok"
+    assert before["batches"]["failed"]["status"] == "failed"
+    assert "期望 2 段，实得 6 段" in before["batches"]["failed"]["error"]
+    old_sha = before["batches"]["done"]["prompt_sha256"]
+    spent_before = before["spent_cny"]
+    real_cost = mod._cost_cny(1, 1, 1, 2)
+    assert spent_before == pytest.approx(real_cost * 2)
+    done_bytes = (out / "corpus" / "t1" / "done-doc.md").read_bytes()
+
+    monkeypatch.setattr(mod, "_build_batch_prompt", real)
+    retry_failed = _batch_payload(failed, doc_id="failed-doc", qid="q-failed")
+    todo_payload = _batch_payload(todo, doc_id="todo-doc", qid="q-todo")
+    second = QueueLLM(
+        [json.dumps(retry_failed, ensure_ascii=False), json.dumps(todo_payload, ensure_ascii=False)]
+    )
+    code = _generate(mod, tmp_path, second, cfg, out, spec=_spec([done, failed, todo]))
+    err = capsys.readouterr().err
+    assert code == 0
+    assert "解码参数与清单不一致" not in err
+    assert second.index == 2
+    assert [call["messages"][0]["content"].split("topic：", 1)[1].split("\n", 1)[0] for call in second.calls] == [
+        "校验失败后重跑",
+        "尚未生成",
+    ]
+    assert "每篇 content 正文恰好 2 段" in second.calls[0]["messages"][0]["content"]
+    resumed = _manifest(out)
+    assert resumed["batches"]["done"]["status"] == "ok"
+    assert resumed["batches"]["done"]["prompt_sha256"] == old_sha
+    assert resumed["batches"]["failed"]["status"] == "ok"
+    assert resumed["batches"]["todo"]["status"] == "ok"
+    assert resumed["spent_cny"] == pytest.approx(spent_before + real_cost * 2)
+    assert (out / "corpus" / "t1" / "done-doc.md").read_bytes() == done_bytes
+    assert (out / "corpus" / "t1" / "failed-doc.md").is_file()
+    assert (out / "corpus" / "t1" / "todo-doc.md").is_file()

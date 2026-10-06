@@ -690,11 +690,25 @@ def _input_token_upper(prompt: str) -> int:
     return len(prompt) * 2
 
 
+def _chunk_count_line(n: int) -> str:
+    return f"每篇 content 正文恰好 {n} 段，标题依次为 `## p1` … `## p{n}`，不多不少。"
+
+
+def _example_sections(n: int) -> str:
+    """示例正文段数与该批 chunks_per_doc 一致。"""
+    lines: list[str] = []
+    for index in range(1, n + 1):
+        lines.append(f"## p{index}")
+        lines.append("合成正文。" if index == 1 else "另一段。")
+    return "\n".join(lines) + "\n"
+
+
 def _prompt_document_example(batch: dict[str, Any]) -> str:
-    """示例用本批的目录、genre、as_of 和 batch_id，文件名等于 doc_id.md。"""
+    """示例用本批的目录、genre、as_of 和 batch_id，文件名等于 doc_id.md，段数等于 chunks_per_doc。"""
     as_of = "T1" if _is_pair(batch) else batch["as_of"]
     doc_id = f"{batch['batch_id']}-memo"
     path = f"{_expected_rel_dir(batch['genre'], as_of)}/{doc_id}.md"
+    n = int(batch["chunks_per_doc"])
     content = (
         f"---\n"
         f"doc_id: {doc_id}\n"
@@ -706,7 +720,7 @@ def _prompt_document_example(batch: dict[str, Any]) -> str:
         f"domain: {batch['domain']}\n"
         f"genre: {batch['genre']}\n"
         f"---\n"
-        f"## p1\n合成正文。\n## p2\n另一段。\n"
+        f"{_example_sections(n)}"
     )
     return json.dumps({"path": path, "content": content}, ensure_ascii=False, separators=(",", ":"))
 
@@ -714,6 +728,7 @@ def _prompt_document_example(batch: dict[str, Any]) -> str:
 def _build_batch_prompt(batch: dict[str, Any]) -> str:
     """拼一批的用户提示。合成正文自写，不给金标，只要 JSON。must_include 原样塞进提示。"""
     pair = _is_pair(batch)
+    n_chunks = int(batch["chunks_per_doc"])
     lines = [
         "生成 x1 实验的合成文档与题目草稿。",
         "合成正文必须自写，不得以版权原文为模板整段改写。",
@@ -731,7 +746,8 @@ def _build_batch_prompt(batch: dict[str, Any]) -> str:
         "frontmatter 必须包含 doc_id、as_of、source_type（只允许 private、public、internal）、title、provenance: synthetic、license: synthetic、domain、genre。",
         "t0/ 目录下 as_of 必须是 T0，t1/ 目录下 as_of 必须是 T1，禁止写成日期。",
         "license 只能是 synthetic。",
-        "正文必须是 2 到 6 个独立的 ## pN 块，块 id 形如 p1，不得重复，块正文不得为空，块数等于 chunks_per_doc。",
+        _chunk_count_line(n_chunks),
+        "块 id 形如 p1，不得重复，块正文不得为空。",
         "文件名必须是 <doc_id>.md。目录必须与 as_of 和 genre 一致。",
         "单份文档示例：" + _prompt_document_example(batch),
     ]
@@ -743,6 +759,7 @@ def _build_batch_prompt(batch: dict[str, Any]) -> str:
         lines.append(f"路径分别位于 {bucket}/t0/ 与 {bucket}/t1/ 下，只一层文件名，扩展名 .md。")
         lines.append(f"documents 长度必须等于 {int(batch['n_docs']) * 2}。")
         lines.append("同一 doc_id 的两份文档：t0/ 里 as_of 写 T0，t1/ 里 as_of 写 T1，不要写日期。")
+        lines.append(f"T0 与 T1 各自的正文都恰好 {n_chunks} 段，标题依次为 `## p1` … `## p{n_chunks}`，不多不少。")
     else:
         dest = _expected_rel_dir(batch["genre"], batch["as_of"])
         lines.append(f"as_of={batch['as_of']}，不要写成日期。")
@@ -754,6 +771,14 @@ def _build_batch_prompt(batch: dict[str, Any]) -> str:
             lines.append("本批复述监管变更要点，只写 must_include 里的事实，不得自拟法律门槛或日期。")
         else:
             lines.append("本批是变更要点与补丁记录，只写 must_include 里的合成事实，不要写法律门槛。")
+        lines.append("段数要求不改 must_include：这些事实仍须原样写入，不得为了凑段数改写或删掉。")
+        facts = batch.get("must_include")
+        if isinstance(facts, list) and len(facts) == 1:
+            lines.append(
+                "p1 完整写出 must_include 事实；其余段只写背景、适用范围或影响说明，不得新增门槛、日期、金额或其他数字，也不要拆开或改写 must_include 事实。"
+            )
+        else:
+            lines.append("不得新增门槛、日期、金额或其他数字，也不要拆开或改写 must_include 事实。")
     if "n_questions" in batch:
         lines.append(f"题目数量必须等于 {int(batch['n_questions'])}。")
     if "max_chars_per_chunk" in batch:
@@ -888,8 +913,9 @@ def _validate_blocks(body: str, batch: dict[str, Any]) -> list[tuple[str, str]] 
         return parsed
     if len(parsed) < 2 or len(parsed) > 6:
         return f"块数越界: {len(parsed)}"
-    if len(parsed) != int(batch["chunks_per_doc"]):
-        return f"块数 {len(parsed)} 与 chunks_per_doc 不一致"
+    expected = int(batch["chunks_per_doc"])
+    if len(parsed) != expected:
+        return f"期望 {expected} 段，实得 {len(parsed)} 段"
     if "max_chars_per_chunk" in batch:
         limit = int(batch["max_chars_per_chunk"])
         for ident, text in parsed:
@@ -1154,7 +1180,7 @@ def _manifest_anomaly(batches: dict[str, Any], spent: float) -> str | None:
     return _spend_below_recorded(spent, recorded)
 
 
-def _resume_action(manifest: dict[str, Any], batch: dict[str, Any], fields: dict[str, Any], fingerprint: str) -> str:
+def _resume_action(manifest: dict[str, Any], batch: dict[str, Any], fields: dict[str, Any], _fingerprint: str) -> str:
     records = manifest.get("batches")
     if not isinstance(records, dict):
         return "run"
@@ -1164,12 +1190,19 @@ def _resume_action(manifest: dict[str, Any], batch: dict[str, Any], fields: dict
     if rec.get("status") == "committing":
         return "recover"
     if rec.get("status") != "ok":
-        # failed 与 inflight 可以重跑。只有 ok 才要求解码参数和指纹一致。
+        # failed 与 inflight 可以重跑。只有 ok 才核对解码参数和批次规格。
         return "run"
-    for key, value in fields.items():
-        if rec.get(key) != value:
+    # ok 批次固定在当初记下的提示摘要上：只改提示不会重跑。
+    # 改 spec、温度、seed 或模型仍报「解码参数与清单不一致」并退出。
+    for key in ("draft_model", "draft_temperature", "draft_seed"):
+        if rec.get(key) != fields.get(key):
             return "mismatch"
-    if rec.get("fingerprint") != fingerprint:
+    recorded_sha = rec.get("prompt_sha256")
+    if not isinstance(recorded_sha, str):
+        return "mismatch"
+    stable_fields = dict(fields)
+    stable_fields["prompt_sha256"] = recorded_sha
+    if rec.get("fingerprint") != _batch_fingerprint(batch, stable_fields):
         return "mismatch"
     return "skip"
 
