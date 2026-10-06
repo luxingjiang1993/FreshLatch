@@ -14,7 +14,13 @@
 
 ## 行为
 
-`retrieve_typed.py` 从 `retrieve_eval` **import** 复用 `recall_at_k`、`mrr_at_k`、`arm_pass_line`、`_p95_ms`、`_ingest_eval_corpus`、`_attach_vecs`、`_cached_query_embedder` 的既有语义。不改 `retrieve_eval.py`。x1 需要而旧函数没有的部分写在新模块：
+`retrieve_typed.py` 从 `retrieve_eval` **import** `recall_at_k`、`mrr_at_k`、`arm_pass_line`、`_p95_ms`、`_attach_vecs`。不改 `retrieve_eval.py`。
+
+查询嵌入：不调用、不包装 `retrieve_eval._cached_query_embedder`（那是单次进程内缓存，而且会直接打 `embed_texts`）。x1 的 query embedder 建在 RET-01.2 的 `embed_cache` 上。单测注入假缓存，不发网络请求。
+
+入库：corpus 与 traps 两个目录都调用 `load_corpus`（断言 `as_of` 与 `t0/`、`t1/` 一致）。不要调用 `_ingest_eval_corpus` 或 `load_trap_corpus`（后者跳过这道断言）。RET-01.1 的检查器同样用 `load_corpus`，跑分前的 `--check-only` 已经覆盖这道门。
+
+x1 需要而旧函数没有的部分写在新模块：
 
 - 按 qtype 与按 trap+adversarial 分桶的 R@10、MRR@10
 - multi_hop 全命中：该题每一个 relevant id 都出现在 top 10
@@ -27,9 +33,10 @@
 `scripts/run_retrieve_x1.py`（同样自行把 `src` 插入 `sys.path`）。参数名与 RET-01.6 的命令一致，不要另起一套：
 
 - `--corpus` 默认 `data/exp/x1/corpus`；`--traps` 默认 `data/exp/x1/traps`；`--questions` 默认 `data/eval/retrieve_x1.json`；`--config` 必填
-- `--check-only`：只跑 RET-01.1 的检查。给出 `--prereg` 时核对其中三枚指纹（语料 `aggregate_checksum`、题集 `aggregate_checksum`、配置 `sha256_hex`，口径同 RET-01.4）。不加载向量，不写臂报告
-- 正式模式（留给 RET-01.6，本票只做参数拒绝与假向量单测）：`--dense-db`、`--cache`、`--out`、`--prereg`。`--dense-db` 等于 `data/dense/index.sqlite` 时退出非 0
-- 查询向量走 `embed_cache`，不重复实现第二套哈希
+- `--check-only`：只跑 RET-01.1 的检查。给出 `--prereg` 时只解析这三行并与现算指纹比较，忽略文件里的其他 hex：`corpus_aggregate_sha256:`、`questions_aggregate_sha256:`、`config_sha256:`（口径同 RET-01.4）。不读取 `owner_freeze`（那是 RET-01.6 的门）。不加载向量，不写臂报告
+- `--estimate-only`：在任何 `embed_texts` 之前，按缓存未命中的字符数打印 `uncached_chars`、`est_tokens = uncached_chars / 1.39`、`est_cny = est_tokens / 1000000 * 0.5`，然后退出。`est_cny` 大于配置里的 `budget_cny_max` 时退出非 0。本票用假缓存做单测，不对真实 x1 语料发请求
+- 正式模式（留给 RET-01.6，本票只做参数拒绝与假向量单测）：`--dense-db`、`--cache`、`--out`、`--prereg`。`--dense-db` 等于 `data/dense/index.sqlite` 时退出非 0。正式模式必须先跑过同一进程内的估算，估算超预算则不调用 `embed_texts`
+- 查询向量只走 `embed_cache`。禁止再调用 `_cached_query_embedder`
 - `--out` 下写 `retrieve-x1-arm-compare.md` 与同名 `.json`。行必须包含「总体」「lexical」「paraphrase」「multi_hop」「trap+adversarial」
 - 不调用 `python -m freshlatch.eval`，不调用 `rerank_lexical`
 
@@ -39,16 +46,16 @@
 - **Blast**: none
 - **Trust**: Watch
 - **Acceptance**:
-  1. Given 新单测与既有检索单测，When `python -m compileall -q src` 且 `python -m pytest tests/unit/test_retrieve_x1.py tests/unit/test_x1_checks.py tests/unit/test_i3_hard_gold.py tests/unit/test_hybrid_rrf.py tests/unit/test_dense_arm.py -q`，Then 退出码 0。
+  1. Given 新单测与不触网的既有检索单测，When `python -m compileall -q src` 且 `python -m pytest tests/unit/test_retrieve_x1.py tests/unit/test_x1_checks.py tests/unit/test_hybrid_rrf.py tests/unit/test_dense_arm.py -q`，Then 退出码 0。不要把 `tests/unit/test_i3_hard_gold.py` 放进这条命令。`test_hard_arm_compare_same_corpus_as_a0` 自 `833af15` 起在无 `DASHSCOPE_API_KEY` 的 CI 里失败，归 `tasks/CI-01.md`，不是本票。
   2. Given tmp fixture 与一份含正确指纹的临时 PREREG，When `python scripts/run_retrieve_x1.py --check-only --corpus <tmp>/corpus --traps <tmp>/traps --questions <tmp>/questions.json --config <tmp>/config.json --prereg <tmp>/PREREG.md`，Then 退出码 0。指纹被改一个字符后同一命令退出非 0。
   3. Given `--dense-db data/dense/index.sqlite`，When 解析参数，Then 退出非 0，且该文件的 mtime 不变（测试不要真的去碰仓库里的这个路径；用字符串比较加一个「若路径等于生产默认库则拒绝」的纯函数即可）。
-  4. Given 本票 diff，When `git diff --stat main -- src/freshlatch/store/base.py src/freshlatch/eval/retrieve_eval.py src/freshlatch/eval/__main__.py src/freshlatch/store/embeddings.py docs/evidence/hard-gold-arm data/eval/retrieve_hard_gold.json data/corpus data/traps reports/dense-rebuild.md "reports/retrieve-hard-gold-*"`，Then 输出为空。
+  4. Given 本票 diff，When `git diff --stat main -- src/freshlatch/store/base.py src/freshlatch/eval/__main__.py src/freshlatch/eval/retrieve_eval.py src/freshlatch/store/embeddings.py src/freshlatch/store/ingest.py src/freshlatch/llm.py docs/evidence/hard-gold-arm data/eval/retrieve_hard_gold.json data/corpus data/traps reports/dense-rebuild.md "reports/retrieve-hard-gold-*"`，Then 输出为空。开工前与收工后各跑 `python -c "import hashlib; from pathlib import Path; p=Path('data/dense/index.sqlite'); print('absent' if not p.is_file() else hashlib.sha256(p.read_bytes()).hexdigest(), 'absent' if not p.is_file() else p.stat().st_mtime)"`，两行相同。
 - **Provenance**:
   - Kind: adapt
-  - Source: `src/freshlatch/eval/retrieve_eval.py#run_arm_compare,recall_at_k,mrr_at_k,arm_pass_line,_p95_ms,_ingest_eval_corpus,_attach_vecs,_cached_query_embedder`；`tests/unit/test_i3_hard_gold.py#_write_dummy_dense`；`src/freshlatch/store/embed_cache.py`（RET-01.2）；`src/freshlatch/eval/x1_checks.py`（RET-01.1）
+  - Source: `src/freshlatch/eval/retrieve_eval.py#run_arm_compare,recall_at_k,mrr_at_k,arm_pass_line,_p95_ms,_attach_vecs`；`src/freshlatch/store/ingest.py#load_corpus`；`tests/unit/test_i3_hard_gold.py#_write_dummy_dense`（只借鉴占位 vec 的写法，不把该测试文件放进验收命令）；`src/freshlatch/store/embed_cache.py`（RET-01.2）；`src/freshlatch/eval/x1_checks.py`（RET-01.1）
   - Pin: 仓内现行文件（main@`18b5172`）
-  - What changed: 新模块增加分型、全命中、干扰命中、延迟与成本列的报告；新脚本拒绝生产 dense 库路径
-  - Why not copy as-is: `run_arm_compare` 只出单一 R@10，并且默认库指向 `data/corpus` 与 `data/dense/index.sqlite`。直接跑会覆盖 #259 证据，也没有 qtype 行
+  - What changed: 新模块增加分型、全命中、干扰命中、延迟与成本列；查询嵌入走 `embed_cache`；两个目录都用 `load_corpus`
+  - Why not copy as-is: `run_arm_compare` 只出单一 R@10，查询嵌入走 `_cached_query_embedder`，traps 经 `load_trap_corpus` 不核对 `as_of`。直接跑还会碰到默认的 `data/dense/index.sqlite`
   - License note: 仓内代码。仓库根目录无 `LICENSE` 文件
 - **Tests**: added（`tests/unit/test_retrieve_x1.py`）
 - **Rollback**: 删除本票三个新文件
@@ -60,11 +67,11 @@
   - `data/dense/index.sqlite`
   - `reports/retrieve-hard-gold-*`
   - ADR-0033 正文（`docs/adr/0033-hard-gold-过线与改臂授权闸.md`）
-  - 同时不改：`data/corpus/**`、`data/traps/**`、`reports/dense-rebuild.md`、`src/freshlatch/eval/retrieve_eval.py`、`src/freshlatch/eval/__main__.py`、`docs/evidence/retrieve-x1/PREREG.md`（若已存在）
+  - 同时不改：`data/corpus/**`、`data/traps/**`、`reports/dense-rebuild.md`、`src/freshlatch/eval/retrieve_eval.py`、`src/freshlatch/eval/__main__.py`、`src/freshlatch/store/embeddings.py`、`src/freshlatch/store/ingest.py`、`src/freshlatch/llm.py`、`src/freshlatch/store/base.py`、`docs/evidence/retrieve-x1/PREREG.md`（若已存在）、`tests/unit/test_i3_hard_gold.py`
 
 ### Provenance status
 - result: pass
-- notes: 上列 `retrieve_eval` 与 `_write_dummy_dense` 符号在 `18b5172` 存在。新模块只 import，不改原文件。
+- notes: 上列 `retrieve_eval` 与 `_write_dummy_dense` 符号在 `18b5172` 存在。新模块 import 打分函数，不改原文件，不调用 `_cached_query_embedder`。
 
 ### Evidence *(after Matt `/implement`)*
 - typecheck:

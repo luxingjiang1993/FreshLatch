@@ -7,7 +7,8 @@
 - **Title**: `spike(eval): 扩语料 + 分型难题集 + 三臂复跑（bm25 / dense / hybrid）实验轨`
 - **Paths**:
   - `tasks/RET-01.md`（本文件）
-  - `tasks/RET-01.1.md` … `tasks/RET-01.6.md`（子票）
+  - `tasks/RET-01.1.md` … `tasks/RET-01.7.md`（子票；无 `RET-01.2a`，正则不允许）
+  - `tasks/CI-01.md` 不在本父票的子票计数里（main 上既有的 CI 失败，另票）
 - **Pin**: 核对时 `main` = `18b5172`（`18b5172ebff535652c6166dc6cd927d4bdc3c769`）
 
 实现路径（语料、脚本、证据）由子票拥有。本票的 diff 只应出现在 `tasks/`。
@@ -16,30 +17,36 @@
 
 | 顺序 | ID | 交付 | 依赖 | 谁做 |
 |------|----|------|------|------|
-| 1 | RET-01.1 | 许可 / 8-gram 去污染 / 题集结构检查（纯函数 + 单测） | 无 | `/implement` |
-| 2 | RET-01.2 | 草稿生成脚本、抽检标记、内容哈希 embedding 缓存；`build_dense_index.py` 可选路径 | RET-01.1 | `/implement` |
-| 3 | RET-01.3 | 混合语料、`SOURCES.md`、`config.json`、人定金标 | RET-01.1、RET-01.2；主人锁定去污染阈值；主人定条文摘录清单 | **人步骤，禁止 `/implement`** |
-| 4 | RET-01.4 | `docs/evidence/retrieve-x1/PREREG.md` 冻结 | RET-01.3 | `/implement` 写文档；Watch 人确认冻结 |
-| 5 | RET-01.5 | 分型打分与 `scripts/run_retrieve_x1.py`（假向量单测；不跑真分） | RET-01.1、RET-01.2。编码可与 3、4 并行 | `/implement` |
-| 6 | RET-01.6 | 同库三臂复跑、分型报告、`RESULT-<YYYYMMDD>.md` | RET-01.4 已冻结且 RET-01.5 已落地 | 执行票（出分前不得改判据） |
+| 1 | RET-01.1 | 许可 / 去污染 / 题集结构检查 | 无 | `/implement` |
+| 2 | RET-01.2 | embedding 内容哈希缓存；`build_dense_index.py` 可选路径 | 无 | `/implement` |
+| 3 | RET-01.7 | `scripts/gen_x1_drafts.py`（含抽检子命令） | RET-01.1 | `/implement` |
+| 4 | RET-01.3 | 混合语料、`SOURCES.md`、`config.json`、人定金标 | RET-01.1、RET-01.2、RET-01.7；主人锁定去污染阈值；主人定条文摘录清单 | **整张是人步骤，禁止 `/implement`** |
+| 5 | RET-01.4 | `PREREG.md` 正文与三行指纹 | RET-01.3 | `/implement` 只写文档 |
+| 5b | RET-01.4 冻结确认 | 主人写入 `owner_freeze: confirmed` 并合入 `main` | RET-01.4 的文档已写好 | **人步骤** |
+| 6 | RET-01.5 | 分型打分与 `scripts/run_retrieve_x1.py`（假向量；不跑真分） | RET-01.1、RET-01.2。不依赖 RET-01.7。可与 3、4 并行 | `/implement` |
+| 7 | RET-01.6 | 同库三臂复跑、分型报告、`RESULT-<YYYYMMDD>.md` | 冻结定义成立，且 RET-01.5 已落地 | **人触发或人批准的执行**；不进任何 `/implement` 队列 |
 
-RET-01.5 的编号在人审与预登记之后，是为了让「跑分」整段落在预登记后面；脚本本身不读真实 x1 分数，可以在 RET-01.2 合并后立刻开工。
+人步骤只有两处：RET-01.3 整张，以及 RET-01.4 的冻结确认行。`RET-01.2a` / `RET-01.2b` 不符合 `docs/agents/agent-guards.md` 的 `^[A-Z]+-[0-9]+(\.[0-9]+)?$`，所以缓存留在 RET-01.2，草稿生成用 RET-01.7。
+
+冻结定义：`docs/evidence/retrieve-x1/PREREG.md` 已在 `main` 上，且含主人写下的一行 `owner_freeze: confirmed`。起草者只能写 `owner_freeze: pending`。RET-01.6 跑分前检查这一行。
+
+`main` 上自 `833af15` 起，`tests/unit/test_i3_hard_gold.py::test_hard_arm_compare_same_corpus_as_a0` 在无 `DASHSCOPE_API_KEY` 的 CI 里失败。那不是本实验的子票，见 `tasks/CI-01.md`。RET-01.5 的验收命令不跑这个测试。
 
 ## Agent Guards
 - **Blast**: none（本票只新增 `tasks/*.md`）
 - **Trust**: Watch（仓库默认；不涉 auth / db / pay）
 - **Acceptance**:
-  1. Given 本目录六张子票，When 执行下面的命令，Then 退出码 0，并打印 `ret-01-children-ok 6`。
+  1. Given 本目录七张子票，When 执行下面的命令，Then 退出码 0，并打印 `ret-01-children-ok 7`。
 
 ```bash
-python -c "from pathlib import Path; root=Path('tasks'); ids=['RET-01.1','RET-01.2','RET-01.3','RET-01.4','RET-01.5','RET-01.6']; needles=['PRODUCTION_RETRIEVAL_MODE','retrieve_hard_gold.json','data/dense/index.sqlite','reports/retrieve-hard-gold-','ADR-0033','#260','ACCEPTANCE.md','RERUN-','**Blast**: none','**Trust**: Watch','hard-c4-paraphrase','hard-c6-paraphrase'];
+python -c "from pathlib import Path; root=Path('tasks'); ids=['RET-01.1','RET-01.2','RET-01.3','RET-01.4','RET-01.5','RET-01.6','RET-01.7']; needles=['PRODUCTION_RETRIEVAL_MODE','retrieve_hard_gold.json','data/dense/index.sqlite','reports/retrieve-hard-gold-','ADR-0033','#260','ACCEPTANCE.md','RERUN-','**Blast**: none','**Trust**: Watch','hard-c4-paraphrase','hard-c6-paraphrase'];
 [(_t:=(root/f'{i}.md').read_text(encoding='utf-8'), (_m:=[n for n in needles if n not in _t]) and (_ for _ in ()).throw(SystemExit(f'{i} missing {_m}'))) for i in ids]; print('ret-01-children-ok', len(ids))"
 ```
 
-  2. Given 上表，When 按依赖阅读，Then 人步骤只有 RET-01.3；真分只有 RET-01.6，且 RET-01.6 依赖 RET-01.4。
+  2. Given 上表，When 按依赖阅读，Then 人步骤是 RET-01.3 整张，加上 RET-01.4 的 `owner_freeze: confirmed`。RET-01.6 依赖该冻结，且不进 `/implement` 队列。
   3. Given 本票 diff，When 列出路径，Then 全部位于 `tasks/`。
 - **Tests**: waived（纯工单；不新增 pytest）
-- **Rollback**: 删除 `tasks/RET-01.md` 与 `tasks/RET-01.1.md` … `tasks/RET-01.6.md`
+- **Rollback**: 删除 `tasks/RET-01.md`、`tasks/RET-01.1.md` … `tasks/RET-01.7.md`。`tasks/CI-01.md` 单独回滚
 - **Do-not-touch**:
   - `PRODUCTION_RETRIEVAL_MODE` 与生产默认臂（保持 `bm25`，`src/freshlatch/store/base.py`）
   - `docs/evidence/hard-gold-arm/ACCEPTANCE.md` 的冻结结论，以及同目录 RERUN 证据（`RERUN-20261003.md`、`RERUN-20261003-259.md`）
@@ -48,16 +55,28 @@ python -c "from pathlib import Path; root=Path('tasks'); ids=['RET-01.1','RET-01
   - `data/dense/index.sqlite`
   - `reports/retrieve-hard-gold-*`
   - ADR-0033 正文（`docs/adr/0033-hard-gold-过线与改臂授权闸.md`）
-  - 同时不改：`data/corpus/**`、`data/traps/**`、`reports/dense-rebuild.md`、`src/freshlatch/eval/__main__.py`
+  - 同时不改：`data/corpus/**`、`data/traps/**`、`reports/dense-rebuild.md`、`src/freshlatch/eval/__main__.py`、`src/freshlatch/eval/retrieve_eval.py`、`src/freshlatch/store/embeddings.py`、`src/freshlatch/store/ingest.py`、`src/freshlatch/llm.py`、`src/freshlatch/store/base.py`
+
+子票验收里的 `git diff` 使用同一条路径清单（不含 `data/dense/index.sqlite`，该文件被 `.gitignore`，`git diff` 永远是空的）：
+
+```bash
+git diff --stat main -- src/freshlatch/store/base.py src/freshlatch/eval/__main__.py src/freshlatch/eval/retrieve_eval.py src/freshlatch/store/embeddings.py src/freshlatch/store/ingest.py src/freshlatch/llm.py docs/evidence/hard-gold-arm data/eval/retrieve_hard_gold.json data/corpus data/traps reports/dense-rebuild.md "reports/retrieve-hard-gold-*"
+```
+
+`data/dense/index.sqlite` 用开工前与收工后各跑一次下面的命令，两行输出必须相同：
+
+```bash
+python -c "import hashlib; from pathlib import Path; p=Path('data/dense/index.sqlite'); print('absent' if not p.is_file() else hashlib.sha256(p.read_bytes()).hexdigest(), 'absent' if not p.is_file() else p.stat().st_mtime)"
+```
 
 ### Provenance status
 - result: pass
-- notes: 父票不改既有代码。adapt 记在 RET-01.2 与 RET-01.5。子票 ID 使用正则里的 `RET-01.N`。
+- notes: 父票不改既有代码。adapt 记在 RET-01.2、RET-01.5、RET-01.7。子票 ID 使用正则里的 `RET-01.N`。`CI-01` 不是子票。
 
 ### Evidence *(after Matt `/implement`)*
 - typecheck: n/a（本票无 src）
 - tests: waived
-- paths: `tasks/RET-01.md` · `tasks/RET-01.1.md` … `tasks/RET-01.6.md`
+- paths: `tasks/RET-01.md` · `tasks/RET-01.1.md` … `tasks/RET-01.7.md` · `tasks/CI-01.md`（范围外）
 
 ## 已锁决策（主人已定，子票不得改口）
 
@@ -65,10 +84,10 @@ python -c "from pathlib import Path; root=Path('tasks'); ids=['RET-01.1','RET-01
 - 题集 `qtype ∈ {lexical, paraphrase, multi_hop}`，**每个 qtype ≥30，合计 n≥90**，目标 n=90–120。`category ∈ {trap, adversarial}` 的题 ≥30%（沿用 `docs/hard-gold.md` 的预登记口径，分母是题数）。
 - `multi_hop` 的 `relevant` ≥2 个锚，且来自 ≥2 个不同 `doc_id`。现 hard 集里 `hard-trap-conflict-1` 的两个锚同属 `trap-conflict`，不能当作 multi_hop 的形状样例。
 - hybrid 领先阈值 **Δ≥0.10**：该型 R@10（hybrid − bm25）≥ 0.10 为领先，≤ −0.10 为落后，其余持平。`arm_pass_line` 只作参考列，不作改臂授权。hybrid 不赢是合格结果。
-- 去污染用**中文字符 8-gram**（算法在 RET-01.1）。阈值候选 0.5 **尚未批准**，见主人待定。
+- 去污染分两套，算法在 RET-01.1。`lexical`：清洗后的**整段 query** 长度 ≥8 且作为子串出现在任一 relevant 块的清洗正文里，才算污染。只共享一个法规标题（例如 10 字的「数据出境安全评估办法」）不算。`paraphrase` / `multi_hop`：只走字符 8-gram 重合率，**严格大于** `decontam_8gram_max` 才算污染。该阈值候选 0.5 **尚未批准**，在主人写入之前保持 `null`，不得拿 0.5 当默认。
 - 预算帽 **¥10**，写入 `config.json` 的 `budget_cny_max`。超限停跑。
 - Embedding：`text-embedding-v4`，维度 **1024**，与 `reports/dense-rebuild.md` 已记录的 dim=1024 对齐。不换模型、不传 `text_type` / `instruct` / sparse。内容哈希缓存键含 model 与 dim。
-- 草稿生成：`qwen-flash`（`src/freshlatch/llm.py` 的 `DEFAULT_MODEL`）。`qwen-plus` **非思考**只标记可疑标注，不写 gold。gold（`relevant` / `distractors` / `qtype`）由人终定；另一人复核 ≥20%，记入 PREREG。
+- 草稿生成：`qwen-flash`（`src/freshlatch/llm.py` 的 `DEFAULT_MODEL`）。`qwen-plus` **非思考**只标记可疑标注，不写 gold。这是主人批准的、对 `docs/spec/06-护栏预算与成本.md` §6.5「开发期统一 qwen-flash」的例外，只用于离线抽检，不进入 Lead 循环。gold（`relevant` / `distractors` / `qtype`）由人终定；另一人复核 ≥20%，记入 PREREG。
 - 层身份 = 实验 / 冒烟。不报方差，不作统计显著。
 - 生产臂保持 bm25。与 #260 互不阻塞。
 
@@ -145,7 +164,7 @@ temperature 与 seed 没有被主人指定成某个数。生成脚本在二者�
 
 草稿作为规格保留；下列条目改成仓内事实，或标成未在仓内证实。
 
-1. 工单 ID 以 `docs/agents/agent-guards.md` 为准：`^[A-Z]+-[0-9]+(\.[0-9]+)?$`，另有日期形与 issue 号。草稿文首写成 `^[A-Z]+-[0-9]+$`。子票用 `RET-01.1`–`RET-01.6`。
+1. 工单 ID 以 `docs/agents/agent-guards.md` 为准：`^[A-Z]+-[0-9]+(\.[0-9]+)?$`，另有日期形与 issue 号。草稿文首写成 `^[A-Z]+-[0-9]+$`。子票用 `RET-01.1`–`RET-01.7`。评审里的 `RET-01.2a` / `RET-01.2b` 不符合该正则。
 2. 陷阱是 4 个文件、10 个 chunk。草稿「traps 10 chunk」对；这里补上文件数。
 3. #258 的整门 fail 是 BM25 相对 A0；hybrid 对 min(BM25, dense) 在那份报告里是 pass。当时索引 chunks=84。
 4. `docs/spec/06-护栏预算与成本.md` §6.5 是「开发期统一 qwen-flash」；升 qwen-plus 的建议限于 Critic / Auditor，Lead 保持 flash。本实验的模型分工以已锁决策为准，不把 §6.5 读成正式链路全部改 plus。
@@ -154,9 +173,10 @@ temperature 与 seed 没有被主人指定成某个数。生成脚本在二者�
 7. 草稿成本假设里的 64.7 token/chunk、1.39 字/token、hard 集 query 均值 12.1，在 `18b5172` 没有留档。仓内 `Chunk.tokens` 用 `pipeline.tokenize`（jieba）。成本表保留为草稿估算。
 8. x1 使用 `load_corpus`，以便 `as_of` 与目录一致。`load_trap_corpus` 没有这道断言。
 9. S7 的 10% 与题集 trap/adversarial ≥30% 分母不同。草稿表格末列「保证 ≥30% 占比」容易读成 S7 的 chunk 份额，此处拆开。
-10. 草稿中的单一新模块 `src/freshlatch/eval/retrieve_typed.py` 拆成 `x1_checks.py`（RET-01.1）与 `retrieve_typed.py`（RET-01.5）。单一测试文件按子票拆开。避免两张实现票同时改一个尚未存在的文件。
+10. 草稿中的单一新模块拆成 `x1_checks.py`（RET-01.1）、`embed_cache.py`（RET-01.2）、`retrieve_typed.py`（RET-01.5）、`scripts/gen_x1_drafts.py`（RET-01.7）。
 11. `scripts/build_dense_index.py` 当前没有命令行参数。路径是模块级常量 `CORPUS`、`TRAPS`、`DB`、`REPORT`。
-12. 去污染候选 0.5 不得成为代码或配置的默认生效值。
+12. 去污染候选 0.5 不得成为代码或配置的默认生效值。`lexical` 用整段 query 子串规则；8-gram 重合率只用于 `paraphrase` / `multi_hop`。
+13. 查询向量不复用 `retrieve_eval._cached_query_embedder`。x1 的查询嵌入建在 RET-01.2 的 `embed_cache` 上。语料与 traps 都用 `load_corpus`，不用 `load_trap_corpus`。
 
 ## 配置键（名字锁死，值的空位见主人待定）
 
@@ -218,7 +238,7 @@ token 假设（64.7、1.39、query 12.1 等）无仓内留档。RET-01.6 用账�
 - 换 embedding 模型或维度
 
 ## Handoff
-`2026-10-06 | RET-01 | draft | 子票已拆。RET-01.1 可 /implement。阈值与条文清单仍待主人，阻塞 RET-01.3`
+`2026-10-06 | RET-01 | draft | 评审已折入。RET-01.1 与 RET-01.2 可 /implement。阈值与条文清单仍待主人，阻塞 RET-01.3`
 
 ## Blocked by
 None（本索引票）。与 #260 互不阻塞。

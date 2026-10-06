@@ -22,15 +22,15 @@ python scripts/check_x1.py --corpus <dir> --traps <dir> --questions <json> --con
 
 退出码：0 通过；1 有违规；2 配置里 `decontam_8gram_max` 缺键或为 JSON `null`（阈值未锁，不是违规样本）。打印各 qtype 的 n、trap/adversarial 比例、chunk 数、合成/公开比例、去污染命中数、许可违规数。
 
-### 8-gram
+### 去污染
 
-1. 清洗：删掉 Unicode 类别 P（标点）与 Z（分隔符，含空白）。不做大小写折叠，不做繁简转换。
-2. 8-gram 是清洗后字符串上连续 8 个 Unicode 码位的滑窗。用字符，不用 jieba，不用 UTF-8 字节。
-3. 集合口径的重合率 = query 的 8-gram 里、出现在任一 relevant 块清洗正文中的比例。
-4. 清洗后 query 短于 8 字：8-gram 集合为空，比例检查不触发。
-5. 所有 qtype：清洗后的 query 若有长度 ≥8 的连续子串完整出现在任一 relevant 块清洗正文中，判污染（整句 / 长片段照抄）。
-6. 仅 `paraphrase` 与 `multi_hop`：重合率 **>** `decontam_8gram_max` 判污染。等于阈值不判污染。
-7. `lexical` 只走第 5 条，不走比例阈值。
+清洗：删掉 Unicode 类别 P（标点）与 Z（分隔符，含空白）。不做大小写折叠，不做繁简转换。比较都在清洗后的字符串上进行。
+
+两套规则不要混用。共享任意一个长度 ≥8 的片段，等于共享任意一个 8-gram；若用「任意 ≥8 字片段」当 lexical 的污染条件，重合率阈值永远不会被用到，而且 lexical 题只要带上「数据出境安全评估办法」这种 10 字标题就会被判污染，RET-01.3 的「去污染命中 = 0」无法达到。
+
+1. `lexical`：清洗后的**整段 query** 长度 ≥8，且这段整 query 是任一 relevant 块清洗正文的子串，判污染。只包含一个 10 字标题、整段 query 本身不是子串的，不判污染。短于 8 字的整段 query 不走这条。`lexical` 不计算 8-gram 重合率。
+2. `paraphrase` 与 `multi_hop`：只算字符 8-gram 重合率。8-gram 是清洗后字符串上连续 8 个 Unicode 码位的滑窗（字符，不是 jieba，不是 UTF-8 字节）。集合口径：query 的 8-gram 里、出现在任一 relevant 块清洗正文中的比例。比例 **>** `decontam_8gram_max` 判污染；等于阈值不判污染。清洗后不足 8 字则 8-gram 集合为空，比例检查不触发。这两类不使用「整段 query 是子串」规则。
+3. `decontam_8gram_max` 为 `null` 或缺键时，不得代入 0.5。整份 x1 检查退出码 2。此时仍可单独报告 lexical 整段照抄，但不得用未批准的阈值给 paraphrase / multi_hop 打分。
 
 证据 id 格式与 `chunk_evidence_id` 相同：`{doc_id}#{clause_id}@{as_of}`。正文用 `load_corpus` 装入 corpus 与 traps 两棵目录。
 
@@ -60,16 +60,16 @@ python scripts/check_x1.py --corpus <dir> --traps <dir> --questions <json> --con
 
 ### 配置
 
-读取 RET-01 列出的键。`lead_delta` 必须是 0.10，`embed_model` / `embed_dim` / `budget_cny_max` / `top_k` / `rrf_k` / `flag_thinking` 必须等于已锁值。`draft_temperature` 与 `draft_seed` 允许为 `null`（生成脚本另拒）；本检查不把它们当成去污染门槛。
+读取 RET-01 列出的键。`lead_delta` 必须是 0.10，`embed_model` / `embed_dim` / `budget_cny_max` / `top_k` / `rrf_k` / `flag_thinking` 必须等于已锁值。`draft_model` 必须是 `qwen-flash`，`flag_model` 必须是 `qwen-plus`。`draft_temperature` 与 `draft_seed` 允许为 `null`（生成脚本另拒）；本检查不把它们当成去污染门槛。
 
 ## Agent Guards
 - **Blast**: none
 - **Trust**: Watch
 - **Acceptance**:
   1. Given 新测试，When `python -m compileall -q src` 且 `python -m pytest tests/unit/test_x1_checks.py -q`，Then 两者退出码 0。测试不读 `DASHSCOPE_API_KEY`，不打开 `data/dense/index.sqlite`。
-  2. Given 一份 tmp 语料：paraphrase 的 8-gram 重合率高于配置阈值、一条 multi_hop 只有一个 `doc_id`、一条 `license` 不在白名单、`decontam_8gram_max` 为 `null` 的第二份配置，When 调用检查函数与 CLI，Then 比例与结构违规退出码 1，未锁阈值退出码 2。
-  3. Given 清洗后不足 8 字的 lexical query，且没有长度 ≥8 的照抄，When 检查，Then 去污染命中为 0。
-  4. Given 本票 diff，When `git diff --stat main -- src/freshlatch/store/base.py src/freshlatch/eval/__main__.py src/freshlatch/store/ingest.py src/freshlatch/store/embeddings.py docs/evidence/hard-gold-arm data/eval/retrieve_hard_gold.json data/corpus data/traps reports/dense-rebuild.md`，Then 输出为空。
+  2. Given 一份 tmp 语料：paraphrase 的 8-gram 重合率高于配置阈值、一条 multi_hop 只有一个 `doc_id`、一条 `license` 不在白名单、`decontam_8gram_max` 为 `null` 的第二份配置，When 调用检查函数与 CLI，Then 比例与结构违规退出码 1，未锁阈值退出码 2，且 null 配置下没有用 0.5 给 paraphrase 打分。
+  3. Given relevant 块含「数据出境安全评估办法」，lexical query 为「客户追问数据出境安全评估办法是否仍要走评估」（清洗后整段并不出现在块里，但含这 10 个字），When 检查，Then 该题去污染命中为 0。另有一条 lexical query 等于块内连续 ≥8 字的整段，Then 判污染。
+  4. Given 本票 diff，When `git diff --stat main -- src/freshlatch/store/base.py src/freshlatch/eval/__main__.py src/freshlatch/eval/retrieve_eval.py src/freshlatch/store/embeddings.py src/freshlatch/store/ingest.py src/freshlatch/llm.py docs/evidence/hard-gold-arm data/eval/retrieve_hard_gold.json data/corpus data/traps reports/dense-rebuild.md "reports/retrieve-hard-gold-*"`，Then 输出为空。开工前与收工后各跑 `python -c "import hashlib; from pathlib import Path; p=Path('data/dense/index.sqlite'); print('absent' if not p.is_file() else hashlib.sha256(p.read_bytes()).hexdigest(), 'absent' if not p.is_file() else p.stat().st_mtime)"`，两行相同。
 - **Tests**: added（`tests/unit/test_x1_checks.py`）
 - **Rollback**: 删除本票 Paths 里的三个新文件
 - **Do-not-touch**:
@@ -80,7 +80,7 @@ python scripts/check_x1.py --corpus <dir> --traps <dir> --questions <json> --con
   - `data/dense/index.sqlite`
   - `reports/retrieve-hard-gold-*`
   - ADR-0033 正文（`docs/adr/0033-hard-gold-过线与改臂授权闸.md`）
-  - 同时不改：`data/corpus/**`、`data/traps/**`、`reports/dense-rebuild.md`、`src/freshlatch/eval/__main__.py`、`src/freshlatch/store/ingest.py`
+  - 同时不改：`data/corpus/**`、`data/traps/**`、`reports/dense-rebuild.md`、`src/freshlatch/eval/__main__.py`、`src/freshlatch/eval/retrieve_eval.py`、`src/freshlatch/store/embeddings.py`、`src/freshlatch/store/ingest.py`、`src/freshlatch/llm.py`、`src/freshlatch/store/base.py`
 
 ### Provenance status
 - result: pass
