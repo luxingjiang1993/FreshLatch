@@ -80,3 +80,14 @@
 2. 禁止名单：去掉 `deepseek-flash`。保留 `deepseek-reasoner`、`deepseek-v4-pro`、`deepseek-chat`。加入 `deepseek-ai/DeepSeek-V3`。
 3. Kimi base_url：原值 `https://api.moonshot.ai/v1`，新值 `https://api.moonshot.cn/v1`。model 仍为 `kimi-k2.6`。thinking 仍关闭。temperature：原值 0，新值 0.6。原因：国内站非思考模式温度强制为 0.6（https://platform.moonshot.cn/docs/guide/kimi-k2-6-quickstart）。
 4. Qwen 的 model 与 temperature=0 不变。回声校验改为对照这些新登记值。
+
+## 跑数据前偏离 · Amendment 2
+
+日期：2026-10-08。决定人：真人（Oriental Ronin，#329，2026-10-08 02:50 UTC+8）。此时尚无任何评委数据。同一条写在 `PREREG.md` 文末「修订记录 Amendment 2」。原文与 Amendment 1 保留。关联 #329、#304。
+
+1. 比较对象：每条的最终标签对 `construction_gold`。三家在问题 A 和问题 B 上都一致时，最终标签是这个共同答案；否则是用户单人抽检的裁决。不用多数票，不拿单家评委单独比。缺评委标签或缺完整裁决的条目没有最终标签。缺评委标签的只进缺失清单。缺裁决的视为未完成。
+2. 映射：A 为「是」且 B 为「是」→ `正确`；A 或 B 任一为「否」→ `坏`。映射结果与 `construction_gold` 不同即为冲突。
+3. 范围：所有有最终标签的条目都参与比较，不限于抽检样本。
+4. 清单显示 `claim_id`、修改前、修改后、证据、`construction_gold`、映射后的最终标签、来源（三评委一致 / 用户裁决）。不显示组别、消融、各家评委各自的选择。有未完成裁决时拒绝生成，不输出冲突结论。`construction_gold` 不被最终标签替换。清单只用于报告与复核。
+
+理由：不用多数票，是遵循本页和 `PREREG.md` 里不用多数票填缺失的原禁令。不拿单家比，是为了不把各评委的选择露给用户。A 与 B 都为「是」才映成正确，贴合 fail-closed：任一为「否」就按坏修改对待。清单在需要的裁决写完之后才生成，抽检名单仍然先于不一致结果定下来，盲态保持。原因还有一条：原 `PREREG.md` 没有定义比较对象，也没有定义「是 / 否」到「正确 / 坏」的映射。
