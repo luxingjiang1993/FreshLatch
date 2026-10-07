@@ -8,12 +8,14 @@ from pathlib import Path
 
 import pytest
 
+from freshlatch.eval import patch_events_metrics as metrics
 from freshlatch.eval.patch_events_construct import STRATA
 from freshlatch.eval.patch_events_spotcheck import (
     ALREADY,
     IDENTITY,
     SPOTCHECK_ROLE,
     SpotcheckError,
+    export_conflicts,
     export_spotcheck,
     select_spotcheck,
 )
@@ -295,3 +297,127 @@ def test_module_has_no_blind_review_wording_or_secret_reads():
     assert IDENTITY == "模型评委加单人抽检"
     assert SPOTCHECK_ROLE == "用户单人抽检"
     assert ALREADY == "已有抽检答案，不再第二次看"
+
+
+def _one(claim_id: str, gold: str) -> dict:
+    return {
+        "claim_id": claim_id,
+        "edit_type": "数值",
+        "arm": "ARM_SENTINEL",
+        "ablation": "ABL_SENTINEL",
+        "construction_gold": gold,
+        "before_text": f"前-{claim_id}",
+        "after_text": f"后-{claim_id}",
+        "evidence_id": f"doc-{claim_id}#p1@T1",
+        "evidence_text": f"证据-{claim_id}",
+        "qwen": "LEAK_QWEN",
+        "deepseek": "LEAK_DEEPSEEK",
+        "kimi": "LEAK_KIMI",
+    }
+
+
+def test_conflict_list_uses_unanimous_answer_or_user_adjudication():
+    records = [
+        _one("agree-yes", "正确"),
+        _one("agree-no", "正确"),
+        _one("split", "正确"),
+        _one("missing", "坏"),
+        _one("user-match", "坏"),
+    ]
+    yes = {judge: {"A": "是", "B": "是"} for judge in _JUDGES}
+    labels = [
+        _label_row("agree-yes", overrides=yes),
+        _label_row(
+            "agree-no",
+            overrides={"qwen": {"B": "否"}, "deepseek": {"B": "否"}, "kimi": {"B": "否"}},
+        ),
+        _label_row(
+            "split",
+            overrides={
+                "qwen": {"B": "是"},
+                "deepseek": {"B": "是"},
+                "kimi": {"A": "否", "B": "是"},
+            },
+        ),
+        _label_row("missing", absent={"kimi": ("A", "B")}),
+        _label_row(
+            "user-match",
+            overrides={
+                "qwen": {"A": "是", "B": "是"},
+                "deepseek": {"A": "是", "B": "是"},
+                "kimi": {"A": "否", "B": "是"},
+            },
+        ),
+    ]
+    answers = {
+        "split": {"A": "是", "B": "否"},
+        "user-match": {"A": "否", "B": "否"},
+    }
+    original = copy.deepcopy(records)
+    streams = metrics.named_streams()
+    before = {name: rng.getstate() for name, rng in streams.items()}
+    out = export_conflicts(records, labels, answers=answers)
+    assert records == original
+    assert {row["claim_id"] for row in out["conflicts"]} == {"agree-no", "split"}
+    agree = next(row for row in out["conflicts"] if row["claim_id"] == "agree-no")
+    assert agree["最终标签"] == "坏"
+    assert agree["最终标签来源"] == "三评委一致"
+    assert agree["construction_gold"] == "正确"
+    split = next(row for row in out["conflicts"] if row["claim_id"] == "split")
+    assert split["最终标签"] == "坏"
+    assert split["最终标签来源"] == "用户裁决"
+    assert "missing" not in {row["claim_id"] for row in out["conflicts"]}
+    missing = next(row for row in out["missing"] if row["claim_id"] == "missing")
+    assert missing["缺失"] == ["kimi:A", "kimi:B"]
+    assert set(missing) == {"claim_id", "缺失"}
+    allowed = {
+        "claim_id",
+        "before_text",
+        "after_text",
+        "evidence_text",
+        "evidence_id",
+        "construction_gold",
+        "最终标签",
+        "最终标签来源",
+    }
+    leaked = ("ARM_SENTINEL", "ABL_SENTINEL", "LEAK_QWEN", "LEAK_DEEPSEEK", "LEAK_KIMI", "qwen", "deepseek", "kimi")
+    conflict_text = out["text"].split("冲突清单", 1)[1].split("缺失清单", 1)[0]
+    for row in out["conflicts"]:
+        assert set(row) == allowed
+        blob = "".join(str(value) for value in row.values())
+        for token in leaked:
+            assert token not in blob
+    for token in leaked:
+        assert token not in conflict_text
+    assert "是" not in conflict_text
+    assert "否" not in conflict_text
+    for name, rng in streams.items():
+        assert rng.getstate() == before[name]
+
+
+def test_either_no_maps_to_bad_and_both_yes_maps_to_correct():
+    records = [_one("both-no", "正确"), _one("a-no", "坏"), _one("both-yes", "坏")]
+    labels = [
+        _label_row("both-no", overrides={judge: {"A": "否", "B": "否"} for judge in _JUDGES}),
+        _label_row("a-no", overrides={judge: {"A": "否", "B": "是"} for judge in _JUDGES}),
+        _label_row("both-yes", overrides={judge: {"A": "是", "B": "是"} for judge in _JUDGES}),
+    ]
+    out = export_conflicts(records, labels, answers={})
+    assert {row["claim_id"] for row in out["conflicts"]} == {"both-no", "both-yes"}
+    mapped = {row["claim_id"]: row["最终标签"] for row in out["conflicts"]}
+    assert mapped == {"both-no": "坏", "both-yes": "正确"}
+    assert all(row["最终标签来源"] == "三评委一致" for row in out["conflicts"])
+
+
+def test_unfinished_adjudication_refuses_conflict_conclusions():
+    records = [_one("split", "正确"), _one("agree-yes", "正确")]
+    labels = [
+        _label_row("split", overrides={"kimi": {"A": "否"}}),
+        _label_row("agree-yes"),
+    ]
+    original = copy.deepcopy(records)
+    with pytest.raises(SpotcheckError, match="裁决未完成"):
+        export_conflicts(records, labels, answers={})
+    with pytest.raises(SpotcheckError, match="裁决未完成"):
+        export_conflicts(records, labels, answers={"split": {"A": "是"}})
+    assert records == original

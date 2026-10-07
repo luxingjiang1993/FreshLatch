@@ -18,6 +18,8 @@ SPOTCHECK_SEED = 20261007
 IDENTITY = "模型评委加单人抽检"
 SPOTCHECK_ROLE = "用户单人抽检"
 ALREADY = "已有抽检答案，不再第二次看"
+SOURCE_JUDGES = "三评委一致"
+SOURCE_USER = "用户裁决"
 
 _GOLD_ORDER = ("正确", "坏")
 _JUDGE_IDS = ("qwen", "deepseek", "kimi")
@@ -212,4 +214,122 @@ def export_spotcheck(
         "adjudication": adjudication,
         "missing": missing,
         "text": text,
+    }
+
+
+def _pair(answer: object) -> tuple[str, str] | None:
+    if not isinstance(answer, Mapping):
+        return None
+    left = answer.get("A")
+    right = answer.get("B")
+    if left in _LABELS and right in _LABELS:
+        return str(left), str(right)
+    return None
+
+
+def _mapped(left: str, right: str) -> str:
+    """A 与 B 都是「是」才映成正确。任一为否映成坏。"""
+    if left == "是" and right == "是":
+        return "正确"
+    return "坏"
+
+
+def _conflict_row(record: Mapping[str, Any], mapped: str, source: str) -> dict[str, Any]:
+    return {
+        "claim_id": record["claim_id"],
+        "before_text": record["before_text"],
+        "after_text": record["after_text"],
+        "evidence_text": record["evidence_text"],
+        "evidence_id": record["evidence_id"],
+        "construction_gold": record["construction_gold"],
+        "最终标签": mapped,
+        "最终标签来源": source,
+    }
+
+
+def _render_conflicts(
+    conflicts: Sequence[Mapping[str, Any]],
+    missing: Sequence[Mapping[str, Any]],
+) -> str:
+    parts = [IDENTITY, SPOTCHECK_ROLE, "冲突清单"]
+    for row in conflicts:
+        parts.append(
+            "\n".join(
+                [
+                    str(row["claim_id"]),
+                    str(row["before_text"]),
+                    str(row["after_text"]),
+                    str(row["evidence_text"]),
+                    str(row["evidence_id"]),
+                    str(row["construction_gold"]),
+                    str(row["最终标签"]),
+                    str(row["最终标签来源"]),
+                ]
+            )
+        )
+    parts.append("缺失清单")
+    for row in missing:
+        gaps = " ".join(str(item) for item in row["缺失"])
+        parts.append(f"{row['claim_id']} {gaps}".rstrip())
+    return "\n".join(parts)
+
+
+def export_conflicts(
+    records: Sequence[Mapping[str, Any]],
+    labels: Sequence[Mapping[str, Any]] | None = None,
+    *,
+    answers: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    """列出最终标签与构造金标不同的条目。未完成裁决时不给出冲突结论。
+
+    三家在 A、B 上都一致时，最终标签用共同答案。否则用用户裁决。
+    缺评委标签的条目只进缺失清单。不改构造金标，不抽随机数。
+    """
+    written = answers or {}
+    indexed = _index_labels(labels or [])
+    pending: list[str] = []
+    conflicts: list[dict[str, Any]] = []
+    missing: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    ordered = sorted(records, key=lambda row: str(row["claim_id"]))
+    prepared: list[tuple[Mapping[str, Any], str, str]] = []
+    for record in ordered:
+        if "claim_id" not in record or "construction_gold" not in record:
+            raise SpotcheckError("冲突清单缺 claim_id 或 construction_gold")
+        claim_id = str(record["claim_id"])
+        if claim_id in seen:
+            raise SpotcheckError(f"claim_id 重复: {claim_id}")
+        seen.add(claim_id)
+        gold = record["construction_gold"]
+        if gold not in _GOLD_ORDER:
+            raise SpotcheckError(f"construction_gold 非法: {gold!r}")
+        kind, gaps = _classify(indexed.get(claim_id))
+        if kind == "missing":
+            missing.append({"claim_id": claim_id, "缺失": gaps})
+            continue
+        label_row = indexed[claim_id]
+        if kind == "same":
+            common = label_row[_JUDGE_IDS[0]]
+            pair = _pair(common)
+            if pair is None:
+                raise SpotcheckError(f"共同答案无法映射: {claim_id}")
+            prepared.append((record, _mapped(*pair), SOURCE_JUDGES))
+            continue
+        pair = _pair(written.get(claim_id))
+        if pair is None:
+            pending.append(claim_id)
+            continue
+        prepared.append((record, _mapped(*pair), SOURCE_USER))
+    if pending:
+        raise SpotcheckError("裁决未完成: " + ", ".join(pending))
+    for record, mapped, source in prepared:
+        if mapped == record["construction_gold"]:
+            continue
+        conflicts.append(_conflict_row(record, mapped, source))
+    return {
+        "identity": IDENTITY,
+        "spotcheck_role": SPOTCHECK_ROLE,
+        "conflicts": conflicts,
+        "missing": missing,
+        "text": _render_conflicts(conflicts, missing),
     }
