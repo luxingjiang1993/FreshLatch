@@ -7,10 +7,13 @@ rerun_log(重跑时间线取数,复验单卡片「重跑后仍红(第 N 次)」�
 
 from __future__ import annotations
 
+import logging
 import sqlite3
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Iterator
+
+logger = logging.getLogger(__name__)
 
 from freshlatch.models import AsOf
 from freshlatch.store.base import (
@@ -209,9 +212,15 @@ class SQLiteStore(RetrievalStore):
 
             try:
                 fill_chunk_vecs(chunks, embedder)
-            except Exception:
-                # embedder 不可用：正文已变的块保持 vec 为空，不退回旧向量。
-                pass
+            except Exception as exc:
+                # 正文已变的块保持 vec 为空，不退回旧向量。失败必须看得见。
+                missing = sum(1 for chunk in chunks if not chunk.vec)
+                logger.warning(
+                    "chunk embedder failed doc_id=%s exc_type=%s missing_vecs=%d",
+                    doc.doc_id,
+                    type(exc).__name__,
+                    missing,
+                )
         with self._conn() as conn:
             conn.execute(
                 "INSERT OR REPLACE INTO documents "
@@ -239,6 +248,14 @@ class SQLiteStore(RetrievalStore):
                     for c in chunks
                 ],
             )
+
+    def count_missing_vecs(self) -> int:
+        """库里没有可用 vec 的 chunk 数。空 blob 与 NULL 都算缺。"""
+        with self._conn() as conn:
+            row = conn.execute(
+                "SELECT COUNT(*) AS n FROM chunks WHERE vec IS NULL OR length(vec) = 0"
+            ).fetchone()
+        return int(row["n"])
 
     def add_invalidation(self, claim_id: str, voided_at: str, actor: str = "human", reason: str | None = None) -> None:
         with self._conn() as conn:
