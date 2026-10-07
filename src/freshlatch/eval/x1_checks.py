@@ -14,6 +14,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+from freshlatch.evidence_id import parse_evidence_id
 from freshlatch.store.base import Chunk, chunk_evidence_id
 from freshlatch.store.ingest import AS_OF_DIR, META_RE, load_corpus
 
@@ -190,15 +191,6 @@ def lcs_ratio(query_clean: str, chunk_texts_clean: list[str]) -> float | None:
     for body in chunk_texts_clean:
         best = max(best, lcs_length(query_clean, body))
     return best / len(query_clean)
-
-
-def parse_evidence_id(eid: str) -> tuple[str, str, str]:
-    """解析 `{doc_id}#{clause_id}@{as_of}`。"""
-    at = eid.rfind("@")
-    hash_pos = eid.rfind("#", 0, at if at >= 0 else None)
-    if at < 0 or hash_pos < 0:
-        return "", "", ""
-    return eid[:hash_pos], eid[hash_pos + 1 : at], eid[at + 1 :]
 
 
 def _parse_frontmatter(text: str) -> dict[str, str]:
@@ -554,7 +546,10 @@ def check_x1(
         if qtype == "multi_hop" and not is_guardrail:
             doc_ids = []
             for eid in relevant:
-                doc_id, _clause, _as_of = parse_evidence_id(str(eid))
+                parsed = parse_evidence_id(str(eid))
+                if parsed is None:
+                    continue
+                doc_id = parsed[0]
                 if doc_id:
                     doc_ids.append(doc_id)
             if len(relevant) < 2 or len(set(doc_ids)) < 2:

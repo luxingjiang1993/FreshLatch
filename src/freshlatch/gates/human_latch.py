@@ -16,6 +16,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Callable
 
+from freshlatch.evidence_id import parse_evidence_id
 from freshlatch.gates.policy_gate import (
     apply_policy_after_rule_gate,
     extract_provenance_refs,
@@ -146,19 +147,6 @@ def _renew_already_logged(store, claim_id: str, evidence_id: str) -> bool:
         if row.get("action") == "renew" and str(row.get("evidence_id") or "") == evidence_id:
             return True
     return False
-
-
-def parse_evidence_id(eid: object) -> tuple[str, str, AsOf] | None:
-    """`doc_id#anchor@as_of` → (doc_id, anchor, as_of);格式不成立返回 None。
-
-    与 eval/checks.py 同一套切法(rpartition "@" / partition "#"),单一解析口径;
-    as_of 只认 T0|T1(CONTEXT.md evidence_id 时点格式)。
-    """
-    body, at_sep, as_of = str(eid or "").rpartition("@")
-    doc_id, hash_sep, anchor = body.partition("#")
-    if not at_sep or not hash_sep or not doc_id or not anchor or as_of not in ("T0", "T1"):
-        return None
-    return doc_id, anchor, as_of  # AsOf 的 Literal 注解,str 值即类型
 
 
 def _apply_renew(store, claim: Claim, d: HumanDecision, now: Callable[[], datetime],
