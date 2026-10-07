@@ -14,8 +14,37 @@ from freshlatch.store.pipeline import pack_vec
 
 LOCAL_EMBED_MODEL = "BAAI/bge-small-zh-v1.5"
 LOCAL_EMBED_DIM = 512
+# fastembed 自己的缓存目录变量，原样传给 TextEmbedding(cache_dir=...)。
+EMBED_CACHE_ENV = "FASTEMBED_CACHE_PATH"
 
 _model = None
+
+
+class LocalEmbedUnavailable(RuntimeError):
+    """权重不在缓存里，或离线加载失败。"""
+
+
+def local_embed_cache_dir() -> str | None:
+    """``FASTEMBED_CACHE_PATH``。未设置时返回 None，交给 fastembed 的默认缓存。"""
+    raw = os.environ.get(EMBED_CACHE_ENV, "").strip()
+    return raw or None
+
+
+def embed_offline_requested() -> bool:
+    """显式离线：不尝试下载。``HF_HUB_OFFLINE=1`` 与 ``FRESHLATCH_EMBED_OFFLINE=1`` 都算。"""
+    return os.environ.get("HF_HUB_OFFLINE", "") == "1" or os.environ.get(
+        "FRESHLATCH_EMBED_OFFLINE", ""
+    ) == "1"
+
+
+def local_embed_unavailable_message(exc: BaseException) -> str:
+    cache = local_embed_cache_dir() or "(fastembed default cache)"
+    return (
+        f"本地 embedding 权重不可用。model={LOCAL_EMBED_MODEL} "
+        f"cache_dir={cache} exc_type={type(exc).__name__}。"
+        "请在有网环境运行 python scripts/warmup_local_embed.py，"
+        "再用 FASTEMBED_CACHE_PATH 指向该缓存。离线环境不会自动下载。"
+    )
 
 
 def _load_model():
@@ -24,7 +53,16 @@ def _load_model():
     if _model is None:
         from fastembed import TextEmbedding
 
-        _model = TextEmbedding(model_name=LOCAL_EMBED_MODEL)
+        kwargs: dict = {"model_name": LOCAL_EMBED_MODEL}
+        cache = local_embed_cache_dir()
+        if cache:
+            kwargs["cache_dir"] = cache
+        if embed_offline_requested():
+            kwargs["local_files_only"] = True
+        try:
+            _model = TextEmbedding(**kwargs)
+        except Exception as exc:
+            raise LocalEmbedUnavailable(local_embed_unavailable_message(exc)) from exc
     return _model
 
 

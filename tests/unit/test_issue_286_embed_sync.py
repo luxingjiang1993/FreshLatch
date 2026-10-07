@@ -158,18 +158,39 @@ def test_text_change_without_embedder_drops_stale_vec(tmp_path):
     assert all(c.vec is None for c in fallback)
 
 
-def test_embedder_failure_on_text_change_drops_old_vec(tmp_path):
+def test_embedder_failure_logs_and_counts_missing_vecs(tmp_path, caplog):
+    import logging
+
     store = SQLiteStore(tmp_path / "boom.db")
-    store.add_document(_doc(text="旧正文"), [_chunk("d", "旧正文", [1.0, 0.0])])
+    store.add_document(
+        _doc(text="旧正文"),
+        [
+            _chunk("d", "旧正文", [1.0, 0.0], clause="p1"),
+            _chunk("d", "旁注仍在", [0.0, 1.0], clause="p2"),
+        ],
+    )
+    assert store.count_missing_vecs() == 0
 
     def _boom(_texts: list[str]) -> list[list[float]]:
         raise RuntimeError("embed 断了")
 
     store.chunk_embedder = _boom
-    store.add_document(_doc(text="新正文"), [_chunk("d", "新正文", [1.0, 0.0])])
+    with caplog.at_level(logging.WARNING):
+        store.add_document(
+            _doc(text="新正文"),
+            [_chunk("d", "新正文", [1.0, 0.0], clause="p1")],
+        )
     stored = store.get_chunk("d", "p1", as_of="T1")
     assert stored.text == "新正文"
     assert stored.vec is None
+    assert store.count_missing_vecs() == 1
+    warning = next(r for r in caplog.records if r.levelno >= logging.WARNING)
+    assert "doc_id=d" in warning.message
+    assert "exc_type=RuntimeError" in warning.message
+    assert "missing_vecs=1" in warning.message
+    assert "except Exception: pass" not in Path(
+        "src/freshlatch/store/sqlite_store.py"
+    ).read_text(encoding="utf-8")
 
 
 def test_add_invalidation_does_not_clear_vec(tmp_path):
