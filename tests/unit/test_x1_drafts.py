@@ -6,36 +6,33 @@
 from __future__ import annotations
 
 import hashlib
-import importlib.util
 import json
 import socket
-import sys
 from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
 
+from freshlatch.eval.x1_checks import check_x1 as _real_check_x1
 from freshlatch.llm import DecodingParams, LLMClient, TokenUsage
 
 ROOT = Path(__file__).resolve().parents[2]
-_SCRIPT_MOD_NAME = "gen_x1_drafts_ret01_7"
 EVAL_X1 = ROOT / "data" / "eval" / "retrieve_x1.json"
 
 
 def _load_script():
-    path = ROOT / "scripts" / "gen_x1_drafts.py"
-    spec = importlib.util.spec_from_file_location(_SCRIPT_MOD_NAME, path)
-    assert spec is not None and spec.loader is not None
-    mod = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = mod
-    spec.loader.exec_module(mod)
+    import freshlatch.eval.x1_drafts as mod
+
     return mod
 
 
 @pytest.fixture(autouse=True)
-def _unload_script():
+def _restore_check_x1():
+    """直接赋值的 check_x1 替换在用例结束后回到检查器原函数。"""
+    import freshlatch.eval.x1_drafts as mod
+
     yield
-    sys.modules.pop(_SCRIPT_MOD_NAME, None)
+    mod.check_x1 = _real_check_x1
 
 
 @pytest.fixture(autouse=True)
@@ -364,7 +361,9 @@ def test_null_decontam_prints_checker_and_still_writes(tmp_path: Path, capsys):
         assert 0.2 not in loaded.values()
     assert "floor_overrides" not in captured["kwargs"]
     assert "decontam_8gram_max" not in captured["kwargs"]
-    src = (ROOT / "scripts" / "gen_x1_drafts.py").read_text(encoding="utf-8")
+    src_paths = sorted((ROOT / "src" / "freshlatch" / "eval" / "x1_drafts").rglob("*.py"))
+    src_paths.append(ROOT / "scripts" / "gen_x1_drafts.py")
+    src = "\n".join(path.read_text(encoding="utf-8") for path in src_paths)
     assert "0.2" not in src
     assert _file_fp(EVAL_X1) == before_x1
 
