@@ -212,31 +212,3 @@ class PrepublishRegistry:
 
     def get(self, run_id: str) -> RunSummary | None:
         return self.runs.get(run_id)
-
-
-def build_list_row_from_session(
-    *,
-    title: str,
-    source: str,
-    claims: Sequence[Claim],
-    running: bool,
-    latch: dict | None,
-    pack_id: str = "",
-    trajectory: str | None = None,
-    run_id: str | None = None,
-) -> dict[str, Any]:
-    """无注册表时也可直接投影一行(单测夹具友好)。"""
-    status = derive_run_status(running=running, latch=latch)
-    if status == "已落档" and not claims and not trajectory:
-        status = "未复验"
-    return RunSummary(
-        run_id=run_id or "session",
-        title=title or "(无标题)",
-        source=source or "(无来源)",
-        disposition=disposition_for_claims(claims),
-        updated_at=_utc_now(),
-        status=status,
-        claim_count=len(claims),
-        pack_id=pack_id,
-        trajectory=trajectory,
-    ).to_dict()
