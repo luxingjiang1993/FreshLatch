@@ -334,14 +334,17 @@ def run_hard_gold_retrieve(
             arm_note = f"臂对比跳过（{exc}）；不得因此改臂。"
 
     gain_verdict = (
-        "关（Hard-Gold 骨架已跑；改生产默认臂仍须另决议 + 过线；"
+        "关（Hard-Gold 骨架增益门仍单独记录；"
+        "2026-10-07 真人拍板后生产默认是 hybrid+rerank；"
+        "一键回退 set_retrieval_switch('bm25')；"
         f"PRODUCTION_RETRIEVAL_MODE={PRODUCTION_RETRIEVAL_MODE!r}）"
     )
 
     lines = [
         "# Hard-Gold 骨架 · BM25 / 增益门复跑",
         "",
-        "> 层身份：冒烟 / 面试加固（I3）。本波 Hard-Gold = 骨架语料 + 增益门复跑；**未授权改臂**。",
+        "> 层身份：冒烟 / 面试加固（I3）。本波 Hard-Gold = 骨架语料 + 增益门复跑。",
+        "> 2026-10-07 真人拍板后生产默认是 `hybrid+rerank`；一键回退 `set_retrieval_switch(\"bm25\")`。",
         "> 不报方差；不作统计显著。与冒烟 `retrieve_gold.json` 分文件。",
         "",
         f"- 日期: {date.today().isoformat()}",
@@ -351,7 +354,7 @@ def run_hard_gold_retrieve(
         f"（{stats['trap_adversarial_ratio']:.1%}，预登记 ≥30%）",
         f"- BM25 Recall@10: {metrics['recall']['10']:.4f}",
         f"- BM25 MRR@10: {metrics['mrr@10']:.4f}",
-        f"- 代码生产默认臂: `{PRODUCTION_RETRIEVAL_MODE}`（断言须为 bm25）",
+        f"- 代码生产默认臂: `{PRODUCTION_RETRIEVAL_MODE}`（断言须为 hybrid+rerank）",
         f"- 增益门判决: {gain_verdict}",
         f"- 臂对比备注: {arm_note}",
         "",
@@ -385,8 +388,8 @@ def run_hard_gold_retrieve(
         },
     }
     json_path.write_text(json.dumps(public, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    if PRODUCTION_RETRIEVAL_MODE != "bm25":
-        raise RuntimeError("违例：Hard-Gold 骨架跑后生产默认臂非 bm25")
+    if PRODUCTION_RETRIEVAL_MODE != "hybrid+rerank":
+        raise RuntimeError("违例：Hard-Gold 骨架跑后生产默认臂非 hybrid+rerank")
     return {
         "report_path": str(md_path),
         "json_path": str(json_path),

@@ -25,7 +25,8 @@ from freshlatch.store.base import (
 )
 from freshlatch.tools import FOCUS_DIMENSIONS
 
-# 运维开关只允许这三档。bm25 是一键回到 PRODUCTION_RETRIEVAL_MODE 的取值,不改常量本身。
+# 运维开关只允许这三档。未设开关时用 PRODUCTION_RETRIEVAL_MODE。
+# set_retrieval_switch("bm25") 是一键回退,不改常量本身。
 RETRIEVAL_SWITCH_MODES = frozenset({"bm25", "hybrid", "hybrid+rerank"})
 
 RETRIEVAL_EXHAUSTED = {"budget_exhausted": True,
@@ -98,7 +99,7 @@ class RunContext:
         self.eval_retrieval_mode = mode
 
     def set_retrieval_switch(self, mode: str) -> None:
-        """运维开关:bm25 / hybrid / hybrid+rerank。bm25 即一键回到 BM25。
+        """运维开关:bm25 / hybrid / hybrid+rerank。bm25 即一键回退到 BM25。
 
         不修改 PRODUCTION_RETRIEVAL_MODE。Agent 工具仍不能传 retrieval_mode。
         """

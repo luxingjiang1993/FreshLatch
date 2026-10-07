@@ -1,10 +1,24 @@
 # 本地 embedding 部署
 
-生产检索默认仍是 BM25。`PRODUCTION_RETRIEVAL_MODE` 保持 `bm25`。本文只说明如何把本地 embedding 权重准备好，不授权切换到 hybrid。
+生产默认是 `hybrid+rerank`（2026-10-07 真人拍板，见 `docs/evidence/issue-284/DECISION-16.md`）。切换之后、对外检索之前，必须先预热权重。没有权重时，在线检索不会假装自己是 hybrid+rerank：查询侧或 chunk 侧没有可用向量时，记录是 `bm25_fallback`。
 
 模型是 `BAAI/bge-small-zh-v1.5`，库是 fastembed，维度 512。这不是阿里云 DashScope 的 `text-embedding-v4`，预热脚本不读付费 API key。
 
 rerank 仍是 `rerank_lexical`（jieba token overlap），这里不下载神经 reranker。
+
+## 切换后必须先预热
+
+1. 安装 `requirements.txt`（含 `fastembed==0.7.1`）。
+2. 把 `FASTEMBED_CACHE_PATH` 设成持久目录。未设置时，fastembed 用临时目录下的 `fastembed_cache`，重启后权重会丢。
+3. 在能访问模型仓库的机器上跑 `python scripts/warmup_local_embed.py`。成功时标准输出一行：`ok model=BAAI/bge-small-zh-v1.5 dim=512 cache_dir=...`。
+4. 把该缓存目录带到要上线的机器，并设置同一个 `FASTEMBED_CACHE_PATH`。离线机器再设 `HF_HUB_OFFLINE=1` 或 `FRESHLATCH_EMBED_OFFLINE=1`。
+5. 入库路径会挂本地 embedder（`FRESHLATCH_LOCAL_EMBED` 未设置时默认挂上）。已有库如果 `SQLiteStore.count_missing_vecs()` 不是 0，这些 chunk 不进 dense 打分；整池都没有可用向量时，这次检索记 `bm25_fallback`。
+
+## 回退
+
+不需要删权重。在线 `RunContext` 上调用 `set_retrieval_switch("bm25")`，之后的 `try_retrieve` 记为 `bm25`。这不改 `PRODUCTION_RETRIEVAL_MODE`。要回到默认，再调用 `set_retrieval_switch("hybrid+rerank")`。进程重启且没有再次设置开关时，沿用常量 `hybrid+rerank`。
+
+缺向量时不要把结果标成 hybrid 或 hybrid+rerank。降级标记仍是 `bm25_fallback`。
 
 ## 缓存目录
 

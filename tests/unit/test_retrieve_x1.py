@@ -133,8 +133,8 @@ def _boom_embed(*_a, **_k):
     raise AssertionError("不得调用真实 embed_texts")
 
 
-def test_production_retrieval_mode_still_bm25():
-    assert PRODUCTION_RETRIEVAL_MODE == "bm25"
+def test_production_retrieval_mode_is_hybrid_rerank():
+    assert PRODUCTION_RETRIEVAL_MODE == "hybrid+rerank"
 
 
 def test_is_production_dense_db_string_only():
@@ -285,7 +285,7 @@ def test_typed_scoring_excludes_guardrail_and_splits_conflict(tmp_path, monkeypa
     assert main["n_guardrail"] == 1
     assert payload["diagnostic_ran"] is False
     assert payload["as_of_off_diagnostic"] is None
-    assert payload["production_retrieval_mode"] == "bm25"
+    assert payload["production_retrieval_mode"] == "hybrid+rerank"
     assert main["buckets"]["总体"]["bm25"]["n"] == 4
     assert main["buckets"]["lexical"]["bm25"]["n"] == 1
     arm_ids = [row["id"] for row in main["per_query"] if row["score_role"] == "arm"]
@@ -612,6 +612,11 @@ def test_parse_prereg_ignores_other_hex_and_owner_freeze():
 
 
 def test_do_not_touch_git_diff_empty():
+    """x1 票仍锁住评测入口、付费 embedding、hard gold 与语料。
+
+    2026-10-07 真人拍板改了 ``PRODUCTION_RETRIEVAL_MODE`` 和 Hard-Gold
+    退出检查，所以 ``base.py`` 与 ``retrieve_eval.py`` 不再列入这份空 diff。
+    """
     probe = subprocess.run(
         ["git", "rev-parse", "--verify", "--quiet", "main^{commit}"],
         cwd=ROOT,
@@ -622,9 +627,7 @@ def test_do_not_touch_git_diff_empty():
     proc = subprocess.run(
         [
             "git", "diff", "--stat", "main", "--",
-            "src/freshlatch/store/base.py",
             "src/freshlatch/eval/__main__.py",
-            "src/freshlatch/eval/retrieve_eval.py",
             "src/freshlatch/store/embeddings.py",
             "src/freshlatch/store/ingest.py",
             "src/freshlatch/llm.py",

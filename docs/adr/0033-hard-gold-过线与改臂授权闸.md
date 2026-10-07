@@ -45,6 +45,10 @@ I3 交付 Hard-Gold 骨架后，改生产默认臂仍处「另决议」空位。
 7. **词表**  
    - `CONTEXT.md`：Hard-Gold 过线与改臂授权闸（见评估链接）。
 
+## 后续（2026-10-07）
+
+本 ADR 正文仍记录 2026-10-03 那一轮：那次会话不改 `PRODUCTION_RETRIEVAL_MODE`。2026-10-07 Oriental Ronin 拍板 `docs/evidence/issue-284/DECISION-16.md` 的 16 条。拍板范围只是这 16 条，不是全库逐行人工审核。生产默认改为 `hybrid+rerank`。一键回退仍是 `set_retrieval_switch("bm25")`。缺向量仍记 `bm25_fallback`。切换后须先预热本地 embedding 权重，见 `docs/ops/local-embed.md`。
+
 ## 后果
 
 - roadmap「改臂另决议」指向本 ADR 与 #257；下一跳 = dense+hard 复跑票。  

@@ -16,13 +16,13 @@
 ```
 DONE: Phase A · Phase I0 · Phase V1（冒烟 + 本地 ACCEPTANCE）· Phase I1（冒烟 corpus）· Phase V1.5（冒烟 Evidence-bound）· Phase I2（冒烟安全三例）· Phase V2（冒烟·采用层 发前钩子+台账）· Phase I3（冒烟/面试加固三轨）· ① bare-pytest 卫生
 NOW → NEXT:
-  C′ 外部嵌入平台化 |（Hard-Gold #259 已过线 · 未换臂 · 待 Gate 人终收 · 冻 bm25）
+  C′ 外部嵌入平台化 |（Hard-Gold #259 已过线；2026-10-07 真人拍板后生产默认 hybrid+rerank；一键回退 set_retrieval_switch("bm25")）
 BACKLOG: C′ 外部嵌入平台化 | 图谱/采编 CMS | High-Recall SKU | Studio (frozen) | B′ 真事故扩面（I3 夹具以外仍 on-demand）
 ```
 
 **默认阶段序（钉死）：** `V1 → I1 → V1.5`。  
 **唯一例外：** 自用痛点明确是「改稿再验」时，允许 V1 后先开 V1.5；**冲 mid 仍以 I1 为准**，不得用 V1.5 替代 I1。  
-**本期：** V1.5 / I2 / V2 / **I3 Exit 已齐**；**Hard-Gold 改臂闸流程已钉**（[#257](https://github.com/luxingjiang1993/FreshLatch/issues/257) · ADR-0033）；**#259 同库复跑已过线 · 未换臂 · 待 Gate 实现票**（证据 `docs/evidence/hard-gold-arm/`）。
+**本期：** V1.5 / I2 / V2 / **I3 Exit 已齐**；**Hard-Gold 改臂闸流程已钉**（[#257](https://github.com/luxingjiang1993/FreshLatch/issues/257) · ADR-0033）；**#259 同库复跑已过线**。I3 关门时默认仍是 bm25。**2026-10-07** Oriental Ronin 拍板 DECISION-16 的 16 条之后，`PRODUCTION_RETRIEVAL_MODE` 为 `hybrid+rerank`。一键回退是 `set_retrieval_switch("bm25")`。缺向量仍是 `bm25_fallback`。这次拍板不是全库逐行人工审核。
 
 ---
 
@@ -207,7 +207,7 @@ BACKLOG: C′ 外部嵌入平台化 | 图谱/采编 CMS | High-Recall SKU | Stud
 I3 交付难金标骨架 + 增益报告 + **不改臂**。  
 **改臂授权闸**已 grill 收口（[#257](https://github.com/luxingjiang1993/FreshLatch/issues/257) · ADR-0033）；**#258** 曾因臂对比缺 traps 假 fail；**#259** 同库（corpus+traps）按原门复跑：**已过线 · 未换臂**（Hybrid pass；Rerank 关；配置仍 bm25）。  
 评估见 `docs/research/Hard-Gold过线与改臂决议设计评估.md`；证据 `docs/evidence/hard-gold-arm/` · [`RERUN-20261003-259.md`](./evidence/hard-gold-arm/RERUN-20261003-259.md)。  
-**不等于** 旧 Phase B；**≠** 已换臂；**须** Gate 实现票人终收后方可改 `PRODUCTION_RETRIEVAL_MODE`。
+**不等于** 旧 Phase B。#259 过线当时未换臂。**2026-10-07** 真人拍板后 `PRODUCTION_RETRIEVAL_MODE` 为 `hybrid+rerank`。一键回退是 `set_retrieval_switch("bm25")`。
 
 ### Ticket: High-Recall SKU（可选）
 预算内二次检索；同一审计契约；默认臂变更仍走 Hard-Gold 改臂决议。

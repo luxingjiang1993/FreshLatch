@@ -4,7 +4,7 @@
 → 发前列表/详情投影一致 + 至少一条 patch_events 可读 + T1 checksum 可追。
 
 另含:ADR-0027 映射抽检 ≥1;thesis-1 / QuoteTTL 软 Port 不红且非第二垂直;
-生产默认检索臂仍 bm25。
+生产默认检索臂是 hybrid+rerank；空库记 bm25_fallback。
 """
 
 from __future__ import annotations
@@ -241,12 +241,18 @@ def test_thesis1_soft_port_not_second_vertical_and_smoke():
     assert (PACK_DIR / "docket.json").is_file()
 
 
-def test_production_retrieval_default_remains_bm25(tmp_path):
-    """生产默认检索臂仍为 bm25;本票禁止改默认臂。"""
-    assert PRODUCTION_RETRIEVAL_MODE == "bm25"
+def test_production_retrieval_default_is_hybrid_rerank(tmp_path):
+    """在线默认是 hybrid+rerank。空库没有可用向量，这次检索记 bm25_fallback。回退不改常量。"""
+    from freshlatch.runner import RunContext
     from freshlatch.store.sqlite_store import SQLiteStore
 
-    store = SQLiteStore(tmp_path / "bm25-check.db")
-    hits = store.retrieve("探针查询", as_of="T1", top_k=3)
+    assert PRODUCTION_RETRIEVAL_MODE == "hybrid+rerank"
+    store = SQLiteStore(tmp_path / "hybrid-check.db")
+    ctx = RunContext(store=store, mode="online")
+    hits = ctx.try_retrieve("探针查询", as_of="T1", top_k=3)
     assert hits == [] or isinstance(hits, list)
-    assert getattr(store, "last_retrieval_mode", None) == "bm25"
+    assert ctx.events[-1]["retrieval_mode"] == "bm25_fallback"
+    ctx.set_retrieval_switch("bm25")
+    ctx.try_retrieve("探针查询", as_of="T1", top_k=3)
+    assert ctx.events[-1]["retrieval_mode"] == "bm25"
+    assert PRODUCTION_RETRIEVAL_MODE == "hybrid+rerank"

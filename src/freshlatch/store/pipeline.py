@@ -1,7 +1,7 @@
 """多 stage 打分管线:recall(BM25+jieba) → vector 融合 → rerank。
 
 评测臂已可跑 dense / hybrid / rerank(不是本期空实现、后续票填实)。
-生产默认仍 BM25 透传;无增益不得改 PRODUCTION_RETRIEVAL_MODE(ADR-0003 修订 #156)。
+生产默认是 hybrid+rerank(2026-10-07 真人拍板)。缺可用向量时调用方记 bm25_fallback。一键回退是 set_retrieval_switch("bm25")。
 """
 
 from __future__ import annotations
