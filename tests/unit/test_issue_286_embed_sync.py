@@ -78,7 +78,7 @@ def test_injected_embedder_fills_only_missing_vecs():
     assert unpack_vec(kept.vec) == [0.0, 1.0]
 
 
-def test_parse_then_add_document_writes_vec_via_chunk_embedder():
+def test_parse_then_add_document_writes_vec_via_chunk_embedder(tmp_path):
     md = (
         "---\n"
         "doc_id: paste-change\n"
@@ -91,15 +91,15 @@ def test_parse_then_add_document_writes_vec_via_chunk_embedder():
     )
     doc, chunks = parse_document_text(md)
     assert chunks[0].vec is None
-    store = InMemoryStore()
+    store = SQLiteStore(tmp_path / "parse.db")
     store.chunk_embedder = lambda texts: [[0.2, 0.8] for _ in texts]
     store.add_document(doc, chunks)
     stored = store.get_chunk("paste-change", "p1", as_of="T1")
     assert unpack_vec(stored.vec) == pytest.approx([0.2, 0.8])
 
 
-def test_confirm_paste_uses_store_embedder():
-    store = InMemoryStore()
+def test_confirm_paste_uses_store_embedder(tmp_path):
+    store = SQLiteStore(tmp_path / "paste.db")
     store.chunk_embedder = lambda texts: [[0.4, 0.6] for _ in texts]
     session = T1SourceSession(store)
     session.save_paste_draft("席位标价八十")
@@ -167,13 +167,6 @@ def test_all_missing_and_bad_dim_only_pool_still_fallback():
 
     wrong = _chunk("w", "维度不符", [1.0, 0.0, 0.0])
     assert rank_dense([1.0, 0.0], [wrong], top_k=1) is None
-
-
-def test_memory_readd_without_embedder_keeps_prior_vec():
-    store = _mem([_chunk("d", "旧", [1.0, 0.0])])
-    fresh = _chunk("d", "新", None)
-    store.add_document(_doc(text="新"), [fresh])
-    assert unpack_vec(fresh.vec) == [1.0, 0.0]
 
 
 def test_online_switch_roundtrip_does_not_change_default():

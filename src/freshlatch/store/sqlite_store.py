@@ -184,7 +184,11 @@ class SQLiteStore(RetrievalStore):
         return row["vec"]
 
     def add_document(self, doc: Document, chunks: list[Chunk]) -> None:
-        self.prepare_chunk_vecs(chunks)
+        embedder = getattr(self, "chunk_embedder", None)
+        if embedder is not None:
+            from freshlatch.store.local_embed import fill_chunk_vecs
+
+            fill_chunk_vecs(chunks, embedder)
         with self._conn() as conn:
             conn.execute(
                 "INSERT OR REPLACE INTO documents "

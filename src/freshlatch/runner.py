@@ -20,11 +20,13 @@ from freshlatch.store.base import (
     EXECUTABLE_RETRIEVAL_MODES,
     PRODUCTION_RETRIEVAL_MODE,
     RETRIEVAL_MODE_ENUM,
-    RETRIEVAL_SWITCH_MODES,
     RetrievalStore,
     chunk_evidence_id,
 )
 from freshlatch.tools import FOCUS_DIMENSIONS
+
+# 运维开关只允许这三档。bm25 是一键回到 PRODUCTION_RETRIEVAL_MODE 的取值,不改常量本身。
+RETRIEVAL_SWITCH_MODES = frozenset({"bm25", "hybrid", "hybrid+rerank"})
 
 RETRIEVAL_EXHAUSTED = {"budget_exhausted": True,
                        "message": "检索预算已尽(24/Run)。请改用 read_source 直读原文,或基于现有证据下结论。"}
