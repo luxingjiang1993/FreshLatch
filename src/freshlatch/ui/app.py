@@ -147,7 +147,11 @@ def _current_budget() -> dict:
 
 
 def _store() -> SQLiteStore:
-    return SQLiteStore(ACTIVE_PACK.sqlite)
+    from freshlatch.store.local_embed import attach_local_embedder
+
+    store = SQLiteStore(ACTIVE_PACK.sqlite)
+    attach_local_embedder(store)
+    return store
 
 
 def _pack_payload() -> dict:

@@ -142,5 +142,12 @@ def resolve_pack(pack_id: str | None = None) -> PackPaths:
 
 
 def open_pack_store(pack: PackPaths) -> SQLiteStore:
-    """打开该包自己的 SQLite 文件。表结构用既有 SCHEMA，不加列。"""
-    return SQLiteStore(pack.sqlite)
+    """打开该包自己的 SQLite 文件。表结构用既有 SCHEMA，不加列。
+
+    入库前可补本地向量。``FRESHLATCH_LOCAL_EMBED=0`` 时不挂 embedder。
+    """
+    from freshlatch.store.local_embed import attach_local_embedder
+
+    store = SQLiteStore(pack.sqlite)
+    attach_local_embedder(store)
+    return store

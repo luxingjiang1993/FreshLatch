@@ -55,18 +55,27 @@ def cosine(a: list[float], b: list[float]) -> float:
 
 
 def rank_dense(query_vec: list[float], pool: list[Chunk], *, top_k: int) -> list[Chunk] | None:
-    """本地余弦。池中任一缺 vec 或维度不符则返回 None,由调用方降级。"""
+    """本地余弦。单个缺 vec 或维度不符的 chunk 跳过。
+
+    没有任何可用 vec 时返回 None,由调用方记 bm25_fallback。
+    不再因池中缺一块就把整池降级。
+    """
     if not pool or not query_vec:
         return None
+    dim = len(query_vec)
     scored: list[tuple[float, int, Chunk]] = []
     for i, chunk in enumerate(pool):
         if not chunk.vec:
-            return None
+            continue
         try:
             vec = unpack_vec(chunk.vec)
         except ValueError:
-            return None
+            continue
+        if len(vec) != dim:
+            continue
         scored.append((cosine(query_vec, vec), i, chunk))
+    if not scored:
+        return None
     scored.sort(key=lambda item: (-item[0], item[1]))
     return [chunk for _score, _i, chunk in scored[:top_k]]
 

@@ -174,7 +174,17 @@ class SQLiteStore(RetrievalStore):
 
     # -- 写入 -----------------------------------------------------------------
 
+    def _stored_vec(self, conn: sqlite3.Connection, chunk_id: str) -> bytes | None:
+        row = conn.execute(
+            "SELECT vec FROM chunks WHERE chunk_id = ?",
+            (chunk_id,),
+        ).fetchone()
+        if row is None or not row["vec"]:
+            return None
+        return row["vec"]
+
     def add_document(self, doc: Document, chunks: list[Chunk]) -> None:
+        self.prepare_chunk_vecs(chunks)
         with self._conn() as conn:
             conn.execute(
                 "INSERT OR REPLACE INTO documents "
@@ -195,7 +205,8 @@ class SQLiteStore(RetrievalStore):
                 [
                     (c.doc_id, c.chunk_id, c.clause_id, c.title, c.text,
                      c.source_type, c.as_of, c.doc_version, c.checksum,
-                     c.tokens, c.parent_id, c.hypo_questions, c.vec,
+                     c.tokens, c.parent_id, c.hypo_questions,
+                     c.vec if c.vec else self._stored_vec(conn, c.chunk_id),
                      normalize_tenant_id(c.tenant_id), int(bool(c.poison)),
                      int(bool(c.untrusted)))
                     for c in chunks

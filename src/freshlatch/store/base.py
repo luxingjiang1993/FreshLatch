@@ -16,6 +16,8 @@ RETRIEVAL_MODE_ENUM = frozenset(
 EXECUTABLE_RETRIEVAL_MODES = frozenset(
     {"bm25", "dense", "hybrid", "hybrid+rerank", "bm25_fallback"}
 )
+# 运维开关只允许这三档。bm25 是一键回到 PRODUCTION_RETRIEVAL_MODE 的取值,不改常量本身。
+RETRIEVAL_SWITCH_MODES = frozenset({"bm25", "hybrid", "hybrid+rerank"})
 
 
 def chunk_evidence_id(chunk: "Chunk") -> str:
@@ -96,6 +98,15 @@ class RetrievalStore(ABC):
     def _requested_retrieval_mode(self) -> str | None:
         return getattr(self, "_eval_retrieval_mode", None)
 
+    def prepare_chunk_vecs(self, chunks: list[Chunk]) -> None:
+        """入库前补齐缺 vec。未挂 chunk_embedder 时不动,测试不打本地模型。"""
+        embedder = getattr(self, "chunk_embedder", None)
+        if embedder is None:
+            return
+        from freshlatch.store.local_embed import fill_chunk_vecs
+
+        fill_chunk_vecs(chunks, embedder)
+
     def _embed_query(self, query: str) -> list[float] | None:
         """未注入 embedder 或调用失败 = 断 embed,调用方降级。不在这里打网。"""
         embedder = getattr(self, "query_embedder", None)
@@ -156,6 +167,14 @@ class InMemoryStore(RetrievalStore):
         self._memories: list[dict] = []
 
     def add_document(self, doc: Document, chunks: list[Chunk]) -> None:
+        self.prepare_chunk_vecs(chunks)
+        kept: dict[str, bytes] = {}
+        for old in self._chunks:
+            if old.vec:
+                kept[old.chunk_id] = old.vec
+        for chunk in chunks:
+            if not chunk.vec and chunk.chunk_id in kept:
+                chunk.vec = kept[chunk.chunk_id]
         self._docs[(doc.doc_id, doc.as_of)] = doc
         self._chunks.extend(chunks)
 
