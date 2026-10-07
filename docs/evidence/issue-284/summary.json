@@ -1,0 +1,214 @@
+{
+  "issue": 284,
+  "pr": 283,
+  "human_row_review": false,
+  "checklist_is_human_review": false,
+  "n_arm": 224,
+  "n_guardrail": 43,
+  "n_chunks": 794,
+  "embed_model": "BAAI/bge-small-zh-v1.5",
+  "embed_dim": 512,
+  "fastembed_version": "0.7.1",
+  "mode_before": "bm25",
+  "mode_after": "bm25",
+  "check_exit": 0,
+  "dashscope_called": false,
+  "significance": {
+    "bm25_vs_hybrid": {
+      "left": "bm25",
+      "right": "hybrid",
+      "n": 224,
+      "recall_left": 0.9196428571428571,
+      "recall_right": 0.9732142857142857,
+      "recall_diff": {
+        "estimate": 0.05357142857142857,
+        "ci95_low": 0.022321428571428572,
+        "ci95_high": 0.08928571428571429
+      },
+      "mcnemar": {
+        "left_only": 2,
+        "right_only": 14,
+        "both_hit": 204,
+        "neither": 4,
+        "p_two_sided": 0.004180908203124997
+      }
+    },
+    "bm25_vs_hybrid+rerank": {
+      "left": "bm25",
+      "right": "hybrid+rerank",
+      "n": 224,
+      "recall_left": 0.9196428571428571,
+      "recall_right": 0.9732142857142857,
+      "recall_diff": {
+        "estimate": 0.05357142857142857,
+        "ci95_low": 0.022321428571428572,
+        "ci95_high": 0.08928571428571429
+      },
+      "mcnemar": {
+        "left_only": 2,
+        "right_only": 14,
+        "both_hit": 204,
+        "neither": 4,
+        "p_two_sided": 0.004180908203124997
+      }
+    },
+    "hybrid_vs_hybrid+rerank": {
+      "left": "hybrid",
+      "right": "hybrid+rerank",
+      "n": 224,
+      "recall_left": 0.9732142857142857,
+      "recall_right": 0.9732142857142857,
+      "recall_diff": {
+        "estimate": 0.0,
+        "ci95_low": 0.0,
+        "ci95_high": 0.0
+      },
+      "mcnemar": {
+        "left_only": 0,
+        "right_only": 0,
+        "both_hit": 218,
+        "neither": 6,
+        "p_two_sided": 1.0
+      }
+    }
+  },
+  "rank_metrics": [
+    {
+      "left": "bm25",
+      "right": "hybrid+rerank",
+      "metric": "mrr",
+      "left_mean": 0.7275333049886621,
+      "right_mean": 0.7566609977324263,
+      "estimate": 0.029127692743764172,
+      "ci95_low": 0.004495287698412699,
+      "ci95_high": 0.053800356079931964
+    },
+    {
+      "left": "bm25",
+      "right": "hybrid+rerank",
+      "metric": "ndcg",
+      "left_mean": 0.7267672386770819,
+      "right_mean": 0.7617513683560622,
+      "estimate": 0.03498412967898032,
+      "ci95_low": 0.014025113383670726,
+      "ci95_high": 0.05609085569277496
+    },
+    {
+      "left": "hybrid",
+      "right": "hybrid+rerank",
+      "metric": "mrr",
+      "left_mean": 0.7739937641723357,
+      "right_mean": 0.7566609977324263,
+      "estimate": -0.017332766439909296,
+      "ci95_low": -0.04196991035997732,
+      "ci95_high": 0.006196942318594101
+    },
+    {
+      "left": "hybrid",
+      "right": "hybrid+rerank",
+      "metric": "ndcg",
+      "left_mean": 0.779488160892922,
+      "right_mean": 0.7617513683560622,
+      "estimate": -0.017736792536859957,
+      "ci95_low": -0.03478236247276103,
+      "ci95_high": -0.0014390192270836006
+    }
+  ],
+  "cost": {
+    "model_load_s": 0.5430166969999846,
+    "index_build_s": 5.728331330000174,
+    "query_embed_s": 0.5705401449999954,
+    "n_chunks": 794,
+    "n_queries": 224,
+    "embed_dim": 512,
+    "vec_bytes": 1626112,
+    "rss_before_kb": 124908,
+    "rss_after_kb": 633324,
+    "hwm_kb": 643680,
+    "p95_ms": {
+      "bm25": 69.78307600002154,
+      "hybrid": 82.5428959999499,
+      "hybrid+rerank": 90.68060099980357
+    },
+    "p95_ok": {
+      "bm25": true,
+      "hybrid": true,
+      "hybrid+rerank": true
+    },
+    "fastembed_requires": [
+      "huggingface-hub (>=0.20,<1.0)",
+      "loguru (>=0.7.2,<0.8.0)",
+      "mmh3 (>=4.1.0,<6.0.0)",
+      "numpy (>=1.21) ; python_version >= \"3.10\" and python_version < \"3.12\"",
+      "numpy (>=1.21,<2.1.0) ; python_version < \"3.10\"",
+      "numpy (>=1.26) ; python_version == \"3.12\"",
+      "numpy (>=2.1.0) ; python_version >= \"3.13\"",
+      "onnxruntime (>1.20.0) ; python_version >= \"3.13\"",
+      "onnxruntime (>=1.17.0,!=1.20.0) ; python_version >= \"3.10\" and python_version < \"3.13\"",
+      "onnxruntime (>=1.17.0,<1.20.0) ; python_version < \"3.10\"",
+      "pillow (>=10.3.0,<12.0.0)",
+      "py-rust-stemmers (>=0.1.0,<0.2.0)",
+      "requests (>=2.31,<3.0)",
+      "tokenizers (>=0.15,<1.0)",
+      "tqdm (>=4.66,<5.0)"
+    ],
+    "sync_gap": true,
+    "sync_note": "解析入库（`parse_document_text` / `confirm_paste`）不计算向量，新块 `vec` 为空。`invalidation_list` 只记主张 id，不改块向量。再次 `add_document` 会把块上的 `vec` 原样写入；空向量会覆盖旧向量。池中只要有一块缺向量，`rank_dense` 返回空，检索记 `bm25_fallback`，不会把这次结果标成 hybrid。本次冒烟清掉一块向量后，请求 hybrid，记录为 bm25_fallback；写回向量后恢复为 hybrid。",
+    "requirements_txt_unchanged": true
+  },
+  "smoke": {
+    "modes": [
+      {
+        "requested": "hybrid",
+        "retrieval_mode": "hybrid",
+        "hits": 10
+      },
+      {
+        "requested": "hybrid+rerank",
+        "retrieval_mode": "hybrid+rerank",
+        "hits": 10
+      },
+      {
+        "requested": "bm25",
+        "retrieval_mode": "bm25",
+        "hits": 10
+      }
+    ],
+    "online_refused": true,
+    "online_message": "生产路径不可强制 retrieval_mode",
+    "online_mode": "bm25",
+    "missing_vec_mode": "bm25_fallback",
+    "restored_mode": "hybrid",
+    "steps_md": "回退步骤（本次冒烟已做完，可复做）：\n\n1. 只在 `RunContext.mode == \"eval\"` 时调用 `arm_eval_retrieval_mode`。\n2. `arm_eval_retrieval_mode(\"hybrid\")` 后 `try_retrieve`，轨迹 `retrieval_mode` 为 hybrid。\n3. `arm_eval_retrieval_mode(\"hybrid+rerank\")` 后同样为 hybrid+rerank。\n4. 一键回到词法：`arm_eval_retrieval_mode(\"bm25\")` 再查一次，轨迹为 bm25。\n5. `mode == \"online\"` 时 `arm_eval_retrieval_mode` 抛出「生产路径不可强制 retrieval_mode」，检索仍是 bm25。\n6. 不修改 `PRODUCTION_RETRIEVAL_MODE`。本次结束时它仍是 bm25。\n\n冒烟记录：\n\n- 请求 hybrid → 记录 hybrid，命中 10 条\n- 请求 hybrid+rerank → 记录 hybrid+rerank，命中 10 条\n- 请求 bm25 → 记录 bm25，命中 10 条\n- 生产路径拒绝切臂：生产路径不可强制 retrieval_mode\n- 生产路径实际检索：bm25\n- 缺一块向量时请求 hybrid → bm25_fallback；写回后 → hybrid"
+  },
+  "checklist_counts": {
+    "bm25_vs_hybrid": {
+      "n": 224,
+      "保持 bm25": 172,
+      "可议 hybrid": 48,
+      "可议 hybrid+rerank": 0,
+      "需要改题": 4
+    },
+    "bm25_vs_hybrid+rerank": {
+      "n": 224,
+      "保持 bm25": 172,
+      "可议 hybrid": 0,
+      "可议 hybrid+rerank": 48,
+      "需要改题": 4
+    },
+    "hybrid_vs_hybrid+rerank": {
+      "n": 208,
+      "保持 bm25": 149,
+      "可议 hybrid": 36,
+      "可议 hybrid+rerank": 19,
+      "需要改题": 4
+    }
+  },
+  "recommendation": "保持 bm25",
+  "recommendation_sentence": "建议保持 bm25：混合相对词法的 Recall@10 配对差点估计 +0.0536（区间 +0.0223 到 +0.0893），但入库和补丁不写向量，池里缺一条向量就会整池降成 bm25_fallback，不能当成已经切到混合；重排相对混合的 Recall 配对差为 +0.0000，nDCG@10 配对差 -0.0177（区间 -0.0348 到 -0.0014），没有单独构成换默认的理由。",
+  "method": {
+    "n_boot": 10000,
+    "seed": 20261007,
+    "p95_budget_ms": 800.0
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "model_load_s": 0.5430166969999846,
+  "index_build_s": 5.728331330000174,
+  "query_embed_s": 0.5705401449999954,
+  "n_chunks": 794,
+  "n_queries": 224,
+  "embed_dim": 512,
+  "vec_bytes": 1626112,
+  "rss_before_kb": 124908,
+  "rss_after_kb": 633324,
+  "hwm_kb": 643680,
+  "p95_ms": {
+    "bm25": 69.78307600002154,
+    "hybrid": 82.5428959999499,
+    "hybrid+rerank": 90.68060099980357
+  },
+  "p95_ok": {
+    "bm25": true,
+    "hybrid": true,
+    "hybrid+rerank": true
+  },
+  "fastembed_requires": [
+    "huggingface-hub (>=0.20,<1.0)",
+    "loguru (>=0.7.2,<0.8.0)",
+    "mmh3 (>=4.1.0,<6.0.0)",
+    "numpy (>=1.21) ; python_version >= \"3.10\" and python_version < \"3.12\"",
+    "numpy (>=1.21,<2.1.0) ; python_version < \"3.10\"",
+    "numpy (>=1.26) ; python_version == \"3.12\"",
+    "numpy (>=2.1.0) ; python_version >= \"3.13\"",
+    "onnxruntime (>1.20.0) ; python_version >= \"3.13\"",
+    "onnxruntime (>=1.17.0,!=1.20.0) ; python_version >= \"3.10\" and python_version < \"3.13\"",
+    "onnxruntime (>=1.17.0,<1.20.0) ; python_version < \"3.10\"",
+    "pillow (>=10.3.0,<12.0.0)",
+    "py-rust-stemmers (>=0.1.0,<0.2.0)",
+    "requests (>=2.31,<3.0)",
+    "tokenizers (>=0.15,<1.0)",
+    "tqdm (>=4.66,<5.0)"
+  ],
+  "sync_gap": true,
+  "sync_note": "解析入库（`parse_document_text` / `confirm_paste`）不计算向量，新块 `vec` 为空。`invalidation_list` 只记主张 id，不改块向量。再次 `add_document` 会把块上的 `vec` 原样写入；空向量会覆盖旧向量。池中只要有一块缺向量，`rank_dense` 返回空，检索记 `bm25_fallback`，不会把这次结果标成 hybrid。本次冒烟清掉一块向量后，请求 hybrid，记录为 bm25_fallback；写回向量后恢复为 hybrid。",
+  "requirements_txt_unchanged": true
+}
