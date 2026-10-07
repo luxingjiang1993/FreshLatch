@@ -14,6 +14,7 @@ import os
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import datetime, timezone
+from fractions import Fraction
 from pathlib import Path
 from typing import Any
 
@@ -253,21 +254,26 @@ def _label(row: Mapping[str, Any], judge_id: str, question: str) -> str | None:
     return None
 
 
+def _as_float(value: Fraction) -> float:
+    """分数算完再转浮点，避免 3.11 与 3.12 的中间除法末位不同。"""
+    return float(value)
+
+
 def _cohen(pairs: list[tuple[str, str]]) -> dict[str, Any]:
     n = len(pairs)
     if n == 0:
         return {"kappa": None, "n": 0}
     agreed = sum(left == right for left, right in pairs)
-    observed = agreed / n
-    expected = 0.0
+    observed = Fraction(agreed, n)
+    expected = Fraction(0)
     for label in _LABELS:
-        left_rate = sum(left == label for left, _right in pairs) / n
-        right_rate = sum(right == label for _left, right in pairs) / n
+        left_rate = Fraction(sum(left == label for left, _right in pairs), n)
+        right_rate = Fraction(sum(right == label for _left, right in pairs), n)
         expected += left_rate * right_rate
-    if expected == 1.0:
-        kappa = 1.0 if observed == 1.0 else None
+    if expected == 1:
+        kappa = 1.0 if observed == 1 else None
     else:
-        kappa = (observed - expected) / (1.0 - expected)
+        kappa = _as_float((observed - expected) / (1 - expected))
     return {"kappa": kappa, "n": n}
 
 
@@ -276,7 +282,7 @@ def _fleiss(rows: list[list[str]]) -> dict[str, Any]:
     if n_items == 0:
         return {"kappa": None, "n": 0}
     n_raters = len(rows[0])
-    item_agreement: list[float] = []
+    item_agreement: list[Fraction] = []
     counts = {label: 0 for label in _LABELS}
     for row in rows:
         tally = {label: 0 for label in _LABELS}
@@ -284,14 +290,14 @@ def _fleiss(rows: list[list[str]]) -> dict[str, Any]:
             tally[label] += 1
             counts[label] += 1
         sum_sq = sum(value * value for value in tally.values())
-        item_agreement.append((sum_sq - n_raters) / (n_raters * (n_raters - 1)))
-    observed = sum(item_agreement) / n_items
+        item_agreement.append(Fraction(sum_sq - n_raters, n_raters * (n_raters - 1)))
+    observed = sum(item_agreement, Fraction(0)) / n_items
     total = n_items * n_raters
-    expected = sum((counts[label] / total) ** 2 for label in _LABELS)
-    if expected == 1.0:
-        kappa = 1.0 if observed == 1.0 else None
+    expected = sum((Fraction(counts[label], total) ** 2 for label in _LABELS), Fraction(0))
+    if expected == 1:
+        kappa = 1.0 if observed == 1 else None
     else:
-        kappa = (observed - expected) / (1.0 - expected)
+        kappa = _as_float((observed - expected) / (1 - expected))
     return {"kappa": kappa, "n": n_items}
 
 

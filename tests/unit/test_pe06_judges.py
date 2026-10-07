@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from fractions import Fraction
 from pathlib import Path
 
 import pytest
@@ -260,9 +261,8 @@ def test_kappa_excludes_missing_and_ignores_dual_annotation():
     # A：qwen 与 deepseek 都有标签的是 c1 是/是、c3 是/否、c4 否/否。c2 的 qwen 缺失。
     qwen_deepseek = next(item for item in got["A"]["cohen"] if item["pair"] == ["qwen", "deepseek"])
     assert qwen_deepseek["n"] == 3
-    assert qwen_deepseek["kappa"] == (2 / 3 - (2 / 3 * 1 / 3 + 1 / 3 * 2 / 3)) / (
-        1 - (2 / 3 * 1 / 3 + 1 / 3 * 2 / 3)
-    )
+    chance = Fraction(2, 3) * Fraction(1, 3) + Fraction(1, 3) * Fraction(2, 3)
+    assert qwen_deepseek["kappa"] == float((Fraction(2, 3) - chance) / (1 - chance))
     # A 上只有 c2 缺一家，Fleiss 用 c1、c3、c4。B 上 c4 的 kimi 缺失。
     assert got["A"]["fleiss"]["n"] == 3
     assert got["B"]["fleiss"]["n"] == 3
@@ -294,7 +294,7 @@ def test_fleiss_matches_hand_count_and_complete_agreement_is_one():
     ]
     fleiss = judges.agreement(rows)["A"]["fleiss"]
     assert fleiss["n"] == 3
-    assert fleiss["kappa"] == (7 / 9 - 41 / 81) / (1 - 41 / 81)
+    assert fleiss["kappa"] == float((Fraction(7, 9) - Fraction(41, 81)) / (1 - Fraction(41, 81)))
 
     unanimous = [
         {
