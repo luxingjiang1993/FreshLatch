@@ -204,6 +204,27 @@ def test_ablation_rows_stay_out_of_the_three_primary_comparisons():
     assert left["k"] == right["k"]
 
 
+def test_interval_report_rejects_hybrid_column_before_any_draw():
+    arm = _arm_run(_Generator(), _Verifier())
+    abl = _run(_Generator(), _Verifier())
+    rng = random.Random(metrics.SEED)
+    before = rng.getstate()
+    with pytest.raises(ValueError, match="hybrid\\+rerank") as caught:
+        ablation_interval_report(abl[HYBRID_COLUMN], abl, rng=rng)
+    message = str(caught.value)
+    assert abl[HYBRID_COLUMN][0]["claim_id"] in message
+    assert rng.getstate() == before
+
+    mixed = list(arm["T"]) + list(abl[HYBRID_COLUMN])
+    again = rng.getstate()
+    with pytest.raises(ValueError, match="hybrid\\+rerank") as mixed_caught:
+        ablation_interval_report(mixed, abl, rng=rng)
+    mixed_message = str(mixed_caught.value)
+    assert abl[HYBRID_COLUMN][0]["claim_id"] in mixed_message
+    assert "claim_id 重复" not in mixed_message
+    assert rng.getstate() == again
+
+
 def test_intervals_consume_only_bootstrap_ablation():
     arm = _arm_run(_Generator(), _Verifier())
     abl = _run(_Generator(), _Verifier(ok=False))

@@ -232,6 +232,15 @@ def primary_comparison_rows(
     return rows
 
 
+def _reject_hybrid_reference(rows: Sequence[Mapping[str, Any]]) -> None:
+    """hybrid+rerank 列不能充当消融对照的主 T。在任何随机抽取之前拒绝。"""
+    for row in rows:
+        if row.get("ledger") == HYBRID_COLUMN:
+            raise ValueError(
+                f"消融区间不能把 {HYBRID_COLUMN} 列当成主 T: {row['claim_id']}"
+            )
+
+
 def ablation_interval_report(
     main_rows: Sequence[Mapping[str, Any]],
     ablation_result: Mapping[str, Any],
@@ -240,6 +249,7 @@ def ablation_interval_report(
     rng: random.Random | None = None,
 ) -> list[dict[str, Any]]:
     """消融区间只消耗调用方传入的流。未传入时另起一条与 bootstrap_ablation 同种子的随机流。"""
+    _reject_hybrid_reference(main_rows)
     stream = rng if rng is not None else random.Random(SEED)
     flat = [
         row
@@ -247,5 +257,7 @@ def ablation_interval_report(
         if row.get("arm") == "T" and row.get("ablation", "") == ""
     ]
     for tag in ABLATION_ORDER:
-        flat.extend(ablation_result[tag])
+        tagged = ablation_result[tag]
+        _reject_hybrid_reference(tagged)
+        flat.extend(tagged)
     return ablation_intervals(flat, ingested_t1=ingested_t1, rng=stream)
