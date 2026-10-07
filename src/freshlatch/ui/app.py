@@ -8,14 +8,11 @@ HumanLatch 端点(W3 起,§5.5)为同步 def 端点:FastAPI 线程池执行,同�
 from __future__ import annotations
 
 import os
-import sys
 from pathlib import Path
 
 from fastapi import FastAPI, File, Query, Request, UploadFile
 from fastapi.responses import HTMLResponse, JSONResponse, Response
 from pydantic import BaseModel
-
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
 from freshlatch.claim_import import ClaimImportError, parse_claim_import_draft  # noqa: E402
 from freshlatch.claim_ledger import (  # noqa: E402

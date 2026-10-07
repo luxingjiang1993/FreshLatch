@@ -82,8 +82,6 @@ def test_system_integration():
     # 检查Forensic Agent是否正确集成到系统中
     try:
         # 导入关键模块
-        import sys
-        sys.path.insert(0, 'src')
 
         from freshlatch.roles.forensic import ForensicAgent
         from freshlatch.forensic_tools import FORENSIC_TOOLS

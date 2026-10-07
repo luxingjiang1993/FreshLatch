@@ -20,10 +20,6 @@ from pathlib import Path
 from typing import Any, Callable
 
 ROOT = Path(__file__).resolve().parents[1]
-SRC = ROOT / "src"
-if str(SRC) not in sys.path:
-    sys.path.insert(0, str(SRC))
-
 os.environ.pop("DASHSCOPE_API_KEY", None)
 
 from freshlatch.eval.retrieve_eval import _p95_ms, mrr_at_k, recall_at_k  # noqa: E402

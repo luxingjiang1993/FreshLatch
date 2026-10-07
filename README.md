@@ -34,16 +34,15 @@ $OutputEncoding = [Console]::OutputEncoding = [Text.UTF8Encoding]::new()
 cd <repo-root>
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
+pip install -e ".[dev]"
 
-$env:PYTHONPATH = "src"
 python -m pytest tests/ -q     # 权威离线闸（与 CI 一致）
 python -m freshlatch.ui.app    # Reverify Sheet → http://127.0.0.1:8000
 ```
 
-Unix equivalent: `source .venv/bin/activate`, `export PYTHONPATH=src`. The primary CTA is **Start reverify**, not "Generate answer."
+Unix equivalent: `source .venv/bin/activate`. The primary CTA is **Start reverify**, not "Generate answer."
 
-Corpus ingest example: `PYTHONPATH=src python scripts/ingest_corpus.py`
+Corpus ingest example: `python scripts/ingest_corpus.py`
 
 ---
 

@@ -19,10 +19,6 @@ from pathlib import Path
 from typing import Any, Callable
 
 ROOT = Path(__file__).resolve().parents[1]
-SRC = ROOT / "src"
-if str(SRC) not in sys.path:
-    sys.path.insert(0, str(SRC))
-
 os.environ.pop("DASHSCOPE_API_KEY", None)
 
 from freshlatch.eval.neural_rerank import (  # noqa: E402

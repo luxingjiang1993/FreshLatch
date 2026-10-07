@@ -8,10 +8,10 @@ Keep this short. Per-ticket state lives in `tasks/*.md` (or Matt’s tracker), n
 - **Validators**: typecheck, tests, Matt `/code-review`, optional hooks
 
 ## Authority commands (edit per repo)
-- Package manager: `pip` (see `requirements.txt`)
+- Package manager: `pip` (`pip install -e ".[dev]"`; pins in `requirements.txt` and `pyproject.toml`)
 - Typecheck: `python -m compileall -q src`
 - Test: `pytest`
-- Lint: optional
+- Lint: `ruff check`
 
 ## Agent Guards
 Config: `docs/agents/agent-guards.md` (from `/setup-agent-guards`).

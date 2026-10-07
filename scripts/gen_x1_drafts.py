@@ -21,10 +21,6 @@ from pathlib import Path, PurePosixPath, PureWindowsPath
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
-SRC = ROOT / "src"
-if str(SRC) not in sys.path:
-    sys.path.insert(0, str(SRC))
-
 from freshlatch.eval.x1_checks import PUBLIC_LICENSES, check_x1
 from freshlatch.llm import DecodingParams, LLMClient
 from freshlatch.store.ingest import CLAUSE_RE, META_RE

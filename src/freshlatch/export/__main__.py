@@ -12,8 +12,6 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
-
 from freshlatch.sheet import (  # noqa: E402
     export_client_memo_from_snapshot_gated,
     export_sheet_from_snapshot,

@@ -8,13 +8,10 @@ source_ref 使用语料真实 doc_id(t0-competitor-notes 等)。
 
 import asyncio
 import os
-import sys
 from datetime import datetime
 from pathlib import Path
 
 project_root = Path(__file__).parent.parent
-sys.path.insert(0, str(project_root))
-sys.path.insert(0, str(project_root / "src"))
 
 from freshlatch.roles.forensic import ForensicAgent
 from freshlatch.forensic_tools import create_forensic_tools

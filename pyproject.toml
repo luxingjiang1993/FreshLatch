@@ -1,0 +1,53 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "freshlatch"
+version = "0.0.0"
+description = "Reverify latch for signed claims"
+requires-python = ">=3.11"
+dependencies = [
+    "openai==3.16.2",
+    "pydantic==2.13.5",
+    "fastapi==0.141.1",
+    "uvicorn==0.53.0",
+    "python-multipart==0.0.20",
+    "rank-bm25==0.2.2",
+    "jieba==0.42.1",
+    # Production rerank is local BAAI/bge-reranker-base (TextCrossEncoder, K=10).
+    # Embedding model id stays BAAI/bge-small-zh-v1.5 (dim 512). Pin stays fastembed 0.8.1.
+    "fastembed==0.8.1",
+    "huggingface-hub==0.36.2",
+    "loguru==0.7.3",
+    "mmh3==5.3.1",
+    "numpy==2.4.4",
+    "onnxruntime==1.30.0",
+    "pillow==11.3.0",
+    "py-rust-stemmers==0.1.8",
+    "requests==2.33.1",
+    "tokenizers==0.23.2",
+    "tqdm==4.70.1",
+    "python-dotenv==1.2.3",
+    "langgraph==1.2.10",
+    "langgraph-checkpoint-sqlite==3.1.1",
+    "pytest==9.1.1",
+    "httpx==0.28.1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest==9.1.1",
+    "httpx==0.28.1",
+    "ruff==0.15.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+extend-exclude = ["data"]
+
+[tool.ruff.lint]
+# HYG-01 首版：只拦语法级与未定义名。历史风格债不写成硬 Exit。
+select = ["E9", "F821", "F822", "F823", "F601", "F602", "F811", "F706"]

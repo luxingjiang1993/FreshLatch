@@ -6,10 +6,7 @@
 from __future__ import annotations
 
 import argparse
-import sys
 from pathlib import Path
-
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
 from freshlatch.packs import resolve_pack  # noqa: E402
 from freshlatch.store.ingest import ingest_into  # noqa: E402

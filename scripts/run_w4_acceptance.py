@@ -27,7 +27,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(REPO_ROOT / "src"))
 
 from dotenv import find_dotenv, load_dotenv  # noqa: E402
 

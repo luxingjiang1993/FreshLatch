@@ -11,10 +11,6 @@ import sys
 import os
 from pathlib import Path
 
-# 添加项目源代码路径以便导入
-project_root = Path(__file__).parent.parent
-src_path = str(project_root / "src")
-sys.path.insert(0, src_path)
 
 from freshlatch.tools import FOCUS_DIMENSIONS, tool_specs
 from freshlatch.roles.lead import LEAD_PERSONA

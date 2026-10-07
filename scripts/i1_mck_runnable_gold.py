@@ -5,13 +5,13 @@
 
 用法(仓根):
 
-  PYTHONPATH=src python3 scripts/i1_mck_runnable_gold.py \\
+  python3 scripts/i1_mck_runnable_gold.py \\
     --claim-id mck-1 \\
     --temperature 0.0 \\
     --out reports/i1-mck-runnable
 
   # 可选:仅灌 T0(演示「找不到」覆盖缺口;默认 T0+T1 全量)
-  PYTHONPATH=src python3 scripts/i1_mck_runnable_gold.py \\
+  python3 scripts/i1_mck_runnable_gold.py \\
     --claim-id mck-1 --corpus-mode t0-only --out reports/i1-mck-runnable
 """
 
@@ -20,12 +20,10 @@ from __future__ import annotations
 import argparse
 import json
 import shutil
-import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(REPO / "src"))
 
 from freshlatch.eval.matrix import EXPECTED_VERDICT  # noqa: E402
 from freshlatch.llm import DecodingParams, LLMClient  # noqa: E402
