@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>FreshLatch 发前列表</title>
+<style>
+ body{font-family:system-ui,"Microsoft YaHei",sans-serif;margin:0;background:#f6f8fa;color:#24292f}
+ header{background:#0a2540;color:#fff;padding:14px 24px;display:flex;gap:16px;align-items:center}
+ header a{color:#fff;font-size:13px}
+ main{max-width:960px;margin:24px auto;padding:0 16px}
+ h1{font-size:22px;margin:0 0 8px}
+ .hint{font-size:13px;color:#57606a;margin-bottom:16px}
+ table{width:100%;border-collapse:collapse;background:#fff;border:1px solid #d0d7de;border-radius:6px;overflow:hidden}
+ th,td{padding:10px 12px;text-align:left;border-bottom:1px solid #d0d7de;font-size:14px}
+ th{background:#f6f8fa;font-weight:600;color:#57606a}
+ tr:last-child td{border-bottom:0}
+ .disp{font-weight:700}
+ .disp.ok{color:#1a7f37}.disp.patch{color:#9a6700}.disp.block{color:#cf222e}
+ .empty{padding:24px;color:#57606a;background:#fff;border:1px solid #d0d7de;border-radius:6px}
+ a.open{color:#0969da;text-decoration:none}
+ a.open:hover{text-decoration:underline}
+ .syn{background:#b45309;color:#fff;font-size:12px;padding:2px 10px;border-radius:10px}
+</style>
+</head>
+<body>
+<header>
+ <strong>FreshLatch 发前列表</strong>
+ <span class="syn">SYNTHETIC</span>
+ <span style="flex:1"></span>
+ <a href="/">打开复验单详情</a>
+</header>
+<main>
+ <h1>发前 Run</h1>
+ <p class="hint">列表壳只投影标题/来源、包结论、更新时间、Run 状态。点「打开」进入既有复验单(增量包结论条);不另造第三套详情 UI。</p>
+ <div id="list"><p class="empty">加载中……</p></div>
+</main>
+<script>
+function esc(s){return String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}
+function dispCls(d){return d==='可发'?'ok':(d==='需补丁'?'patch':(d==='勿发'?'block':''))}
+async function loadList(){
+  const j = await (await fetch('/api/prepublish/runs')).json();
+  const runs = j.runs || [];
+  const el = document.getElementById('list');
+  if(!runs.length){
+    el.innerHTML = '<p class="empty">暂无发前 Run。请先在<a href="/">复验单</a>导入主张并复验。</p>';
+    return;
+  }
+  let h = '<table><thead><tr>'
+        + '<th>标题 / 来源</th><th>包结论</th><th>更新时间</th><th>Run 状态</th><th></th>'
+        + '</tr></thead><tbody>';
+  for(const r of runs){
+    h += '<tr>'
+       + '<td><b>'+esc(r.title||'')+'</b><div style="font-size:12px;color:#57606a">'
+       + esc(r.source||'')+'</div></td>'
+       + '<td><span class="disp '+dispCls(r.disposition)+'">'+esc(r.disposition||'')+'</span></td>'
+       + '<td>'+esc(r.updated_at||'')+'</td>'
+       + '<td>'+esc(r.status||'')+'</td>'
+       + '<td><a class="open" href="/">打开详情</a></td>'
+       + '</tr>';
+  }
+  h += '</tbody></table>';
+  el.innerHTML = h;
+}
+loadList();
+</script>
+</body></html>
