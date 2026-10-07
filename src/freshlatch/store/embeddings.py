@@ -10,8 +10,12 @@ import os
 import urllib.error
 import urllib.request
 
-EMBED_MODEL = "text-embedding-v4"
-_ENDPOINT = "https://dashscope.aliyuncs.com/compatible-mode/v1/embeddings"
+from freshlatch.models import EMBED_MODEL, MODEL_REGISTRY
+
+_embed_base = MODEL_REGISTRY["embed"].base_url
+if not isinstance(_embed_base, str) or not _embed_base:
+    raise RuntimeError("embed 缺少 base_url")
+_ENDPOINT = _embed_base + "/embeddings"
 
 
 def redact(text: str) -> str:

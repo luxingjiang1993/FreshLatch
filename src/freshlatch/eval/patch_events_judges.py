@@ -18,6 +18,8 @@ from fractions import Fraction
 from pathlib import Path
 from typing import Any
 
+from freshlatch.models import MODEL_REGISTRY
+
 RUBRIC = (
     "你是修改核对员。你只回答两个问题，不给修改建议，不评价文风。\n"
     "问题A：修改后的陈述与所附证据是否一致？只回答是或否。\n"
@@ -44,35 +46,46 @@ class JudgeSpec:
     forbidden_models: frozenset[str]
 
 
+def _judge_binding(purpose: str) -> tuple[str, str, str, frozenset[str]]:
+    entry = MODEL_REGISTRY[purpose]
+    if not entry.base_url or not entry.env_key:
+        raise RuntimeError(f"{purpose} 缺少 base_url 或 env_key")
+    return entry.model, entry.env_key, entry.base_url, entry.forbidden_models
+
+
+_QWEN_MODEL, _QWEN_ENV, _QWEN_URL, _QWEN_FORBIDDEN = _judge_binding("judge_qwen")
+_DEEPSEEK_MODEL, _DEEPSEEK_ENV, _DEEPSEEK_URL, _DEEPSEEK_FORBIDDEN = _judge_binding(
+    "judge_deepseek"
+)
+_KIMI_MODEL, _KIMI_ENV, _KIMI_URL, _KIMI_FORBIDDEN = _judge_binding("judge_kimi")
+
 JUDGES: dict[str, JudgeSpec] = {
     "qwen": JudgeSpec(
         judge_id="qwen",
         name="Qwen2.5-72B",
-        model="qwen2.5-72b-instruct",
-        env_key="DASHSCOPE_API_KEY",
-        base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
+        model=_QWEN_MODEL,
+        env_key=_QWEN_ENV,
+        base_url=_QWEN_URL,
         thinking=None,
-        forbidden_models=frozenset({"qwen-flash", "qwen-plus", "qwen-max"}),
+        forbidden_models=_QWEN_FORBIDDEN,
     ),
     "deepseek": JudgeSpec(
         judge_id="deepseek",
         name="DeepSeek-V3",
-        model="deepseek-ai/DeepSeek-V3",
-        env_key="DEEPSEEK_API_KEY",
-        base_url="https://api.deepseek.com",
+        model=_DEEPSEEK_MODEL,
+        env_key=_DEEPSEEK_ENV,
+        base_url=_DEEPSEEK_URL,
         thinking={"type": "disabled"},
-        forbidden_models=frozenset(
-            {"deepseek-chat", "deepseek-reasoner", "deepseek-flash", "deepseek-v4-pro"}
-        ),
+        forbidden_models=_DEEPSEEK_FORBIDDEN,
     ),
     "kimi": JudgeSpec(
         judge_id="kimi",
         name="Kimi",
-        model="kimi-k2.6",
-        env_key="MOONSHOT_API_KEY",
-        base_url="https://api.moonshot.ai/v1",
+        model=_KIMI_MODEL,
+        env_key=_KIMI_ENV,
+        base_url=_KIMI_URL,
         thinking={"type": "disabled"},
-        forbidden_models=frozenset({"kimi-latest", "kimi-k3", "kimi-k2.7-code"}),
+        forbidden_models=_KIMI_FORBIDDEN,
     ),
 }
 

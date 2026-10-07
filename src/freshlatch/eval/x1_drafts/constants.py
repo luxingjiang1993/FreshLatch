@@ -5,6 +5,8 @@ from __future__ import annotations
 from pathlib import Path
 import re
 
+from freshlatch.models import DRAFT_MODEL, FLAG_MODEL, MODEL_MAX_OUTPUT_TOKENS
+
 ROOT = Path(__file__).resolve().parents[4]
 
 FORBIDDEN_OUT_ROOTS = (
@@ -18,13 +20,6 @@ RETRIEVE_X1 = ROOT / "data" / "eval" / "retrieve_x1.json"
 MARKER_NAME = ".x1-drafts-manifest.json"
 SIDECAR_MARKER = "x1_flag_sidecar"
 
-DRAFT_MODEL = "qwen-flash"
-FLAG_MODEL = "qwen-plus"
-# qwen-flash / qwen-plus 最大输出 token。来源：help.aliyun.com/zh/model-studio/qwen-flash 与 qwen-plus，2026-10-06。
-MODEL_MAX_OUTPUT_TOKENS = {
-    "qwen-flash": 32768,
-    "qwen-plus": 32768,
-}
 FLAG_LEDGER_NAME = ".x1-flag-spend.json"
 CONSECUTIVE_VALIDATION_LIMIT = 3
 GOLD_PLACEHOLDER = "TODO-owner"

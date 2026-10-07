@@ -25,6 +25,7 @@ from freshlatch.eval.x1_drafts.constants import (
     CONSECUTIVE_VALIDATION_LIMIT,
     DECODING_MISMATCH,
     DRAFT_MODEL,
+    FLAG_MODEL,
     PUBLIC_CORPUS,
     PUBLIC_TRAPS,
     RAW_GOLD_NOTE,
@@ -71,7 +72,7 @@ def _build_parser() -> argparse.ArgumentParser:
     gen.add_argument("--spec", required=True)
     gen.add_argument("--max-cny", required=True, type=float)
     gen.add_argument("--estimate-only", action="store_true")
-    flag = sub.add_parser("flag", help="用 qwen-plus 非思考标记疑点")
+    flag = sub.add_parser("flag", help=f"用 {FLAG_MODEL} 非思考标记疑点")
     flag.add_argument("--config", required=True)
     flag.add_argument("--in", dest="inp", required=True)
     flag.add_argument("--sidecar", required=True)

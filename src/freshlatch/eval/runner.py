@@ -23,7 +23,7 @@ from freshlatch.eval.i1_labels import (
     attach_i1_labels_to_detail,
 )
 from freshlatch.eval.matrix import BUCKETS, EXPECTED_VERDICT, confusion_matrix
-from freshlatch.llm import DecodingParams, LLMClient, TokenUsage
+from freshlatch.llm import DEFAULT_MODEL, DecodingParams, LLMClient, TokenUsage
 from freshlatch.roles.auditor import EVIDENCE_PACKET_SCHEMA_VERSION
 from freshlatch.runner import Runner, load_docket
 from freshlatch.store.base import RetrievalStore
@@ -37,8 +37,12 @@ EVAL_MODE_SWITCHES = (
     "跳过 HumanLatch:W1–W4 未挂载,runner 不 import langgraph,人审不进评测路径",
     "禁用联网:web_search 不在任何角色白名单,模型物理上不可见(§4.6)",
 )
-REPRO_NOTE = ("闸层(must_* 零违例)给定解码参数下逐位复现;判定层(矩阵条数)按文档化容差;"
-              "违例级背离(must_stale 被判 fresh)触发人查。qwen-flash 为活托管端点,跨会话复现只能近似。")
+REPRO_NOTE = (
+    "闸层(must_* 零违例)给定解码参数下逐位复现;判定层(矩阵条数)按文档化容差;"
+    "违例级背离(must_stale 被判 fresh)触发人查。"
+    + DEFAULT_MODEL
+    + " 为活托管端点,跨会话复现只能近似。"
+)
 
 _ZERO_USAGE = {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}
 

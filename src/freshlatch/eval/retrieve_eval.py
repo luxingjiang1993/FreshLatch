@@ -10,6 +10,7 @@ import json
 from datetime import date
 from pathlib import Path
 
+from freshlatch.models import EMBED_MODEL
 from freshlatch.store.base import InMemoryStore, chunk_evidence_id
 from freshlatch.store.checksum import aggregate_checksum, sha256_hex
 from freshlatch.store.ingest import ingest_into, load_corpus
@@ -708,7 +709,7 @@ def run_arm_compare(
         "",
         f"- RRF k: {RRF_K}",
         "- 融合: 名次倒数,不是 α 加权",
-        "- 模型: text-embedding-v4",
+        f"- 模型: {EMBED_MODEL}",
         "- 解码: 向量为预计算嵌入,打分无 temperature/seed",
         f"- 评测库: {scope}",
         f"- n: {len(retrieve_gold['queries'])}（冒烟级,不声称统计显著,不报方差）",

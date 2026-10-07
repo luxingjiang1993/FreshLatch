@@ -9,10 +9,9 @@ from __future__ import annotations
 import os
 from typing import Callable
 
+from freshlatch.models import LOCAL_EMBED_MODEL
 from freshlatch.store.base import Chunk
 from freshlatch.store.pipeline import pack_vec
-
-LOCAL_EMBED_MODEL = "BAAI/bge-small-zh-v1.5"
 LOCAL_EMBED_DIM = 512
 # fastembed 自己的缓存目录变量，原样传给 TextEmbedding(cache_dir=...)。
 EMBED_CACHE_ENV = "FASTEMBED_CACHE_PATH"
