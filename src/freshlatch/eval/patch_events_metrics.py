@@ -333,6 +333,20 @@ def _aligned(rows: Sequence[Mapping[str, Any]], ingested: set[str]) -> dict[str,
     return columns
 
 
+def _reject_primary_intruders(rows: Sequence[Mapping[str, Any]]) -> None:
+    """主比较只收 ablation 为空、且不是 hybrid+rerank 列的记录。重复直接拒绝。"""
+    seen: set[tuple[str, str]] = set()
+    for row in rows:
+        if row.get("ablation", "") != "":
+            continue
+        if row.get("ledger") == "hybrid+rerank":
+            raise ValueError(f"主比较不能收入 hybrid+rerank 列: {row['claim_id']}")
+        key = (str(row["arm"]), str(row["claim_id"]))
+        if key in seen:
+            raise ValueError(f"主比较收到重复的 (arm, claim_id): {key[0]} {key[1]}")
+        seen.add(key)
+
+
 def compare_primary(
     rows: Sequence[Mapping[str, Any]],
     *,
@@ -340,11 +354,12 @@ def compare_primary(
     streams: Mapping[str, random.Random] | None = None,
 ) -> dict[str, Any]:
     """三条主比较。成立只看固定放行率误放率的点估计和区间下界。"""
+    normalized = [normalize_experiment_record(row) for row in rows]
+    _reject_primary_intruders(normalized)
     rngs = streams if streams is not None else named_streams()
     coverage = rngs["coverage_c"]
     bootstrap = rngs["bootstrap"]
     ingested = set(ingested_t1)
-    normalized = [normalize_experiment_record(row) for row in rows]
     columns = _aligned(normalized, ingested)
     reference = columns["T"]
     n = len(reference)

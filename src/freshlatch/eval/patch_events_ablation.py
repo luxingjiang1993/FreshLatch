@@ -106,6 +106,8 @@ def _finish(
     }
     if reverify_ok is not None:
         payload["reverify_ok"] = reverify_ok
+    if column == HYBRID_COLUMN:
+        payload["ledger"] = HYBRID_COLUMN
     return normalize_experiment_record(payload)
 
 

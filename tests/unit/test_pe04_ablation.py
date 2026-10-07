@@ -161,9 +161,27 @@ def test_hybrid_column_matches_main_t_but_is_not_that_row():
     abl = _run(generator, verifier)
     fresh = _Generator()
     main = _arm_run(fresh, _Verifier())
-    assert abl[HYBRID_COLUMN] == main["T"]
+    assert all(row["arm"] == "T" and row["ablation"] == "" for row in abl[HYBRID_COLUMN])
+    assert all(row["ledger"] == HYBRID_COLUMN for row in abl[HYBRID_COLUMN])
+    assert all("ledger" not in row for row in main["T"])
+    stripped = [
+        {key: value for key, value in row.items() if key != "ledger"} for row in abl[HYBRID_COLUMN]
+    ]
+    assert stripped == main["T"]
     assert abl[HYBRID_COLUMN] is not main["T"]
     assert all(left is not right for left, right in zip(abl[HYBRID_COLUMN], main["T"]))
+
+
+def test_primary_comparison_rejects_hybrid_column_without_drawing_streams():
+    arm = _arm_run(_Generator(), _Verifier())
+    abl = _run(_Generator(), _Verifier())
+    streams = metrics.named_streams()
+    before = {name: rng.getstate() for name, rng in streams.items()}
+    mixed = primary_comparison_rows(arm, abl) + abl[HYBRID_COLUMN]
+    with pytest.raises(ValueError, match="hybrid\\+rerank"):
+        metrics.compare_primary(mixed, streams=streams)
+    for name, rng in streams.items():
+        assert rng.getstate() == before[name]
 
 
 def test_ablation_rows_stay_out_of_the_three_primary_comparisons():
