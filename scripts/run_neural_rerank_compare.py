@@ -37,6 +37,7 @@ from freshlatch.eval.neural_rerank import (  # noqa: E402
     ranking_metrics,
     recommend_neural_rerank,
     same_id_set,
+    unique_bytes_matching,
 )
 from freshlatch.store.base import (  # noqa: E402
     PRODUCTION_RETRIEVAL_MODE,
@@ -178,24 +179,11 @@ def _load_encoder(cache_dir: str | None) -> tuple[Any, float]:
 
 
 def _weight_bytes(cache_dir: str | None) -> int | None:
-    roots = []
+    roots: list[object] = []
     if cache_dir:
-        roots.append(Path(cache_dir))
-    roots.append(Path("/tmp/fastembed_cache"))
-    total = 0
-    found = False
-    for root in roots:
-        if not root.is_dir():
-            continue
-        for path in root.rglob("*"):
-            if not path.is_file():
-                continue
-            name = str(path).lower()
-            if "reranker" not in name:
-                continue
-            total += path.stat().st_size
-            found = True
-    return total if found else None
+        roots.append(cache_dir)
+    roots.append("/tmp/fastembed_cache")
+    return unique_bytes_matching(roots, "reranker")
 
 
 def _score_pool(
@@ -352,7 +340,7 @@ def _render_result(payload: dict[str, Any]) -> str:
         "## 代价",
         "",
         f"- 首次加载（构造加第一次 rerank）：{_fmt(payload['load_s'])} 秒",
-        f"- 权重字节：{payload['weight_bytes']}",
+        f"- 权重字节：{payload['weight_bytes']}（inode 去重；同一缓存根只走一次。HF 快照是符号链接，不能按路径加总）",
         "- 额外依赖：`requirements-eval-neural-rerank.txt`（fastembed==0.8.1）。生产 `requirements.txt` 仍是 fastembed==0.7.1，不含 bge-reranker。",
         f"- v2-m3：{payload['v2_m3']}",
         "",
@@ -438,6 +426,7 @@ def score_candidates(candidates: Path, out_dir: Path, cache_dir: str | None) -> 
         "fastembed_version_dump": payload_in["fastembed_version"],
         "load_s": load_s,
         "weight_bytes": _weight_bytes(cache_dir),
+        "weight_bytes_method": "unique inode; path contains reranker; same cache root once",
         "p95_budget_ms": P95_BUDGET_MS,
         "p95_ms_k10": k10_stats["p95_ms"],
         "p95_ms_k30": k30_stats["p95_ms"],

@@ -10,6 +10,7 @@ from freshlatch.eval.neural_rerank import (
     order_by_scores,
     recommend_neural_rerank,
     same_id_set,
+    unique_bytes_matching,
 )
 from freshlatch.eval.retrieve_eval import ndcg_at_k
 from freshlatch.store.base import PRODUCTION_RETRIEVAL_MODE
@@ -84,6 +85,20 @@ def test_recommendation_is_locked_before_numbers():
         )
         == KEEP_LEXICAL
     )
+
+
+def test_weight_bytes_count_each_inode_once(tmp_path: Path):
+    blob = tmp_path / "models--BAAI--bge-reranker-base" / "blobs"
+    snap = tmp_path / "models--BAAI--bge-reranker-base" / "snapshots"
+    blob.mkdir(parents=True)
+    snap.mkdir()
+    payload = blob / "model.onnx"
+    payload.write_bytes(b"abcde")
+    (snap / "model.onnx").symlink_to(payload)
+    other = tmp_path / "models--Qdrant--bge-small-zh-v1.5" / "model.onnx"
+    other.parent.mkdir()
+    other.write_bytes(b"zzzzzzzzzz")
+    assert unique_bytes_matching([tmp_path, tmp_path], "reranker") == 5
 
 
 def test_prereg_locks_the_decision_sentence():

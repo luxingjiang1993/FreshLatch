@@ -144,3 +144,36 @@ def recommend_neural_rerank(
 
 def p95_ms(samples_s: list[float]) -> float:
     return _p95_ms(samples_s)
+
+
+def unique_bytes_matching(roots: list[object], needle: str) -> int | None:
+    """路径里含 needle 的文件按 inode 加总。同一根目录和符号链接只算一次。"""
+    from pathlib import Path
+
+    seen_roots: set[Path] = set()
+    seen_inodes: set[tuple[int, int]] = set()
+    total = 0
+    found = False
+    for raw in roots:
+        if not raw:
+            continue
+        root = Path(str(raw)).resolve()
+        if root in seen_roots or not root.is_dir():
+            continue
+        seen_roots.add(root)
+        for path in root.rglob("*"):
+            if not path.is_file():
+                continue
+            if needle not in str(path).lower():
+                continue
+            try:
+                st = path.stat()
+            except OSError:
+                continue
+            key = (st.st_dev, st.st_ino)
+            if key in seen_inodes:
+                continue
+            seen_inodes.add(key)
+            total += st.st_size
+            found = True
+    return total if found else None
