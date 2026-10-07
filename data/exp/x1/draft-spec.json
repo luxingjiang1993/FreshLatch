@@ -1,0 +1,826 @@
+{
+  "note": "合成 chunk 目标不少于 520（S1–S7；公开约 140 与合成合计达到 660）。S1–S3 用 pair 一次写出 T0 与 T1。S6 只写 T1：约 21 块是 D1/D2 的监管变更要点，其余是 D0/D3 变更记录。pricing 与 flag_pricing 的单价必须由人填写，脚本不内置价格。 2026-10-07 登记 round4 陷阱补题批次 *-91（含补余量的 s6-d2-t1-91）。这些批次的正文已经入库，不再用本 spec 重新生成。",
+  "pricing": {
+    "input_cny_per_million": null,
+    "output_cny_per_million": null,
+    "source": "由人填写 qwen-flash 每百万 token 的 input/output 人民币标价及来源页；本示例不是报价"
+  },
+  "flag_pricing": {
+    "input_cny_per_million": null,
+    "output_cny_per_million": null,
+    "source": "由人填写 qwen-plus 每百万 token 的 input/output 人民币标价及来源页；本示例不是报价"
+  },
+  "batches": [
+    {
+      "batch_id": "s1-d0-01",
+      "genre": "S1",
+      "domain": "D0",
+      "n_docs": 2,
+      "chunks_per_doc": 3,
+      "n_questions": 4,
+      "max_chars_per_chunk": 800,
+      "topic": "已签发顾问备忘：两周后待复验的战略判断，合成叙述（D0，T0 与 T1 成对）",
+      "pair": true
+    },
+    {
+      "batch_id": "s1-d0-03",
+      "genre": "S1",
+      "domain": "D0",
+      "n_docs": 2,
+      "chunks_per_doc": 3,
+      "n_questions": 4,
+      "max_chars_per_chunk": 800,
+      "topic": "已签发顾问备忘：两周后待复验的战略判断，合成叙述（D0，T0 与 T1 成对）",
+      "pair": true
+    },
+    {
+      "batch_id": "s1-d0-04",
+      "genre": "S1",
+      "domain": "D0",
+      "n_docs": 2,
+      "chunks_per_doc": 3,
+      "n_questions": 4,
+      "max_chars_per_chunk": 800,
+      "topic": "已签发顾问备忘：两周后待复验的战略判断，合成叙述（D0，T0 与 T1 成对）",
+      "pair": true
+    },
+    {
+      "batch_id": "s1-d0-02",
+      "genre": "S1",
+      "domain": "D0",
+      "n_docs": 2,
+      "chunks_per_doc": 3,
+      "n_questions": 4,
+      "max_chars_per_chunk": 800,
+      "topic": "已签发顾问备忘：两周后待复验的战略判断，合成叙述（D0，T0 与 T1 成对）",
+      "pair": true
+    },
+    {
+      "batch_id": "s1-d0-05",
+      "genre": "S1",
+      "domain": "D0",
+      "n_docs": 2,
+      "chunks_per_doc": 3,
+      "n_questions": 4,
+      "max_chars_per_chunk": 800,
+      "topic": "已签发顾问备忘：两周后待复验的战略判断，合成叙述（D0，T0 与 T1 成对）",
+      "pair": true
+    },
+    {
+      "batch_id": "s1-d1-01",
+      "genre": "S1",
+      "domain": "D1",
+      "n_docs": 3,
+      "chunks_per_doc": 3,
+      "n_questions": 6,
+      "max_chars_per_chunk": 800,
+      "topic": "已签发顾问备忘：两周后待复验的战略判断，合成叙述（D1，T0 与 T1 成对）",
+      "pair": true
+    },
+    {
+      "batch_id": "s1-d2-01",
+      "genre": "S1",
+      "domain": "D2",
+      "n_docs": 3,
+      "chunks_per_doc": 3,
+      "n_questions": 6,
+      "max_chars_per_chunk": 800,
+      "topic": "已签发顾问备忘：两周后待复验的战略判断，合成叙述（D2，T0 与 T1 成对）",
+      "pair": true
+    },
+    {
+      "batch_id": "s1-d3-01",
+      "genre": "S1",
+      "domain": "D3",
+      "n_docs": 2,
+      "chunks_per_doc": 3,
+      "n_questions": 4,
+      "max_chars_per_chunk": 800,
+      "topic": "已签发顾问备忘：两周后待复验的战略判断，合成叙述（D3，T0 与 T1 成对）",
+      "pair": true
+    },
+    {
+      "batch_id": "s2-d0-01",
+      "genre": "S2",
+      "domain": "D0",
+      "n_docs": 2,
+      "chunks_per_doc": 3,
+      "n_questions": 4,
+      "max_chars_per_chunk": 800,
+      "topic": "访谈与渠道纪要，含同快照改口，合成叙述（D0，T0 与 T1 成对）",
+      "pair": true
+    },
+    {
+      "batch_id": "s2-d0-03",
+      "genre": "S2",
+      "domain": "D0",
+      "n_docs": 2,
+      "chunks_per_doc": 3,
+      "n_questions": 4,
+      "max_chars_per_chunk": 800,
+      "topic": "访谈与渠道纪要，含同快照改口，合成叙述（D0，T0 与 T1 成对）",
+      "pair": true
+    },
+    {
+      "batch_id": "s2-d0-04",
+      "genre": "S2",
+      "domain": "D0",
+      "n_docs": 1,
+      "chunks_per_doc": 3,
+      "n_questions": 2,
+      "max_chars_per_chunk": 800,
+      "topic": "访谈与渠道纪要，含同快照改口，合成叙述（D0，T0 与 T1 成对）",
+      "pair": true
+    },
+    {
+      "batch_id": "s2-d0-02",
+      "genre": "S2",
+      "domain": "D0",
+      "n_docs": 3,
+      "chunks_per_doc": 3,
+      "n_questions": 6,
+      "max_chars_per_chunk": 800,
+      "topic": "访谈与渠道纪要，含同快照改口，合成叙述（D0，T0 与 T1 成对）",
+      "pair": true
+    },
+    {
+      "batch_id": "s2-d1-01",
+      "genre": "S2",
+      "domain": "D1",
+      "n_docs": 2,
+      "chunks_per_doc": 3,
+      "n_questions": 4,
+      "max_chars_per_chunk": 800,
+      "topic": "访谈与渠道纪要，含同快照改口，合成叙述（D1，T0 与 T1 成对）",
+      "pair": true
+    },
+    {
+      "batch_id": "s2-d2-01",
+      "genre": "S2",
+      "domain": "D2",
+      "n_docs": 2,
+      "chunks_per_doc": 3,
+      "n_questions": 4,
+      "max_chars_per_chunk": 800,
+      "topic": "访谈与渠道纪要，含同快照改口，合成叙述（D2，T0 与 T1 成对）",
+      "pair": true
+    },
+    {
+      "batch_id": "s2-d3-01",
+      "genre": "S2",
+      "domain": "D3",
+      "n_docs": 2,
+      "chunks_per_doc": 3,
+      "n_questions": 4,
+      "max_chars_per_chunk": 800,
+      "topic": "访谈与渠道纪要，含同快照改口，合成叙述（D3，T0 与 T1 成对）",
+      "pair": true
+    },
+    {
+      "batch_id": "s3-d0-01",
+      "genre": "S3",
+      "domain": "D0",
+      "n_docs": 2,
+      "chunks_per_doc": 3,
+      "n_questions": 4,
+      "max_chars_per_chunk": 800,
+      "topic": "竞品价目与报价快照，合成叙述（D0，T0 与 T1 成对）",
+      "pair": true
+    },
+    {
+      "batch_id": "s3-d0-03",
+      "genre": "S3",
+      "domain": "D0",
+      "n_docs": 2,
+      "chunks_per_doc": 3,
+      "n_questions": 4,
+      "max_chars_per_chunk": 800,
+      "topic": "竞品价目与报价快照，合成叙述（D0，T0 与 T1 成对）",
+      "pair": true
+    },
+    {
+      "batch_id": "s3-d0-04",
+      "genre": "S3",
+      "domain": "D0",
+      "n_docs": 1,
+      "chunks_per_doc": 3,
+      "n_questions": 2,
+      "max_chars_per_chunk": 800,
+      "topic": "竞品价目与报价快照，合成叙述（D0，T0 与 T1 成对）",
+      "pair": true
+    },
+    {
+      "batch_id": "s3-d0-02",
+      "genre": "S3",
+      "domain": "D0",
+      "n_docs": 3,
+      "chunks_per_doc": 3,
+      "n_questions": 6,
+      "max_chars_per_chunk": 800,
+      "topic": "竞品价目与报价快照，合成叙述（D0，T0 与 T1 成对）",
+      "pair": true
+    },
+    {
+      "batch_id": "s3-d1-01",
+      "genre": "S3",
+      "domain": "D1",
+      "n_docs": 2,
+      "chunks_per_doc": 3,
+      "n_questions": 4,
+      "max_chars_per_chunk": 800,
+      "topic": "竞品价目与报价快照，合成叙述（D1，T0 与 T1 成对）",
+      "pair": true
+    },
+    {
+      "batch_id": "s3-d2-01",
+      "genre": "S3",
+      "domain": "D2",
+      "n_docs": 2,
+      "chunks_per_doc": 3,
+      "n_questions": 4,
+      "max_chars_per_chunk": 800,
+      "topic": "竞品价目与报价快照，合成叙述（D2，T0 与 T1 成对）",
+      "pair": true
+    },
+    {
+      "batch_id": "s3-d3-01",
+      "genre": "S3",
+      "domain": "D3",
+      "n_docs": 2,
+      "chunks_per_doc": 3,
+      "n_questions": 4,
+      "max_chars_per_chunk": 800,
+      "topic": "竞品价目与报价快照，合成叙述（D3，T0 与 T1 成对）",
+      "pair": true
+    },
+    {
+      "batch_id": "s4-d0-t0-01",
+      "genre": "S4",
+      "domain": "D0",
+      "n_docs": 6,
+      "chunks_per_doc": 3,
+      "n_questions": 6,
+      "max_chars_per_chunk": 800,
+      "topic": "内部测算与成本模型版本，合成叙述（D0 T0）",
+      "as_of": "T0"
+    },
+    {
+      "batch_id": "s4-d0-t1-02",
+      "genre": "S4",
+      "domain": "D0",
+      "n_docs": 6,
+      "chunks_per_doc": 3,
+      "n_questions": 6,
+      "max_chars_per_chunk": 800,
+      "topic": "内部测算与成本模型版本，合成叙述（D0 T1）",
+      "as_of": "T1"
+    },
+    {
+      "batch_id": "s4-d1-t0-03",
+      "genre": "S4",
+      "domain": "D1",
+      "n_docs": 4,
+      "chunks_per_doc": 3,
+      "n_questions": 4,
+      "max_chars_per_chunk": 800,
+      "topic": "内部测算与成本模型版本，合成叙述（D1 T0）",
+      "as_of": "T0"
+    },
+    {
+      "batch_id": "s4-d2-t1-04",
+      "genre": "S4",
+      "domain": "D2",
+      "n_docs": 4,
+      "chunks_per_doc": 3,
+      "n_questions": 4,
+      "max_chars_per_chunk": 800,
+      "topic": "内部测算与成本模型版本，合成叙述（D2 T1）",
+      "as_of": "T1"
+    },
+    {
+      "batch_id": "s4-d3-t0-05",
+      "genre": "S4",
+      "domain": "D3",
+      "n_docs": 4,
+      "chunks_per_doc": 3,
+      "n_questions": 4,
+      "max_chars_per_chunk": 800,
+      "topic": "内部测算与成本模型版本，合成叙述（D3 T0）",
+      "as_of": "T0"
+    },
+    {
+      "batch_id": "s5-d0-t0-01",
+      "genre": "S5",
+      "domain": "D0",
+      "n_docs": 6,
+      "chunks_per_doc": 3,
+      "n_questions": 6,
+      "max_chars_per_chunk": 800,
+      "topic": "二手转述与汇编，引用旧数，合成叙述（D0 T0）",
+      "as_of": "T0"
+    },
+    {
+      "batch_id": "s5-d0-t1-02",
+      "genre": "S5",
+      "domain": "D0",
+      "n_docs": 4,
+      "chunks_per_doc": 3,
+      "n_questions": 4,
+      "max_chars_per_chunk": 800,
+      "topic": "二手转述与汇编，引用旧数，合成叙述（D0 T1）",
+      "as_of": "T1"
+    },
+    {
+      "batch_id": "s5-d1-t1-03",
+      "genre": "S5",
+      "domain": "D1",
+      "n_docs": 4,
+      "chunks_per_doc": 3,
+      "n_questions": 4,
+      "max_chars_per_chunk": 800,
+      "topic": "二手转述与汇编，引用旧数，合成叙述（D1 T1）",
+      "as_of": "T1"
+    },
+    {
+      "batch_id": "s5-d2-t0-04",
+      "genre": "S5",
+      "domain": "D2",
+      "n_docs": 3,
+      "chunks_per_doc": 3,
+      "n_questions": 3,
+      "max_chars_per_chunk": 800,
+      "topic": "二手转述与汇编，引用旧数，合成叙述（D2 T0）",
+      "as_of": "T0"
+    },
+    {
+      "batch_id": "s5-d3-t1-05",
+      "genre": "S5",
+      "domain": "D3",
+      "n_docs": 3,
+      "chunks_per_doc": 3,
+      "n_questions": 3,
+      "max_chars_per_chunk": 800,
+      "topic": "二手转述与汇编，引用旧数，合成叙述（D3 T1）",
+      "as_of": "T1"
+    },
+    {
+      "batch_id": "s6-d1-c1",
+      "genre": "S6",
+      "domain": "D1",
+      "n_docs": 1,
+      "chunks_per_doc": 3,
+      "n_questions": 1,
+      "max_chars_per_chunk": 800,
+      "topic": "顾问备忘式监管变更要点，只复述出境评估有效期如何变化（D1 T1）",
+      "as_of": "T1",
+      "must_include": [
+        "数据出境安全评估结果有效期由令11的2年改为令16的3年；到期可在届满前60个工作日内申请延长3年，不再重新申报"
+      ]
+    },
+    {
+      "batch_id": "s6-d1-c2",
+      "genre": "S6",
+      "domain": "D1",
+      "n_docs": 1,
+      "chunks_per_doc": 3,
+      "n_questions": 1,
+      "max_chars_per_chunk": 800,
+      "topic": "顾问备忘式监管变更要点，只复述安全评估的个人信息门槛如何变化（D1 T1）",
+      "as_of": "T1",
+      "must_include": [
+        "非关基运营者申报安全评估的个人信息门槛：令11为自上年1月1日起累计10万人；令16为自当年1月1日起累计100万人以上（不含敏感）或1万人以上敏感个人信息"
+      ]
+    },
+    {
+      "batch_id": "s6-d1-c3",
+      "genre": "S6",
+      "domain": "D1",
+      "n_docs": 1,
+      "chunks_per_doc": 3,
+      "n_questions": 1,
+      "max_chars_per_chunk": 800,
+      "topic": "顾问备忘式监管变更要点，只复述标准合同适用区间如何变化（D1 T1）",
+      "as_of": "T1",
+      "must_include": [
+        "标准合同区间：令13为不满10万人；令16为10万人以上、不满100万人（不含敏感）或不满1万人敏感个人信息，并可走个人信息保护认证"
+      ]
+    },
+    {
+      "batch_id": "s6-d1-c4",
+      "genre": "S6",
+      "domain": "D1",
+      "n_docs": 1,
+      "chunks_per_doc": 3,
+      "n_questions": 1,
+      "max_chars_per_chunk": 800,
+      "topic": "顾问备忘式监管变更要点，只复述新增豁免场景（D1 T1）",
+      "as_of": "T1",
+      "must_include": [
+        "令16第五条新增豁免：当年累计不满10万人个人信息（不含敏感）免予申报、标准合同和认证；另有合同履行、跨境人力资源管理、紧急情况等场景"
+      ]
+    },
+    {
+      "batch_id": "s6-d2-g1",
+      "genre": "S6",
+      "domain": "D2",
+      "n_docs": 1,
+      "chunks_per_doc": 3,
+      "n_questions": 1,
+      "max_chars_per_chunk": 800,
+      "topic": "顾问备忘式监管变更要点，只复述认缴出资期限如何变化（D2 T1）",
+      "as_of": "T1",
+      "must_include": [
+        "2023公司法第四十七条：有限责任公司股东认缴出资须自成立之日起五年内缴足；2018法第二十六条无此期限"
+      ]
+    },
+    {
+      "batch_id": "s6-d2-g2",
+      "genre": "S6",
+      "domain": "D2",
+      "n_docs": 1,
+      "chunks_per_doc": 3,
+      "n_questions": 1,
+      "max_chars_per_chunk": 800,
+      "topic": "顾问备忘式监管变更要点，只复述施行日期与存量调整（D2 T1）",
+      "as_of": "T1",
+      "must_include": [
+        "2023公司法自2024年7月1日起施行，出资期限超过规定的存量公司应逐步调整（第二百六十六条）；2018法自2006年1月1日起施行"
+      ]
+    },
+    {
+      "batch_id": "s6-d2-g3",
+      "genre": "S6",
+      "domain": "D2",
+      "n_docs": 1,
+      "chunks_per_doc": 3,
+      "n_questions": 1,
+      "max_chars_per_chunk": 800,
+      "topic": "顾问备忘式监管变更要点，只复述未按期出资的责任如何变化（D2 T1）",
+      "as_of": "T1",
+      "must_include": [
+        "未按期出资：2018法向已足额出资股东承担违约责任；2023法改为对公司损失承担赔偿责任，并新增董事会核查催缴、宽限期不少于六十日后失权、加速到期、未届期转让由受让人缴纳"
+      ]
+    },
+    {
+      "batch_id": "s6-d0-t1-01",
+      "genre": "S6",
+      "domain": "D0",
+      "n_docs": 3,
+      "chunks_per_doc": 3,
+      "n_questions": 3,
+      "max_chars_per_chunk": 800,
+      "topic": "变更要点与补丁记录，合成事实与顾问备忘、渠道纪要一致（D0 T1）",
+      "as_of": "T1",
+      "must_include": [
+        "顾问备忘把复验窗口从两周改成三周，旧窗口只留对照",
+        "渠道纪要把口头折扣从备忘正文挪到附录",
+        "战略判断的结论段改成待复验，不再写成已签发"
+      ]
+    },
+    {
+      "batch_id": "s6-d0-t1-02",
+      "genre": "S6",
+      "domain": "D0",
+      "n_docs": 3,
+      "chunks_per_doc": 3,
+      "n_questions": 3,
+      "max_chars_per_chunk": 800,
+      "topic": "变更要点与补丁记录，合成事实与访谈纪要、渠道说法一致（D0 T1）",
+      "as_of": "T1",
+      "must_include": [
+        "访谈纪要把供应商交付从四周改成六周",
+        "渠道纪要补了一条对手已停售入门档的说法",
+        "会议纪要把负责人从甲组改到乙组"
+      ]
+    },
+    {
+      "batch_id": "s6-d0-t1-03",
+      "genre": "S6",
+      "domain": "D0",
+      "n_docs": 3,
+      "chunks_per_doc": 3,
+      "n_questions": 3,
+      "max_chars_per_chunk": 800,
+      "topic": "变更要点与补丁记录，合成事实与内部测算、报价快照一致（D0 T1）",
+      "as_of": "T1",
+      "must_include": [
+        "内部测算把外包单价从上一版模型里撤下",
+        "成本模型版本号从甲版改成乙版，旧版只作归档",
+        "报价快照把捆绑项拆成单独一行"
+      ]
+    },
+    {
+      "batch_id": "s6-d3-t1-01",
+      "genre": "S6",
+      "domain": "D3",
+      "n_docs": 3,
+      "chunks_per_doc": 3,
+      "n_questions": 3,
+      "max_chars_per_chunk": 800,
+      "topic": "变更要点与补丁记录，合成事实与二手转述、汇编备注一致（D3 T1）",
+      "as_of": "T1",
+      "must_include": [
+        "二手转述把旧报价标成已过期，不再当现行口径",
+        "汇编备注把出处从访谈改成备忘附件",
+        "转述稿删掉了未核实的份额说法"
+      ]
+    },
+    {
+      "batch_id": "s6-d3-t1-02",
+      "genre": "S6",
+      "domain": "D3",
+      "n_docs": 3,
+      "chunks_per_doc": 3,
+      "n_questions": 3,
+      "max_chars_per_chunk": 800,
+      "topic": "变更要点与补丁记录，合成事实与竞品快照、复验安排一致（D3 T1）",
+      "as_of": "T1",
+      "must_include": [
+        "补丁记录把竞品入门档标成停售",
+        "变更说明把复验安排从下月初改到月中",
+        "汇编把两份纪要的结论合成一条待核"
+      ]
+    },
+    {
+      "batch_id": "s6-d3-t1-03",
+      "genre": "S6",
+      "domain": "D3",
+      "n_docs": 2,
+      "chunks_per_doc": 3,
+      "n_questions": 2,
+      "max_chars_per_chunk": 800,
+      "topic": "变更要点与补丁记录，合成事实与成本对照、渠道折扣一致（D3 T1）",
+      "as_of": "T1",
+      "must_include": [
+        "补丁记录注明旧成本模型只供对照",
+        "变更说明把渠道折扣写成已撤回"
+      ]
+    },
+    {
+      "batch_id": "s7-d0-t0-01",
+      "genre": "S7",
+      "domain": "D0",
+      "n_docs": 6,
+      "chunks_per_doc": 3,
+      "n_questions": 6,
+      "max_chars_per_chunk": 800,
+      "topic": "检索陷阱专用文档：词面撞车、同快照冲突陈述、元陈述，合成叙述（D0 T0）",
+      "as_of": "T0"
+    },
+    {
+      "batch_id": "s7-d0-t1-02",
+      "genre": "S7",
+      "domain": "D0",
+      "n_docs": 6,
+      "chunks_per_doc": 3,
+      "n_questions": 6,
+      "max_chars_per_chunk": 800,
+      "topic": "检索陷阱专用文档：词面撞车、同快照冲突陈述、元陈述，合成叙述（D0 T1）",
+      "as_of": "T1"
+    },
+    {
+      "batch_id": "s7-d1-t0-03",
+      "genre": "S7",
+      "domain": "D1",
+      "n_docs": 4,
+      "chunks_per_doc": 3,
+      "n_questions": 4,
+      "max_chars_per_chunk": 800,
+      "topic": "检索陷阱专用文档：词面撞车、同快照冲突陈述、元陈述，合成叙述（D1 T0）",
+      "as_of": "T0"
+    },
+    {
+      "batch_id": "s7-d2-t1-04",
+      "genre": "S7",
+      "domain": "D2",
+      "n_docs": 4,
+      "chunks_per_doc": 3,
+      "n_questions": 4,
+      "max_chars_per_chunk": 800,
+      "topic": "检索陷阱专用文档：词面撞车、同快照冲突陈述、元陈述，合成叙述（D2 T1）",
+      "as_of": "T1"
+    },
+    {
+      "batch_id": "s7-d3-t1-05",
+      "genre": "S7",
+      "domain": "D3",
+      "n_docs": 4,
+      "chunks_per_doc": 3,
+      "n_questions": 4,
+      "max_chars_per_chunk": 800,
+      "topic": "检索陷阱专用文档：词面撞车、同快照冲突陈述、元陈述，合成叙述（D3 T1）",
+      "as_of": "T1"
+    },
+    {
+      "batch_id": "s2-d0-t1-91",
+      "genre": "S2",
+      "domain": "D0",
+      "n_docs": 2,
+      "chunks_per_doc": 3,
+      "n_questions": 3,
+      "max_chars_per_chunk": 800,
+      "topic": "越南经销商返点与客服响应：同快照冲突加元陈述，合成叙述",
+      "as_of": "T1"
+    },
+    {
+      "batch_id": "s3-d1-t1-91",
+      "genre": "S3",
+      "domain": "D1",
+      "n_docs": 2,
+      "chunks_per_doc": 3,
+      "n_questions": 3,
+      "max_chars_per_chunk": 800,
+      "topic": "竞品E年费与席位上限：同快照冲突加元陈述，合成叙述",
+      "as_of": "T1"
+    },
+    {
+      "batch_id": "s4-d2-t1-91",
+      "genre": "S4",
+      "domain": "D2",
+      "n_docs": 2,
+      "chunks_per_doc": 3,
+      "n_questions": 3,
+      "max_chars_per_chunk": 800,
+      "topic": "单票履约成本与退货率：同快照冲突加元陈述，合成叙述",
+      "as_of": "T1"
+    },
+    {
+      "batch_id": "s6-d3-t1-91",
+      "genre": "S6",
+      "domain": "D3",
+      "n_docs": 2,
+      "chunks_per_doc": 3,
+      "n_questions": 3,
+      "max_chars_per_chunk": 800,
+      "topic": "住户收入口径启用日与样本户数：同快照冲突加元陈述，合成叙述",
+      "as_of": "T1",
+      "must_include": [
+        "新的住户收入统计口径自5月1日起启用",
+        "新口径的启用时间推迟到6月1日",
+        "样本户数不再列入跟踪项",
+        "本期样本户数为1.2万户"
+      ]
+    },
+    {
+      "batch_id": "s1-d1-t1-91",
+      "genre": "S1",
+      "domain": "D1",
+      "n_docs": 2,
+      "chunks_per_doc": 3,
+      "n_questions": 3,
+      "max_chars_per_chunk": 800,
+      "topic": "印尼支付牌照与退款到账：同快照冲突加元陈述，合成叙述",
+      "as_of": "T1"
+    },
+    {
+      "batch_id": "s5-d2-t1-91",
+      "genre": "S5",
+      "domain": "D2",
+      "n_docs": 2,
+      "chunks_per_doc": 3,
+      "n_questions": 3,
+      "max_chars_per_chunk": 800,
+      "topic": "平台活跃商户与留存率：同快照冲突加元陈述，合成叙述",
+      "as_of": "T1"
+    },
+    {
+      "batch_id": "s2-d2-t0-91",
+      "genre": "S2",
+      "domain": "D2",
+      "n_docs": 2,
+      "chunks_per_doc": 3,
+      "n_questions": 3,
+      "max_chars_per_chunk": 800,
+      "topic": "包装材料交期与抽检不良率：同快照冲突加元陈述，合成叙述",
+      "as_of": "T0"
+    },
+    {
+      "batch_id": "s3-d0-t0-91",
+      "genre": "S3",
+      "domain": "D0",
+      "n_docs": 2,
+      "chunks_per_doc": 3,
+      "n_questions": 3,
+      "max_chars_per_chunk": 800,
+      "topic": "竞品H坐席价格与试用天数：同快照冲突加元陈述，合成叙述",
+      "as_of": "T0"
+    },
+    {
+      "batch_id": "s4-d0-t1-91",
+      "genre": "S4",
+      "domain": "D0",
+      "n_docs": 2,
+      "chunks_per_doc": 3,
+      "n_questions": 3,
+      "max_chars_per_chunk": 800,
+      "topic": "工单自动分派准确率与处理时长：同快照冲突加元陈述，合成叙述",
+      "as_of": "T1"
+    },
+    {
+      "batch_id": "s6-d1-t1-91",
+      "genre": "S6",
+      "domain": "D1",
+      "n_docs": 2,
+      "chunks_per_doc": 3,
+      "n_questions": 3,
+      "max_chars_per_chunk": 800,
+      "topic": "v1接口下线日与v2成功率：同快照冲突加元陈述，合成叙述",
+      "as_of": "T1",
+      "must_include": [
+        "旧版v1接口将于9月30日下线",
+        "v1接口的下线时间延期至11月30日",
+        "接口调用成功率不再列入跟踪",
+        "上周v2接口调用成功率为99.2%"
+      ]
+    },
+    {
+      "batch_id": "s1-d3-t0-91",
+      "genre": "S1",
+      "domain": "D3",
+      "n_docs": 2,
+      "chunks_per_doc": 3,
+      "n_questions": 3,
+      "max_chars_per_chunk": 800,
+      "topic": "出口增速与港口吞吐：同快照冲突加元陈述，合成叙述",
+      "as_of": "T0"
+    },
+    {
+      "batch_id": "s5-d1-t0-91",
+      "genre": "S5",
+      "domain": "D1",
+      "n_docs": 2,
+      "chunks_per_doc": 3,
+      "n_questions": 3,
+      "max_chars_per_chunk": 800,
+      "topic": "网购渗透率与复购周期：同快照冲突加元陈述，合成叙述",
+      "as_of": "T0"
+    },
+    {
+      "batch_id": "s2-d3-t1-91",
+      "genre": "S2",
+      "domain": "D3",
+      "n_docs": 2,
+      "chunks_per_doc": 3,
+      "n_questions": 3,
+      "max_chars_per_chunk": 800,
+      "topic": "试点城市数量与补贴上限：同快照冲突加元陈述，合成叙述",
+      "as_of": "T1"
+    },
+    {
+      "batch_id": "s3-d2-t1-91",
+      "genre": "S3",
+      "domain": "D2",
+      "n_docs": 2,
+      "chunks_per_doc": 3,
+      "n_questions": 3,
+      "max_chars_per_chunk": 800,
+      "topic": "竞品G合规模块收费与服务可用性：同快照冲突加元陈述，合成叙述",
+      "as_of": "T1"
+    },
+    {
+      "batch_id": "s4-d3-t0-91",
+      "genre": "S4",
+      "domain": "D3",
+      "n_docs": 2,
+      "chunks_per_doc": 3,
+      "n_questions": 3,
+      "max_chars_per_chunk": 800,
+      "topic": "电力折标煤系数与产线利用率：同快照冲突加元陈述，合成叙述",
+      "as_of": "T0"
+    },
+    {
+      "batch_id": "s6-d0-t1-91",
+      "genre": "S6",
+      "domain": "D0",
+      "n_docs": 2,
+      "chunks_per_doc": 3,
+      "n_questions": 3,
+      "max_chars_per_chunk": 800,
+      "topic": "退款审批门槛与首次解决率：同快照冲突加元陈述，合成叙述",
+      "as_of": "T1",
+      "must_include": [
+        "金额在300美元以上的退款需要主管审批",
+        "退款审批阈值改为500美元以上",
+        "首次解决率本月未复测",
+        "上月首次解决率为74%"
+      ]
+    },
+    {
+      "batch_id": "s6-d2-t1-91",
+      "genre": "S6",
+      "domain": "D2",
+      "n_docs": 2,
+      "chunks_per_doc": 3,
+      "n_questions": 3,
+      "max_chars_per_chunk": 800,
+      "topic": "仓库安检通过比例与工伤件数：同快照冲突加元陈述，合成叙述（补余量批次）",
+      "as_of": "T1",
+      "must_include": [
+        "仓库安检通过比例写成百分之九十六",
+        "仓库安检通过比例写成百分之九十一",
+        "工伤件数不再列入跟踪",
+        "该月因工受伤为七件"
+      ]
+    }
+  ]
+}
