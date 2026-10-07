@@ -1,0 +1,555 @@
+{
+  "vector_compare": {
+    "chunks": {
+      "n": 794,
+      "n_differ": 0,
+      "max_abs": 0.0,
+      "verdict": "一致",
+      "n_missing": 0
+    },
+    "queries": {
+      "n": 224,
+      "n_differ": 0,
+      "max_abs": 0.0,
+      "verdict": "一致",
+      "n_missing": 0
+    },
+    "differ_chunk_ids": [],
+    "differ_queries": []
+  },
+  "ranking_diffs": [
+    {
+      "label": "bm25 顺序 vs #283/#285 保存的 per-query",
+      "n": 224,
+      "n_missing": 0,
+      "n_order_differ": 0,
+      "n_set_differ": 0,
+      "order_differ_ids": [],
+      "set_differ_ids": [],
+      "missing_ids": [],
+      "verdict": "一致"
+    },
+    {
+      "label": "hybrid 顺序 vs #283/#285 保存的 per-query（0.7.1）",
+      "n": 224,
+      "n_missing": 0,
+      "n_order_differ": 0,
+      "n_set_differ": 0,
+      "order_differ_ids": [],
+      "set_differ_ids": [],
+      "missing_ids": [],
+      "verdict": "一致"
+    },
+    {
+      "label": "hybrid+rerank_lexical 顺序 vs #283/#285 保存的 hybrid+rerank",
+      "n": 224,
+      "n_missing": 0,
+      "n_order_differ": 0,
+      "n_set_differ": 0,
+      "order_differ_ids": [],
+      "set_differ_ids": [],
+      "missing_ids": [],
+      "verdict": "一致"
+    },
+    {
+      "label": "hybrid 顺序 vs #293 dump 的 hybrid top-10（0.7.1）",
+      "n": 224,
+      "n_missing": 0,
+      "n_order_differ": 0,
+      "n_set_differ": 0,
+      "order_differ_ids": [],
+      "set_differ_ids": [],
+      "missing_ids": [],
+      "verdict": "一致"
+    },
+    {
+      "label": "neural top-10 顺序 vs #293 per-query",
+      "n": 224,
+      "n_missing": 0,
+      "n_order_differ": 0,
+      "n_set_differ": 0,
+      "order_differ_ids": [],
+      "set_differ_ids": [],
+      "missing_ids": [],
+      "verdict": "一致"
+    },
+    {
+      "label": "lexical top-10 顺序 vs #293 per-query",
+      "n": 224,
+      "n_missing": 0,
+      "n_order_differ": 0,
+      "n_set_differ": 0,
+      "order_differ_ids": [],
+      "set_differ_ids": [],
+      "missing_ids": [],
+      "verdict": "一致"
+    }
+  ],
+  "number_rows": [
+    {
+      "name": "BM25 Recall@10",
+      "new": 0.9196428571428571,
+      "old": 0.9196428571428571,
+      "source": "#285 summary",
+      "verdict": "一致"
+    },
+    {
+      "name": "hybrid Recall@10",
+      "new": 0.9732142857142857,
+      "old": 0.9732142857142857,
+      "source": "#285 summary",
+      "verdict": "一致"
+    },
+    {
+      "name": "BM25−hybrid Recall 差的相反数（hybrid−bm25）",
+      "new": 0.05357142857142857,
+      "old": 0.05357142857142857,
+      "source": "#285 summary",
+      "verdict": "一致"
+    },
+    {
+      "name": "hybrid−bm25 Recall CI 低",
+      "new": 0.022321428571428572,
+      "old": 0.022321428571428572,
+      "source": "#285 summary",
+      "verdict": "一致"
+    },
+    {
+      "name": "hybrid−bm25 Recall CI 高",
+      "new": 0.08928571428571429,
+      "old": 0.08928571428571429,
+      "source": "#285 summary",
+      "verdict": "一致"
+    },
+    {
+      "name": "McNemar bm25-only 计数",
+      "new": 2.0,
+      "old": 2.0,
+      "source": "#285 summary",
+      "verdict": "一致"
+    },
+    {
+      "name": "McNemar hybrid-only 计数",
+      "new": 14.0,
+      "old": 14.0,
+      "source": "#285 summary",
+      "verdict": "一致"
+    },
+    {
+      "name": "McNemar p",
+      "new": 0.004180908203124997,
+      "old": 0.004180908203124997,
+      "source": "#285 summary",
+      "verdict": "一致"
+    },
+    {
+      "name": "BM25 MRR@10",
+      "new": 0.7275333049886621,
+      "old": 0.7275333049886621,
+      "source": "retrieval-decision 金标修订后",
+      "verdict": "一致"
+    },
+    {
+      "name": "hybrid MRR@10",
+      "new": 0.7739937641723357,
+      "old": 0.7739937641723357,
+      "source": "retrieval-decision 金标修订后",
+      "verdict": "一致"
+    },
+    {
+      "name": "hybrid−bm25 MRR 差",
+      "new": 0.04646045918367347,
+      "old": 0.04646045918367347,
+      "source": "retrieval-decision 金标修订后",
+      "verdict": "一致"
+    },
+    {
+      "name": "hybrid−bm25 MRR CI 低",
+      "new": 0.02168358489229025,
+      "old": 0.02168358489229025,
+      "source": "retrieval-decision 金标修订后",
+      "verdict": "一致"
+    },
+    {
+      "name": "hybrid−bm25 MRR CI 高",
+      "new": 0.07260558390022674,
+      "old": 0.07260558390022674,
+      "source": "retrieval-decision 金标修订后",
+      "verdict": "一致"
+    },
+    {
+      "name": "BM25 nDCG@10",
+      "new": 0.7267672386770819,
+      "old": 0.7267672386770819,
+      "source": "retrieval-decision 金标修订后",
+      "verdict": "一致"
+    },
+    {
+      "name": "hybrid nDCG@10",
+      "new": 0.7803516716233564,
+      "old": 0.7803516716233564,
+      "source": "retrieval-decision 金标修订后",
+      "verdict": "一致"
+    },
+    {
+      "name": "hybrid−bm25 nDCG 差",
+      "new": 0.053584432946274525,
+      "old": 0.053584432946274525,
+      "source": "retrieval-decision 金标修订后",
+      "verdict": "一致"
+    },
+    {
+      "name": "hybrid−bm25 nDCG CI 低",
+      "new": 0.03201358973245737,
+      "old": 0.03201358973245737,
+      "source": "retrieval-decision 金标修订后",
+      "verdict": "一致"
+    },
+    {
+      "name": "hybrid−bm25 nDCG CI 高",
+      "new": 0.07548337519518822,
+      "old": 0.07548337519518822,
+      "source": "retrieval-decision 金标修订后",
+      "verdict": "一致"
+    },
+    {
+      "name": "bm25 全检索 p95",
+      "new": 80.69911300117383,
+      "old": 69.78307600002154,
+      "source": "#285 cost",
+      "verdict": "有差异"
+    },
+    {
+      "name": "hybrid 全检索 p95",
+      "new": 79.9520560012752,
+      "old": 82.5428959999499,
+      "source": "#285 cost",
+      "verdict": "有差异"
+    },
+    {
+      "name": "lexical 全检索 p95",
+      "new": 80.8420590001333,
+      "old": 90.68060099980357,
+      "source": "#285 cost 当时的 hybrid+rerank",
+      "verdict": "有差异"
+    },
+    {
+      "name": "lexical Recall@10",
+      "new": 0.9732142857142857,
+      "old": 0.9732142857142857,
+      "source": "#293 K=10",
+      "verdict": "一致"
+    },
+    {
+      "name": "neural Recall@10",
+      "new": 0.9732142857142857,
+      "old": 0.9732142857142857,
+      "source": "#293 K=10",
+      "verdict": "一致"
+    },
+    {
+      "name": "neural−lexical Recall 差",
+      "new": 0.0,
+      "old": 0.0,
+      "source": "#293 K=10",
+      "verdict": "一致"
+    },
+    {
+      "name": "McNemar lexical-only",
+      "new": 0.0,
+      "old": 0.0,
+      "source": "#293 K=10",
+      "verdict": "一致"
+    },
+    {
+      "name": "McNemar neural-only",
+      "new": 0.0,
+      "old": 0.0,
+      "source": "#293 K=10",
+      "verdict": "一致"
+    },
+    {
+      "name": "lexical MRR@10",
+      "new": 0.7566609977324263,
+      "old": 0.7566609977324263,
+      "source": "#293 K=10",
+      "verdict": "一致"
+    },
+    {
+      "name": "neural MRR@10",
+      "new": 0.8381855867346939,
+      "old": 0.8381855867346939,
+      "source": "#293 K=10",
+      "verdict": "一致"
+    },
+    {
+      "name": "neural−lexical MRR 差",
+      "new": 0.08152458900226757,
+      "old": 0.08152458900226757,
+      "source": "#293 K=10",
+      "verdict": "一致"
+    },
+    {
+      "name": "neural−lexical MRR CI 低",
+      "new": 0.04773198341836735,
+      "old": 0.04773198341836735,
+      "source": "#293 K=10",
+      "verdict": "一致"
+    },
+    {
+      "name": "neural−lexical MRR CI 高",
+      "new": 0.1171530435090703,
+      "old": 0.1171530435090703,
+      "source": "#293 K=10",
+      "verdict": "一致"
+    },
+    {
+      "name": "lexical nDCG@10",
+      "new": 0.7626148790864964,
+      "old": 0.7626148790864964,
+      "source": "#293 K=10",
+      "verdict": "一致"
+    },
+    {
+      "name": "neural nDCG@10",
+      "new": 0.8249303827609481,
+      "old": 0.8249303827609481,
+      "source": "#293 K=10",
+      "verdict": "一致"
+    },
+    {
+      "name": "neural−lexical nDCG 差",
+      "new": 0.06231550367445169,
+      "old": 0.06231550367445169,
+      "source": "#293 K=10",
+      "verdict": "一致"
+    },
+    {
+      "name": "neural−lexical nDCG CI 低",
+      "new": 0.03897278888099252,
+      "old": 0.03897278888099252,
+      "source": "#293 K=10",
+      "verdict": "一致"
+    },
+    {
+      "name": "neural−lexical nDCG CI 高",
+      "new": 0.08564412540024816,
+      "old": 0.08564412540024816,
+      "source": "#293 K=10",
+      "verdict": "一致"
+    },
+    {
+      "name": "lexical 只重排 p95",
+      "new": 3.3260540003539063,
+      "old": 3.2369630007451633,
+      "source": "#293 cost",
+      "verdict": "有差异"
+    },
+    {
+      "name": "neural 只重排 p95",
+      "new": 421.38391099979344,
+      "old": 434.1544819999399,
+      "source": "#293 cost",
+      "verdict": "有差异"
+    }
+  ],
+  "significance_285_shape": {
+    "bm25_vs_hybrid": {
+      "left": "bm25",
+      "right": "hybrid",
+      "metric": "recall",
+      "left_mean": 0.9196428571428571,
+      "right_mean": 0.9732142857142857,
+      "estimate": 0.05357142857142857,
+      "ci95_low": 0.022321428571428572,
+      "ci95_high": 0.08928571428571429,
+      "mcnemar": {
+        "left_only": 2,
+        "right_only": 14,
+        "both_hit": 204,
+        "neither": 4,
+        "p_two_sided": 0.004180908203124997,
+        "left_only_ids": [
+          "p1-lx-06-new",
+          "s4-d0-t0-01-q6"
+        ],
+        "right_only_ids": [
+          "s1-d0-04-q3",
+          "s1-d0-05-q4",
+          "s1-d2-01-q1",
+          "s2-d0-04-q2",
+          "s2-d1-01-q3",
+          "s3-d1-01-q1",
+          "s4-d0-t1-02-q4",
+          "s4-d2-t1-04-q1",
+          "s5-d0-t0-01-q3",
+          "s5-d0-t0-01-q5",
+          "s6-d0-t1-03-q3",
+          "r4m-s5-d3-t1-05-q4",
+          "r4m-s5-d3-t1-05-q5",
+          "r4n-s6-d2-t1-91-qc"
+        ]
+      }
+    },
+    "bm25_vs_lexical": {
+      "left": "bm25",
+      "right": "hybrid+rerank_lexical",
+      "metric": "recall",
+      "left_mean": 0.9196428571428571,
+      "right_mean": 0.9732142857142857,
+      "estimate": 0.05357142857142857,
+      "ci95_low": 0.022321428571428572,
+      "ci95_high": 0.08928571428571429,
+      "mcnemar": {
+        "left_only": 2,
+        "right_only": 14,
+        "both_hit": 204,
+        "neither": 4,
+        "p_two_sided": 0.004180908203124997,
+        "left_only_ids": [
+          "p1-lx-06-new",
+          "s4-d0-t0-01-q6"
+        ],
+        "right_only_ids": [
+          "s1-d0-04-q3",
+          "s1-d0-05-q4",
+          "s1-d2-01-q1",
+          "s2-d0-04-q2",
+          "s2-d1-01-q3",
+          "s3-d1-01-q1",
+          "s4-d0-t1-02-q4",
+          "s4-d2-t1-04-q1",
+          "s5-d0-t0-01-q3",
+          "s5-d0-t0-01-q5",
+          "s6-d0-t1-03-q3",
+          "r4m-s5-d3-t1-05-q4",
+          "r4m-s5-d3-t1-05-q5",
+          "r4n-s6-d2-t1-91-qc"
+        ]
+      }
+    },
+    "hybrid_vs_lexical": {
+      "left": "hybrid",
+      "right": "hybrid+rerank_lexical",
+      "metric": "recall",
+      "left_mean": 0.9732142857142857,
+      "right_mean": 0.9732142857142857,
+      "estimate": 0.0,
+      "ci95_low": 0.0,
+      "ci95_high": 0.0,
+      "mcnemar": {
+        "left_only": 0,
+        "right_only": 0,
+        "both_hit": 218,
+        "neither": 6,
+        "p_two_sided": 1.0,
+        "left_only_ids": [],
+        "right_only_ids": []
+      }
+    }
+  },
+  "rank_285_shape": [
+    {
+      "left": "bm25",
+      "right": "hybrid+rerank_lexical",
+      "metric": "mrr",
+      "left_mean": 0.7275333049886621,
+      "right_mean": 0.7566609977324263,
+      "estimate": 0.029127692743764172,
+      "ci95_low": 0.004495287698412699,
+      "ci95_high": 0.053800356079931964
+    },
+    {
+      "left": "bm25",
+      "right": "hybrid+rerank_lexical",
+      "metric": "ndcg",
+      "left_mean": 0.7267672386770819,
+      "right_mean": 0.7626148790864964,
+      "estimate": 0.035847640409414565,
+      "ci95_low": 0.01456894012455283,
+      "ci95_high": 0.05721404238633618
+    },
+    {
+      "left": "hybrid",
+      "right": "hybrid+rerank_lexical",
+      "metric": "mrr",
+      "left_mean": 0.7739937641723357,
+      "right_mean": 0.7566609977324263,
+      "estimate": -0.017332766439909296,
+      "ci95_low": -0.04196991035997732,
+      "ci95_high": 0.006196942318594101
+    },
+    {
+      "left": "hybrid",
+      "right": "hybrid+rerank_lexical",
+      "metric": "ndcg",
+      "left_mean": 0.7803516716233564,
+      "right_mean": 0.7626148790864964,
+      "estimate": -0.017736792536859957,
+      "ci95_low": -0.03478236247276103,
+      "ci95_high": -0.0014390192270836006
+    }
+  ],
+  "bm25_vs_hybrid_mrr": {
+    "left": "bm25",
+    "right": "hybrid",
+    "metric": "mrr",
+    "left_mean": 0.7275333049886621,
+    "right_mean": 0.7739937641723357,
+    "estimate": 0.04646045918367347,
+    "ci95_low": 0.02168358489229025,
+    "ci95_high": 0.07260558390022674
+  },
+  "bm25_vs_hybrid_ndcg": {
+    "left": "bm25",
+    "right": "hybrid",
+    "metric": "ndcg",
+    "left_mean": 0.7267672386770819,
+    "right_mean": 0.7803516716233564,
+    "estimate": 0.053584432946274525,
+    "ci95_low": 0.03201358973245737,
+    "ci95_high": 0.07548337519518822
+  },
+  "neural_vs_lexical": [
+    {
+      "left": "hybrid+rerank_lexical",
+      "right": "hybrid+rerank",
+      "metric": "recall",
+      "left_mean": 0.9732142857142857,
+      "right_mean": 0.9732142857142857,
+      "estimate": 0.0,
+      "ci95_low": 0.0,
+      "ci95_high": 0.0,
+      "mcnemar": {
+        "left_only": 0,
+        "right_only": 0,
+        "both_hit": 218,
+        "neither": 6,
+        "p_two_sided": 1.0,
+        "left_only_ids": [],
+        "right_only_ids": []
+      }
+    },
+    {
+      "left": "hybrid+rerank_lexical",
+      "right": "hybrid+rerank",
+      "metric": "mrr",
+      "left_mean": 0.7566609977324263,
+      "right_mean": 0.8381855867346939,
+      "estimate": 0.08152458900226757,
+      "ci95_low": 0.04773198341836735,
+      "ci95_high": 0.1171530435090703
+    },
+    {
+      "left": "hybrid+rerank_lexical",
+      "right": "hybrid+rerank",
+      "metric": "ndcg",
+      "left_mean": 0.7626148790864964,
+      "right_mean": 0.8249303827609481,
+      "estimate": 0.06231550367445169,
+      "ci95_low": 0.03897278888099252,
+      "ci95_high": 0.08564412540024816
+    }
+  ],
+  "conclusion": "hybrid 的 embedding 结果与 0.7.1 一致。四臂的 Recall@10、MRR@10、nDCG@10、McNemar discordant 与 #285 金标修订后的 BM25/hybrid 数字、以及 #293 的 K=10 数字一致。p95 是这次单次计时，与旧的单次计时并列，不要求逐位相同。"
+}
