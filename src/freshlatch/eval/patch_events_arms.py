@@ -11,6 +11,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from freshlatch.eval.patch_events_exp import normalize_experiment_record
+from freshlatch.eval.patch_events_rows import cost_note, reject_duplicate_claim_ids
 from freshlatch.evidence_id import parse_evidence_id
 from freshlatch.llm import DEFAULT_MODEL
 from freshlatch.store.base import PRODUCTION_RETRIEVAL_MODE
@@ -191,12 +192,6 @@ def _decide(
     return "reject", reason, score, False
 
 
-def _cost_note(records: Sequence[Mapping[str, Any]]) -> str:
-    if any(_number(row.get("cost")) > 0 for row in records):
-        return ""
-    return "没有调用"
-
-
 def run_arms(
     candidates: Sequence[object],
     *,
@@ -208,12 +203,7 @@ def run_arms(
     """四组各写一份实验记录。作废的条目不记成放行。"""
     ingested = set(ingested_t1)
     rows = [_candidate_record(item) for item in candidates]
-    seen: set[str] = set()
-    for row in rows:
-        claim_id = str(row["claim_id"])
-        if claim_id in seen:
-            raise ValueError(f"claim_id 重复: {claim_id}")
-        seen.add(claim_id)
+    reject_duplicate_claim_ids(rows)
 
     records: dict[str, list[dict[str, Any]]] = {arm: [] for arm in ARMS}
     voids: list[dict[str, str]] = []
@@ -247,5 +237,5 @@ def run_arms(
     return {
         **records,
         "voids": voids,
-        "cost_notes": {arm: _cost_note(records[arm]) for arm in ARMS},
+        "cost_notes": {arm: cost_note(records[arm]) for arm in ARMS},
     }

@@ -17,6 +17,7 @@ from freshlatch.eval.patch_events_arms import (
     _number,
     _void_reason,
 )
+from freshlatch.eval.patch_events_rows import cost_note, reject_duplicate_claim_ids
 from freshlatch.eval.patch_events_exp import normalize_experiment_record
 from freshlatch.eval.patch_events_metrics import ABLATION_ORDER, SEED, ablation_intervals
 from freshlatch.llm import DEFAULT_MODEL
@@ -151,12 +152,6 @@ def _decide(
     return "reject", reason, score, False
 
 
-def _cost_note(records: Sequence[Mapping[str, Any]]) -> str:
-    if any(_number(row.get("cost")) > 0 for row in records):
-        return ""
-    return "没有调用"
-
-
 def run_ablations(
     candidates: Sequence[object],
     *,
@@ -168,12 +163,7 @@ def run_ablations(
     """四项消融各写一份 T 记录，并另记 hybrid+rerank 列。"""
     ingested = set(ingested_t1)
     rows = [_candidate_record(item) for item in candidates]
-    seen: set[str] = set()
-    for row in rows:
-        claim_id = str(row["claim_id"])
-        if claim_id in seen:
-            raise ValueError(f"claim_id 重复: {claim_id}")
-        seen.add(claim_id)
+    reject_duplicate_claim_ids(rows)
 
     records: dict[str, list[dict[str, Any]]] = {column: [] for column in _COLUMNS}
     voids: list[dict[str, str]] = []
@@ -213,7 +203,7 @@ def run_ablations(
     return {
         **records,
         "voids": voids,
-        "cost_notes": {column: _cost_note(records[column]) for column in _COLUMNS},
+        "cost_notes": {column: cost_note(records[column]) for column in _COLUMNS},
     }
 
 
