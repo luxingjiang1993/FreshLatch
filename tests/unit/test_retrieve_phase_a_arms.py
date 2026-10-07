@@ -35,21 +35,27 @@ def test_transform_compare_default_skips_llm(tmp_path):
     assert payload["llm_record"]["enabled"] is False
 
 
-def test_llm_arm_records_decoding_and_falls_back(tmp_path):
+def test_llm_arm_records_decoding_and_falls_back(tmp_path, caplog):
+    import logging
+
     def _fail(statement, *, model, temperature, seed):
         raise RuntimeError("模拟改写失败")
 
-    payload = run_transform_compare(
-        corpus=Path("data/corpus"),
-        docket_path=Path("data/t0_docket.json"),
-        distractor_path=Path("data/eval/distractor_docket.json"),
-        gold_path=Path("data/eval/gold.json"),
-        out_dir=tmp_path,
-        llm_rewrite=_fail,
-        llm_record={"model": "fake-rewrite", "temperature": 0.0, "seed": 7},
-    )
+    with caplog.at_level(logging.WARNING):
+        payload = run_transform_compare(
+            corpus=Path("data/corpus"),
+            docket_path=Path("data/t0_docket.json"),
+            distractor_path=Path("data/eval/distractor_docket.json"),
+            gold_path=Path("data/eval/gold.json"),
+            out_dir=tmp_path,
+            llm_rewrite=_fail,
+            llm_record={"model": "fake-rewrite", "temperature": 0.0, "seed": 7},
+        )
     text = (tmp_path / "retrieve-transform-compare.md").read_text(encoding="utf-8")
     assert "fake-rewrite" in text
     assert "temperature: 0.0" in text
     assert "seed: 7" in text
     assert payload["llm"] == payload["bare"]
+    warnings = [r.message for r in caplog.records if r.levelno >= logging.WARNING]
+    assert any("exc_type=RuntimeError" in message for message in warnings)
+    assert "模拟改写失败" not in "\n".join(warnings)
