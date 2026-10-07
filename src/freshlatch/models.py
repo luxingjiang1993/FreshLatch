@@ -33,7 +33,10 @@ class Claim:
 
 @dataclass(frozen=True)
 class ModelEntry:
-    """一个用途上的模型登记。值与搬迁前的字面量相同。"""
+    """一个用途上的模型登记。
+
+    生成与检索行的值与搬迁前的字面量相同。评委行以 PREREG Amendment 1 为准。
+    """
 
     purpose: str
     model: str
@@ -41,6 +44,7 @@ class ModelEntry:
     base_url: str | None = None
     env_key: str | None = None
     max_output_tokens: int | None = None
+    temperature: float | None = None
     forbidden_models: frozenset[str] = field(default_factory=frozenset)
 
 
@@ -93,24 +97,32 @@ MODEL_REGISTRY: dict[str, ModelEntry] = {
         platform="dashscope",
         base_url=_DASHSCOPE,
         env_key="DASHSCOPE_API_KEY",
+        temperature=0,
         forbidden_models=frozenset({"qwen-flash", "qwen-plus", "qwen-max"}),
     ),
     "judge_deepseek": ModelEntry(
         purpose="judge_deepseek",
-        model="deepseek-ai/DeepSeek-V3",
+        model="deepseek-flash",
         platform="deepseek",
         base_url="https://api.deepseek.com",
         env_key="DEEPSEEK_API_KEY",
+        temperature=0,
         forbidden_models=frozenset(
-            {"deepseek-chat", "deepseek-reasoner", "deepseek-flash", "deepseek-v4-pro"}
+            {
+                "deepseek-ai/DeepSeek-V3",
+                "deepseek-chat",
+                "deepseek-reasoner",
+                "deepseek-v4-pro",
+            }
         ),
     ),
     "judge_kimi": ModelEntry(
         purpose="judge_kimi",
         model="kimi-k2.6",
         platform="moonshot",
-        base_url="https://api.moonshot.ai/v1",
+        base_url="https://api.moonshot.cn/v1",
         env_key="MOONSHOT_API_KEY",
+        temperature=0.6,
         forbidden_models=frozenset({"kimi-latest", "kimi-k3", "kimi-k2.7-code"}),
     ),
 }

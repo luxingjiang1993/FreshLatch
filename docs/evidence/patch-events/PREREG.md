@@ -146,6 +146,8 @@ n=30 是小样本门槛。n=100 是满样本门槛。两次都用本页的同一
 | DeepSeek-V3 | `deepseek-ai/DeepSeek-V3` | 思考关闭。禁止 `deepseek-chat`、`deepseek-reasoner`、`deepseek-flash`、`deepseek-v4-pro` |
 | Kimi | `kimi-k2.6` | `thinking` 为 `{"type":"disabled"}`。禁止 `kimi-latest`、代码专用 id、`kimi-k3` |
 
+上表是原锁定值，保留不删。见 Amendment 1。
+
 Qwen2.5-72B 与 `qwen-flash` 同属通义，但是另一个 model 字符串，只做评委，不参与生成。
 
 每条请求 temperature=0。服务端拒绝该参数、回显的温度不是 0、或拒绝关闭思考，则该评委整次运行作废。不得改用服务端默认温度再打一轮当作原计划。托管端点会漂移；响应里的 model 与上表不一致时，该评委整次运行作废，不得换一个仍在线的新模型顶上。跨会话复现只能近似，这个限制写进结果，不拿来放宽上表。
@@ -221,3 +223,15 @@ Qwen2.5-72B 与 `qwen-flash` 同属通义，但是另一个 model 字符串，�
 - Conformal Abstention、UniCR、Conformal-RAG
 
 知识编辑只保留一句：那一类方法改的是模型参数里的事实；本实验决定的是文档上的一处修改放不放行。不比较参数编辑方法谁更好。
+
+## 修订记录 Amendment 1（2026-10-08，任何评委真跑之前）
+
+真人作者决定（Oriental Ronin，#325，2026-10-08 01:40 UTC+8）。此时尚无任何评委数据。上面的原锁定表不删。本修订只改评委登记，不改判据、种子、配额、构造算子、评分细则。
+
+查阅日期：2026-10-08。
+
+1. DeepSeek 评委的 model 字符串：原值 `deepseek-ai/DeepSeek-V3`，新值 `deepseek-flash`。`thinking` 仍为关闭（请求 `{"type":"disabled"}`）。temperature 仍为 0。原因：DeepSeek 官网已无 V3 模型 id。现行 Chat Completions 的 model 枚举是 `deepseek-flash` 与 `deepseek-v4-pro`（https://api-docs.deepseek.com/quick_start/pricing ，https://api-docs.deepseek.com/api/create-chat-completion）。非思考模式接受 temperature=0：该参数的取值是 0 到 2；「没有作用、传入也不报错」只写在思考模式（https://api-docs.deepseek.com/guides/thinking_mode）。
+2. DeepSeek 禁止名单：去掉 `deepseek-flash`，因为它成为登记模型。保留 `deepseek-reasoner`、`deepseek-v4-pro`、`deepseek-chat`。加入 `deepseek-ai/DeepSeek-V3`。
+3. Kimi 的调用地址：原值 `https://api.moonshot.ai/v1`，新值 `https://api.moonshot.cn/v1`。model 仍为 `kimi-k2.6`。`thinking` 仍为 `{"type":"disabled"}`。temperature：原值 0，新值 0.6。原因：国内站非思考模式把温度强制固定为 0.6，其他值会报错（https://platform.moonshot.cn/docs/guide/kimi-k2-6-quickstart）。
+4. Qwen2.5-72B 的 model 字符串与 temperature=0 不变。
+5. 回声校验继续生效，对照本修订的登记值：返回的 model 或 temperature 与登记不符，该评委整次运行作废。不得改温度或换模型再打一轮当作原计划。

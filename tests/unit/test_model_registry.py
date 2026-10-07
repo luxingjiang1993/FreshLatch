@@ -181,7 +181,7 @@ def test_registry_rows_and_aliases_keep_current_values():
             "DASHSCOPE_API_KEY",
         ),
         "judge_deepseek": (
-            "deepseek-ai/DeepSeek-V3",
+            "deepseek-flash",
             "deepseek",
             "https://api.deepseek.com",
             "DEEPSEEK_API_KEY",
@@ -189,7 +189,7 @@ def test_registry_rows_and_aliases_keep_current_values():
         "judge_kimi": (
             "kimi-k2.6",
             "moonshot",
-            "https://api.moonshot.ai/v1",
+            "https://api.moonshot.cn/v1",
             "MOONSHOT_API_KEY",
         ),
     }
@@ -233,18 +233,28 @@ def test_registry_rows_and_aliases_keep_current_values():
     assert qwen.env_key == "DASHSCOPE_API_KEY"
     assert qwen.thinking is None
     assert qwen.forbidden_models == frozenset({"qwen-flash", "qwen-plus", "qwen-max"})
-    assert deepseek.model == "deepseek-ai/DeepSeek-V3"
+    assert deepseek.model == "deepseek-flash"
     assert deepseek.base_url == "https://api.deepseek.com"
     assert deepseek.env_key == "DEEPSEEK_API_KEY"
+    assert deepseek.temperature == 0
     assert deepseek.thinking == {"type": "disabled"}
     assert deepseek.forbidden_models == frozenset(
-        {"deepseek-chat", "deepseek-reasoner", "deepseek-flash", "deepseek-v4-pro"}
+        {
+            "deepseek-ai/DeepSeek-V3",
+            "deepseek-chat",
+            "deepseek-reasoner",
+            "deepseek-v4-pro",
+        }
     )
+    assert "deepseek-flash" not in deepseek.forbidden_models
     assert kimi.model == "kimi-k2.6"
-    assert kimi.base_url == "https://api.moonshot.ai/v1"
+    assert kimi.base_url == "https://api.moonshot.cn/v1"
     assert kimi.env_key == "MOONSHOT_API_KEY"
+    assert kimi.temperature == 0.6
     assert kimi.thinking == {"type": "disabled"}
     assert kimi.forbidden_models == frozenset({"kimi-latest", "kimi-k3", "kimi-k2.7-code"})
+    assert qwen.temperature == 0
+    assert MODEL_REGISTRY["default_llm"].temperature is None
     assert MODEL_REGISTRY["judge_qwen"].forbidden_models == qwen.forbidden_models
     assert MODEL_REGISTRY["judge_deepseek"].forbidden_models == deepseek.forbidden_models
     assert MODEL_REGISTRY["judge_kimi"].forbidden_models == kimi.forbidden_models
@@ -253,6 +263,7 @@ def test_registry_rows_and_aliases_keep_current_values():
 def test_src_model_name_literals_only_in_registry():
     names = registered_model_names()
     assert "qwen-flash" in names
+    assert "deepseek-flash" in names
     assert "deepseek-ai/DeepSeek-V3" in names
     offenders: list[str] = []
     for path in sorted(SRC.rglob("*.py")):

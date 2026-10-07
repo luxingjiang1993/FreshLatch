@@ -1,7 +1,7 @@
 """PE-06：三家外部评委的请求、作废、日志和 κ。
 
 传输沿用 OpenAI 兼容 chat.completions。评委不使用生成默认模型。
-temperature 固定为 0。服务端拒绝该参数、回显温度不是 0、回显 model 与锁定字符串不一致，
+temperature 按评委登记。服务端拒绝该参数、回显温度与登记值不一致、回显 model 与锁定字符串不一致，
 或拒绝关闭思考，则该评委整次运行作废，不改温度、不换模型。
 密钥只在真实传输里从环境变量读取，不写入日志。
 """
@@ -42,22 +42,37 @@ class JudgeSpec:
     model: str
     env_key: str
     base_url: str
+    temperature: float
     thinking: dict[str, str] | None
     forbidden_models: frozenset[str]
 
 
-def _judge_binding(purpose: str) -> tuple[str, str, str, frozenset[str]]:
+def _judge_binding(purpose: str) -> tuple[str, str, str, frozenset[str], float]:
     entry = MODEL_REGISTRY[purpose]
-    if not entry.base_url or not entry.env_key:
-        raise RuntimeError(f"{purpose} 缺少 base_url 或 env_key")
-    return entry.model, entry.env_key, entry.base_url, entry.forbidden_models
+    if not entry.base_url or not entry.env_key or entry.temperature is None:
+        raise RuntimeError(f"{purpose} 缺少 base_url、env_key 或 temperature")
+    return (
+        entry.model,
+        entry.env_key,
+        entry.base_url,
+        entry.forbidden_models,
+        entry.temperature,
+    )
 
 
-_QWEN_MODEL, _QWEN_ENV, _QWEN_URL, _QWEN_FORBIDDEN = _judge_binding("judge_qwen")
-_DEEPSEEK_MODEL, _DEEPSEEK_ENV, _DEEPSEEK_URL, _DEEPSEEK_FORBIDDEN = _judge_binding(
-    "judge_deepseek"
+_QWEN_MODEL, _QWEN_ENV, _QWEN_URL, _QWEN_FORBIDDEN, _QWEN_TEMPERATURE = _judge_binding(
+    "judge_qwen"
 )
-_KIMI_MODEL, _KIMI_ENV, _KIMI_URL, _KIMI_FORBIDDEN = _judge_binding("judge_kimi")
+(
+    _DEEPSEEK_MODEL,
+    _DEEPSEEK_ENV,
+    _DEEPSEEK_URL,
+    _DEEPSEEK_FORBIDDEN,
+    _DEEPSEEK_TEMPERATURE,
+) = _judge_binding("judge_deepseek")
+_KIMI_MODEL, _KIMI_ENV, _KIMI_URL, _KIMI_FORBIDDEN, _KIMI_TEMPERATURE = _judge_binding(
+    "judge_kimi"
+)
 
 JUDGES: dict[str, JudgeSpec] = {
     "qwen": JudgeSpec(
@@ -66,6 +81,7 @@ JUDGES: dict[str, JudgeSpec] = {
         model=_QWEN_MODEL,
         env_key=_QWEN_ENV,
         base_url=_QWEN_URL,
+        temperature=_QWEN_TEMPERATURE,
         thinking=None,
         forbidden_models=_QWEN_FORBIDDEN,
     ),
@@ -75,6 +91,7 @@ JUDGES: dict[str, JudgeSpec] = {
         model=_DEEPSEEK_MODEL,
         env_key=_DEEPSEEK_ENV,
         base_url=_DEEPSEEK_URL,
+        temperature=_DEEPSEEK_TEMPERATURE,
         thinking={"type": "disabled"},
         forbidden_models=_DEEPSEEK_FORBIDDEN,
     ),
@@ -84,6 +101,7 @@ JUDGES: dict[str, JudgeSpec] = {
         model=_KIMI_MODEL,
         env_key=_KIMI_ENV,
         base_url=_KIMI_URL,
+        temperature=_KIMI_TEMPERATURE,
         thinking={"type": "disabled"},
         forbidden_models=_KIMI_FORBIDDEN,
     ),
@@ -136,8 +154,13 @@ def _prompt_sha256(user: str) -> str:
     return hashlib.sha256(f"{RUBRIC}\n{user}".encode("utf-8")).hexdigest()
 
 
-def _is_zero(value: object) -> bool:
-    return isinstance(value, (int, float)) and not isinstance(value, bool) and value == 0
+def _temperature_echo_mismatch(expected: float, actual: object) -> bool:
+    """没回显温度不算不符。回显了但不是登记值，则作废。"""
+    if actual is None:
+        return False
+    if isinstance(actual, bool) or not isinstance(actual, (int, float)):
+        return True
+    return float(actual) != float(expected)
 
 
 def _refusal_reason(exc: BaseException) -> str | None:
@@ -156,8 +179,7 @@ def _void_reason(spec: JudgeSpec, result: Mapping[str, Any]) -> str | None:
         return str(refused)
     if result.get("model") != spec.model:
         return "response_model"
-    temperature = result.get("temperature")
-    if temperature is not None and not _is_zero(temperature):
+    if _temperature_echo_mismatch(spec.temperature, result.get("temperature")):
         return "temperature"
     if spec.thinking is not None:
         echoed = result.get("thinking")
@@ -246,7 +268,7 @@ def _request(spec: JudgeSpec, user: str) -> dict[str, Any]:
     return {
         "judge_id": spec.judge_id,
         "model": spec.model,
-        "temperature": 0,
+        "temperature": spec.temperature,
         "thinking": spec.thinking,
         "messages": [
             {"role": "system", "content": RUBRIC},
@@ -383,7 +405,7 @@ def run_judges(
                         "时间": datetime.now(timezone.utc).isoformat(),
                         "请求的 model": spec.model,
                         "响应回显的 model": result.get("model"),
-                        "请求的 temperature": 0,
+                        "请求的 temperature": spec.temperature,
                         "思考开关": spec.thinking,
                         "usage": result.get("usage"),
                         "提示的 sha256": digest,
