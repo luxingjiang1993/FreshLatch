@@ -1,0 +1,22 @@
+{
+  "fastembed_version": "0.8.1",
+  "embed_model": "BAAI/bge-small-zh-v1.5",
+  "rerank_model": "BAAI/bge-reranker-base",
+  "k": 10,
+  "n_boot": 10000,
+  "seed": 20261007,
+  "embed_chunks_s": 10.217989189000946,
+  "embed_queries_s": 0.6080980280003132,
+  "neural_load_s": 14.809210199000518,
+  "p95_retrieve_ms": {
+    "bm25": 80.69911300117383,
+    "hybrid": 79.9520560012752,
+    "hybrid+rerank_lexical": 80.8420590001333,
+    "hybrid+rerank": 543.9485819988477
+  },
+  "p95_rerank_only_ms": {
+    "lexical": 3.3260540003539063,
+    "neural": 421.38391099979344
+  },
+  "dashscope_called": false
+}
