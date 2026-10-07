@@ -8,6 +8,8 @@ from __future__ import annotations
 import inspect
 import random
 
+import pytest
+
 from freshlatch.eval import patch_events_metrics as metrics
 
 
@@ -201,6 +203,18 @@ def test_named_streams_are_independent_and_do_not_touch_global_rng():
     assert streams["bootstrap_ablation"].getstate() == fresh
     assert streams["spotcheck"].getstate() == fresh
     assert random.getstate() == before
+
+
+def test_duplicate_arm_claim_is_rejected_before_streams_move():
+    rows = _success_rows()
+    duplicate = dict(next(row for row in rows if row["arm"] == "T"))
+    rows.append(duplicate)
+    streams = metrics.named_streams()
+    before = {name: rng.getstate() for name, rng in streams.items()}
+    with pytest.raises(ValueError, match=r"\(arm, claim_id\)"):
+        metrics.compare_primary(rows, streams=streams)
+    for name, rng in streams.items():
+        assert rng.getstate() == before[name]
 
 
 def test_k_zero_primary_comparison_is_not_established(monkeypatch):

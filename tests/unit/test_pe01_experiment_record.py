@@ -205,6 +205,22 @@ def test_product_legacy_row_without_experiment_fields_still_reads(tmp_path: Path
     assert "ablation" not in rows[0]
 
 
+def test_hybrid_ledger_roundtrip_and_blank_stays_off_the_record(tmp_path: Path):
+    marked = exp.normalize_experiment_record(_sample(ledger="hybrid+rerank"))
+    assert marked["arm"] == "T"
+    assert marked["ablation"] == ""
+    assert marked["ledger"] == "hybrid+rerank"
+    written = exp.append_experiment_record(
+        _sample(claim_id="c-ledger", ledger="hybrid+rerank"),
+        events_dir=tmp_path,
+    )
+    assert exp.read_experiment_records(events_dir=tmp_path) == [written]
+    assert "ledger" not in exp.normalize_experiment_record(_sample())
+    assert "ledger" not in exp.normalize_experiment_record(_sample(ledger=""))
+    with pytest.raises(exp.ExperimentRecordError):
+        exp.normalize_experiment_record(_sample(ledger="bm25"))
+
+
 def test_experiment_ledger_is_not_the_product_ledger():
     assert exp.DEFAULT_FILENAME != pe.DEFAULT_FILENAME
     assert exp.default_experiment_dir().name != pe.default_events_dir().name

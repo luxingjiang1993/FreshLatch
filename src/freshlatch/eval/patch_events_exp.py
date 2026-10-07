@@ -38,7 +38,9 @@ OPTIONAL_FIELDS: tuple[str, ...] = (
     "latency_ms",
     "cost",
     "reverify_ok",
+    "ledger",
 )
+LEDGER_VALUES: frozenset[str] = frozenset({"", "hybrid+rerank"})
 DEFAULT_FILENAME = "experiment.jsonl"
 
 
@@ -135,6 +137,13 @@ def normalize_experiment_record(payload: Mapping[str, Any]) -> dict[str, Any]:
         if not isinstance(reverify_ok, bool):
             raise ExperimentRecordError(f"reverify_ok 须为布尔值,收到: {reverify_ok!r}")
         record["reverify_ok"] = reverify_ok
+
+    if "ledger" in payload:
+        ledger = payload["ledger"]
+        if not isinstance(ledger, str) or ledger not in LEDGER_VALUES:
+            raise ExperimentRecordError(f"ledger 非法: {ledger!r}")
+        if ledger != "":
+            record["ledger"] = ledger
 
     return record
 
