@@ -1,0 +1,6217 @@
+{
+ "meta": {
+  "protocol": "slim: two independent model annotators; scoring-relevant disagreements (relevant / arm-guardrail / B issue), a seeded ~20% stratified sample of agreed rows and the 12 content corrections were reviewed by the Ronin agent (a model) on the owner's delegation, not row-by-row by a human; other disagreements merged by fixed rules",
+  "annotators": {
+   "A": "assistant draft (v2 gold-draft-v2.json)",
+   "B": "Cursor cloud agent on GPT-5.6 Sol, blind to A"
+  },
+  "source_xlsx": "/workspace/x1-labeling/ronin-review/RET-01.3-review-v4-ronin.xlsx",
+  "annotator_A": "/workspace/x1-labeling/v2/gold-draft-v2.json",
+  "annotator_B": "/workspace/cloud-agent-artifacts/bc-08c03b6b-f68a-58e3-9a94-9cf628851e7b/gold-blind-b.json",
+  "merged": "/workspace/x1-labeling/v4/merged-gold-v4.json",
+  "sample_seed": 20261007,
+  "qtype_rule_choice": "kw",
+  "qtype_rule": "qtype-kw-v1 (r8>0.2 -> lexical; key-term coverage >= 0.8 -> lexical; multi_hop structure -> multi_hop; else paraphrase); owner chose 2026-10-07",
+  "rule_versions": {
+   "qtype": "qtype-kw-v1",
+   "answer_points": "ap-merge-v1",
+   "distractors": "dis-merge-v1",
+   "category": "category-rule-v1"
+  },
+  "n_kept": 211,
+  "n_dropped": 0,
+  "floors": {
+   "qtype_arm": {
+    "lexical": 51,
+    "multi_hop": 34,
+    "paraphrase": 83
+   },
+   "n_arm": 168,
+   "n_guardrail": 43,
+   "trap_adv_ratio": 0.3095
+  },
+  "floor_warnings": [],
+  "note": "floors here are a quick self-count; run scripts/check_x1.py on the final file for the real gate",
+  "review_delegation": {
+   "kind": "model",
+   "name": "Ronin 代理人",
+   "delegated_by": "owner",
+   "human_row_review": false,
+   "date": "2026-10-07",
+   "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+   "notes": "ronin-review/REVIEW-NOTES.md",
+   "rows_reviewed": 104,
+   "content_fixes": 12,
+   "label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "round4_note": "round4 的 54 题由模型 A 起草、Ronin 代理人盲标为 B，再按协议合并。owner 只定了规则、流程，并授权并入这批合成语料和补题；不是人工逐行审核。48 道 part2 题是模板化合成陷阱，分数要分开报。补批次 s6-d2-t1-91 只有一份模型标注。"
+  },
+  "owner_decisions": {
+   "confirmed_by": "owner (Oriental Ronin)",
+   "channel": "chat",
+   "confirmed_at": "2026-10-07T04:38+08:00",
+   "scope": "criterion/process decisions and one authorized hand-fill, confirmed by the owner in chat; the line-by-line review (116 rows + 20-row sample) and the hand-fill edit itself were done by the Ronin agent (a model), not by a human; reviewer.kind=model, human_row_review=false",
+   "all_follow_agent_suggestion": true,
+   "decisions": [
+    {
+     "n": 1,
+     "kind": "criterion",
+     "text": "只帮着定位题干限定语（哪家公司/哪一版）的块不算答案证据（不进 relevant）",
+     "round": 1
+    },
+    {
+     "n": 2,
+     "kind": "criterion",
+     "text": "几块都能各自单独答全的题不算 multi_hop，改判 paraphrase",
+     "round": 1
+    },
+    {
+     "n": 3,
+     "kind": "row",
+     "id": "s6-mh-15-new",
+     "text": "维持单跳（paraphrase）",
+     "round": 1
+    },
+    {
+     "n": 4,
+     "kind": "row",
+     "id": "s5-d1-t1-03-q4",
+     "text": "维持窄读法（只有 summary 案例算 relevant）",
+     "round": 1
+    },
+    {
+     "n": 5,
+     "kind": "row",
+     "id": "s6-d2-g3-q1",
+     "text": "维持干扰取舍（只留 call#p4）",
+     "round": 1
+    },
+    {
+     "n": 6,
+     "kind": "row",
+     "id": "s6-d0-t1-01-q2",
+     "text": "维持 memo#p2 为干扰",
+     "round": 1
+    },
+    {
+     "n": 7,
+     "kind": "process",
+     "text": "采用来源字段补丁（owner-delegated-agent-*）",
+     "round": 1
+    },
+    {
+     "n": 8,
+     "kind": "content",
+     "id": "g2-memo-e2",
+     "text": "采用法条改文“具体实施办法由国务院规定”，同步改语料块 s6-d2-g2-memo#p3@T1（见 corpus-patch/）",
+     "round": 1
+    },
+    {
+     "n": 9,
+     "kind": "process",
+     "text": "剩余 107 行（rule-merged 70 + consensus 37）不全审，抽 20 行按同一口径复查看错误率（seed 20261007，见 REVIEW-NOTES）",
+     "round": 1
+    },
+    {
+     "n": 10,
+     "round": 2,
+     "kind": "row-handfill",
+     "id": "s5-d2-t0-04-q1",
+     "text": "授权手填：把 s5-d2-t0-04-memo#p3@T0 补进 relevant，并加要点“线上二手平台用户活跃度较前一年提升约22%”；按已确认口径重判 qtype（结果仍为 multi_hop）"
+    },
+    {
+     "n": 11,
+     "round": 2,
+     "kind": "criterion",
+     "text": "p1 法条多跳题维持现状（p1-mh-06-new 仍 multi_hop）；口径：法条题以法条为证据，备忘只在 S6 题里算证据"
+    },
+    {
+     "n": 12,
+     "round": 2,
+     "kind": "content",
+     "text": "把 s6-d2-g2-memo p3 语料补丁并入 /workspace/x1-labeling/v2/drafts 正式语料（已并入，备份见 ronin-review/backup-20261007/）"
+    },
+    {
+     "n": 13,
+     "round": 2,
+     "kind": "process",
+     "text": "把 PROTOCOL 补丁草稿（决定 1、2 + 法条题证据口径）并入 /workspace/x1-labeling/v4/PROTOCOL.md（已并入，备份见 ronin-review/backup-20261007/）"
+    },
+    {
+     "n": 14,
+     "round": 2,
+     "kind": "process",
+     "text": "先放行检索评测；ap-merge-v1 要点合并规则另开小任务，只写任务卡 ronin-review/TASK-ap-merge-fix.md，不开 issue、不现在修"
+    }
+   ],
+   "protocol_patch_draft": "ronin-review/PROTOCOL-patch-draft.md (decisions 1-2; v4/PROTOCOL.md not edited)",
+   "rounds": [
+    {
+     "round": 1,
+     "confirmed_at": "2026-10-07T04:38+08:00",
+     "n": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+     ]
+    },
+    {
+     "round": 2,
+     "confirmed_at": "2026-10-07T04:48+08:00",
+     "n": [
+      10,
+      11,
+      12,
+      13,
+      14
+     ]
+    }
+   ]
+  },
+  "category_rule_applied": "category-rule-v2",
+  "human_row_review": false,
+  "round4": {
+   "blind_b": "Ronin 代理人（模型，本会话）。先只看问句和语料，写入 round4/blind-b/labels-b.json，再对照 A。",
+   "annotator_A": "round4 草稿（Ronin 代理人，模型）",
+   "protocol": "relevant 与 category 一致则接受；answer_points 取并集留长子串；distractors 取并集去掉 relevant，只留同快照；qtype 按 qtype-kw-v1，冗余证据改判 paraphrase。",
+   "accepted_of_54": 53,
+   "rejected": [
+    {
+     "id": "r4n-s2-d0-t1-91-qc",
+     "reason": "问句要「平均」等多久。语料只有中位数11分钟，没有平均数。未复测那块是元陈述，陷阱结构在，但问的统计量和证据对不齐，答案有歧义。否决。",
+     "flags": [
+      "ambiguous"
+     ]
+    }
+   ],
+   "owner_review_disagreements": [
+    {
+     "id": "r4m-s5-d3-t1-05-q6",
+     "kind": "near-duplicate",
+     "kept": true,
+     "reason": "与已有 s5-d3-t1-05-q1 都围绕公交出行 43% 对 51%。q1 问变化、两侧都相关；本题问最近一次独立调查的比例，旧值做干扰。B 判它仍是真陷阱，先留在题集里。owner 若删，trap 余量再减 1。"
+    }
+   ],
+   "qtype_override": {
+    "id": "r4n-s4-d0-t1-91-qb",
+    "to": "paraphrase",
+    "reason": "复评块单独写出 86%、汇报中的 92% 和小样本，已经能答完全题。按 owner 决定 2 改判 paraphrase，不改 kw-v1 函数。"
+   },
+   "templated_part2": {
+    "authored": 48,
+    "accepted": 47,
+    "rejected": 1,
+    "score_separately": true
+   }
+  }
+ },
+ "counts": {
+  "rule-merged": 61,
+  "consensus": 34,
+  "owner-delegated-agent-audited": 9,
+  "owner-delegated-agent-resolved": 95,
+  "rule-merged+agent-ap-fix": 9,
+  "consensus+owner-authorized-agent-handfill": 1,
+  "consensus+agent-ap-fix": 2
+ },
+ "questions": [
+  {
+   "id": "p1-lx-01-new",
+   "source": "rule-merged",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "p1-lx-02-new",
+   "source": "rule-merged",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "p1-lx-03-new",
+   "source": "consensus",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "p1-lx-04-new",
+   "source": "owner-delegated-agent-audited",
+   "decision": "通过",
+   "note": "Ronin 代理人（模型）：o11#p11 原文 45个工作日",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": true,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "p1-lx-05-new",
+   "source": "rule-merged",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "p1-lx-06-new",
+   "source": "rule-merged",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "p1-lx-07-new",
+   "source": "consensus",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "p1-lx-08-new",
+   "source": "consensus",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "p1-lx-09-new",
+   "source": "rule-merged",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "p1-lx-10-new",
+   "source": "consensus",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "p1-lx-11-new",
+   "source": "rule-merged",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "p1-lx-12-new",
+   "source": "consensus",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "p1-mh-02-new",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "合并",
+   "note": "Ronin 代理人（模型）：限定一般个人信息后答案唯一: o11#p2(三)10万 / o16#p7 100万以上; 干扰 o13#p2,o16#p8 ok",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "p1-mh-03-new",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "改",
+   "note": "Ronin 代理人（模型）：旧办法 o13#p2 标准合同条件同时要求\"处理个人信息不满100万人的\"，题问\"卡在多少人\"未限定出境数，补此要点",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "p1-mh-04-new",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "合并",
+   "note": "Ronin 代理人（模型）：令16§5 免予…标准合同 只在 o16#p4 引导句, p5 只有(四)项; B 补 p4 正确; 改题限定非关基/无重要数据合理; trap(C4) ok",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "p1-mh-05-new",
+   "source": "rule-merged",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "p1-mh-06-new",
+   "source": "consensus",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "p1-mh-07-new",
+   "source": "rule-merged",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "p1-mh-08-new",
+   "source": "consensus",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "p1-mh-09-new",
+   "source": "owner-delegated-agent-audited",
+   "decision": "通过",
+   "note": "Ronin 代理人（模型）：oneperson#p1 + capital#p1 两 doc",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": true,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "p1-mh-10-new",
+   "source": "consensus",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "p1-mh-11-new",
+   "source": "consensus",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "p1-mh-13-new",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "合并",
+   "note": "Ronin 代理人（模型）：题限定\"出境…到多少人\"，10万/不满10万 唯一; T0 池只有令11/13",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "p1-mh-14-new",
+   "source": "rule-merged",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s1-d0-01-q1",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "合并",
+   "note": "Ronin 代理人（模型）：原题要 T0 预估, T0 块是护栏干扰, 锚不住; 改题问 T1 现状=trap-supersede 形式; memo#p1@T1 71%/延后至下一财年",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s1-d0-01-q2",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "合并",
+   "note": "Ronin 代理人（模型）：护栏; memo#p2@T1\"投诉占比升至35%…列为最高优先级\"在 T1 内可锚",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s1-d0-01-q3",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "合并",
+   "note": "Ronin 代理人（模型）：同上改题; memo#p3@T1 1.05亿美元/23%",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s1-d0-01-q4",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "合并",
+   "note": "Ronin 代理人（模型）：护栏: analysis#p3@T1\"新监管标准正式发布，实施时间提前至三个月内\"自带变化方向; memo#p1@T1\"受区域政策调整影响，原定覆盖计划需延后\"是政策→战略; B 的 analysis#p1 只定位19%",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s1-d0-02-q1",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "合并",
+   "note": "Ronin 代理人（模型）：护栏; memo#p1@T1\"仅达12.3%，实际增速低于预期\"; report#p1 只定位59%",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s1-d0-02-q2",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "合并",
+   "note": "Ronin 代理人（模型）：report#p2(45天)只定位题干限定词, 不入 relevant; memo#p2@T1 性能瓶颈/无法支撑",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s1-d0-02-q3",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "合并",
+   "note": "Ronin 代理人（模型）：护栏; memo#p3@T1\"行业环境趋于严格，原战略推进节奏需调整\"",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s1-d0-02-q4",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "合并",
+   "note": "Ronin 代理人（模型）：改题去掉 T0 基线; report#p3@T1 5.8%/19.3%",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s1-d0-03-q1",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "合并",
+   "note": "Ronin 代理人（模型）：护栏; memo#p1@T1\"已出现实质性恶化…升级为高危状态\"",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s1-d0-03-q2",
+   "source": "owner-delegated-agent-audited",
+   "decision": "通过",
+   "note": "Ronin 代理人（模型）：memo#p2@T1\"现有缓冲机制已无法覆盖新风险敞口\"",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": true,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s1-d0-03-q3",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "合并",
+   "note": "Ronin 代理人（模型）：改题去掉\"比T0扩大多少\"(12%在T0护栏块); report#p3@T1 27%",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s1-d0-03-q4",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "合并",
+   "note": "Ronin 代理人（模型）：护栏; report#p2@T1\"信息同步延迟加剧…须在48小时内完成\"; 要点两条略重叠但无错",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s1-d0-04-q1",
+   "source": "consensus",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s1-d0-04-q2",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "改",
+   "note": "Ronin 代理人（模型）：memo#p1(实际值为66.2%)只定位题干限定词, 移出 relevant 与要点\"实际值为66.2%\"; relevant=memo#p2@T1\"某关键节点延误率上升至11%，暴露出单一依赖风险\"",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s1-d0-04-q3",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "改",
+   "note": "Ronin 代理人（模型）：risk#p2@T1(三条海运通道)只定位题干限定词, 移出 relevant 及要点\"三条主要海运通道临时关闭\"→单 doc, 不再是 multi_hop; arm 保留: memo#p3@T1\"尽管平均满意度维持在4.3分，但…负面评论数量同比增加37%\"在 T1 内即可表达变化(与建议列\"T1 块是否写出 T0 状态\"口径一致)",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s1-d0-04-q4",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "合并",
+   "note": "Ronin 代理人（模型）：risk#p3@T1 45天改造/否则运营中断; risk#p2 只定位",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s1-d0-05-q1",
+   "source": "owner-delegated-agent-audited",
+   "decision": "通过",
+   "note": "Ronin 代理人（模型）：memo#p1@T0 稳定阶段/畅通/长期战略价值",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": true,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s1-d0-05-q2",
+   "source": "consensus",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s1-d0-05-q3",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "改",
+   "note": "Ronin 代理人（模型）：改题限定安全团队合理(B 指出同快照 warn 预警不唯一); 但要点\"建议维持现有监控强度，暂不调整部署资源\"是建议而非判断依据, 删去; 依据=memo#p2@T0\"周边势力活动频率在近两周内维持低位，无明显升级信号\"",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s1-d0-05-q4",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "合并",
+   "note": "Ronin 代理人（模型）：题面偏泛; warn#p1@T1(多源情报→高危) + warn#p3@T1(技术监测发现定向干扰) 两块共同回答\"是否基于技术监测\"; memo#p2@T1 作近邻干扰",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s1-d1-01-q1",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "合并",
+   "note": "Ronin 代理人（模型）：改题去掉语料没有的\"未达预期原因\"; memo#p1@T0 87%/渠道扩张与客户反馈优化; analysis#p1(4.8分钟)只定位",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s1-d1-01-q2",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "合并",
+   "note": "Ronin 代理人（模型）：护栏; memo#p2@T1\"供应链波动已演变为实际交付延迟\"; report#p3(90天)只定位",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s1-d1-01-q3",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "合并",
+   "note": "Ronin 代理人（模型）：改题; memo#p3@T1 4.2/5.0/对新版本体验不满",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s1-d1-01-q4",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "合并",
+   "note": "Ronin 代理人（模型）：改题; report#p1@T1 双重压制/需立即制定反制措施",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s1-d1-01-q5",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "合并",
+   "note": "Ronin 代理人（模型）：改题去掉 T0 63%; analysis#p3@T1 56%/21%; T0 块作取代干扰=护栏",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s1-d1-01-q6",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "合并",
+   "note": "Ronin 代理人（模型）：改题; report#p2@T1 模块化已成主流/适配验证已完成但存在性能瓶颈",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s1-d2-01-q1",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "改",
+   "note": "Ronin 代理人（模型）：analysis#p3@T1(评级负面观察)只定位题干限定词, 移出 relevant/要点→单 doc paraphrase; arm 保留: memo#p1@T1\"尽管前期数据显示通胀回落，最新数据揭示核心通胀存在反弹苗头\"自含前后对比",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s1-d2-01-q2",
+   "source": "consensus",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s1-d2-01-q3",
+   "source": "consensus",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s1-d2-01-q4",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "改",
+   "note": "Ronin 代理人（模型）：改题合理; 但第3要点\"需重新评估债务可持续性\"是后果不是\"依据\", 删去; 依据=analysis#p3@T1\"下调短期展望至负面观察\"\"外部融资成本已开始攀升\"",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s1-d2-01-q5",
+   "source": "consensus",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s1-d2-01-q6",
+   "source": "consensus",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s1-d3-01-q1",
+   "source": "rule-merged",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s1-d3-01-q2",
+   "source": "rule-merged",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s1-d3-01-q3",
+   "source": "rule-merged",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s1-d3-01-q4",
+   "source": "rule-merged",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s2-d0-01-q1",
+   "source": "rule-merged",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s2-d0-01-q2",
+   "source": "consensus",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s2-d0-01-q3",
+   "source": "owner-delegated-agent-audited",
+   "decision": "通过",
+   "note": "Ronin 代理人（模型）：护栏; memo#p2@T1\"已演变为区域性窜货事件…强制推行统一价盘机制\"",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": true,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s2-d0-01-q4",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "合并",
+   "note": "Ronin 代理人（模型）：改题合理(语料无可枚举\"具体措施\"); report#p3@T1 43起/减少80%",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s2-d0-02-q1",
+   "source": "rule-merged",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s2-d0-02-q2",
+   "source": "rule-merged",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s2-d0-02-q3",
+   "source": "rule-merged",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s2-d0-02-q4",
+   "source": "rule-merged",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s2-d0-02-q5",
+   "source": "rule-merged",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s2-d0-02-q6",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "合并",
+   "note": "Ronin 代理人（模型）：护栏(用B角色): interview#p2@T1 未写 T0\"暂无明确计划\", 立场变化需 T0",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s2-d0-03-q1",
+   "source": "rule-merged+agent-ap-fix",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "agent_fixes": [
+    {
+     "date": "2026-10-07",
+     "by": "ronin-agent (model)",
+     "human_row_review": false,
+     "kind": "sample",
+     "field": "answer_points",
+     "note": "多余要点：题问新客户转化率，\"当前用户对产品功能的满意度未达预期…\"答的是满意度，删"
+    }
+   ]
+  },
+  {
+   "id": "s2-d0-03-q2",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "合并",
+   "note": "Ronin 代理人（模型）：护栏; memo#p2@T1 未写 T0\"渗透率仍偏低\"; 边界例",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s2-d0-03-q3",
+   "source": "rule-merged",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s2-d0-03-q4",
+   "source": "consensus",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s2-d0-04-q1",
+   "source": "rule-merged",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s2-d0-04-q2",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "合并",
+   "note": "Ronin 代理人（模型）：memo#p3@T1\"原定第三季度…推迟至第四季度，重点转向…\"自含变化, arm; memo#p2(30万台)只定位且讲生产非推广",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s2-d1-01-q1",
+   "source": "rule-merged",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s2-d1-01-q2",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "合并",
+   "note": "Ronin 代理人（模型）：护栏: 问两版数据是否一致, T1 块无 T0 8.7%",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s2-d1-01-q3",
+   "source": "rule-merged",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s2-d1-01-q4",
+   "source": "consensus",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s2-d2-01-q1",
+   "source": "owner-delegated-agent-audited",
+   "decision": "通过",
+   "note": "Ronin 代理人（模型）：memo#p1@T1\"虽在初期获得好评，但…导航路径不清晰\"自含变化",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": true,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s2-d2-01-q2",
+   "source": "rule-merged",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s2-d2-01-q3",
+   "source": "consensus",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s2-d2-01-q4",
+   "source": "consensus",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s2-d3-01-q1",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "改",
+   "note": "Ronin 代理人（模型）：绿色第1要点被截断(\"…渠道反馈实\", 原文\"渠道反馈实际转化率低于预期\", 因原文\"原定 15% 的\"含空格自动补全失败), 补全; memo#p2@T1(合作方缩减至单一)讲合作方数量不是\"合作目标\", 移出 relevant 改作干扰(同 B); arm 保留(同块\"原定15%…调整为8%\")",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s2-d3-01-q2",
+   "source": "consensus",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s2-d3-01-q3",
+   "source": "consensus",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s2-d3-01-q4",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "合并",
+   "note": "Ronin 代理人（模型）：arm: interview#p1@T1\"CEO 改口称…不再追求广泛铺开\"同块含转变; 边界例",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s3-d0-01-q1",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "改",
+   "note": "Ronin 代理人（模型）：题面\"竞品A的基础套餐在T0与T1之间的价格变化\"在 T1 池不唯一(s3-d3-01 竞品A 同为99→119, s3-d1-01 竞品A\"基础套餐调涨至每月349元\"); 加限定词\"在流量通话套餐比价里\"(同批 q3/q4 用法); 护栏与 relevant 保留(report#p1@T1\"竞品A的119元定价\"为独立可答块)",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s3-d0-01-q2",
+   "source": "rule-merged",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s3-d0-01-q3",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "改",
+   "note": "Ronin 代理人（模型）：memo#p3@T1 单块即答\"结束促销…恢复至每月99元…捆绑视频会员的新组合方案\"(arm, 同块自含); report#p3@T1 只讲调整后效果(流失率下降/营收增长15%)不是所问\"具体变化\", 移出 relevant 与要点→不再 multi_hop(否则 MH 全命中被迫要求非必需块)",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s3-d0-01-q4",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "改",
+   "note": "Ronin 代理人（模型）：护栏 relevant(B 三块覆盖均价+B+C, A 价在 report#p1)可接受; 但要点\"价格上调至每月219元\"\"标准套餐恢复至每月99元\"丢了主体(三家竞品并列时主体是关键), 补全为\"竞品B在高端套餐基础上新增家庭共享功能，价格上调至每月219元\"\"竞品C已于本季度初结束促销活动，标准套餐恢复至每月99元\"",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s3-d0-02-q1",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "改",
+   "note": "Ronin 代理人（模型）：同上: a#p1/b#p1/c#p1 各自给出 A公司99元, 冗余证据, qtype 改 paraphrase; 删要点\"该版本在发布初期获得市场关注…\"(与定价无关)",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s3-d0-02-q2",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "合并",
+   "note": "Ronin 代理人（模型）：三块均确认 B 降价(b#p2\"标准版降至109元/月\"), 命中制下冗余 relevant 无害; 规则 lexical",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s3-d0-02-q3",
+   "source": "rule-merged",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s3-d0-02-q4",
+   "source": "rule-merged",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s3-d0-02-q5",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "改",
+   "note": "Ronin 代理人（模型）：三块(a#p3 69元/c#p3 69元/b#p3 免费基础版)各自独立答出\"C公司\", 是冗余证据而非多跳, kw 规则因要点措辞不同误判 multi_hop; qtype 逐题改为 paraphrase(去掉 MH 后规则结果); 要点去掉与问题无关的\"限制功能数量…/用户留存率低于行业平均…\"",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s3-d0-02-q6",
+   "source": "rule-merged",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s3-d0-03-q1",
+   "source": "rule-merged",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s3-d0-03-q2",
+   "source": "rule-merged",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s3-d0-03-q3",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "合并",
+   "note": "Ronin 代理人（模型）：arm: memo#p3@T1\"维持每月380元不变，但新增…客户忠诚计划\"同块自含",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s3-d0-03-q4",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "合并",
+   "note": "Ronin 代理人（模型）：护栏; report#p3@T1\"价格下探趋势，中端产品普遍低于350元\"; memo#p3(380)只定位",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s3-d0-04-q1",
+   "source": "rule-merged",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s3-d0-04-q2",
+   "source": "rule-merged",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s3-d1-01-q1",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "合并",
+   "note": "Ronin 代理人（模型）：qtype 逐题改 paraphrase: memo#p1@T1 与 report#p1@T1 各自独立给出\"调涨至每月349元…高级功能模块纳入主套餐\", 冗余证据非多跳, kw 规则误判 multi_hop; relevant/要点不变",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s3-d1-01-q2",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "合并",
+   "note": "Ronin 代理人（模型）：两方均护栏; memo#p2@T1 + report#p2@T1 透明度改善; \"功能定价透明度\"在 S3 各批中唯一",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s3-d1-01-q3",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "合并",
+   "note": "Ronin 代理人（模型）：arm: memo#p3@T1\"推出按月订阅选项…同时保留年度优惠价2,800元\"含 T0 年度方案与 T1 新增; \"那个竞品C\"有2,800元限定, 唯一",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s3-d1-01-q4",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "合并",
+   "note": "Ronin 代理人（模型）：护栏; A/B/C 三块 T1 报价; 限定词\"竞品B新增399元专业版\"唯一",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s3-d2-01-q1",
+   "source": "rule-merged",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s3-d2-01-q2",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "改",
+   "note": "Ronin 代理人（模型）：题面\"以自动化报告为卖点的竞品B\"同时符合 s3-d0-03 的竞品B(T0\"新增自动化报表生成功能\", T1 也\"新增30天免费试用\"), 答案不唯一; 加限定词\"在竞品C月费调到195元的那份比价里\"; arm 保留(p2@T1\"在新版本基础上增加30天免费试用期…优化了报告生成算法\"自含)",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s3-d2-01-q3",
+   "source": "consensus",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s3-d2-01-q4",
+   "source": "consensus",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s3-d3-01-q1",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "合并",
+   "note": "Ronin 代理人（模型）：护栏; \"附带云存储的竞品A\"唯一(仅 s3-d3-01 有云存储); memo#p1/report#p1@T1 均写119元",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s3-d3-01-q2",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "改",
+   "note": "Ronin 代理人（模型）：题面\"竞品B在两个时间点…\"在 T1 池有 5 个竞品B(s3-d0-01/d0-03/d0-04/d1-01/d2-01), 不唯一; 加限定词\"在竞品A附带云存储的那份比价里\"; 护栏与两口径要点(129/99)保留",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s3-d3-01-q3",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "改",
+   "note": "Ronin 代理人（模型）：qtype 显式 paraphrase: memo#p3@T1\"取消阶梯加价，统一为89元/月，涵盖全部功能模块\"与 report#p3@T1\"所有功能模块统一纳入89元基础包\"各自独立作答(冗余证据, 原则3)；\"竞品C的报价结构…\"在 T1 池有 5 个竞品C 均有调价(s3-d1-01 新增按月订阅也是结构调整), 不唯一; 加限定词\"在竞品A附带云存储的那份比价里\"; arm 保留(\"取消阶梯加价，统一为89元\"同块自含)",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s3-d3-01-q4",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "改",
+   "note": "Ronin 代理人（模型）：arm/MH/relevant 接受(三家各一块, T1 块自含\"上调至119元\"\"取消固定高价\"\"取消阶梯加价\"); 要点补主体与定价动作(原要点\"目标客户转向中大型组织\"无主体); 干扰去掉 memo#p1@T1(其\"价格竞争力下降\"本身是 A 的定位变化, 部分相关不宜作干扰)",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s4-d0-t0-01-q1",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "合并",
+   "note": "Ronin 代理人（模型）：report#p1 准确率76→89, report#p3 4.7→2.3秒, memo#p1 误差率3.2%, memo#p2 效率+15% 均为性能提升, B 的四块完整",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s4-d0-t0-01-q2",
+   "source": "rule-merged",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s4-d0-t0-01-q3",
+   "source": "owner-delegated-agent-audited",
+   "decision": "改",
+   "note": "Ronin 代理人（模型）：题问局限性, 要点后半\"建议后续补充边缘场景训练样本，以增强泛化能力\"是建议不是局限, 截去; 保留\"当前模型仍存在对非标准流程的覆盖不足问题\"",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": true,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s4-d0-t0-01-q4",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "改",
+   "note": "Ronin 代理人（模型）：题问\"已采取\"的协同措施; plan#p2@T0 是\"拟开发可视化对比工具\"(未采取), 不应入 relevant, 改作干扰; relevant 仅 plan#p3@T0\"已启动跨团队协作机制，确保模型变更前完成影响评估与沟通预案\"(同 A, 推翻建议)",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s4-d0-t0-01-q5",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "合并",
+   "note": "Ronin 代理人（模型）：summary#p2\"较强的适应性…原材料价格波动场景\"、report#p1 复杂项目核算、memo#p2 高负载时段; 边界: report#p1 讲的是准确率",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s4-d0-t0-01-q6",
+   "source": "consensus",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s4-d0-t1-02-q1",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "合并",
+   "note": "Ronin 代理人（模型）：memo#p1/memo#p2/report#p2 三块改进; 注意 report#p1@T1(响应速度提升45%)也是改进但 A、B 都未提名, 按\"不手填\"不加, 列入没把握",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s4-d0-t1-02-q2",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "合并",
+   "note": "Ronin 代理人（模型）：memo#p2\"强化了高并发场景下的弹性成本预测能力…预算偏差减少28%\" + report#p2\"12个高负载案例…76.3%升至89.1%\"; plan#p2(11月灰度)只定位",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s4-d0-t1-02-q3",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "合并",
+   "note": "Ronin 代理人（模型）：analysis#p2 原因与\"有效避免了超支风险\"; analysis#p3\"部分场景存在轻微溢价，但整体风险控制收益远超成本波动影响\"正对应低频溢价的优势, B 补入可接受",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s4-d0-t1-02-q4",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "合并",
+   "note": "Ronin 代理人（模型）：plan 三块即路线图全文, 要点覆盖三大方向/可解释性模块/季度验证",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s4-d0-t1-02-q5",
+   "source": "rule-merged",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s4-d0-t1-02-q6",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "改",
+   "note": "Ronin 代理人（模型）：题问评审\"提出了哪些建议\"; review#p3@T1 是\"会议决定成立跨职能工作组…\"(决定非建议), 移出 relevant 与要点, 改作干扰(同 B); relevant=review#p2\"一是…成本敏感度分析功能；二是扩展对云服务阶梯定价的支持\"; 保留 A 的干扰 report#p3(报告里的建议)",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s4-d1-t0-03-q1",
+   "source": "rule-merged",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s4-d1-t0-03-q2",
+   "source": "consensus",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s4-d1-t0-03-q3",
+   "source": "rule-merged",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s4-d1-t0-03-q4",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "改",
+   "note": "Ronin 代理人（模型）：三块 plan 均为未来能力(接受 B); 但题问\"预期达到什么效果\", 要点\"增加成本敏感度分析模块\"截掉了效果, 补为\"增加成本敏感度分析模块，帮助识别关键影响因子，辅助管理层制定策略调整预案\"",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s4-d2-t1-04-q1",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "改",
+   "note": "Ronin 代理人（模型）：题问\"相比旧版提升了多少\", 只有 memo#p2@T1\"误差率由原先的8.7%降至4.3%\"给出前后对比; summary#p1\"平均预测精度达95.7%\"只给现值、无旧版基线, 单独命中答不了题却会被命中制计为命中, 且使题目被规则判成 multi_hop; relevant 仅 memo#p2, summary#p1 移出(不作干扰, 属旁证)",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s4-d2-t1-04-q2",
+   "source": "rule-merged",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s4-d2-t1-04-q3",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "改",
+   "note": "Ronin 代理人（模型）：report#p1@T1(边缘节点低19.6%)只定位题干限定词, 移出 relevant 与要点, 改作干扰; report#p2\"弹性伸缩阈值优化…资源浪费减少31%\" + memo#p1\"精细化建模…动态权重调整机制\"(两方都选, 接受) 保留, 仍 multi_hop",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s4-d2-t1-04-q4",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "改",
+   "note": "Ronin 代理人（模型）：题面直接对应 memo#p3@T1\"后续将基于真实流量数据持续优化参数，确保长期适应性\"; B 补的 report#p3\"将模型输出与预算分配系统联动…防止超支风险\"与模型长期适用性无关, internal#p2/p3 是讨论建议/测试流程, 均非必需; 改为仅 memo#p3(同 A 的 relevant), 并删 A 的非措施要点\"新版模型已集成至核心调度系统\"; report#p3 作干扰",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s4-d3-t0-05-q1",
+   "source": "rule-merged+agent-ap-fix",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "agent_fixes": [
+    {
+     "date": "2026-10-07",
+     "by": "ronin-agent (model)",
+     "human_row_review": false,
+     "kind": "sample",
+     "field": "answer_points",
+     "note": "多余要点：题问高并发平均响应延迟，\"本次内部测算聚焦于…核心指标包括…\"是背景，删"
+    }
+   ]
+  },
+  {
+   "id": "s4-d3-t0-05-q2",
+   "source": "rule-merged",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s4-d3-t0-05-q3",
+   "source": "rule-merged",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s4-d3-t0-05-q4",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "用A",
+   "note": "Ronin 代理人（模型）：题问\"采取了哪些具体措施\", 只有 report#p2@T0\"实施缓冲区大小动态调整策略，并引入周期性垃圾回收机制\"; report#p1 讲问题所在(非措施), A 把它作干扰正确; 推翻建议",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s5-d0-t0-01-q1",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "改",
+   "note": "Ronin 代理人（模型）：原题\"综合多份文档概述主要成效与核心挑战\"开放无界: T0 池里写成效/挑战的块至少 10 个(report#p1/p2、analysis#p1/p2、memo#p1/p2、summary#p1/p2、internal#p1、press#p2), A/B 只重合 2 块, MH 全命中要求的是任意子集; 改题收窄为\"响应速度/响应时间上的量化成效 + 推广面临的三大挑战\", relevant=report#p1(约40%)+analysis#p1(2.3小时)+summary#p2(三大挑战), memo#p2 改作干扰",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s5-d0-t0-01-q2",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "改",
+   "note": "Ronin 代理人（模型）：题面点名\"某市智慧协作平台\"; 同一平台的直接矛盾是 press#p1\"零延迟…创新典范\" vs press#p2\"实际覆盖范围仅限于主城区…存在信息孤岛现象\", 绿色列漏了 press#p2(A 提名过), 补入 relevant 与要点; memo#p2 保留",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s5-d0-t0-01-q3",
+   "source": "consensus",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s5-d0-t0-01-q4",
+   "source": "rule-merged",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s5-d0-t0-01-q5",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "合并",
+   "note": "Ronin 代理人（模型）：summary#p3\"尚无权威机构出具全面评估报告\"、memo#p3\"成效存在争议\"、report#p2 局限; 开放题但核心证据明确",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s5-d0-t0-01-q6",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "合并",
+   "note": "Ronin 代理人（模型）：analysis#p3 培训体系、internal#p1\"列为优先改进项\"、internal#p2 接口整合、summary#p2 三大挑战; \"优先\"带判断, 列入没把握",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s5-d0-t1-02-q1",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "改",
+   "note": "Ronin 代理人（模型）：relevant 接受; 要点\"…便可能成为“事实”本身。尤其当新数据与既有叙事冲突时\"是 repair 残片, 截回到\"…成为“事实”本身\"",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s5-d0-t1-02-q2",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "改",
+   "note": "Ronin 代理人（模型）：绿色要点\"值得注意的是，2020年一份独立研究尝试复现该数据，发现实际监测结果与转述版本存\"被截断(原文\"存在显著差异\"), 且它是案例不是\"为何\"的理由, 删去(memo#p2 的确认偏误要点已覆盖); relevant memo#p2/p3+summary#p3 接受; qtype 显式 paraphrase: memo#p3\"即使原始数据无法验证，只要被多次引用并嵌入正式论述，便可能成为“事实”本身…更高的质疑门槛\"一块即覆盖引用行为与制度惯性两个角度, 三块是可并列的独立论据, 不应要求全命中(原则3)",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s5-d0-t1-02-q3",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "改",
+   "note": "Ronin 代理人（模型）：relevant report#p2/p3 接受; 要点\"…实为“中位数时间”。这种语义微调虽无恶意\"为残片且与另一要点重复, 截回到\"…原始定义实为“中位数时间”\"",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s5-d0-t1-02-q4",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "改",
+   "note": "Ronin 代理人（模型）：盲点在 analysis#p3\"此事件暴露了内部数据整合机制中的结构性盲点：权威性不等于准确性，一致性也不代表全面性\"; analysis#p2 是案情经过, 非必需却被 MH 全命中强制要求, 移出(同 A 的 relevant); 其要点还带残片\"…未能获得同等权重。这说明\"",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s5-d1-t1-03-q1",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "改",
+   "note": "Ronin 代理人（模型）：relevant memo 三块接受; 删复述题干背景的要点\"在2020年的一份内部报告中，某机构曾提及2018年消费者行为调查的初步结果\"(不是\"为何\"); 42/46/48% 要点去掉接上的半句",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s5-d1-t1-03-q2",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "合并",
+   "note": "Ronin 代理人（模型）：report#p1(2.7年被多次复述)+report#p2(2018年小型调研、样本850、一线城市、未加批判沿用)",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s5-d1-t1-03-q3",
+   "source": "rule-merged+agent-ap-fix",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "agent_fixes": [
+    {
+     "date": "2026-10-07",
+     "by": "ronin-agent (model)",
+     "human_row_review": false,
+     "kind": "residue",
+     "field": "answer_points",
+     "note": "repair() 残片：要点末尾接上了下一句的前半截\"此类微调虽未改变整体趋势\"（下一条要点已含整句），截掉"
+    }
+   ]
+  },
+  {
+   "id": "s5-d1-t1-03-q4",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "改",
+   "note": "Ronin 代理人（模型）：题面\"多份来源对同一事件的描述存在数值差异…确保汇编叙述的可信度\"对应 summary 文档的案例(1.3万 vs 9800)与方法: summary#p2\"经交叉验证…\"+summary#p3\"分层标注法…确保合成叙述的严谨性\"; 绿色把 summary#p2 当干扰不对, note#p3\"数据转述日志\"针对单份幻灯片篡改、非多源数值差异, 改作干扰(采 B, 推翻建议与 A)",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s5-d2-t0-04-q1",
+   "source": "consensus+owner-authorized-agent-handfill",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 授权、模型手填",
+   "agent_fixes": [
+    {
+     "date": "2026-10-07",
+     "authorized_by": "owner",
+     "authorized_at": "2026-10-07T04:48+08:00",
+     "by": "ronin-agent (model)",
+     "human_row_review": false,
+     "kind": "owner-authorized-handfill",
+     "field": [
+      "relevant",
+      "answer_points"
+     ],
+     "note": "owner 授权、模型手填：relevant 加 s5-d2-t0-04-memo#p3@T0（A、B 均未提名），要点加“线上二手平台用户活跃度较前一年提升约22%”（语料原文精确子串）；按 kw-v1 + owner 决定 2 重判 qtype，仍为 multi_hop（三份文档各给不同数字，没有单块答全）"
+    }
+   ]
+  },
+  {
+   "id": "s5-d2-t0-04-q2",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "合并",
+   "note": "Ronin 代理人（模型）：改为复数合理; analysis#p1/p3、memo#p1 三处未公开内部数据",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s5-d2-t0-04-q3",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "改",
+   "note": "Ronin 代理人（模型）：relevant(B 五块覆盖三份文档)接受; 但干扰 memo#p2@T0\"虽未发表于学术期刊，但在本地论坛中被多次转引\"本身就是\"未经证实信息被转引\"的例子, 不能作干扰, 移除",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s5-d3-t1-05-q1",
+   "source": "rule-merged+agent-ap-fix",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "agent_fixes": [
+    {
+     "date": "2026-10-07",
+     "by": "ronin-agent (model)",
+     "human_row_review": false,
+     "kind": "residue",
+     "field": "answer_points",
+     "note": "repair() 残片：\"…。部分媒体和报告仍沿用旧数据\"为下一句前半截（下一条要点已含整句），截掉"
+    }
+   ]
+  },
+  {
+   "id": "s5-d3-t1-05-q2",
+   "source": "rule-merged+agent-ap-fix",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "agent_fixes": [
+    {
+     "date": "2026-10-07",
+     "by": "ronin-agent (model)",
+     "human_row_review": false,
+     "kind": "residue",
+     "field": "answer_points",
+     "note": "两句并成一条要点，按句拆成两条（纯文本）"
+    }
+   ]
+  },
+  {
+   "id": "s5-d3-t1-05-q3",
+   "source": "rule-merged",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s6-d0-t1-01-q1",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "改",
+   "note": "Ronin 代理人（模型）：题面限定\"顾问备忘中\", 答案=memo#p1@T1\"原定两周的复验周期现已延长至三周。旧版中的两周窗口仅保留用于历史对照参考\"; patch#p1\"系统内复验窗口配置已由14天调整为21天\"是补丁记录里的同一变更, 作干扰(同 A, 推翻建议)",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s6-d0-t1-01-q2",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "改",
+   "note": "Ronin 代理人（模型）：题面限定\"渠道纪要中\", 答案=channel#p1@T1\"已从主文迁移至附录，此举旨在分离操作细节与核心政策声明…\"; memo#p2 未提渠道纪要, 是顾问备忘里的同类表述, 作干扰(同 A)",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s6-d0-t1-01-q3",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "改",
+   "note": "Ronin 代理人（模型）：\"结论段\"是 memo#p3@T1 的用语(\"结论段落已更新为“待复验”…反映当前评估仍需进一步验证\"), 也只有它给出\"为何\"; patch#p2 是系统状态字段的补丁记录, 其要点\"该变更同步至前端展示与审批流节点\"不回答所问, 改作干扰(同 A)",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s6-d0-t1-02-q1",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "合并",
+   "note": "Ronin 代理人（模型）：三处同步对象分在三份文档: internal#p1\"已录入项目管理工具\"、memo#p1\"同步更新至项目排期表\"、report#p1\"系统上线计划也已重新排期\", 缺一不可",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s6-d0-t1-02-q2",
+   "source": "consensus",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s6-d0-t1-02-q3",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "合并",
+   "note": "Ronin 代理人（模型）：改题合理(原文无会议名称/编号); \"会议记录里\"→memo#p3@T1\"会议记录显示…移交至乙组…全面接管后续协调与执行任务\"; internal#p3/report#p3 作干扰",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s6-d0-t1-03-q1",
+   "source": "rule-merged",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s6-d0-t1-03-q2",
+   "source": "consensus",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s6-d0-t1-03-q3",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "合并",
+   "note": "Ronin 代理人（模型）：改题为\"三份材料各自说…为了什么\"后三块各给不同目的(合规披露/可读性与定价校验/自动化比价), 真多跳",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s6-d1-c1-q1",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "改",
+   "note": "Ronin 代理人（模型）：o16#p9@T1 一块即可作答(有效期3年/届满前60个工作日申请/可延长3年); memo#p1\"有效期已由原令11规定的2年调整为令16规定的3年\"、memo#p2\"…经国家网信部门批准后，评估结果可再延长3年\"独立作答, 与 c2/c3 的处理一致并入 relevant(冗余证据, 非多跳, 仍 paraphrase); 第二条要点带 repair 残片\"…申请。经国家网信部门批准\", 截掉; 干扰保留同快照冲突 o11#p13/p14, memo#p3(不能续期的情形, 内容正确)移出干扰",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s6-d1-c1-q2-new",
+   "source": "rule-merged",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s6-d1-c2-q1",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "改",
+   "note": "Ronin 代理人（模型）：relevant = o16#p7 + o11#p2(题问\"和以前比\", T1 池内令11 原文为必需) + memo#p1/p2/p3(memo#p3 一块写全新旧门槛; memo#p2 给敏感信息1万人线, A 已提名, 绿色漏了); 要点改为新旧两条原句, 去掉孤立的\"自上年1月1日起累计\"(且缺\"当年\"新起点); 建议理由已说\"不按 multi_hop\"但绿色仍是按规则(=multi_hop), 显式改 paraphrase",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s6-d1-c3-q1",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "改",
+   "note": "Ronin 代理人（模型）：relevant(memo#p1 + o13#p2 + o16#p8)接受; memo#p3\"敏感个人信息累计出境未满一万人的，同样落在这一区间，应当订立标准合同或通过认证…\"与 o16#p8 一致, 是正确信息不应作干扰, 移出; 保留 o16#p5(C4)、o16#p7",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s6-d1-c4-q1",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "合并",
+   "note": "Ronin 代理人（模型）：o16#p4(第五条引语+第一项)+o16#p5(第二至四项)+修正后 memo#p1 覆盖主体与条件; category 按规则 trap(C4 两侧都在, o13#p2\"不满10万人\"可被误当作答案)",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s6-d2-g1-q1",
+   "source": "rule-merged",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s6-d2-g2-q1",
+   "source": "consensus+agent-ap-fix",
+   "decision": null,
+   "note": " owner 方案 A：删去旧法施行日子问及对应要点；备忘改为二〇一八年十月二十六日施行。",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "agent_fixes": [
+    {
+     "date": "2026-10-07",
+     "by": "ronin-agent (model)",
+     "human_row_review": false,
+     "kind": "sample",
+     "field": "answer_points",
+     "note": "漏答第三问：题问\"旧法（2018修正）的施行日期为何\"，A、B 都有要点\"旧法（2018修正）的施行日期为二〇〇六年一月一日\"(s6-d2-g2-memo#p1@T1)，ap-merge-v1 的复述过滤把它误删，补回"
+    }
+   ]
+  },
+  {
+   "id": "s6-d2-g3-q1",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "改",
+   "note": "Ronin 代理人（模型）：relevant 与要点接受(memo#p1 给2018→2023变化, call#p1 补\"负有责任的董事应当承担赔偿责任\"这一新责任主体, 真多跳); 但干扰 call#p3\"由公司其他股东按照其出资比例足额缴纳相应出资\"与 memo#p3\"已过缴纳期限仍未缴足就转让的，由转让双方在差额内连带担责\"都是2023法关于未按期出资责任的正确条文, 移出; call#p4(未届期加速到期)作近邻干扰保留",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s6-d3-t1-01-q1",
+   "source": "consensus",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s6-d3-t1-01-q2",
+   "source": "rule-merged",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s6-d3-t1-01-q3",
+   "source": "rule-merged",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s6-d3-t1-02-q1",
+   "source": "rule-merged",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s6-d3-t1-02-q2",
+   "source": "rule-merged",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s6-d3-t1-02-q3",
+   "source": "owner-delegated-agent-audited",
+   "decision": "通过",
+   "note": "Ronin 代理人（模型）：三份 p3 均为\"汇编把两份纪要的结论合成一条待核\"+状态, 冗余证据, lexical",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": true,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s6-d3-t1-03-q1",
+   "source": "rule-merged",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s6-d3-t1-03-q2",
+   "source": "rule-merged",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s6-mh-12-new",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "改",
+   "note": "Ronin 代理人（模型）：第二问\"受让人没交，原股东还要担什么责\"memo#p3\"受让人到期不缴的，原股东负补充责任\"与 call#p5 同样能答, 绿色把 memo#p3 当干扰不对, 移入 relevant(同 B); 全题可由 memo 一份文档(p1+p3)答全, 冗余证据, 显式改 paraphrase",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s6-mh-15-new",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "改",
+   "note": "Ronin 代理人（模型）：题面前半\"顾问备忘说存量公司要调整出资期限\"是前提, 真正问的是\"新法本身给新设公司的缴足期限\"→ p1-colaw-capital#p1@T1\"自公司成立之日起五年内缴足\"; g2-memo#p1/g1-memo#p2 只定位前提, 按原则1 移出 relevant 与要点(g1-memo#p2 含正确的\"新设公司直接适用五年期限\", 不作干扰); 不再多跳",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s7-d0-t0-01-q1",
+   "source": "rule-merged",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s7-d0-t0-01-q2",
+   "source": "rule-merged",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s7-d0-t0-01-q3",
+   "source": "owner-delegated-agent-audited",
+   "decision": "改",
+   "note": "Ronin 代理人（模型）：relevant memo#p3@T0 正确; 要点1\"元陈述表明：“本系统当前无已知安全漏洞\"是题干复述, 删; 要点2 开头带孤立的\"”\", 改为\"该声明发布于一次重大补丁前，且未说明其时效性\"; 保留\"可能误将“无漏洞”视为绝对事实\"",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": true,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s7-d0-t0-01-q4",
+   "source": "consensus",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s7-d0-t0-01-q5",
+   "source": "consensus",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s7-d0-t0-01-q6",
+   "source": "rule-merged+agent-ap-fix",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "agent_fixes": [
+    {
+     "date": "2026-10-07",
+     "by": "ronin-agent (model)",
+     "human_row_review": false,
+     "kind": "sample",
+     "field": "answer_points",
+     "note": "题干复述且截断的要点\"另一条问答称：“系统是否支持多设备登录？”答：“支持\"，删；保留\"同时在线设备数上限为3个\""
+    }
+   ]
+  },
+  {
+   "id": "s7-d0-t1-02-q1",
+   "source": "rule-merged",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s7-d0-t1-02-q2",
+   "source": "consensus",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s7-d0-t1-02-q3",
+   "source": "consensus",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s7-d0-t1-02-q4",
+   "source": "rule-merged",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s7-d0-t1-02-q5",
+   "source": "rule-merged",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s7-d0-t1-02-q6",
+   "source": "rule-merged",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s7-d1-t0-03-q1",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "改",
+   "note": "Ronin 代理人（模型）：改题\"材料给出了哪几种解释\"后, reason#p1@T0\"部署流水线中各组件更新节奏不一致，造成同一时间点下多版本共存的快照冲突\"也是一种使相反状态同时为真的解释, 不能当干扰, 移入 relevant(B 提名); 仍多跳",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s7-d1-t0-03-q2",
+   "source": "rule-merged",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s7-d1-t0-03-q3",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "改",
+   "note": "Ronin 代理人（模型）：relevant 取并集(claim#p1/p3、fact#p2)接受; 要点\"某政策评估报告中多次出现‘广泛共识认为……’…等表述\"是现象描述、\"当多个元陈述叠加出现时，其影响力呈指数级放大\"不是判断方法, 换成 claim#p3 的\"形成闭环论证\"一句; 保留 B 的两条; qtype 显式 paraphrase: \"如何判断\"任一块(claim#p1 来源过窄/fact#p2 选择性引用/claim#p3 闭环论证)单独即可作答, 不应要求三块全命中(原则3)",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s7-d1-t0-03-q4",
+   "source": "rule-merged+agent-ap-fix",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "agent_fixes": [
+    {
+     "date": "2026-10-07",
+     "by": "ronin-agent (model)",
+     "human_row_review": false,
+     "kind": "sample",
+     "field": "answer_points",
+     "note": "题干前提复述\"此外，一份由第三方撰写的综述文章声称…\"，删"
+    }
+   ]
+  },
+  {
+   "id": "s7-d2-t1-04-q1",
+   "source": "rule-merged",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s7-d2-t1-04-q2",
+   "source": "rule-merged+agent-ap-fix",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "agent_fixes": [
+    {
+     "date": "2026-10-07",
+     "by": "ronin-agent (model)",
+     "human_row_review": false,
+     "kind": "sample",
+     "field": "answer_points",
+     "note": "要点只复述了题干前提，没有回答\"怎么判断\"；换成 data#p3@T1 的判断句\"这种基于相同快照的不同解释，反映合成叙述中对数据的多重建构能力，若缺乏上下文比对，极易引发检索误解\""
+    }
+   ]
+  },
+  {
+   "id": "s7-d2-t1-04-q3",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "改",
+   "note": "Ronin 代理人（模型）：relevant claim#p3+memo#p3 接受; 要点\"…即对内容真实性本\"截断, 补全为\"…即对内容真实性本身的宣称与实际内容不符\"; 删\"元陈述层面指出：“本报告不包含任何未经验证的数据\"(例子, 非风险); qtype 显式 paraphrase: claim#p3 与 memo#p3 各自独立回答\"元陈述与实际不符的检索风险\"(B 已指出), 冗余证据非多跳(原则3)",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s7-d2-t1-04-q4",
+   "source": "rule-merged",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s7-d3-t1-05-q1",
+   "source": "rule-merged+agent-ap-fix",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "agent_fixes": [
+    {
+     "date": "2026-10-07",
+     "by": "ronin-agent (model)",
+     "human_row_review": false,
+     "kind": "residue",
+     "field": "answer_points",
+     "note": "两句并成一条要点，按句拆成两条（纯文本）"
+    }
+   ]
+  },
+  {
+   "id": "s7-d3-t1-05-q2",
+   "source": "owner-delegated-agent-resolved",
+   "decision": "用B",
+   "note": "Ronin 代理人（模型）：87%仍视为达标只在 memo#p2@T1; memo#p3 未提87%, 只讲检索危险, 属多余; A 的要点一条截断、一条答非所问",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)",
+    "ronin-agent (model, owner-delegated)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category (rule prefill accepted)"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+   "reviewer": {
+    "kind": "model",
+    "name": "Ronin 代理人",
+    "delegated_by": "owner",
+    "human_row_review": false,
+    "date": "2026-10-07",
+    "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+    "notes": "ronin-review/REVIEW-NOTES.md"
+   }
+  },
+  {
+   "id": "s7-d3-t1-05-q3",
+   "source": "rule-merged",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false
+  },
+  {
+   "id": "s7-d3-t1-05-q4",
+   "source": "consensus+agent-ap-fix",
+   "decision": null,
+   "note": "",
+   "annotators": [
+    "model-A (v2 draft)",
+    "model-B (blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "category",
+    "answer_points",
+    "distractors"
+   ],
+   "sample_seed": 20261007,
+   "in_audit_sample": false,
+   "agent_fixes": [
+    {
+     "date": "2026-10-07",
+     "by": "ronin-agent (model)",
+     "human_row_review": false,
+     "kind": "residue",
+     "field": "answer_points",
+     "note": "repair() 残片：要点前后分别与第1、3条重复，只保留中间新增的事实句"
+    }
+   ]
+  },
+  {
+   "id": "r4m-s5-d3-t1-05-q4",
+   "source": "consensus",
+   "decision": null,
+   "note": "问现行占比是否仍超三成。2023官方更新28%在 relevant；2021白皮书34%在 distractors，答34%就会答成还占三成以上。",
+   "template_flags": [],
+   "group": "part1-existing-corpus",
+   "annotators": [
+    "model-A (round4 draft)",
+    "model-B (Ronin 代理人 blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "answer_points",
+    "distractors",
+    "category"
+   ],
+   "qtype_reason": "else r8=0.000 cov=0.286 kw=['官方', '统计', '地区', '制造业', '经济总量', '三成', '以上']",
+   "trap_kind": "K2"
+  },
+  {
+   "id": "r4m-s5-d3-t1-05-q5",
+   "source": "consensus",
+   "decision": null,
+   "note": "最新调查是67%。2020年的39%是同快照旧值，放 distractors。",
+   "template_flags": [],
+   "group": "part1-existing-corpus",
+   "annotators": [
+    "model-A (round4 draft)",
+    "model-B (Ronin 代理人 blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "answer_points",
+    "distractors",
+    "category"
+   ],
+   "qtype_reason": "else r8=0.000 cov=0.286 kw=['员工', '工作', '环境', '满意', '一轮', '调查', '比例']",
+   "trap_kind": "K2"
+  },
+  {
+   "id": "r4m-s5-d3-t1-05-q6",
+   "source": "consensus",
+   "decision": null,
+   "note": "独立调查测得51%。2022年转述的43%在 distractors。与已有 s5-d3-t1-05-q1（问变化、两侧都相关）题意相近，但是另一问法，仍是真陷阱。交给 owner 决定要不要当近重复删。",
+   "template_flags": [
+    "near_dup"
+   ],
+   "group": "part1-existing-corpus",
+   "annotators": [
+    "model-A (round4 draft)",
+    "model-B (Ronin 代理人 blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "answer_points",
+    "distractors",
+    "category"
+   ],
+   "qtype_reason": "else r8=0.000 cov=0.222 kw=['城市居民', '每天', '公交', '出行', '最近', '那次', '独立', '调查', '出来']",
+   "trap_kind": "K2"
+  },
+  {
+   "id": "r4m-s5-d0-t1-02-q5",
+   "source": "consensus",
+   "decision": null,
+   "note": "问独立研究实测。转述值12公里/小时、4.5小时在同一快照的另一块，是 distractor。定位「被媒体转述」的那块不进 relevant。",
+   "template_flags": [],
+   "group": "part1-existing-corpus",
+   "annotators": [
+    "model-A (round4 draft)",
+    "model-B (Ronin 代理人 blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "answer_points",
+    "distractors",
+    "category"
+   ],
+   "qtype_reason": "else r8=0.000 cov=0.556 kw=['媒体', '反复', '转述', '高峰', '车速', '拥堵', '独立', '研究', '测到']",
+   "trap_kind": "K2"
+  },
+  {
+   "id": "r4m-s3-d3-01-q5",
+   "source": "consensus",
+   "decision": null,
+   "note": "问两侧各写多少。129元与99元不能同时是竞品B这一期月费，两侧都相关。竞品A的119元只是别的对象，作同快照干扰。",
+   "template_flags": [],
+   "group": "part1-existing-corpus",
+   "annotators": [
+    "model-A (round4 draft)",
+    "model-B (Ronin 代理人 blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "answer_points",
+    "distractors",
+    "category"
+   ],
+   "qtype_reason": "structure r8=0.000 cov=0.286",
+   "trap_kind": "K2"
+  },
+  {
+   "id": "r4m-s3-d0-02-q7",
+   "source": "consensus",
+   "decision": null,
+   "note": "问两份材料怎么说。一份写正式版下季度才卖，一份写149元方案迁移率已达72%。同一对象是否已开卖，不能同时成立。",
+   "template_flags": [],
+   "group": "part1-existing-corpus",
+   "annotators": [
+    "model-A (round4 draft)",
+    "model-B (Ronin 代理人 blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "answer_points",
+    "distractors",
+    "category"
+   ],
+   "qtype_reason": "structure r8=0.000 cov=0.429",
+   "trap_kind": "K2"
+  },
+  {
+   "id": "r4n-s2-d0-t1-91-qa",
+   "source": "consensus",
+   "decision": null,
+   "note": "合同把返点定为5%，访谈说维持8%。问最终按多少，8%在 distractors。权威块写了「按合同执行」，是模板口吻，问句本身没有「更正/为准」。",
+   "template_flags": [
+    "cue_corpus"
+   ],
+   "group": "part2-templated",
+   "annotators": [
+    "model-A (round4 draft)",
+    "model-B (Ronin 代理人 blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "answer_points",
+    "distractors",
+    "category"
+   ],
+   "qtype_reason": "else r8=0.000 cov=0.200 kw=['越南', '那边', '经销商', '返点', '最终']",
+   "trap_kind": "K2"
+  },
+  {
+   "id": "r4n-s2-d0-t1-91-qb",
+   "source": "consensus",
+   "decision": null,
+   "note": "问访谈口径和正式合同的出入，两侧都要。8%与5%分属两篇。",
+   "template_flags": [
+    "names_both_sources"
+   ],
+   "group": "part2-templated",
+   "annotators": [
+    "model-A (round4 draft)",
+    "model-B (Ronin 代理人 blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "answer_points",
+    "distractors",
+    "category"
+   ],
+   "qtype_reason": "structure r8=0.000 cov=0.714",
+   "trap_kind": "K2"
+  },
+  {
+   "id": "r4n-s3-d1-t1-91-qa",
+   "source": "consensus",
+   "decision": null,
+   "note": "现行年费4200。渠道表3600在 distractors。权威块写「旧价已不适用」。",
+   "template_flags": [
+    "cue_corpus"
+   ],
+   "group": "part2-templated",
+   "annotators": [
+    "model-A (round4 draft)",
+    "model-B (Ronin 代理人 blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "answer_points",
+    "distractors",
+    "category"
+   ],
+   "qtype_reason": "else r8=0.000 cov=0.600 kw=['E', '一年', '竞品', '标准版', '要花']",
+   "trap_kind": "K2"
+  },
+  {
+   "id": "r4n-s3-d1-t1-91-qb",
+   "source": "consensus",
+   "decision": null,
+   "note": "问句含「哪份更可信」，把「挑权威来源」直接说破，词法臂不一定因此命中数字，但这是模板线索。两侧价格仍都要召回。",
+   "template_flags": [
+    "cue_query"
+   ],
+   "group": "part2-templated",
+   "annotators": [
+    "model-A (round4 draft)",
+    "model-B (Ronin 代理人 blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "answer_points",
+    "distractors",
+    "category"
+   ],
+   "qtype_reason": "structure r8=0.000 cov=0.429",
+   "trap_kind": "K2"
+  },
+  {
+   "id": "r4n-s3-d1-t1-91-qc",
+   "source": "consensus",
+   "decision": null,
+   "note": "席位上限25。比价表写「暂无新数据」，是元陈述干扰。问句问的是个数，不是状态。",
+   "template_flags": [],
+   "group": "part2-templated",
+   "annotators": [
+    "model-A (round4 draft)",
+    "model-B (Ronin 代理人 blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "answer_points",
+    "distractors",
+    "category"
+   ],
+   "qtype_reason": "else r8=0.000 cov=0.571 kw=['E', '一个', '竞品', '标准版', '账号', '最多能', '座位']",
+   "trap_kind": "K3"
+  },
+  {
+   "id": "r4n-s4-d2-t1-91-qa",
+   "source": "consensus",
+   "decision": null,
+   "note": "财务认定是7.4元，模型6.8元在 distractors。问句「财务那边」和权威块「财务复核」「以复核数为准」词面贴得很紧。",
+   "template_flags": [
+    "cue_query",
+    "cue_corpus"
+   ],
+   "group": "part2-templated",
+   "annotators": [
+    "model-A (round4 draft)",
+    "model-B (Ronin 代理人 blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "answer_points",
+    "distractors",
+    "category"
+   ],
+   "qtype_reason": "else r8=0.000 cov=0.375 kw=['每单', '履约', '到底', '要花', '成本', '财务', '那边', '认定']",
+   "trap_kind": "K2"
+  },
+  {
+   "id": "r4n-s4-d2-t1-91-qb",
+   "source": "consensus",
+   "decision": null,
+   "note": "差值和原因要两边的数：6.8与7.4，外加漏计包材。差值本身不是原文子串，要点只收原文。",
+   "template_flags": [],
+   "group": "part2-templated",
+   "annotators": [
+    "model-A (round4 draft)",
+    "model-B (Ronin 代理人 blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "answer_points",
+    "distractors",
+    "category"
+   ],
+   "qtype_reason": "structure r8=0.000 cov=0.750",
+   "trap_kind": "K2"
+  },
+  {
+   "id": "r4n-s4-d2-t1-91-qc",
+   "source": "consensus",
+   "decision": null,
+   "note": "复核退货率4.1%。模型块写尚未复测、待发布。问句「复核时」指向复核稿。",
+   "template_flags": [
+    "cue_query"
+   ],
+   "group": "part2-templated",
+   "annotators": [
+    "model-A (round4 draft)",
+    "model-B (Ronin 代理人 blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "answer_points",
+    "distractors",
+    "category"
+   ],
+   "qtype_reason": "else r8=0.000 cov=0.667 kw=['复核', '时用', '退货']",
+   "trap_kind": "K3"
+  },
+  {
+   "id": "r4n-s6-d3-t1-91-qa",
+   "source": "consensus",
+   "decision": null,
+   "note": "现行启用日是6月1日。变更日志的5月1日在 distractors。权威块写「此前公布的日期作废」。",
+   "template_flags": [
+    "cue_corpus"
+   ],
+   "group": "part2-templated",
+   "annotators": [
+    "model-A (round4 draft)",
+    "model-B (Ronin 代理人 blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "answer_points",
+    "distractors",
+    "category"
+   ],
+   "qtype_reason": "else r8=0.000 cov=0.167 kw=['住户', '收入', '统计', '口径', '到底', '开始']",
+   "trap_kind": "K2"
+  },
+  {
+   "id": "r4n-s6-d3-t1-91-qb",
+   "source": "consensus",
+   "decision": null,
+   "note": "日志和通知各写一天，两侧都相关。",
+   "template_flags": [
+    "names_both_sources"
+   ],
+   "group": "part2-templated",
+   "annotators": [
+    "model-A (round4 draft)",
+    "model-B (Ronin 代理人 blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "answer_points",
+    "distractors",
+    "category"
+   ],
+   "qtype_reason": "coverage=0.889>=0.8 kw=['收入', '口径', '启用', '日期', '变更', '日志', '执行', '通知', '各写']",
+   "trap_kind": "K2"
+  },
+  {
+   "id": "r4n-s6-d3-t1-91-qc",
+   "source": "consensus",
+   "decision": null,
+   "note": "样本户数1.2万。日志写不再列入跟踪，是元陈述干扰。问句问户数，不问状态。",
+   "template_flags": [],
+   "group": "part2-templated",
+   "annotators": [
+    "model-A (round4 draft)",
+    "model-B (Ronin 代理人 blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "answer_points",
+    "distractors",
+    "category"
+   ],
+   "qtype_reason": "else r8=0.000 cov=0.000 kw=['一期', '调查', '一共']",
+   "trap_kind": "K3"
+  },
+  {
+   "id": "r4n-s1-d1-t1-91-qa",
+   "source": "consensus",
+   "decision": null,
+   "note": "简报：已获批、不必再借通道。备忘：仍在审理、要借通道。备忘在 distractors。",
+   "template_flags": [],
+   "group": "part2-templated",
+   "annotators": [
+    "model-A (round4 draft)",
+    "model-B (Ronin 代理人 blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "answer_points",
+    "distractors",
+    "category"
+   ],
+   "qtype_reason": "else r8=0.000 cov=0.571 kw=['我们', '印尼', '电子', '支付', '牌照', '别人', '通道']",
+   "trap_kind": "K2"
+  },
+  {
+   "id": "r4n-s1-d1-t1-91-qb",
+   "source": "consensus",
+   "decision": null,
+   "note": "问句直接说「有什么冲突」。两侧说法不能同时成立，都要召回。",
+   "template_flags": [
+    "cue_query"
+   ],
+   "group": "part2-templated",
+   "annotators": [
+    "model-A (round4 draft)",
+    "model-B (Ronin 代理人 blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "answer_points",
+    "distractors",
+    "category"
+   ],
+   "qtype_reason": "structure r8=0.000 cov=0.778",
+   "trap_kind": "K2"
+  },
+  {
+   "id": "r4n-s1-d1-t1-91-qc",
+   "source": "consensus",
+   "decision": null,
+   "note": "本季度平均2.6天。备忘写无新数据，是元陈述干扰。问句的「平均」和语料一致。",
+   "template_flags": [],
+   "group": "part2-templated",
+   "annotators": [
+    "model-A (round4 draft)",
+    "model-B (Ronin 代理人 blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "answer_points",
+    "distractors",
+    "category"
+   ],
+   "qtype_reason": "else r8=0.000 cov=0.750 kw=['季度', '用户', '退款', '平均']",
+   "trap_kind": "K3"
+  },
+  {
+   "id": "r4n-s5-d2-t1-91-qa",
+   "source": "consensus",
+   "decision": null,
+   "note": "年报53万。汇编48万在 distractors。问句点名「年报」，和年报文档词面重合。",
+   "template_flags": [
+    "cue_query"
+   ],
+   "group": "part2-templated",
+   "annotators": [
+    "model-A (round4 draft)",
+    "model-B (Ronin 代理人 blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "answer_points",
+    "distractors",
+    "category"
+   ],
+   "qtype_reason": "else r8=0.000 cov=0.600 kw=['本地', '生活', '平台', '年报', '商户']",
+   "trap_kind": "K2"
+  },
+  {
+   "id": "r4n-s5-d2-t1-91-qb",
+   "source": "consensus",
+   "decision": null,
+   "note": "两边的规模，以及汇编数来自两年前、未注时点。48万与53万不能同时当成年末在营规模。",
+   "template_flags": [
+    "names_both_sources"
+   ],
+   "group": "part2-templated",
+   "annotators": [
+    "model-A (round4 draft)",
+    "model-B (Ronin 代理人 blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "answer_points",
+    "distractors",
+    "category"
+   ],
+   "qtype_reason": "structure r8=0.000 cov=0.556",
+   "trap_kind": "K2"
+  },
+  {
+   "id": "r4n-s5-d2-t1-91-qc",
+   "source": "consensus",
+   "decision": null,
+   "note": "留存率71%。汇编写未入账、只说保持稳定。",
+   "template_flags": [],
+   "group": "part2-templated",
+   "annotators": [
+    "model-A (round4 draft)",
+    "model-B (Ronin 代理人 blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "answer_points",
+    "distractors",
+    "category"
+   ],
+   "qtype_reason": "else r8=0.000 cov=0.333 kw=['一年', '平台', '商户', '下来', '留存', '比例']",
+   "trap_kind": "K3"
+  },
+  {
+   "id": "r4n-s2-d2-t0-91-qa",
+   "source": "consensus",
+   "decision": null,
+   "note": "书面交期14天，电话10天在 distractors。权威块原文就是「更正为14天，并说明以邮件为准」，正是被点名的模板线索。问句用了「确认」，标题里有确认，但标题不进索引。",
+   "template_flags": [
+    "cue_corpus"
+   ],
+   "group": "part2-templated",
+   "annotators": [
+    "model-A (round4 draft)",
+    "model-B (Ronin 代理人 blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "answer_points",
+    "distractors",
+    "category"
+   ],
+   "qtype_reason": "else r8=0.000 cov=0.400 kw=['这批', '包装材料', '最后', '确认', '交货']",
+   "trap_kind": "K2"
+  },
+  {
+   "id": "r4n-s2-d2-t0-91-qb",
+   "source": "consensus",
+   "decision": null,
+   "note": "电话10天、邮件14天，两侧都相关。邮件块含「更正」「以邮件为准」。",
+   "template_flags": [
+    "cue_corpus",
+    "names_both_sources"
+   ],
+   "group": "part2-templated",
+   "annotators": [
+    "model-A (round4 draft)",
+    "model-B (Ronin 代理人 blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "answer_points",
+    "distractors",
+    "category"
+   ],
+   "qtype_reason": "coverage=0.800>=0.8 kw=['包装材料', '交期', '电话', '邮件', '确认']",
+   "trap_kind": "K2"
+  },
+  {
+   "id": "r4n-s2-d2-t0-91-qc",
+   "source": "consensus",
+   "decision": null,
+   "note": "抽检不良率0.9%。电话纪要写未复测。问句说次品，语料说不良率，问的是比例，能对上。",
+   "template_flags": [],
+   "group": "part2-templated",
+   "annotators": [
+    "model-A (round4 draft)",
+    "model-B (Ronin 代理人 blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "answer_points",
+    "distractors",
+    "category"
+   ],
+   "qtype_reason": "else r8=0.000 cov=0.250 kw=['一批', '抽检', '次品', '比例']",
+   "trap_kind": "K3"
+  },
+  {
+   "id": "r4n-s3-d0-t0-91-qa",
+   "source": "consensus",
+   "decision": null,
+   "note": "现在是52美元。传单45美元是上季度活动价，在 distractors。",
+   "template_flags": [
+    "cue_corpus"
+   ],
+   "group": "part2-templated",
+   "annotators": [
+    "model-A (round4 draft)",
+    "model-B (Ronin 代理人 blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "answer_points",
+    "distractors",
+    "category"
+   ],
+   "qtype_reason": "else r8=0.000 cov=0.143 kw=['H', '竞品', '客服', '坐席', '每个', '席位', '每月']",
+   "trap_kind": "K2"
+  },
+  {
+   "id": "r4n-s3-d0-t0-91-qb",
+   "source": "consensus",
+   "decision": null,
+   "note": "两边标价和差额原因（活动价）都要。差7美元不是原文子串。",
+   "template_flags": [
+    "names_both_sources"
+   ],
+   "group": "part2-templated",
+   "annotators": [
+    "model-A (round4 draft)",
+    "model-B (Ronin 代理人 blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "answer_points",
+    "distractors",
+    "category"
+   ],
+   "qtype_reason": "structure r8=0.000 cov=0.667",
+   "trap_kind": "K2"
+  },
+  {
+   "id": "r4n-s3-d0-t0-91-qc",
+   "source": "consensus",
+   "decision": null,
+   "note": "试用14天。传单写政策待发布。问句问时长，不问发布状态。",
+   "template_flags": [],
+   "group": "part2-templated",
+   "annotators": [
+    "model-A (round4 draft)",
+    "model-B (Ronin 代理人 blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "answer_points",
+    "distractors",
+    "category"
+   ],
+   "qtype_reason": "else r8=0.000 cov=0.500 kw=['H', '团队', '注册', '竞品', '免费', '多久']",
+   "trap_kind": "K3"
+  },
+  {
+   "id": "r4n-s4-d0-t1-91-qa",
+   "source": "consensus",
+   "decision": null,
+   "note": "全量复评86%。汇报92%在 distractors。问句「全量数据复评」和复评块几乎同词。",
+   "template_flags": [
+    "cue_query"
+   ],
+   "group": "part2-templated",
+   "annotators": [
+    "model-A (round4 draft)",
+    "model-B (Ronin 代理人 blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "answer_points",
+    "distractors",
+    "category"
+   ],
+   "qtype_reason": "coverage=0.857>=0.8 kw=['工单', '自动', '分派', '全量', '数据', '复评', '准确率']",
+   "trap_kind": "K2"
+  },
+  {
+   "id": "r4n-s4-d0-t1-91-qb",
+   "source": "consensus+qtype-override",
+   "decision": "冗余证据，非多跳",
+   "note": "复评块单独写了86%、汇报中的92%、以及小样本，已经能答完全题。冗余证据，不算 multi_hop。问句里的「小样本」和复评块原文相同，词法占便宜。",
+   "template_flags": [
+    "cue_query"
+   ],
+   "group": "part2-templated",
+   "annotators": [
+    "model-A (round4 draft)",
+    "model-B (Ronin 代理人 blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "answer_points",
+    "distractors",
+    "category"
+   ],
+   "qtype_reason": "冗余证据，非多跳 r8=0.000 cov=0.750",
+   "trap_kind": "K2"
+  },
+  {
+   "id": "r4n-s4-d0-t1-91-qc",
+   "source": "consensus",
+   "decision": null,
+   "note": "平均处理时长18分钟。汇报写本期未复测。",
+   "template_flags": [],
+   "group": "part2-templated",
+   "annotators": [
+    "model-A (round4 draft)",
+    "model-B (Ronin 代理人 blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "answer_points",
+    "distractors",
+    "category"
+   ],
+   "qtype_reason": "else r8=0.000 cov=0.429 kw=['自动', '分派', '以后', '一张', '工单', '平均', '多久']",
+   "trap_kind": "K3"
+  },
+  {
+   "id": "r4n-s6-d1-t1-91-qa",
+   "source": "consensus",
+   "decision": null,
+   "note": "最终下线是11月30日。发布说明的9月30日在 distractors。",
+   "template_flags": [],
+   "group": "part2-templated",
+   "annotators": [
+    "model-A (round4 draft)",
+    "model-B (Ronin 代理人 blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "answer_points",
+    "distractors",
+    "category"
+   ],
+   "qtype_reason": "else r8=0.000 cov=0.500 kw=['v1', '接口', '最终', '时候']",
+   "trap_kind": "K2"
+  },
+  {
+   "id": "r4n-s6-d1-t1-91-qb",
+   "source": "consensus",
+   "decision": null,
+   "note": "两份公告各写一个日期，都相关。",
+   "template_flags": [
+    "names_both_sources"
+   ],
+   "group": "part2-templated",
+   "annotators": [
+    "model-A (round4 draft)",
+    "model-B (Ronin 代理人 blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "answer_points",
+    "distractors",
+    "category"
+   ],
+   "qtype_reason": "coverage=1.000>=0.8 kw=['v1', '接口', '下线', '时间', '发布', '补丁', '公告']",
+   "trap_kind": "K2"
+  },
+  {
+   "id": "r4n-s6-d1-t1-91-qc",
+   "source": "consensus",
+   "decision": null,
+   "note": "上周成功率99.2%。发布说明写不再列入跟踪。",
+   "template_flags": [],
+   "group": "part2-templated",
+   "annotators": [
+    "model-A (round4 draft)",
+    "model-B (Ronin 代理人 blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "answer_points",
+    "distractors",
+    "category"
+   ],
+   "qtype_reason": "else r8=0.000 cov=0.571 kw=['v2', '一周', '接口', '最近', '调用', '成功', '比例']",
+   "trap_kind": "K3"
+  },
+  {
+   "id": "r4n-s1-d3-t0-91-qa",
+   "source": "consensus",
+   "decision": null,
+   "note": "修订后5.4%。初步数6.1%在 distractors。问句「修订后」和快报用词相同。",
+   "template_flags": [
+    "cue_query"
+   ],
+   "group": "part2-templated",
+   "annotators": [
+    "model-A (round4 draft)",
+    "model-B (Ronin 代理人 blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "answer_points",
+    "distractors",
+    "category"
+   ],
+   "qtype_reason": "else r8=0.091 cov=0.667 kw=['本季度', '出口', '同比', '增长', '修订', '数是']",
+   "trap_kind": "K2"
+  },
+  {
+   "id": "r4n-s1-d3-t0-91-qb",
+   "source": "consensus",
+   "decision": null,
+   "note": "两边的增速。问句还问哪个是修订后的，快报块自己写了修订。",
+   "template_flags": [
+    "cue_query",
+    "names_both_sources"
+   ],
+   "group": "part2-templated",
+   "annotators": [
+    "model-A (round4 draft)",
+    "model-B (Ronin 代理人 blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "answer_points",
+    "distractors",
+    "category"
+   ],
+   "qtype_reason": "coverage=0.875>=0.8 kw=['出口', '增速', '研判', '备忘', '统计', '快报', '各用', '修订']",
+   "trap_kind": "K2"
+  },
+  {
+   "id": "r4n-s1-d3-t0-91-qc",
+   "source": "consensus",
+   "decision": null,
+   "note": "吞吐同比增长3.8%。备忘写待发布。问句和快报块词面接近，合并时用 r8 决定会不会被收成 lexical。",
+   "template_flags": [],
+   "group": "part2-templated",
+   "annotators": [
+    "model-A (round4 draft)",
+    "model-B (Ronin 代理人 blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "answer_points",
+    "distractors",
+    "category"
+   ],
+   "qtype_reason": "coverage=0.833>=0.8 kw=['主要', '港口', '货物', '吞吐', '去年同期', '增长']",
+   "trap_kind": "K3"
+  },
+  {
+   "id": "r4n-s5-d1-t0-91-qa",
+   "source": "consensus",
+   "decision": null,
+   "note": "原始调研54%。转述「超过六成」在 distractors。问句点名原始调研。",
+   "template_flags": [
+    "cue_query"
+   ],
+   "group": "part2-templated",
+   "annotators": [
+    "model-A (round4 draft)",
+    "model-B (Ronin 代理人 blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "answer_points",
+    "distractors",
+    "category"
+   ],
+   "qtype_reason": "else r8=0.000 cov=0.500 kw=['原始', '调研', '本地', '消费者', '网购', '渗透率']",
+   "trap_kind": "K2"
+  },
+  {
+   "id": "r4n-s5-d1-t0-91-qb",
+   "source": "consensus",
+   "decision": null,
+   "note": "转述六成和实测54%不能同时成立，两侧都相关。",
+   "template_flags": [
+    "names_both_sources"
+   ],
+   "group": "part2-templated",
+   "annotators": [
+    "model-A (round4 draft)",
+    "model-B (Ronin 代理人 blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "answer_points",
+    "distractors",
+    "category"
+   ],
+   "qtype_reason": "structure r8=0.000 cov=0.571",
+   "trap_kind": "K2"
+  },
+  {
+   "id": "r4n-s5-d1-t0-91-qc",
+   "source": "consensus",
+   "decision": null,
+   "note": "平均37天。转述写未复测。问句「平均」「再次下单」和「平均复购周期」对得上。",
+   "template_flags": [],
+   "group": "part2-templated",
+   "annotators": [
+    "model-A (round4 draft)",
+    "model-B (Ronin 代理人 blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "answer_points",
+    "distractors",
+    "category"
+   ],
+   "qtype_reason": "else r8=0.000 cov=0.250 kw=['消费者', '平均', '再次', '下单']",
+   "trap_kind": "K3"
+  },
+  {
+   "id": "r4n-s2-d3-t1-91-qa",
+   "source": "consensus",
+   "decision": null,
+   "note": "获批是8个城市。CEO说的12个在 distractors。问句「获批」对纪要，不直接抄数字。",
+   "template_flags": [],
+   "group": "part2-templated",
+   "annotators": [
+    "model-A (round4 draft)",
+    "model-B (Ronin 代理人 blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "answer_points",
+    "distractors",
+    "category"
+   ],
+   "qtype_reason": "else r8=0.000 cov=0.400 kw=['区域', '试点', '今年', '获批', '城市']",
+   "trap_kind": "K2"
+  },
+  {
+   "id": "r4n-s2-d3-t1-91-qb",
+   "source": "consensus",
+   "decision": null,
+   "note": "访谈12、纪要8，两侧都相关。",
+   "template_flags": [
+    "names_both_sources"
+   ],
+   "group": "part2-templated",
+   "annotators": [
+    "model-A (round4 draft)",
+    "model-B (Ronin 代理人 blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "answer_points",
+    "distractors",
+    "category"
+   ],
+   "qtype_reason": "coverage=0.857>=0.8 kw=['CEO', '试点', '城市', '数量', '访谈', '董事会', '纪要']",
+   "trap_kind": "K2"
+  },
+  {
+   "id": "r4n-s2-d3-t1-91-qc",
+   "source": "consensus",
+   "decision": null,
+   "note": "每城上限300万。访谈写补贴执行情况无新数据。",
+   "template_flags": [],
+   "group": "part2-templated",
+   "annotators": [
+    "model-A (round4 draft)",
+    "model-B (Ronin 代理人 blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "answer_points",
+    "distractors",
+    "category"
+   ],
+   "qtype_reason": "else r8=0.000 cov=0.400 kw=['每个', '试点', '城市', '最多能', '补贴']",
+   "trap_kind": "K3"
+  },
+  {
+   "id": "r4n-s3-d2-t1-91-qa",
+   "source": "consensus",
+   "decision": null,
+   "note": "按合同是每月800元。宣传册免费附送在 distractors。问句「按合同」把来源点明了，陷阱变容易。",
+   "template_flags": [
+    "cue_query"
+   ],
+   "group": "part2-templated",
+   "annotators": [
+    "model-A (round4 draft)",
+    "model-B (Ronin 代理人 blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "answer_points",
+    "distractors",
+    "category"
+   ],
+   "qtype_reason": "else r8=0.000 cov=0.429 kw=['G', '竞品', '合规', '模块', '合同', '到底', '收钱']",
+   "trap_kind": "K2"
+  },
+  {
+   "id": "r4n-s3-d2-t1-91-qb",
+   "source": "consensus",
+   "decision": null,
+   "note": "宣传册免费、合同800元，两侧都相关。合同块提到免费附送只适用于首年，但没有写出宣传册的完整说法，仍要两块。",
+   "template_flags": [
+    "names_both_sources"
+   ],
+   "group": "part2-templated",
+   "annotators": [
+    "model-A (round4 draft)",
+    "model-B (Ronin 代理人 blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "answer_points",
+    "distractors",
+    "category"
+   ],
+   "qtype_reason": "coverage=0.875>=0.8 kw=['G', '竞品', '合规', '模块', '收费', '宣传册', '合同', '报价单']",
+   "trap_kind": "K2"
+  },
+  {
+   "id": "r4n-s3-d2-t1-91-qc",
+   "source": "consensus",
+   "decision": null,
+   "note": "承诺可用性99.95%。宣传册写达成情况无新数据。元陈述说的是达成，问的是承诺，对象略偏，但拿「无新数据」当答案会答错。问句「在合同里」点了来源。",
+   "template_flags": [
+    "cue_query"
+   ],
+   "group": "part2-templated",
+   "annotators": [
+    "model-A (round4 draft)",
+    "model-B (Ronin 代理人 blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "answer_points",
+    "distractors",
+    "category"
+   ],
+   "qtype_reason": "else r8=0.000 cov=0.667 kw=['G', '竞品', '合同', '承诺', '服务', '可用性']",
+   "trap_kind": "K3"
+  },
+  {
+   "id": "r4n-s4-d3-t0-91-qa",
+   "source": "consensus",
+   "decision": null,
+   "note": "现在该用0.76。测算表0.82在 distractors。权威块写「旧系数不再使用」。",
+   "template_flags": [
+    "cue_corpus"
+   ],
+   "group": "part2-templated",
+   "annotators": [
+    "model-A (round4 draft)",
+    "model-B (Ronin 代理人 blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "answer_points",
+    "distractors",
+    "category"
+   ],
+   "qtype_reason": "else r8=0.000 cov=0.400 kw=['电力', '折算', '标准煤', '该用', '系数']",
+   "trap_kind": "K2"
+  },
+  {
+   "id": "r4n-s4-d3-t0-91-qb",
+   "source": "consensus",
+   "decision": null,
+   "note": "测算表0.82，方法说明0.76，两侧都相关。",
+   "template_flags": [
+    "names_both_sources"
+   ],
+   "group": "part2-templated",
+   "annotators": [
+    "model-A (round4 draft)",
+    "model-B (Ronin 代理人 blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "answer_points",
+    "distractors",
+    "category"
+   ],
+   "qtype_reason": "structure r8=0.000 cov=0.667",
+   "trap_kind": "K2"
+  },
+  {
+   "id": "r4n-s4-d3-t0-91-qc",
+   "source": "consensus",
+   "decision": null,
+   "note": "实际利用率78%。测算表写未入账，并暂按八成估计。八成不是实测。",
+   "template_flags": [],
+   "group": "part2-templated",
+   "annotators": [
+    "model-A (round4 draft)",
+    "model-B (Ronin 代理人 blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "answer_points",
+    "distractors",
+    "category"
+   ],
+   "qtype_reason": "else r8=0.000 cov=0.500 kw=['今年', '产线', '利用', '产能']",
+   "trap_kind": "K3"
+  },
+  {
+   "id": "r4n-s6-d0-t1-91-qa",
+   "source": "consensus",
+   "decision": null,
+   "note": "现行门槛500美元。手册300美元在 distractors。变更单写旧门槛作废。",
+   "template_flags": [
+    "cue_corpus"
+   ],
+   "group": "part2-templated",
+   "annotators": [
+    "model-A (round4 draft)",
+    "model-B (Ronin 代理人 blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "answer_points",
+    "distractors",
+    "category"
+   ],
+   "qtype_reason": "else r8=0.000 cov=0.500 kw=['退款', '以上', '主管', '点头']",
+   "trap_kind": "K2"
+  },
+  {
+   "id": "r4n-s6-d0-t1-91-qb",
+   "source": "consensus",
+   "decision": null,
+   "note": "手册300、变更单500，两侧都相关。变更单含「作废」。",
+   "template_flags": [
+    "names_both_sources",
+    "cue_corpus"
+   ],
+   "group": "part2-templated",
+   "annotators": [
+    "model-A (round4 draft)",
+    "model-B (Ronin 代理人 blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "answer_points",
+    "distractors",
+    "category"
+   ],
+   "qtype_reason": "coverage=0.857>=0.8 kw=['退款', '主管', '审批', '金额', '手册', '变更', '单各写']",
+   "trap_kind": "K2"
+  },
+  {
+   "id": "r4n-s6-d0-t1-91-qc",
+   "source": "consensus",
+   "decision": null,
+   "note": "上月首次解决率74%。手册写本月未复测、附录是去年的数。",
+   "template_flags": [],
+   "group": "part2-templated",
+   "annotators": [
+    "model-A (round4 draft)",
+    "model-B (Ronin 代理人 blind)"
+   ],
+   "from_rule": [
+    "qtype",
+    "answer_points",
+    "distractors",
+    "category"
+   ],
+   "qtype_reason": "else r8=0.000 cov=0.200 kw=['客服', '上个月', '一次', '解决', '比例']",
+   "trap_kind": "K3"
+  },
+  {
+   "id": "r4n-s6-d2-t1-91-qa",
+   "source": "single-model-supplement",
+   "decision": null,
+   "note": "问计入夜班后的通过比例。审计块是百分之九十一，通报的百分之九十六在 distractors。问句和权威块都没有「更正/为准」。",
+   "template_flags": [],
+   "group": "supplement-batch",
+   "annotators": [
+    "Ronin 代理人（模型，补批次，无独立 A 稿）"
+   ],
+   "from_rule": [
+    "qtype",
+    "category"
+   ],
+   "qtype_reason": "else r8=0.000 cov=0.714 kw=['夜班', '算进去', '的话', '仓库', '安检', '过关', '比例']",
+   "trap_kind": "K2"
+  },
+  {
+   "id": "r4n-s6-d2-t1-91-qb",
+   "source": "single-model-supplement",
+   "decision": null,
+   "note": "两侧都要。用白班/夜班区分两份材料，不用「哪份更可信」或「以…为准」。",
+   "template_flags": [
+    "names_both_sources"
+   ],
+   "group": "supplement-batch",
+   "annotators": [
+    "Ronin 代理人（模型，补批次，无独立 A 稿）"
+   ],
+   "from_rule": [
+    "qtype",
+    "category"
+   ],
+   "qtype_reason": "structure r8=0.000 cov=0.571",
+   "trap_kind": "K2"
+  },
+  {
+   "id": "r4n-s6-d2-t1-91-qc",
+   "source": "single-model-supplement",
+   "decision": null,
+   "note": "问实质件数。通报只说不再列入跟踪，不能拿来当件数。问句没有问状态本身。",
+   "template_flags": [],
+   "group": "supplement-batch",
+   "annotators": [
+    "Ronin 代理人（模型，补批次，无独立 A 稿）"
+   ],
+   "from_rule": [
+    "qtype",
+    "category"
+   ],
+   "qtype_reason": "else r8=0.000 cov=0.000 kw=['仓库', '工伤']",
+   "trap_kind": "K3"
+  }
+ ]
+}

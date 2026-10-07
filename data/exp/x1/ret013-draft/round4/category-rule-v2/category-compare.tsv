@@ -1,0 +1,212 @@
+id	score_role	old	new	kind	changed	reason
+p1-lx-01-new	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+p1-lx-02-new	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+p1-lx-03-new	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+p1-lx-04-new	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+p1-lx-05-new	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+p1-lx-06-new	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+p1-lx-07-new	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+p1-lx-08-new	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+p1-lx-09-new	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+p1-lx-10-new	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+p1-lx-11-new	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+p1-lx-12-new	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+p1-mh-02-new	arm	trap	trap	K2	False	同快照冲突：条文对 C2，新旧两侧都在 relevant∪distractors（D3: s6-d1-c4-q1 计 trap）
+p1-mh-03-new	arm	trap	trap	K2	False	同快照冲突：条文对 C3，新旧两侧都在 relevant∪distractors（D3: s6-d1-c4-q1 计 trap）
+p1-mh-04-new	arm	trap	trap	K2	False	同快照冲突：条文对 C3，新旧两侧都在 relevant∪distractors（D3: s6-d1-c4-q1 计 trap）
+p1-mh-05-new	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+p1-mh-06-new	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+p1-mh-07-new	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+p1-mh-08-new	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+p1-mh-09-new	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+p1-mh-10-new	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+p1-mh-11-new	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+p1-mh-13-new	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+p1-mh-14-new	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s1-d0-01-q1	guardrail	trap	trap	K1	False	快照取代：护栏题（T0 旧版在 distractors），不进分母
+s1-d0-01-q2	guardrail	trap	trap	K1	False	快照取代：护栏题（T0 旧版在 distractors），不进分母
+s1-d0-01-q3	guardrail	trap	trap	K1	False	快照取代：护栏题（T0 旧版在 distractors），不进分母
+s1-d0-01-q4	guardrail	trap	trap	K1	False	快照取代：护栏题（T0 旧版在 distractors），不进分母
+s1-d0-02-q1	guardrail	trap	trap	K1	False	快照取代：护栏题（T0 旧版在 distractors），不进分母
+s1-d0-02-q2	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s1-d0-02-q3	guardrail	trap	trap	K1	False	快照取代：护栏题（T0 旧版在 distractors），不进分母
+s1-d0-02-q4	guardrail	trap	trap	K1	False	快照取代：护栏题（T0 旧版在 distractors），不进分母
+s1-d0-03-q1	guardrail	trap	trap	K1	False	快照取代：护栏题（T0 旧版在 distractors），不进分母
+s1-d0-03-q2	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s1-d0-03-q3	guardrail	trap	trap	K1	False	快照取代：护栏题（T0 旧版在 distractors），不进分母
+s1-d0-03-q4	guardrail	trap	trap	K1	False	快照取代：护栏题（T0 旧版在 distractors），不进分母
+s1-d0-04-q1	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s1-d0-04-q2	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s1-d0-04-q3	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s1-d0-04-q4	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s1-d0-05-q1	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s1-d0-05-q2	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s1-d0-05-q3	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s1-d0-05-q4	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s1-d1-01-q1	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s1-d1-01-q2	guardrail	trap	trap	K1	False	快照取代：护栏题（T0 旧版在 distractors），不进分母
+s1-d1-01-q3	guardrail	trap	trap	K1	False	快照取代：护栏题（T0 旧版在 distractors），不进分母
+s1-d1-01-q4	guardrail	trap	trap	K1	False	快照取代：护栏题（T0 旧版在 distractors），不进分母
+s1-d1-01-q5	guardrail	trap	trap	K1	False	快照取代：护栏题（T0 旧版在 distractors），不进分母
+s1-d1-01-q6	guardrail	trap	trap	K1	False	快照取代：护栏题（T0 旧版在 distractors），不进分母
+s1-d2-01-q1	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s1-d2-01-q2	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s1-d2-01-q3	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s1-d2-01-q4	guardrail	trap	trap	K1	False	快照取代：护栏题（T0 旧版在 distractors），不进分母
+s1-d2-01-q5	guardrail	trap	trap	K1	False	快照取代：护栏题（T0 旧版在 distractors），不进分母
+s1-d2-01-q6	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s1-d3-01-q1	guardrail	trap	trap	K1	False	快照取代：护栏题（T0 旧版在 distractors），不进分母
+s1-d3-01-q2	guardrail	trap	trap	K1	False	快照取代：护栏题（T0 旧版在 distractors），不进分母
+s1-d3-01-q3	guardrail	trap	trap	K1	False	快照取代：护栏题（T0 旧版在 distractors），不进分母
+s1-d3-01-q4	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s2-d0-01-q1	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s2-d0-01-q2	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s2-d0-01-q3	guardrail	trap	trap	K1	False	快照取代：护栏题（T0 旧版在 distractors），不进分母
+s2-d0-01-q4	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s2-d0-02-q1	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s2-d0-02-q2	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s2-d0-02-q3	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s2-d0-02-q4	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s2-d0-02-q5	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s2-d0-02-q6	guardrail	trap	trap	K1	False	快照取代：护栏题（T0 旧版在 distractors），不进分母
+s2-d0-03-q1	guardrail	trap	trap	K1	False	快照取代：护栏题（T0 旧版在 distractors），不进分母
+s2-d0-03-q2	guardrail	trap	trap	K1	False	快照取代：护栏题（T0 旧版在 distractors），不进分母
+s2-d0-03-q3	guardrail	trap	trap	K1	False	快照取代：护栏题（T0 旧版在 distractors），不进分母
+s2-d0-03-q4	guardrail	trap	trap	K1	False	快照取代：护栏题（T0 旧版在 distractors），不进分母
+s2-d0-04-q1	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s2-d0-04-q2	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s2-d1-01-q1	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s2-d1-01-q2	guardrail	trap	trap	K1	False	快照取代：护栏题（T0 旧版在 distractors），不进分母
+s2-d1-01-q3	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s2-d1-01-q4	guardrail	trap	trap	K1	False	快照取代：护栏题（T0 旧版在 distractors），不进分母
+s2-d2-01-q1	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s2-d2-01-q2	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s2-d2-01-q3	guardrail	trap	trap	K1	False	快照取代：护栏题（T0 旧版在 distractors），不进分母
+s2-d2-01-q4	guardrail	trap	trap	K1	False	快照取代：护栏题（T0 旧版在 distractors），不进分母
+s2-d3-01-q1	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s2-d3-01-q2	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s2-d3-01-q3	guardrail	trap	trap	K1	False	快照取代：护栏题（T0 旧版在 distractors），不进分母
+s2-d3-01-q4	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s3-d0-01-q1	guardrail	trap	trap	K1	False	快照取代：护栏题（T0 旧版在 distractors），不进分母
+s3-d0-01-q2	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s3-d0-01-q3	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s3-d0-01-q4	guardrail	trap	trap	K1	False	快照取代：护栏题（T0 旧版在 distractors），不进分母
+s3-d0-02-q1	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s3-d0-02-q2	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s3-d0-02-q3	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s3-d0-02-q4	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s3-d0-02-q5	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s3-d0-02-q6	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s3-d0-03-q1	guardrail	trap	trap	K1	False	快照取代：护栏题（T0 旧版在 distractors），不进分母
+s3-d0-03-q2	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s3-d0-03-q3	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s3-d0-03-q4	guardrail	trap	trap	K1	False	快照取代：护栏题（T0 旧版在 distractors），不进分母
+s3-d0-04-q1	guardrail	trap	trap	K1	False	快照取代：护栏题（T0 旧版在 distractors），不进分母
+s3-d0-04-q2	guardrail	trap	trap	K1	False	快照取代：护栏题（T0 旧版在 distractors），不进分母
+s3-d1-01-q1	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s3-d1-01-q2	guardrail	trap	trap	K1	False	快照取代：护栏题（T0 旧版在 distractors），不进分母
+s3-d1-01-q3	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s3-d1-01-q4	guardrail	trap	trap	K1	False	快照取代：护栏题（T0 旧版在 distractors），不进分母
+s3-d2-01-q1	guardrail	trap	trap	K1	False	快照取代：护栏题（T0 旧版在 distractors），不进分母
+s3-d2-01-q2	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s3-d2-01-q3	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s3-d2-01-q4	guardrail	trap	trap	K1	False	快照取代：护栏题（T0 旧版在 distractors），不进分母
+s3-d3-01-q1	guardrail	trap	trap	K1	False	快照取代：护栏题（T0 旧版在 distractors），不进分母
+s3-d3-01-q2	guardrail	trap	trap	K1	False	快照取代：护栏题（T0 旧版在 distractors），不进分母
+s3-d3-01-q3	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s3-d3-01-q4	arm	hard	trap	K2	True	同快照冲突（逐题判定）：竞品B 同一 T1 快照两种报价：report#p2「按需计费最低99元」(relevant) vs memo#p2「限时优惠129元」(distractor)
+s4-d0-t0-01-q1	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s4-d0-t0-01-q2	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s4-d0-t0-01-q3	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s4-d0-t0-01-q4	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s4-d0-t0-01-q5	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s4-d0-t0-01-q6	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s4-d0-t1-02-q1	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s4-d0-t1-02-q2	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s4-d0-t1-02-q3	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s4-d0-t1-02-q4	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s4-d0-t1-02-q5	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s4-d0-t1-02-q6	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s4-d1-t0-03-q1	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s4-d1-t0-03-q2	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s4-d1-t0-03-q3	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s4-d1-t0-03-q4	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s4-d2-t1-04-q1	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s4-d2-t1-04-q2	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s4-d2-t1-04-q3	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s4-d2-t1-04-q4	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s4-d3-t0-05-q1	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s4-d3-t0-05-q2	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s4-d3-t0-05-q3	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s4-d3-t0-05-q4	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s5-d0-t0-01-q1	arm	trap	trap	K2	False	同快照冲突（逐题判定，D5 边界暂计入）：press#p1「零延迟」与 analysis#p1「缩短2.3小时」、memo#p2「沟通延迟」对同一平台响应表现说法相反；press#p1 在 distractors
+s5-d0-t0-01-q2	arm	trap	trap	K2	False	同快照冲突（逐题判定）：问句要两侧：press#p1「典范/零延迟」vs press#p2「仅主城区」、memo#p2「沟通延迟」，两侧都在 relevant
+s5-d0-t0-01-q3	arm	trap	trap	K2	False	同快照冲突（逐题判定）：要「偏远地区效果不佳」证据；相反判断 press#p1、report#p1(+40%)、memo#p1(初评有效) 在 distractors
+s5-d0-t0-01-q4	arm	trap	hard	-	True	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s5-d0-t0-01-q5	arm	trap	trap	K2	False	同快照冲突（逐题判定）：要「能否认定完全可行」；正面说法 press#p1、analysis#p1 在 distractors，与 relevant 的「有争议/局限」相反
+s5-d0-t0-01-q6	arm	trap	hard	-	True	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s5-d0-t1-02-q1	arm	trap	hard	-	True	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s5-d0-t1-02-q2	arm	trap	hard	-	True	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s5-d0-t1-02-q3	arm	trap	hard	-	True	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s5-d0-t1-02-q4	arm	trap	hard	-	True	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s5-d1-t1-03-q1	arm	trap	hard	-	True	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s5-d1-t1-03-q2	arm	trap	hard	-	True	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s5-d1-t1-03-q3	arm	trap	hard	-	True	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s5-d1-t1-03-q4	arm	trap	hard	-	True	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s5-d2-t0-04-q1	arm	trap	hard	-	True	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s5-d2-t0-04-q2	arm	trap	hard	-	True	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s5-d2-t0-04-q3	arm	trap	hard	-	True	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s5-d3-t1-05-q1	arm	trap	trap	K2	False	同快照冲突（逐题判定）：问 2022→2023 变化：旧值 memo#p1 43% 与新值 memo#p2 51% 同在 T1，两侧都在 relevant
+s5-d3-t1-05-q2	arm	trap	trap	K2	False	同快照冲突（逐题判定）：问新数据后旧统计为何仍被引用；旧值 analysis#p1 39% 在 distractors，与 relevant analysis#p2 67% 同一指标
+s5-d3-t1-05-q3	arm	trap	hard	-	True	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s6-d0-t1-01-q1	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s6-d0-t1-01-q2	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s6-d0-t1-01-q3	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s6-d0-t1-02-q1	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s6-d0-t1-02-q2	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s6-d0-t1-02-q3	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s6-d0-t1-03-q1	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s6-d0-t1-03-q2	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s6-d0-t1-03-q3	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s6-d1-c1-q1	arm	trap	trap	K2	False	同快照冲突：conflict_pair
+s6-d1-c1-q2-new	arm	trap	trap	K2	False	同快照冲突：条文对 C1，新旧两侧都在 relevant∪distractors（D3: s6-d1-c4-q1 计 trap）
+s6-d1-c2-q1	arm	trap	trap	K2	False	同快照冲突：conflict_pair
+s6-d1-c3-q1	arm	trap	trap	K2	False	同快照冲突：conflict_pair
+s6-d1-c4-q1	arm	trap	trap	K2	False	同快照冲突：条文对 C4，新旧两侧都在 relevant∪distractors（D3: s6-d1-c4-q1 计 trap）
+s6-d2-g1-q1	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s6-d2-g2-q1	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s6-d2-g3-q1	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s6-d3-t1-01-q1	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s6-d3-t1-01-q2	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s6-d3-t1-01-q3	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s6-d3-t1-02-q1	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s6-d3-t1-02-q2	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s6-d3-t1-02-q3	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s6-d3-t1-03-q1	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s6-d3-t1-03-q2	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s6-mh-12-new	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s6-mh-15-new	arm	hard	hard	-	False	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s7-d0-t0-01-q1	arm	trap	hard	-	True	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s7-d0-t0-01-q2	arm	trap	hard	-	True	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s7-d0-t0-01-q3	arm	trap	hard	-	True	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s7-d0-t0-01-q4	arm	trap	hard	-	True	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s7-d0-t0-01-q5	arm	trap	hard	-	True	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s7-d0-t0-01-q6	arm	trap	hard	-	True	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s7-d0-t1-02-q1	arm	trap	hard	-	True	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s7-d0-t1-02-q2	arm	trap	hard	-	True	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s7-d0-t1-02-q3	arm	trap	hard	-	True	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s7-d0-t1-02-q4	arm	trap	hard	-	True	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s7-d0-t1-02-q5	arm	trap	hard	-	True	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s7-d0-t1-02-q6	arm	trap	hard	-	True	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s7-d1-t0-03-q1	arm	trap	hard	-	True	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s7-d1-t0-03-q2	arm	trap	hard	-	True	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s7-d1-t0-03-q3	arm	trap	hard	-	True	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s7-d1-t0-03-q4	arm	trap	hard	-	True	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s7-d2-t1-04-q1	arm	trap	hard	-	True	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s7-d2-t1-04-q2	arm	trap	hard	-	True	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s7-d2-t1-04-q3	arm	trap	hard	-	True	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s7-d2-t1-04-q4	arm	trap	hard	-	True	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s7-d3-t1-05-q1	arm	trap	hard	-	True	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s7-d3-t1-05-q2	arm	trap	hard	-	True	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s7-d3-t1-05-q3	arm	adversarial	hard	-	True	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）
+s7-d3-t1-05-q4	arm	trap	hard	-	True	K1–K3 不成立；问句无对抗改写（D4: s7-d3-t1-05-q3 → hard）

@@ -1,0 +1,207 @@
+{
+ "meta": {
+  "drafted_by": "Ronin 代理人（模型）起草，2026-10-07，未经人工审核",
+  "note": "只用现有语料；需 owner 审后按协议双标"
+ },
+ "queries": [
+  {
+   "id": "r4m-s5-d3-t1-05-q4",
+   "as_of": "T1",
+   "query": "按官方最新统计，这个地区的制造业在经济总量里还占三成以上吗？",
+   "relevant": [
+    "s5-d3-t1-05-report#p2@T1"
+   ],
+   "answer_points": [
+    "该比例已下降至28%"
+   ],
+   "distractors": [
+    "s5-d3-t1-05-report#p1@T1",
+    "s5-d3-t1-05-report#p3@T1"
+   ],
+   "score_role": "arm",
+   "eval_intent": "draft-r4: 同快照冲突：report#p1「制造业产值占GDP比重为34%」(2021白皮书，仍被引用) 与 report#p2「已",
+   "drafted_by": "Ronin 代理人（模型）起草，2026-10-07，未经人工审核",
+   "qtype": "paraphrase",
+   "qtype_reason": "覆盖率 < 0.8；不成 multi_hop（relevant 只有 1 个 doc_id）→ paraphrase｜覆盖率 0.29（2/7）；关键词：官方、统计、地区、制造业、经济总量、三成、以上；未覆盖：地区、制造业、经济总量、三成、以上；r8 0.00",
+   "category": "trap",
+   "trap_kind": "K2",
+   "trap_mechanism": "同快照冲突：report#p1「制造业产值占GDP比重为34%」(2021白皮书，仍被引用) 与 report#p2「已下降至28%」(2023官方更新) 同在 T1；旧值在 distractors，答 34% 即错",
+   "self_check": {
+    "r8": 0,
+    "lcs": 0.25,
+    "ap_substring": true,
+    "ids_exist": true,
+    "same_snapshot": true,
+    "no_overlap": true,
+    "pass": true
+   }
+  },
+  {
+   "id": "r4m-s5-d3-t1-05-q5",
+   "as_of": "T1",
+   "query": "员工对工作环境满不满意，最新一轮调查给出的比例是多少？",
+   "relevant": [
+    "s5-d3-t1-05-analysis#p2@T1"
+   ],
+   "answer_points": [
+    "满意度已升至67%"
+   ],
+   "distractors": [
+    "s5-d3-t1-05-analysis#p1@T1",
+    "s5-d3-t1-05-analysis#p3@T1"
+   ],
+   "score_role": "arm",
+   "eval_intent": "draft-r4: 同快照冲突：analysis#p1「仅有39%满意」(2020) 与 analysis#p2「已升至67%」(2023)",
+   "drafted_by": "Ronin 代理人（模型）起草，2026-10-07，未经人工审核",
+   "qtype": "paraphrase",
+   "qtype_reason": "覆盖率 < 0.8；不成 multi_hop（relevant 只有 1 个 doc_id）→ paraphrase｜覆盖率 0.29（2/7）；关键词：员工、工作、环境、满意、一轮、调查、比例；未覆盖：员工、工作、环境、一轮、比例；r8 0.00",
+   "category": "trap",
+   "trap_kind": "K2",
+   "trap_mechanism": "同快照冲突：analysis#p1「仅有39%满意」(2020) 与 analysis#p2「已升至67%」(2023) 同在 T1；旧值在 distractors",
+   "self_check": {
+    "r8": 0,
+    "lcs": 0.16,
+    "ap_substring": true,
+    "ids_exist": true,
+    "same_snapshot": true,
+    "no_overlap": true,
+    "pass": true
+   }
+  },
+  {
+   "id": "r4m-s5-d3-t1-05-q6",
+   "as_of": "T1",
+   "query": "城市居民每天坐公交出行的人，最近那次独立调查测出来占多少？",
+   "relevant": [
+    "s5-d3-t1-05-memo#p2@T1"
+   ],
+   "answer_points": [
+    "使用公共交通的比例上升至51%"
+   ],
+   "distractors": [
+    "s5-d3-t1-05-memo#p1@T1",
+    "s5-d3-t1-05-memo#p3@T1"
+   ],
+   "near_dup": "s5-d3-t1-05-q1",
+   "score_role": "arm",
+   "eval_intent": "draft-r4: 同快照冲突：memo#p1「约43%」(2022，仍被频繁引用) 与 memo#p2「上升至51%」(2023) 同在 ",
+   "drafted_by": "Ronin 代理人（模型）起草，2026-10-07，未经人工审核",
+   "qtype": "paraphrase",
+   "qtype_reason": "覆盖率 < 0.8；不成 multi_hop（relevant 只有 1 个 doc_id）→ paraphrase｜覆盖率 0.22（2/9）；关键词：城市居民、每天、公交、出行、最近、那次、独立、调查、出来；未覆盖：城市居民、每天、公交、出行、最近、那次、出来；r8 0.00",
+   "category": "trap",
+   "trap_kind": "K2",
+   "trap_mechanism": "同快照冲突：memo#p1「约43%」(2022，仍被频繁引用) 与 memo#p2「上升至51%」(2023) 同在 T1；旧值在 distractors。注意：与 s5-d3-t1-05-q1（问变化，两侧都相关）题意相近，owner 可删",
+   "self_check": {
+    "r8": 0,
+    "lcs": 0.148,
+    "ap_substring": true,
+    "ids_exist": true,
+    "same_snapshot": true,
+    "no_overlap": true,
+    "pass": true
+   }
+  },
+  {
+   "id": "r4m-s5-d0-t1-02-q5",
+   "as_of": "T1",
+   "query": "被媒体反复转述的早高峰车速和拥堵时长，独立研究实际测到的是多少？",
+   "relevant": [
+    "s5-d0-t1-02-memo#p2@T1"
+   ],
+   "answer_points": [
+    "真实车速为16公里/小时",
+    "拥堵时长约为3.2小时"
+   ],
+   "distractors": [
+    "s5-d0-t1-02-memo#p1@T1",
+    "s5-d0-t1-02-memo#p3@T1"
+   ],
+   "score_role": "arm",
+   "eval_intent": "draft-r4: 同快照冲突：memo#p1 转述值「12公里/小时、超过4.5小时」与 memo#p2 复现实测「16公里/小时、约3.",
+   "drafted_by": "Ronin 代理人（模型）起草，2026-10-07，未经人工审核",
+   "qtype": "paraphrase",
+   "qtype_reason": "覆盖率 < 0.8；不成 multi_hop（relevant 只有 1 个 doc_id）→ paraphrase｜覆盖率 0.56（5/9）；关键词：媒体、反复、转述、高峰、车速、拥堵、独立、研究、测到；未覆盖：媒体、反复、高峰、测到；r8 0.00",
+   "category": "trap",
+   "trap_kind": "K2",
+   "trap_mechanism": "同快照冲突：memo#p1 转述值「12公里/小时、超过4.5小时」与 memo#p2 复现实测「16公里/小时、约3.2小时」同在 T1；转述值在 distractors",
+   "self_check": {
+    "r8": 0,
+    "lcs": 0.367,
+    "ap_substring": true,
+    "ids_exist": true,
+    "same_snapshot": true,
+    "no_overlap": true,
+    "pass": true
+   }
+  },
+  {
+   "id": "r4m-s3-d3-01-q5",
+   "as_of": "T1",
+   "query": "竞品B这一期的月费，两份比价材料写得一样吗？各写了多少？",
+   "relevant": [
+    "s3-d3-01-memo#p2@T1",
+    "s3-d3-01-report#p2@T1"
+   ],
+   "answer_points": [
+    "月费降至129元",
+    "月费最低可至99元"
+   ],
+   "distractors": [
+    "s3-d3-01-memo#p1@T1",
+    "s3-d3-01-memo#p3@T1"
+   ],
+   "score_role": "arm",
+   "eval_intent": "draft-r4: 同快照冲突（问两侧）：memo#p2「限时优惠129元」与 report#p2「按需计费最低99元」同一 T1 快照对竞",
+   "drafted_by": "Ronin 代理人（模型）起草，2026-10-07，未经人工审核",
+   "qtype": "multi_hop",
+   "qtype_reason": "覆盖率 < 0.8；relevant ≥2 个 doc_id，要点需 ≥2 个 doc_id 才能凑齐 → multi_hop｜覆盖率 0.29（2/7）；关键词：B、竞品、一期、比价、写得、一样、各写；未覆盖：一期、比价、写得、一样、各写；r8 0.00",
+   "category": "trap",
+   "trap_kind": "K2",
+   "trap_mechanism": "同快照冲突（问两侧）：memo#p2「限时优惠129元」与 report#p2「按需计费最低99元」同一 T1 快照对竞品B月费说法不一，两侧都在 relevant",
+   "self_check": {
+    "r8": 0,
+    "lcs": 0.24,
+    "ap_substring": true,
+    "ids_exist": true,
+    "same_snapshot": true,
+    "no_overlap": true,
+    "pass": true
+   }
+  },
+  {
+   "id": "r4m-s3-d0-02-q7",
+   "as_of": "T1",
+   "query": "C公司149元的新方案现在已经开卖了吗？两份比价材料怎么说？",
+   "relevant": [
+    "s3-d0-02-a#p3@T1",
+    "s3-d0-02-b#p3@T1"
+   ],
+   "answer_points": [
+    "正式版本将于下季度以149元起售",
+    "改推“成长计划”订阅制，首年费用149元",
+    "用户迁移率已达72%"
+   ],
+   "distractors": [
+    "s3-d0-02-c#p3@T1",
+    "s3-d0-02-a#p2@T1"
+   ],
+   "score_role": "arm",
+   "eval_intent": "draft-r4: 同快照冲突（问两侧）：a#p3 说暂停注册、149元正式版「将于下季度」起售；b#p3 说已改推149元订阅、迁移率已达",
+   "drafted_by": "Ronin 代理人（模型）起草，2026-10-07，未经人工审核",
+   "qtype": "multi_hop",
+   "qtype_reason": "覆盖率 < 0.8；relevant ≥2 个 doc_id，要点需 ≥2 个 doc_id 才能凑齐 → multi_hop｜覆盖率 0.43（3/7）；关键词：C、149、公司、方案、已经、开卖、比价；未覆盖：方案、已经、开卖、比价；r8 0.00",
+   "category": "trap",
+   "trap_kind": "K2",
+   "trap_mechanism": "同快照冲突（问两侧）：a#p3 说暂停注册、149元正式版「将于下季度」起售；b#p3 说已改推149元订阅、迁移率已达72%。同一 T1 快照对是否已上市矛盾，两侧都在 relevant",
+   "self_check": {
+    "r8": 0,
+    "lcs": 0.286,
+    "ap_substring": true,
+    "ids_exist": true,
+    "same_snapshot": true,
+    "no_overlap": true,
+    "pass": true
+   }
+  }
+ ]
+}

@@ -1,0 +1,243 @@
+[
+ {
+  "fix_id": "s6-d2-g1-memo-e1",
+  "doc": "corpus/t1/s6-d2-g1-memo.md",
+  "chunk": "s6-d2-g1-memo#p2@T1",
+  "decision": "通过",
+  "original": "适用于所有新设立及存续的有限责任公司，尤其在注册资本较高或股东结构复杂的场景中更为关键。",
+  "final_text": "新设公司直接适用五年期限；新法施行前设立、约定期限更长的存量公司，则按过渡规定逐步调整。注册资本较高或股东结构复杂的公司受影响更明显。",
+  "note": "Ronin 代理人（模型）：已核：公司法(2023修订)第四十七条\"全体股东认缴的出资额由股东按照公司章程的规定自公司成立之日起五年内缴足\"；第二百六十六条第二款\"本法施行前已登记设立的公司，出资期限超过本法规定的期限的…应当逐步调整至本法规定的期限以内\"。改文\"新设公司直接适用五年期限；…存量公司按过渡规定逐步调整\"与两条一致，删去无出处的\"适用于所有新设立及存续\"正确。来源 http://www.npc.gov.cn/c2/c30834/202312/t20231229_433999.html",
+  "reviewer": {
+   "kind": "model",
+   "name": "Ronin 代理人",
+   "delegated_by": "owner",
+   "human_row_review": false,
+   "date": "2026-10-07",
+   "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+   "notes": "ronin-review/REVIEW-NOTES.md"
+  },
+  "source_label_zh": "owner 委托 Ronin 代理人（模型）审核"
+ },
+ {
+  "fix_id": "s6-d2-g2-memo-e1",
+  "doc": "corpus/t1/s6-d2-g2-memo.md",
+  "chunk": "s6-d2-g2-memo#p2@T1",
+  "decision": "通过",
+  "original": "本次监管变更主要影响在旧法施行后设立、且出资期限设定过长的有限责任公司，特别是注册资本较高、出资周期超过五年以上的企业。",
+  "final_text": "本次监管变更主要影响新法施行前已登记设立、且章程约定的出资期限超出新法规定期限的有限责任公司，特别是注册资本较高、出资安排拉得较长的企业。",
+  "note": "Ronin 代理人（模型）：已核：公司法第二百六十六条第二款主体是\"本法施行前已登记设立的公司，出资期限超过本法规定的期限的\"，原文\"旧法施行后设立\"\"出资周期超过五年以上\"不符；改文与条文一致(\"章程约定的出资期限\"对有限责任公司对应第四十七条\"按照公司章程的规定\")。来源 http://www.npc.gov.cn/c2/c30834/202312/t20231229_433999.html",
+  "reviewer": {
+   "kind": "model",
+   "name": "Ronin 代理人",
+   "delegated_by": "owner",
+   "human_row_review": false,
+   "date": "2026-10-07",
+   "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+   "notes": "ronin-review/REVIEW-NOTES.md"
+  },
+  "source_label_zh": "owner 委托 Ronin 代理人（模型）审核"
+ },
+ {
+  "fix_id": "s6-d2-g2-memo-e2",
+  "doc": "corpus/t1/s6-d2-g2-memo.md",
+  "chunk": "s6-d2-g2-memo#p3@T1",
+  "decision": "改",
+  "original": "对于已设立但未完成调整的公司，需在新法生效后启动合规流程，确保在合理期限内完成章程修订与实缴安排。相关调整不影响既往法律效力，仅针对未来出资行为及存续公司治理结构提出规范要求。",
+  "final_text": "对于已设立但尚未完成调整的公司，需在新法生效后启动合规流程，逐步完成章程修订与实缴安排；出资期限或出资额明显异常的，登记机关可以要求其及时调整，具体实施办法由国务院规定。",
+  "note": "Ronin 代理人（模型）：已核：第二百六十六条第二款\"对于出资期限、出资额明显异常的，公司登记机关可以依法要求其及时调整。具体实施办法由国务院规定。\"，删去无出处的\"不影响既往法律效力，仅针对未来出资行为\"正确。但 T1 快照日 2026-10-06 时国务院已于 2024-07-01 公布《国务院关于实施〈中华人民共和国公司法〉注册资本登记管理制度的规定》(国令第784号, https://www.gov.cn/zhengce/zhengceku/202407/content_6960377.htm)，建议改文的\"具体办法由国务院另行规定\"读作尚未出台、对 T1 不准确；改为条文原话\"具体实施办法由国务院规定\"。来源 http://www.npc.gov.cn/c2/c30834/202312/t20231229_433999.html",
+  "reviewer": {
+   "kind": "model",
+   "name": "Ronin 代理人",
+   "delegated_by": "owner",
+   "human_row_review": false,
+   "date": "2026-10-07",
+   "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+   "notes": "ronin-review/REVIEW-NOTES.md"
+  },
+  "source_label_zh": "owner 委托 Ronin 代理人（模型）审核",
+  "corpus_patch": {
+   "file": "corpus-patch/corpus/t1/s6-d2-g2-memo.md",
+   "diff": "corpus-patch/s6-d2-g2-memo.p3.diff",
+   "chunk": "s6-d2-g2-memo#p3@T1",
+   "change": "具体办法由国务院另行规定 → 具体实施办法由国务院规定",
+   "applied_to_v2_drafts": true,
+   "owner_decision": "2026-10-07 决定 8（聊天确认）",
+   "applied_at": "2026-10-07",
+   "applied_by": "ronin-agent (model), owner 授权（第二轮决定 3）",
+   "sha256_before": "e70483acc1557ffecd89fc13b3a5c40fb2f4bc4e091b25ed319f7d1d8d497248",
+   "sha256_after": "89e86ce3de61b87b162bf83a9d43d57e245d36dd75e3d06197e6c614ca41fcf3",
+   "backup": "ronin-review/backup-20261007/v2/drafts/corpus/t1/s6-d2-g2-memo.md"
+  }
+ },
+ {
+  "fix_id": "s6-d2-g3-memo-e1",
+  "doc": "corpus/t1/s6-d2-g3-memo.md",
+  "chunk": "s6-d2-g3-memo#p3@T1",
+  "decision": "通过",
+  "original": "该调整适用于所有新设及存续的有限责任公司，尤其影响股权结构复杂或出资期限较长的项目。出资义务随股权转让自动转移至受让人，避免因出资瑕疵导致公司风险悬置。",
+  "final_text": "该调整对股权结构复杂或出资期限较长的项目影响尤为明显。转让尚未到缴纳期限的认缴股权时，缴资义务改由受让人承担，受让人到期不缴的，原股东负补充责任；已过缴纳期限仍未缴足就转让的，由转让双方在差额内连带担责，受让人善意不知情的除外。",
+  "note": "Ronin 代理人（模型）：已核：公司法第八十八条第一款\"股东转让已认缴出资但未届出资期限的股权的，由受让人承担缴纳该出资的义务；受让人未按期足额缴纳出资的，转让人对受让人未按期缴纳的出资承担补充责任\"；第二款\"未按照公司章程规定的出资日期缴纳出资…的股东转让股权的，转让人与受让人在出资不足的范围内承担连带责任；受让人不知道且不应当知道存在上述情形的，由转让人承担责任\"。改文与之一致(第二款\"非货币财产实际价额显著低于认缴额\"一情形未写，属概括，不构成错误)。来源 http://www.npc.gov.cn/c2/c30834/202312/t20231229_433999.html",
+  "reviewer": {
+   "kind": "model",
+   "name": "Ronin 代理人",
+   "delegated_by": "owner",
+   "human_row_review": false,
+   "date": "2026-10-07",
+   "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+   "notes": "ronin-review/REVIEW-NOTES.md"
+  },
+  "source_label_zh": "owner 委托 Ronin 代理人（模型）审核"
+ },
+ {
+  "fix_id": "s6-d1-c1-memo-e1",
+  "doc": "corpus/t1/s6-d1-c1-memo.md",
+  "chunk": "s6-d1-c1-memo#p1@T1",
+  "decision": "通过",
+  "original": "该变更自令16施行之日起生效，适用于所有新提交的评估申请。",
+  "final_text": "该变更自令16施行之日起生效。",
+  "note": "Ronin 代理人（模型）：已核：令16\"自公布之日起施行\"(2024-03-22)；第九条未出现\"适用于所有新提交的评估申请\"，删去正确。另：核对提醒写\"令16 第7–9、11条\"，官方文本中\"与本规定不一致的，适用本规定\"是第十三条，第十一条是数据安全保护义务，提醒里的\"11条\"应为\"13条\"。来源 https://www.cac.gov.cn/2024-03/22/c_1712776611775634.htm",
+  "reviewer": {
+   "kind": "model",
+   "name": "Ronin 代理人",
+   "delegated_by": "owner",
+   "human_row_review": false,
+   "date": "2026-10-07",
+   "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+   "notes": "ronin-review/REVIEW-NOTES.md"
+  },
+  "source_label_zh": "owner 委托 Ronin 代理人（模型）审核"
+ },
+ {
+  "fix_id": "s6-d1-c1-memo-e2",
+  "doc": "corpus/t1/s6-d1-c1-memo.md",
+  "chunk": "s6-d1-c1-memo#p2@T1",
+  "decision": "通过",
+  "original": "向所在地省级网信部门提出延长申请。经批准后，评估结果可再延长3年。",
+  "final_text": "通过所在地省级网信部门向国家网信部门提出延长申请，经国家网信部门批准后，评估结果可再延长3年。",
+  "note": "Ronin 代理人（模型）：已核：令16第九条\"…可以在有效期届满前60个工作日内通过所在地省级网信部门向国家网信部门提出延长评估结果有效期申请。经国家网信部门批准，可以延长评估结果有效期3年。\"改文一致。来源 https://www.cac.gov.cn/2024-03/22/c_1712776611775634.htm",
+  "reviewer": {
+   "kind": "model",
+   "name": "Ronin 代理人",
+   "delegated_by": "owner",
+   "human_row_review": false,
+   "date": "2026-10-07",
+   "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+   "notes": "ronin-review/REVIEW-NOTES.md"
+  },
+  "source_label_zh": "owner 委托 Ronin 代理人（模型）审核"
+ },
+ {
+  "fix_id": "s6-d1-c2-memo-e1",
+  "doc": "corpus/t1/s6-d1-c2-memo.md",
+  "chunk": "s6-d1-c2-memo#p1@T1",
+  "decision": "通过",
+  "original": "非关基运营者申报网络安全评估的个人信息门槛已调整。自当年1月1日起累计处理100万人以上个人信息",
+  "final_text": "非关基运营者申报数据出境安全评估的个人信息门槛已调整。自当年1月1日起累计向境外提供100万人以上个人信息",
+  "note": "Ronin 代理人（模型）：已核：令16第七条(二)\"关键信息基础设施运营者以外的数据处理者…自当年1月1日起累计向境外提供100万人以上个人信息（不含敏感个人信息）\"，是\"数据出境安全评估\"、是\"向境外提供\"而非\"处理\"。改文一致。来源 https://www.cac.gov.cn/2024-03/22/c_1712776611775634.htm",
+  "reviewer": {
+   "kind": "model",
+   "name": "Ronin 代理人",
+   "delegated_by": "owner",
+   "human_row_review": false,
+   "date": "2026-10-07",
+   "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+   "notes": "ronin-review/REVIEW-NOTES.md"
+  },
+  "source_label_zh": "owner 委托 Ronin 代理人（模型）审核"
+ },
+ {
+  "fix_id": "s6-d1-c2-memo-e2",
+  "doc": "corpus/t1/s6-d1-c2-memo.md",
+  "chunk": "s6-d1-c2-memo#p2@T1",
+  "decision": "通过",
+  "original": "门槛为自当年1月1日起累计处理1万人以上的运营者",
+  "final_text": "门槛为自当年1月1日起累计向境外提供1万人以上的运营者",
+  "note": "Ronin 代理人（模型）：已核：令16第七条(二)\"…或者1万人以上敏感个人信息\"，统计口径为\"自当年1月1日起累计向境外提供\"。改文一致。来源 https://www.cac.gov.cn/2024-03/22/c_1712776611775634.htm",
+  "reviewer": {
+   "kind": "model",
+   "name": "Ronin 代理人",
+   "delegated_by": "owner",
+   "human_row_review": false,
+   "date": "2026-10-07",
+   "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+   "notes": "ronin-review/REVIEW-NOTES.md"
+  },
+  "source_label_zh": "owner 委托 Ronin 代理人（模型）审核"
+ },
+ {
+  "fix_id": "s6-d1-c2-memo-e3",
+  "doc": "corpus/t1/s6-d1-c2-memo.md",
+  "chunk": "s6-d1-c2-memo#p3@T1",
+  "decision": "通过",
+  "original": "门槛为自上年1月1日起累计处理10万人以上的个人信息。此次更新显著提高了对一般运营者的合规要求，尤其在敏感数据处理方面。",
+  "final_text": "门槛为自上年1月1日起累计向境外提供10万人个人信息或1万人敏感个人信息。此次更新把一般个人信息的申报线从10万人提高到100万人，统计起点由上年改为当年，实际放宽了一般运营者的申报义务；敏感个人信息仍以1万人为线。",
+  "note": "Ronin 代理人（模型）：已核：令11第四条(三)\"自上年1月1日起累计向境外提供10万人个人信息或者1万人敏感个人信息的数据处理者向境外提供个人信息\"(https://www.cac.gov.cn/2022-07/07/c_1658811536396503.htm)；令16第七条(二)为当年起累计100万人以上/1万人以上敏感(https://www.cac.gov.cn/2024-03/22/c_1712776611775634.htm)。\"放宽\"方向正确。剩余简化：令11第四条(二)还有\"处理100万人以上个人信息的数据处理者向境外提供个人信息\"一项触发条件，改文未提；它在令16下的地位需结合第十三条解释，我未在官方原文找到明文表述，故不替它下结论、不改文。",
+  "reviewer": {
+   "kind": "model",
+   "name": "Ronin 代理人",
+   "delegated_by": "owner",
+   "human_row_review": false,
+   "date": "2026-10-07",
+   "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+   "notes": "ronin-review/REVIEW-NOTES.md"
+  },
+  "source_label_zh": "owner 委托 Ronin 代理人（模型）审核"
+ },
+ {
+  "fix_id": "s6-d1-c3-memo-e1",
+  "doc": "corpus/t1/s6-d1-c3-memo.md",
+  "chunk": "s6-d1-c3-memo#p1@T1",
+  "decision": "通过",
+  "original": "可适用标准合同，此情形不再以敏感信息数量为唯一判断标准。",
+  "final_text": "应当订立标准合同或者通过个人信息保护认证；旧规令13则要求累计出境不满十万人方可适用标准合同。",
+  "note": "Ronin 代理人（模型）：已核：令16第八条\"…应当依法与境外接收方订立个人信息出境标准合同或者通过个人信息保护认证\"(https://www.cac.gov.cn/2024-03/22/c_1712776611775634.htm)；令13第四条(三)\"自上年1月1日起累计向境外提供个人信息不满10万人的\"(https://www.cac.gov.cn/2023-02/24/c_1678884830036813.htm)。\"方可适用\"把令13第四条四项同时满足的条件简化为一项必要条件，不算错。",
+  "reviewer": {
+   "kind": "model",
+   "name": "Ronin 代理人",
+   "delegated_by": "owner",
+   "human_row_review": false,
+   "date": "2026-10-07",
+   "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+   "notes": "ronin-review/REVIEW-NOTES.md"
+  },
+  "source_label_zh": "owner 委托 Ronin 代理人（模型）审核"
+ },
+ {
+  "fix_id": "s6-d1-c3-memo-e2",
+  "doc": "corpus/t1/s6-d1-c3-memo.md",
+  "chunk": "s6-d1-c3-memo#p2@T1",
+  "decision": "通过",
+  "original": "即可选择通过标准合同方式实现合规出境。",
+  "final_text": "即应通过订立标准合同或个人信息保护认证实现合规出境。",
+  "note": "Ronin 代理人（模型）：已核：令16第八条是\"应当…订立…标准合同或者通过个人信息保护认证\"，不是\"可选择\"。改文一致。来源 https://www.cac.gov.cn/2024-03/22/c_1712776611775634.htm",
+  "reviewer": {
+   "kind": "model",
+   "name": "Ronin 代理人",
+   "delegated_by": "owner",
+   "human_row_review": false,
+   "date": "2026-10-07",
+   "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+   "notes": "ronin-review/REVIEW-NOTES.md"
+  },
+  "source_label_zh": "owner 委托 Ronin 代理人（模型）审核"
+ },
+ {
+  "fix_id": "s6-d1-c3-memo-e3",
+  "doc": "corpus/t1/s6-d1-c3-memo.md",
+  "chunk": "s6-d1-c3-memo#p3@T1",
+  "decision": "通过",
+  "original": "若敏感个人信息累计出境人数未满一万人，即便总出境人数接近或超过十万，亦可自愿采用标准合同路径，无需强制进行安全评估。",
+  "final_text": "敏感个人信息累计出境未满一万人的，同样落在这一区间，应当订立标准合同或通过认证，而不必申报安全评估；但一般个人信息累计达到一百万人以上的，仍须申报安全评估。",
+  "note": "Ronin 代理人（模型）：已核：令16第八条\"…或者不满1万人敏感个人信息的，应当…订立个人信息出境标准合同或者通过个人信息保护认证\"；第七条(二)\"…100万人以上个人信息（不含敏感个人信息）或者1万人以上敏感个人信息\"须申报评估。改文的上限补充正确(第三至六条豁免情形另行适用，见第八条第二款)。来源 https://www.cac.gov.cn/2024-03/22/c_1712776611775634.htm",
+  "reviewer": {
+   "kind": "model",
+   "name": "Ronin 代理人",
+   "delegated_by": "owner",
+   "human_row_review": false,
+   "date": "2026-10-07",
+   "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+   "notes": "ronin-review/REVIEW-NOTES.md"
+  },
+  "source_label_zh": "owner 委托 Ronin 代理人（模型）审核"
+ }
+]

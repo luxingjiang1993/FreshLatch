@@ -1,0 +1,1583 @@
+{
+ "meta": {
+  "drafted_by": "Ronin 代理人（模型）起草，2026-10-07，未经人工审核",
+  "note": "需 owner 授权并入 v2/drafts 后按协议双标（A + B 盲标）"
+ },
+ "queries": [
+  {
+   "id": "r4n-s2-d0-t1-91-qa",
+   "as_of": "T1",
+   "query": "越南那边的经销商返点，最终按多少给？",
+   "relevant": [
+    "s2-d0-t1-91-memo#p1@T1"
+   ],
+   "answer_points": [
+    "把返点比例定为5%"
+   ],
+   "distractors": [
+    "s2-d0-t1-91-interview#p1@T1",
+    "s2-d0-t1-91-memo#p3@T1"
+   ],
+   "score_role": "arm",
+   "eval_intent": "draft-r4: 同快照冲突：s2-d0-t1-91-interview#p1 给旧/错误值，s2-d0-t1-91-memo#p1 给现",
+   "drafted_by": "Ronin 代理人（模型）起草，2026-10-07，未经人工审核",
+   "qtype": "paraphrase",
+   "qtype_reason": "覆盖率 < 0.8；不成 multi_hop（relevant 只有 1 个 doc_id）→ paraphrase｜覆盖率 0.20（1/5）；关键词：越南、那边、经销商、返点、最终；未覆盖：越南、那边、经销商、最终；r8 0.00",
+   "category": "trap",
+   "trap_kind": "K2",
+   "trap_mechanism": "同快照冲突：s2-d0-t1-91-interview#p1 给旧/错误值，s2-d0-t1-91-memo#p1 给现行值并说明依据；错误一侧在 distractors",
+   "self_check": {
+    "r8": 0,
+    "lcs": 0.375,
+    "ap_substring": true,
+    "ids_exist": true,
+    "same_snapshot": true,
+    "no_overlap": true,
+    "pass": true
+   }
+  },
+  {
+   "id": "r4n-s2-d0-t1-91-qb",
+   "as_of": "T1",
+   "query": "关于越南经销商返点，访谈里的口径和后来正式签的约有什么出入？",
+   "relevant": [
+    "s2-d0-t1-91-interview#p1@T1",
+    "s2-d0-t1-91-memo#p1@T1"
+   ],
+   "answer_points": [
+    "返点比例会维持在8%",
+    "把返点比例定为5%"
+   ],
+   "distractors": [
+    "s2-d0-t1-91-interview#p3@T1",
+    "s2-d0-t1-91-memo#p3@T1"
+   ],
+   "score_role": "arm",
+   "eval_intent": "draft-r4: 同快照冲突（问两侧）：s2-d0-t1-91-interview#p1 与 s2-d0-t1-91-memo#p1 对同",
+   "drafted_by": "Ronin 代理人（模型）起草，2026-10-07，未经人工审核",
+   "qtype": "multi_hop",
+   "qtype_reason": "覆盖率 < 0.8；relevant ≥2 个 doc_id，要点需 ≥2 个 doc_id 才能凑齐 → multi_hop｜覆盖率 0.71（5/7）；关键词：越南、经销商、返点、访谈、口径、正式、出入；未覆盖：口径、出入；r8 0.00",
+   "category": "trap",
+   "trap_kind": "K2",
+   "trap_mechanism": "同快照冲突（问两侧）：s2-d0-t1-91-interview#p1 与 s2-d0-t1-91-memo#p1 对同一对象说法矛盾，两侧都在 relevant",
+   "self_check": {
+    "r8": 0,
+    "lcs": 0.321,
+    "ap_substring": true,
+    "ids_exist": true,
+    "same_snapshot": true,
+    "no_overlap": true,
+    "pass": true
+   }
+  },
+  {
+   "id": "r4n-s2-d0-t1-91-qc",
+   "as_of": "T1",
+   "query": "客服第一次回复客户平均要等多久？有没有最新抽查结果？",
+   "relevant": [
+    "s2-d0-t1-91-memo#p2@T1"
+   ],
+   "answer_points": [
+    "客服首次响应的中位数为11分钟"
+   ],
+   "distractors": [
+    "s2-d0-t1-91-interview#p2@T1",
+    "s2-d0-t1-91-interview#p3@T1"
+   ],
+   "score_role": "arm",
+   "eval_intent": "draft-r4: 元陈述：s2-d0-t1-91-interview#p2 只说该指标未复测/无新数据/待发布/未入账/不再列入跟踪，不含",
+   "drafted_by": "Ronin 代理人（模型）起草，2026-10-07，未经人工审核",
+   "qtype": "paraphrase",
+   "qtype_reason": "覆盖率 < 0.8；不成 multi_hop（relevant 只有 1 个 doc_id）→ paraphrase｜覆盖率 0.25（2/8）；关键词：客服、第一次、回复、客户、平均、多久、抽查、结果；未覆盖：第一次、回复、客户、平均、多久、结果；r8 0.00",
+   "category": "trap",
+   "trap_kind": "K3",
+   "trap_mechanism": "元陈述：s2-d0-t1-91-interview#p2 只说该指标未复测/无新数据/待发布/未入账/不再列入跟踪，不含数值，却与问句同词；实测值在 s2-d0-t1-91-memo#p2",
+   "self_check": {
+    "r8": 0,
+    "lcs": 0.125,
+    "ap_substring": true,
+    "ids_exist": true,
+    "same_snapshot": true,
+    "no_overlap": true,
+    "pass": true
+   }
+  },
+  {
+   "id": "r4n-s3-d1-t1-91-qa",
+   "as_of": "T1",
+   "query": "竞品E标准版一年现在要花多少钱？",
+   "relevant": [
+    "s3-d1-t1-91-quote#p1@T1"
+   ],
+   "answer_points": [
+    "把标准版年费调整为4200元"
+   ],
+   "distractors": [
+    "s3-d1-t1-91-pricesheet#p1@T1",
+    "s3-d1-t1-91-quote#p3@T1"
+   ],
+   "score_role": "arm",
+   "eval_intent": "draft-r4: 同快照冲突：s3-d1-t1-91-pricesheet#p1 给旧/错误值，s3-d1-t1-91-quote#p1 ",
+   "drafted_by": "Ronin 代理人（模型）起草，2026-10-07，未经人工审核",
+   "qtype": "paraphrase",
+   "qtype_reason": "覆盖率 < 0.8；不成 multi_hop（relevant 只有 1 个 doc_id）→ paraphrase｜覆盖率 0.60（3/5）；关键词：E、竞品、标准版、一年、要花；未覆盖：一年、要花；r8 0.00",
+   "category": "trap",
+   "trap_kind": "K2",
+   "trap_mechanism": "同快照冲突：s3-d1-t1-91-pricesheet#p1 给旧/错误值，s3-d1-t1-91-quote#p1 给现行值并说明依据；错误一侧在 distractors",
+   "self_check": {
+    "r8": 0,
+    "lcs": 0.467,
+    "ap_substring": true,
+    "ids_exist": true,
+    "same_snapshot": true,
+    "no_overlap": true,
+    "pass": true
+   }
+  },
+  {
+   "id": "r4n-s3-d1-t1-91-qb",
+   "as_of": "T1",
+   "query": "两份材料给竞品E标准版标的年价不一样，分别是多少，哪份更可信？",
+   "relevant": [
+    "s3-d1-t1-91-pricesheet#p1@T1",
+    "s3-d1-t1-91-quote#p1@T1"
+   ],
+   "answer_points": [
+    "竞品E的标准版年费为3600元",
+    "把标准版年费调整为4200元"
+   ],
+   "distractors": [
+    "s3-d1-t1-91-pricesheet#p3@T1",
+    "s3-d1-t1-91-quote#p3@T1"
+   ],
+   "score_role": "arm",
+   "eval_intent": "draft-r4: 同快照冲突（问两侧）：s3-d1-t1-91-pricesheet#p1 与 s3-d1-t1-91-quote#p1 ",
+   "drafted_by": "Ronin 代理人（模型）起草，2026-10-07，未经人工审核",
+   "qtype": "multi_hop",
+   "qtype_reason": "覆盖率 < 0.8；relevant ≥2 个 doc_id，要点需 ≥2 个 doc_id 才能凑齐 → multi_hop｜覆盖率 0.43（3/7）；关键词：E、竞品、标准版、标的、年价、一样、可信；未覆盖：标的、年价、一样、可信；r8 0.00",
+   "category": "trap",
+   "trap_kind": "K2",
+   "trap_mechanism": "同快照冲突（问两侧）：s3-d1-t1-91-pricesheet#p1 与 s3-d1-t1-91-quote#p1 对同一对象说法矛盾，两侧都在 relevant",
+   "self_check": {
+    "r8": 0,
+    "lcs": 0.321,
+    "ap_substring": true,
+    "ids_exist": true,
+    "same_snapshot": true,
+    "no_overlap": true,
+    "pass": true
+   }
+  },
+  {
+   "id": "r4n-s3-d1-t1-91-qc",
+   "as_of": "T1",
+   "query": "竞品E标准版一个账号最多能开几个座位？",
+   "relevant": [
+    "s3-d1-t1-91-quote#p2@T1"
+   ],
+   "answer_points": [
+    "标准版单账号席位上限为25个"
+   ],
+   "distractors": [
+    "s3-d1-t1-91-pricesheet#p2@T1",
+    "s3-d1-t1-91-pricesheet#p3@T1"
+   ],
+   "score_role": "arm",
+   "eval_intent": "draft-r4: 元陈述：s3-d1-t1-91-pricesheet#p2 只说该指标未复测/无新数据/待发布/未入账/不再列入跟踪，不",
+   "drafted_by": "Ronin 代理人（模型）起草，2026-10-07，未经人工审核",
+   "qtype": "paraphrase",
+   "qtype_reason": "覆盖率 < 0.8；不成 multi_hop（relevant 只有 1 个 doc_id）→ paraphrase｜覆盖率 0.57（4/7）；关键词：E、竞品、标准版、一个、账号、最多能、座位；未覆盖：一个、最多能、座位；r8 0.00",
+   "category": "trap",
+   "trap_kind": "K3",
+   "trap_mechanism": "元陈述：s3-d1-t1-91-pricesheet#p2 只说该指标未复测/无新数据/待发布/未入账/不再列入跟踪，不含数值，却与问句同词；实测值在 s3-d1-t1-91-quote#p2",
+   "self_check": {
+    "r8": 0,
+    "lcs": 0.556,
+    "ap_substring": true,
+    "ids_exist": true,
+    "same_snapshot": true,
+    "no_overlap": true,
+    "pass": true
+   }
+  },
+  {
+   "id": "r4n-s4-d2-t1-91-qa",
+   "as_of": "T1",
+   "query": "每单履约到底要花多少成本？财务那边怎么认定的？",
+   "relevant": [
+    "s4-d2-t1-91-review#p1@T1"
+   ],
+   "answer_points": [
+    "单票履约成本应修正为7.4元"
+   ],
+   "distractors": [
+    "s4-d2-t1-91-model-v3#p1@T1",
+    "s4-d2-t1-91-review#p3@T1"
+   ],
+   "score_role": "arm",
+   "eval_intent": "draft-r4: 同快照冲突：s4-d2-t1-91-model-v3#p1 给旧/错误值，s4-d2-t1-91-review#p1 给",
+   "drafted_by": "Ronin 代理人（模型）起草，2026-10-07，未经人工审核",
+   "qtype": "paraphrase",
+   "qtype_reason": "覆盖率 < 0.8；不成 multi_hop（relevant 只有 1 个 doc_id）→ paraphrase｜覆盖率 0.38（3/8）；关键词：每单、履约、到底、要花、成本、财务、那边、认定；未覆盖：每单、到底、要花、那边、认定；r8 0.00",
+   "category": "trap",
+   "trap_kind": "K2",
+   "trap_mechanism": "同快照冲突：s4-d2-t1-91-model-v3#p1 给旧/错误值，s4-d2-t1-91-review#p1 给现行值并说明依据；错误一侧在 distractors",
+   "self_check": {
+    "r8": 0,
+    "lcs": 0.238,
+    "ap_substring": true,
+    "ids_exist": true,
+    "same_snapshot": true,
+    "no_overlap": true,
+    "pass": true
+   }
+  },
+  {
+   "id": "r4n-s4-d2-t1-91-qb",
+   "as_of": "T1",
+   "query": "v3模型和财务复核给的每单履约成本差了多少，为什么不一样？",
+   "relevant": [
+    "s4-d2-t1-91-model-v3#p1@T1",
+    "s4-d2-t1-91-review#p1@T1"
+   ],
+   "answer_points": [
+    "单票履约成本为6.8元",
+    "漏计包材费用",
+    "单票履约成本应修正为7.4元"
+   ],
+   "distractors": [
+    "s4-d2-t1-91-model-v3#p3@T1",
+    "s4-d2-t1-91-review#p3@T1"
+   ],
+   "score_role": "arm",
+   "eval_intent": "draft-r4: 同快照冲突（问两侧）：s4-d2-t1-91-model-v3#p1 与 s4-d2-t1-91-review#p1 对",
+   "drafted_by": "Ronin 代理人（模型）起草，2026-10-07，未经人工审核",
+   "qtype": "multi_hop",
+   "qtype_reason": "覆盖率 < 0.8；relevant ≥2 个 doc_id，要点需 ≥2 个 doc_id 才能凑齐 → multi_hop｜覆盖率 0.75（6/8）；关键词：v3、模型、财务、复核、每单、履约、成本、一样；未覆盖：每单、一样；r8 0.00",
+   "category": "trap",
+   "trap_kind": "K2",
+   "trap_mechanism": "同快照冲突（问两侧）：s4-d2-t1-91-model-v3#p1 与 s4-d2-t1-91-review#p1 对同一对象说法矛盾，两侧都在 relevant",
+   "self_check": {
+    "r8": 0,
+    "lcs": 0.37,
+    "ap_substring": true,
+    "ids_exist": true,
+    "same_snapshot": true,
+    "no_overlap": true,
+    "pass": true
+   }
+  },
+  {
+   "id": "r4n-s4-d2-t1-91-qc",
+   "as_of": "T1",
+   "query": "复核时用的退货率是多少？",
+   "relevant": [
+    "s4-d2-t1-91-review#p2@T1"
+   ],
+   "answer_points": [
+    "退货率参数取4.1%"
+   ],
+   "distractors": [
+    "s4-d2-t1-91-model-v3#p2@T1",
+    "s4-d2-t1-91-model-v3#p3@T1"
+   ],
+   "score_role": "arm",
+   "eval_intent": "draft-r4: 元陈述：s4-d2-t1-91-model-v3#p2 只说该指标未复测/无新数据/待发布/未入账/不再列入跟踪，不含数",
+   "drafted_by": "Ronin 代理人（模型）起草，2026-10-07，未经人工审核",
+   "qtype": "paraphrase",
+   "qtype_reason": "覆盖率 < 0.8；不成 multi_hop（relevant 只有 1 个 doc_id）→ paraphrase｜覆盖率 0.67（2/3）；关键词：复核、时用、退货；未覆盖：时用；r8 0.00",
+   "category": "trap",
+   "trap_kind": "K3",
+   "trap_mechanism": "元陈述：s4-d2-t1-91-model-v3#p2 只说该指标未复测/无新数据/待发布/未入账/不再列入跟踪，不含数值，却与问句同词；实测值在 s4-d2-t1-91-review#p2",
+   "self_check": {
+    "r8": 0,
+    "lcs": 0.545,
+    "ap_substring": true,
+    "ids_exist": true,
+    "same_snapshot": true,
+    "no_overlap": true,
+    "pass": true
+   }
+  },
+  {
+   "id": "r4n-s6-d3-t1-91-qa",
+   "as_of": "T1",
+   "query": "住户收入的新统计口径到底哪天开始用？",
+   "relevant": [
+    "s6-d3-t1-91-notice#p1@T1"
+   ],
+   "answer_points": [
+    "新口径的启用时间推迟到6月1日"
+   ],
+   "distractors": [
+    "s6-d3-t1-91-changelog#p1@T1",
+    "s6-d3-t1-91-notice#p3@T1"
+   ],
+   "score_role": "arm",
+   "eval_intent": "draft-r4: 同快照冲突：s6-d3-t1-91-changelog#p1 给旧/错误值，s6-d3-t1-91-notice#p1 ",
+   "drafted_by": "Ronin 代理人（模型）起草，2026-10-07，未经人工审核",
+   "qtype": "paraphrase",
+   "qtype_reason": "覆盖率 < 0.8；不成 multi_hop（relevant 只有 1 个 doc_id）→ paraphrase｜覆盖率 0.17（1/6）；关键词：住户、收入、统计、口径、到底、开始；未覆盖：住户、收入、统计、到底、开始；r8 0.00",
+   "category": "trap",
+   "trap_kind": "K2",
+   "trap_mechanism": "同快照冲突：s6-d3-t1-91-changelog#p1 给旧/错误值，s6-d3-t1-91-notice#p1 给现行值并说明依据；错误一侧在 distractors",
+   "self_check": {
+    "r8": 0,
+    "lcs": 0.235,
+    "ap_substring": true,
+    "ids_exist": true,
+    "same_snapshot": true,
+    "no_overlap": true,
+    "pass": true
+   }
+  },
+  {
+   "id": "r4n-s6-d3-t1-91-qb",
+   "as_of": "T1",
+   "query": "新收入口径的启用日期，变更日志和执行通知各写的是哪天？",
+   "relevant": [
+    "s6-d3-t1-91-changelog#p1@T1",
+    "s6-d3-t1-91-notice#p1@T1"
+   ],
+   "answer_points": [
+    "自5月1日起启用",
+    "新口径的启用时间推迟到6月1日"
+   ],
+   "distractors": [
+    "s6-d3-t1-91-changelog#p3@T1",
+    "s6-d3-t1-91-notice#p3@T1"
+   ],
+   "score_role": "arm",
+   "eval_intent": "draft-r4: 同快照冲突（问两侧）：s6-d3-t1-91-changelog#p1 与 s6-d3-t1-91-notice#p1 ",
+   "drafted_by": "Ronin 代理人（模型）起草，2026-10-07，未经人工审核",
+   "qtype": "lexical",
+   "qtype_reason": "关键词覆盖率 ≥ 0.8 → lexical｜覆盖率 0.89（8/9）；关键词：收入、口径、启用、日期、变更、日志、执行、通知、各写；未覆盖：各写；r8 0.00",
+   "category": "trap",
+   "trap_kind": "K2",
+   "trap_mechanism": "同快照冲突（问两侧）：s6-d3-t1-91-changelog#p1 与 s6-d3-t1-91-notice#p1 对同一对象说法矛盾，两侧都在 relevant",
+   "self_check": {
+    "r8": 0,
+    "lcs": 0.4,
+    "ap_substring": true,
+    "ids_exist": true,
+    "same_snapshot": true,
+    "no_overlap": true,
+    "pass": true
+   }
+  },
+  {
+   "id": "r4n-s6-d3-t1-91-qc",
+   "as_of": "T1",
+   "query": "这一期调查一共抽了多少户？",
+   "relevant": [
+    "s6-d3-t1-91-notice#p2@T1"
+   ],
+   "answer_points": [
+    "本期样本户数为1.2万户"
+   ],
+   "distractors": [
+    "s6-d3-t1-91-changelog#p2@T1",
+    "s6-d3-t1-91-changelog#p3@T1"
+   ],
+   "score_role": "arm",
+   "eval_intent": "draft-r4: 元陈述：s6-d3-t1-91-changelog#p2 只说该指标未复测/无新数据/待发布/未入账/不再列入跟踪，不含",
+   "drafted_by": "Ronin 代理人（模型）起草，2026-10-07，未经人工审核",
+   "qtype": "paraphrase",
+   "qtype_reason": "覆盖率 < 0.8；不成 multi_hop（relevant 只有 1 个 doc_id）→ paraphrase｜覆盖率 0.00（0/3）；关键词：一期、调查、一共；未覆盖：一期、调查、一共；r8 0.00",
+   "category": "trap",
+   "trap_kind": "K3",
+   "trap_mechanism": "元陈述：s6-d3-t1-91-changelog#p2 只说该指标未复测/无新数据/待发布/未入账/不再列入跟踪，不含数值，却与问句同词；实测值在 s6-d3-t1-91-notice#p2",
+   "self_check": {
+    "r8": 0,
+    "lcs": 0.167,
+    "ap_substring": true,
+    "ids_exist": true,
+    "same_snapshot": true,
+    "no_overlap": true,
+    "pass": true
+   }
+  },
+  {
+   "id": "r4n-s1-d1-t1-91-qa",
+   "as_of": "T1",
+   "query": "我们在印尼的电子支付牌照现在是什么状态？还需要借别人的通道吗？",
+   "relevant": [
+    "s1-d1-t1-91-brief#p1@T1"
+   ],
+   "answer_points": [
+    "该电子支付牌照已于8月获批",
+    "无需再借合作方通道"
+   ],
+   "distractors": [
+    "s1-d1-t1-91-memo#p1@T1",
+    "s1-d1-t1-91-brief#p3@T1"
+   ],
+   "score_role": "arm",
+   "eval_intent": "draft-r4: 同快照冲突：s1-d1-t1-91-memo#p1 给旧/错误值，s1-d1-t1-91-brief#p1 给现行值并说",
+   "drafted_by": "Ronin 代理人（模型）起草，2026-10-07，未经人工审核",
+   "qtype": "paraphrase",
+   "qtype_reason": "覆盖率 < 0.8；不成 multi_hop（relevant 只有 1 个 doc_id）→ paraphrase｜覆盖率 0.57（4/7）；关键词：我们、印尼、电子、支付、牌照、别人、通道；未覆盖：我们、印尼、别人；r8 0.00",
+   "category": "trap",
+   "trap_kind": "K2",
+   "trap_mechanism": "同快照冲突：s1-d1-t1-91-memo#p1 给旧/错误值，s1-d1-t1-91-brief#p1 给现行值并说明依据；错误一侧在 distractors",
+   "self_check": {
+    "r8": 0,
+    "lcs": 0.345,
+    "ap_substring": true,
+    "ids_exist": true,
+    "same_snapshot": true,
+    "no_overlap": true,
+    "pass": true
+   }
+  },
+  {
+   "id": "r4n-s1-d1-t1-91-qb",
+   "as_of": "T1",
+   "query": "印尼支付牌照这件事，进入备忘和监管简报的说法有什么冲突？",
+   "relevant": [
+    "s1-d1-t1-91-memo#p1@T1",
+    "s1-d1-t1-91-brief#p1@T1"
+   ],
+   "answer_points": [
+    "牌照申请仍在审理中",
+    "该电子支付牌照已于8月获批"
+   ],
+   "distractors": [
+    "s1-d1-t1-91-memo#p3@T1",
+    "s1-d1-t1-91-brief#p3@T1"
+   ],
+   "score_role": "arm",
+   "eval_intent": "draft-r4: 同快照冲突（问两侧）：s1-d1-t1-91-memo#p1 与 s1-d1-t1-91-brief#p1 对同一对象说",
+   "drafted_by": "Ronin 代理人（模型）起草，2026-10-07，未经人工审核",
+   "qtype": "multi_hop",
+   "qtype_reason": "覆盖率 < 0.8；relevant ≥2 个 doc_id，要点需 ≥2 个 doc_id 才能凑齐 → multi_hop｜覆盖率 0.78（7/9）；关键词：印尼、支付、牌照、这件、进入、备忘、监管、简报、冲突；未覆盖：这件、冲突；r8 0.00",
+   "category": "trap",
+   "trap_kind": "K2",
+   "trap_mechanism": "同快照冲突（问两侧）：s1-d1-t1-91-memo#p1 与 s1-d1-t1-91-brief#p1 对同一对象说法矛盾，两侧都在 relevant",
+   "self_check": {
+    "r8": 0,
+    "lcs": 0.231,
+    "ap_substring": true,
+    "ids_exist": true,
+    "same_snapshot": true,
+    "no_overlap": true,
+    "pass": true
+   }
+  },
+  {
+   "id": "r4n-s1-d1-t1-91-qc",
+   "as_of": "T1",
+   "query": "这个季度用户退款平均几天能到账？",
+   "relevant": [
+    "s1-d1-t1-91-brief#p2@T1"
+   ],
+   "answer_points": [
+    "本季度平均退款到账时长为2.6天"
+   ],
+   "distractors": [
+    "s1-d1-t1-91-memo#p2@T1",
+    "s1-d1-t1-91-memo#p3@T1"
+   ],
+   "score_role": "arm",
+   "eval_intent": "draft-r4: 元陈述：s1-d1-t1-91-memo#p2 只说该指标未复测/无新数据/待发布/未入账/不再列入跟踪，不含数值，却与",
+   "drafted_by": "Ronin 代理人（模型）起草，2026-10-07，未经人工审核",
+   "qtype": "paraphrase",
+   "qtype_reason": "覆盖率 < 0.8；不成 multi_hop（relevant 只有 1 个 doc_id）→ paraphrase｜覆盖率 0.75（3/4）；关键词：季度、用户、退款、平均；未覆盖：用户；r8 0.00",
+   "category": "trap",
+   "trap_kind": "K3",
+   "trap_mechanism": "元陈述：s1-d1-t1-91-memo#p2 只说该指标未复测/无新数据/待发布/未入账/不再列入跟踪，不含数值，却与问句同词；实测值在 s1-d1-t1-91-brief#p2",
+   "self_check": {
+    "r8": 0,
+    "lcs": 0.4,
+    "ap_substring": true,
+    "ids_exist": true,
+    "same_snapshot": true,
+    "no_overlap": true,
+    "pass": true
+   }
+  },
+  {
+   "id": "r4n-s5-d2-t1-91-qa",
+   "as_of": "T1",
+   "query": "这个本地生活平台按最新年报有多少家在营商户？",
+   "relevant": [
+    "s5-d2-t1-91-annual#p1@T1"
+   ],
+   "answer_points": [
+    "截至年末活跃商户为53万家"
+   ],
+   "distractors": [
+    "s5-d2-t1-91-digest#p1@T1",
+    "s5-d2-t1-91-annual#p3@T1"
+   ],
+   "score_role": "arm",
+   "eval_intent": "draft-r4: 同快照冲突：s5-d2-t1-91-digest#p1 给旧/错误值，s5-d2-t1-91-annual#p1 给现行",
+   "drafted_by": "Ronin 代理人（模型）起草，2026-10-07，未经人工审核",
+   "qtype": "paraphrase",
+   "qtype_reason": "覆盖率 < 0.8；不成 multi_hop（relevant 只有 1 个 doc_id）→ paraphrase｜覆盖率 0.60（3/5）；关键词：本地、生活、平台、年报、商户；未覆盖：本地、生活；r8 0.00",
+   "category": "trap",
+   "trap_kind": "K2",
+   "trap_mechanism": "同快照冲突：s5-d2-t1-91-digest#p1 给旧/错误值，s5-d2-t1-91-annual#p1 给现行值并说明依据；错误一侧在 distractors",
+   "self_check": {
+    "r8": 0,
+    "lcs": 0.286,
+    "ap_substring": true,
+    "ids_exist": true,
+    "same_snapshot": true,
+    "no_overlap": true,
+    "pass": true
+   }
+  },
+  {
+   "id": "r4n-s5-d2-t1-91-qb",
+   "as_of": "T1",
+   "query": "汇编和年报给出的平台活跃商户规模各是多少？汇编的数为什么不能直接用？",
+   "relevant": [
+    "s5-d2-t1-91-digest#p1@T1",
+    "s5-d2-t1-91-annual#p1@T1"
+   ],
+   "answer_points": [
+    "该平台活跃商户约48万家",
+    "源自两年前的媒体报道",
+    "截至年末活跃商户为53万家"
+   ],
+   "distractors": [
+    "s5-d2-t1-91-digest#p3@T1",
+    "s5-d2-t1-91-annual#p3@T1"
+   ],
+   "score_role": "arm",
+   "eval_intent": "draft-r4: 同快照冲突（问两侧）：s5-d2-t1-91-digest#p1 与 s5-d2-t1-91-annual#p1 对同一",
+   "drafted_by": "Ronin 代理人（模型）起草，2026-10-07，未经人工审核",
+   "qtype": "multi_hop",
+   "qtype_reason": "覆盖率 < 0.8；relevant ≥2 个 doc_id，要点需 ≥2 个 doc_id 才能凑齐 → multi_hop｜覆盖率 0.56（5/9）；关键词：汇编、年报、平台、活跃、商户、规模、各是、不能、直接；未覆盖：规模、各是、不能、直接；r8 0.00",
+   "category": "trap",
+   "trap_kind": "K2",
+   "trap_mechanism": "同快照冲突（问两侧）：s5-d2-t1-91-digest#p1 与 s5-d2-t1-91-annual#p1 对同一对象说法矛盾，两侧都在 relevant",
+   "self_check": {
+    "r8": 0,
+    "lcs": 0.312,
+    "ap_substring": true,
+    "ids_exist": true,
+    "same_snapshot": true,
+    "no_overlap": true,
+    "pass": true
+   }
+  },
+  {
+   "id": "r4n-s5-d2-t1-91-qc",
+   "as_of": "T1",
+   "query": "平台商户一年下来的留存比例是多少？",
+   "relevant": [
+    "s5-d2-t1-91-annual#p2@T1"
+   ],
+   "answer_points": [
+    "年度商户留存率为71%"
+   ],
+   "distractors": [
+    "s5-d2-t1-91-digest#p2@T1",
+    "s5-d2-t1-91-digest#p3@T1"
+   ],
+   "score_role": "arm",
+   "eval_intent": "draft-r4: 元陈述：s5-d2-t1-91-digest#p2 只说该指标未复测/无新数据/待发布/未入账/不再列入跟踪，不含数值，",
+   "drafted_by": "Ronin 代理人（模型）起草，2026-10-07，未经人工审核",
+   "qtype": "paraphrase",
+   "qtype_reason": "覆盖率 < 0.8；不成 multi_hop（relevant 只有 1 个 doc_id）→ paraphrase｜覆盖率 0.33（2/6）；关键词：平台、商户、一年、下来、留存、比例；未覆盖：平台、一年、下来、比例；r8 0.00",
+   "category": "trap",
+   "trap_kind": "K3",
+   "trap_mechanism": "元陈述：s5-d2-t1-91-digest#p2 只说该指标未复测/无新数据/待发布/未入账/不再列入跟踪，不含数值，却与问句同词；实测值在 s5-d2-t1-91-annual#p2",
+   "self_check": {
+    "r8": 0,
+    "lcs": 0.25,
+    "ap_substring": true,
+    "ids_exist": true,
+    "same_snapshot": true,
+    "no_overlap": true,
+    "pass": true
+   }
+  },
+  {
+   "id": "r4n-s2-d2-t0-91-qa",
+   "as_of": "T0",
+   "query": "这批包装材料最后确认几天能交货？",
+   "relevant": [
+    "s2-d2-t0-91-email#p1@T0"
+   ],
+   "answer_points": [
+    "交期更正为14天"
+   ],
+   "distractors": [
+    "s2-d2-t0-91-callnotes#p1@T0",
+    "s2-d2-t0-91-email#p3@T0"
+   ],
+   "score_role": "arm",
+   "eval_intent": "draft-r4: 同快照冲突：s2-d2-t0-91-callnotes#p1 给旧/错误值，s2-d2-t0-91-email#p1 给",
+   "drafted_by": "Ronin 代理人（模型）起草，2026-10-07，未经人工审核",
+   "qtype": "paraphrase",
+   "qtype_reason": "覆盖率 < 0.8；不成 multi_hop（relevant 只有 1 个 doc_id）→ paraphrase｜覆盖率 0.40（2/5）；关键词：这批、包装材料、最后、确认、交货；未覆盖：最后、确认、交货；r8 0.00",
+   "category": "trap",
+   "trap_kind": "K2",
+   "trap_mechanism": "同快照冲突：s2-d2-t0-91-callnotes#p1 给旧/错误值，s2-d2-t0-91-email#p1 给现行值并说明依据；错误一侧在 distractors",
+   "self_check": {
+    "r8": 0,
+    "lcs": 0.467,
+    "ap_substring": true,
+    "ids_exist": true,
+    "same_snapshot": true,
+    "no_overlap": true,
+    "pass": true
+   }
+  },
+  {
+   "id": "r4n-s2-d2-t0-91-qb",
+   "as_of": "T0",
+   "query": "包装材料交期，电话里说的和邮件里确认的各是几天？",
+   "relevant": [
+    "s2-d2-t0-91-callnotes#p1@T0",
+    "s2-d2-t0-91-email#p1@T0"
+   ],
+   "answer_points": [
+    "交期为10天",
+    "交期更正为14天"
+   ],
+   "distractors": [
+    "s2-d2-t0-91-callnotes#p3@T0",
+    "s2-d2-t0-91-email#p3@T0"
+   ],
+   "score_role": "arm",
+   "eval_intent": "draft-r4: 同快照冲突（问两侧）：s2-d2-t0-91-callnotes#p1 与 s2-d2-t0-91-email#p1 对",
+   "drafted_by": "Ronin 代理人（模型）起草，2026-10-07，未经人工审核",
+   "qtype": "lexical",
+   "qtype_reason": "关键词覆盖率 ≥ 0.8 → lexical｜覆盖率 0.80（4/5）；关键词：包装材料、交期、电话、邮件、确认；未覆盖：确认；r8 0.00",
+   "category": "trap",
+   "trap_kind": "K2",
+   "trap_mechanism": "同快照冲突（问两侧）：s2-d2-t0-91-callnotes#p1 与 s2-d2-t0-91-email#p1 对同一对象说法矛盾，两侧都在 relevant",
+   "self_check": {
+    "r8": 0,
+    "lcs": 0.409,
+    "ap_substring": true,
+    "ids_exist": true,
+    "same_snapshot": true,
+    "no_overlap": true,
+    "pass": true
+   }
+  },
+  {
+   "id": "r4n-s2-d2-t0-91-qc",
+   "as_of": "T0",
+   "query": "这一批货抽检的次品比例是多少？",
+   "relevant": [
+    "s2-d2-t0-91-email#p2@T0"
+   ],
+   "answer_points": [
+    "本批抽检不良率为0.9%"
+   ],
+   "distractors": [
+    "s2-d2-t0-91-callnotes#p2@T0",
+    "s2-d2-t0-91-callnotes#p3@T0"
+   ],
+   "score_role": "arm",
+   "eval_intent": "draft-r4: 元陈述：s2-d2-t0-91-callnotes#p2 只说该指标未复测/无新数据/待发布/未入账/不再列入跟踪，不含",
+   "drafted_by": "Ronin 代理人（模型）起草，2026-10-07，未经人工审核",
+   "qtype": "paraphrase",
+   "qtype_reason": "覆盖率 < 0.8；不成 multi_hop（relevant 只有 1 个 doc_id）→ paraphrase｜覆盖率 0.25（1/4）；关键词：一批、抽检、次品、比例；未覆盖：一批、次品、比例；r8 0.00",
+   "category": "trap",
+   "trap_kind": "K3",
+   "trap_mechanism": "元陈述：s2-d2-t0-91-callnotes#p2 只说该指标未复测/无新数据/待发布/未入账/不再列入跟踪，不含数值，却与问句同词；实测值在 s2-d2-t0-91-email#p2",
+   "self_check": {
+    "r8": 0,
+    "lcs": 0.214,
+    "ap_substring": true,
+    "ids_exist": true,
+    "same_snapshot": true,
+    "no_overlap": true,
+    "pass": true
+   }
+  },
+  {
+   "id": "r4n-s3-d0-t0-91-qa",
+   "as_of": "T0",
+   "query": "竞品H客服坐席现在每个席位每月什么价？",
+   "relevant": [
+    "s3-d0-t0-91-pricing#p1@T0"
+   ],
+   "answer_points": [
+    "当前标价为每席每月52美元"
+   ],
+   "distractors": [
+    "s3-d0-t0-91-flyer#p1@T0",
+    "s3-d0-t0-91-pricing#p3@T0"
+   ],
+   "score_role": "arm",
+   "eval_intent": "draft-r4: 同快照冲突：s3-d0-t0-91-flyer#p1 给旧/错误值，s3-d0-t0-91-pricing#p1 给现行",
+   "drafted_by": "Ronin 代理人（模型）起草，2026-10-07，未经人工审核",
+   "qtype": "paraphrase",
+   "qtype_reason": "覆盖率 < 0.8；不成 multi_hop（relevant 只有 1 个 doc_id）→ paraphrase｜覆盖率 0.14（1/7）；关键词：H、竞品、客服、坐席、每个、席位、每月；未覆盖：H、竞品、客服、坐席、每个、席位；r8 0.00",
+   "category": "trap",
+   "trap_kind": "K2",
+   "trap_mechanism": "同快照冲突：s3-d0-t0-91-flyer#p1 给旧/错误值，s3-d0-t0-91-pricing#p1 给现行值并说明依据；错误一侧在 distractors",
+   "self_check": {
+    "r8": 0,
+    "lcs": 0.278,
+    "ap_substring": true,
+    "ids_exist": true,
+    "same_snapshot": true,
+    "no_overlap": true,
+    "pass": true
+   }
+  },
+  {
+   "id": "r4n-s3-d0-t0-91-qb",
+   "as_of": "T0",
+   "query": "竞品H坐席价格，传单和官网标的不一样，各是多少、差在哪？",
+   "relevant": [
+    "s3-d0-t0-91-flyer#p1@T0",
+    "s3-d0-t0-91-pricing#p1@T0"
+   ],
+   "answer_points": [
+    "每席每月45美元",
+    "当前标价为每席每月52美元",
+    "传单价格为上一季度活动价"
+   ],
+   "distractors": [
+    "s3-d0-t0-91-flyer#p3@T0",
+    "s3-d0-t0-91-pricing#p3@T0"
+   ],
+   "score_role": "arm",
+   "eval_intent": "draft-r4: 同快照冲突（问两侧）：s3-d0-t0-91-flyer#p1 与 s3-d0-t0-91-pricing#p1 对同一",
+   "drafted_by": "Ronin 代理人（模型）起草，2026-10-07，未经人工审核",
+   "qtype": "multi_hop",
+   "qtype_reason": "覆盖率 < 0.8；relevant ≥2 个 doc_id，要点需 ≥2 个 doc_id 才能凑齐 → multi_hop｜覆盖率 0.67（6/9）；关键词：H、竞品、坐席、价格、传单、官网、标的、一样、各是；未覆盖：标的、一样、各是；r8 0.00",
+   "category": "trap",
+   "trap_kind": "K2",
+   "trap_mechanism": "同快照冲突（问两侧）：s3-d0-t0-91-flyer#p1 与 s3-d0-t0-91-pricing#p1 对同一对象说法矛盾，两侧都在 relevant",
+   "self_check": {
+    "r8": 0,
+    "lcs": 0.208,
+    "ap_substring": true,
+    "ids_exist": true,
+    "same_snapshot": true,
+    "no_overlap": true,
+    "pass": true
+   }
+  },
+  {
+   "id": "r4n-s3-d0-t0-91-qc",
+   "as_of": "T0",
+   "query": "新团队注册竞品H能免费试多久？",
+   "relevant": [
+    "s3-d0-t0-91-pricing#p2@T0"
+   ],
+   "answer_points": [
+    "可获得14天免费试用"
+   ],
+   "distractors": [
+    "s3-d0-t0-91-flyer#p2@T0",
+    "s3-d0-t0-91-flyer#p3@T0"
+   ],
+   "score_role": "arm",
+   "eval_intent": "draft-r4: 元陈述：s3-d0-t0-91-flyer#p2 只说该指标未复测/无新数据/待发布/未入账/不再列入跟踪，不含数值，却",
+   "drafted_by": "Ronin 代理人（模型）起草，2026-10-07，未经人工审核",
+   "qtype": "paraphrase",
+   "qtype_reason": "覆盖率 < 0.8；不成 multi_hop（relevant 只有 1 个 doc_id）→ paraphrase｜覆盖率 0.50（3/6）；关键词：H、团队、注册、竞品、免费、多久；未覆盖：H、竞品、多久；r8 0.00",
+   "category": "trap",
+   "trap_kind": "K3",
+   "trap_mechanism": "元陈述：s3-d0-t0-91-flyer#p2 只说该指标未复测/无新数据/待发布/未入账/不再列入跟踪，不含数值，却与问句同词；实测值在 s3-d0-t0-91-pricing#p2",
+   "self_check": {
+    "r8": 0,
+    "lcs": 0.429,
+    "ap_substring": true,
+    "ids_exist": true,
+    "same_snapshot": true,
+    "no_overlap": true,
+    "pass": true
+   }
+  },
+  {
+   "id": "r4n-s4-d0-t1-91-qa",
+   "as_of": "T1",
+   "query": "工单自动分派用全量数据复评后准确率是多少？",
+   "relevant": [
+    "s4-d0-t1-91-eval#p1@T1"
+   ],
+   "answer_points": [
+    "自动分派准确率为86%"
+   ],
+   "distractors": [
+    "s4-d0-t1-91-deck#p1@T1",
+    "s4-d0-t1-91-eval#p3@T1"
+   ],
+   "score_role": "arm",
+   "eval_intent": "draft-r4: 同快照冲突：s4-d0-t1-91-deck#p1 给旧/错误值，s4-d0-t1-91-eval#p1 给现行值并说明",
+   "drafted_by": "Ronin 代理人（模型）起草，2026-10-07，未经人工审核",
+   "qtype": "lexical",
+   "qtype_reason": "关键词覆盖率 ≥ 0.8 → lexical｜覆盖率 0.86（6/7）；关键词：工单、自动、分派、全量、数据、复评、准确率；未覆盖：数据；r8 0.00",
+   "category": "trap",
+   "trap_kind": "K2",
+   "trap_mechanism": "同快照冲突：s4-d0-t1-91-deck#p1 给旧/错误值，s4-d0-t1-91-eval#p1 给现行值并说明依据；错误一侧在 distractors",
+   "self_check": {
+    "r8": 0,
+    "lcs": 0.45,
+    "ap_substring": true,
+    "ids_exist": true,
+    "same_snapshot": true,
+    "no_overlap": true,
+    "pass": true
+   }
+  },
+  {
+   "id": "r4n-s4-d0-t1-91-qb",
+   "as_of": "T1",
+   "query": "自动分派准确率，汇报材料和复评报告各报了多少？哪个是小样本？",
+   "relevant": [
+    "s4-d0-t1-91-deck#p1@T1",
+    "s4-d0-t1-91-eval#p1@T1"
+   ],
+   "answer_points": [
+    "准确率达到92%",
+    "自动分派准确率为86%",
+    "只来自早期小样本"
+   ],
+   "distractors": [
+    "s4-d0-t1-91-deck#p3@T1",
+    "s4-d0-t1-91-eval#p3@T1"
+   ],
+   "score_role": "arm",
+   "eval_intent": "draft-r4: 同快照冲突（问两侧）：s4-d0-t1-91-deck#p1 与 s4-d0-t1-91-eval#p1 对同一对象说法",
+   "drafted_by": "Ronin 代理人（模型）起草，2026-10-07，未经人工审核",
+   "qtype": "multi_hop",
+   "qtype_reason": "覆盖率 < 0.8；relevant ≥2 个 doc_id，要点需 ≥2 个 doc_id 才能凑齐 → multi_hop｜覆盖率 0.75（6/8）；关键词：自动、分派、准确率、汇报、复评、报告、各报、样本；未覆盖：报告、各报；r8 0.00",
+   "category": "trap",
+   "trap_kind": "K2",
+   "trap_mechanism": "同快照冲突（问两侧）：s4-d0-t1-91-deck#p1 与 s4-d0-t1-91-eval#p1 对同一对象说法矛盾，两侧都在 relevant",
+   "self_check": {
+    "r8": 0,
+    "lcs": 0.444,
+    "ap_substring": true,
+    "ids_exist": true,
+    "same_snapshot": true,
+    "no_overlap": true,
+    "pass": true
+   }
+  },
+  {
+   "id": "r4n-s4-d0-t1-91-qc",
+   "as_of": "T1",
+   "query": "上了自动分派以后，一张工单平均多久处理完？",
+   "relevant": [
+    "s4-d0-t1-91-eval#p2@T1"
+   ],
+   "answer_points": [
+    "工单平均处理时长下降到18分钟"
+   ],
+   "distractors": [
+    "s4-d0-t1-91-deck#p2@T1",
+    "s4-d0-t1-91-deck#p3@T1"
+   ],
+   "score_role": "arm",
+   "eval_intent": "draft-r4: 元陈述：s4-d0-t1-91-deck#p2 只说该指标未复测/无新数据/待发布/未入账/不再列入跟踪，不含数值，却与",
+   "drafted_by": "Ronin 代理人（模型）起草，2026-10-07，未经人工审核",
+   "qtype": "paraphrase",
+   "qtype_reason": "覆盖率 < 0.8；不成 multi_hop（relevant 只有 1 个 doc_id）→ paraphrase｜覆盖率 0.43（3/7）；关键词：自动、分派、以后、一张、工单、平均、多久；未覆盖：自动、以后、一张、多久；r8 0.00",
+   "category": "trap",
+   "trap_kind": "K3",
+   "trap_mechanism": "元陈述：s4-d0-t1-91-deck#p2 只说该指标未复测/无新数据/待发布/未入账/不再列入跟踪，不含数值，却与问句同词；实测值在 s4-d0-t1-91-eval#p2",
+   "self_check": {
+    "r8": 0,
+    "lcs": 0.474,
+    "ap_substring": true,
+    "ids_exist": true,
+    "same_snapshot": true,
+    "no_overlap": true,
+    "pass": true
+   }
+  },
+  {
+   "id": "r4n-s6-d1-t1-91-qa",
+   "as_of": "T1",
+   "query": "老的v1接口最终什么时候停？",
+   "relevant": [
+    "s6-d1-t1-91-patch#p1@T1"
+   ],
+   "answer_points": [
+    "下线时间延期至11月30日"
+   ],
+   "distractors": [
+    "s6-d1-t1-91-release#p1@T1",
+    "s6-d1-t1-91-patch#p3@T1"
+   ],
+   "score_role": "arm",
+   "eval_intent": "draft-r4: 同快照冲突：s6-d1-t1-91-release#p1 给旧/错误值，s6-d1-t1-91-patch#p1 给现行",
+   "drafted_by": "Ronin 代理人（模型）起草，2026-10-07，未经人工审核",
+   "qtype": "paraphrase",
+   "qtype_reason": "覆盖率 < 0.8；不成 multi_hop（relevant 只有 1 个 doc_id）→ paraphrase｜覆盖率 0.50（2/4）；关键词：v1、接口、最终、时候；未覆盖：最终、时候；r8 0.00",
+   "category": "trap",
+   "trap_kind": "K2",
+   "trap_mechanism": "同快照冲突：s6-d1-t1-91-release#p1 给旧/错误值，s6-d1-t1-91-patch#p1 给现行值并说明依据；错误一侧在 distractors",
+   "self_check": {
+    "r8": 0,
+    "lcs": 0.385,
+    "ap_substring": true,
+    "ids_exist": true,
+    "same_snapshot": true,
+    "no_overlap": true,
+    "pass": true
+   }
+  },
+  {
+   "id": "r4n-s6-d1-t1-91-qb",
+   "as_of": "T1",
+   "query": "v1接口下线时间，发布说明和补丁公告分别怎么写的？",
+   "relevant": [
+    "s6-d1-t1-91-release#p1@T1",
+    "s6-d1-t1-91-patch#p1@T1"
+   ],
+   "answer_points": [
+    "将于9月30日下线",
+    "下线时间延期至11月30日"
+   ],
+   "distractors": [
+    "s6-d1-t1-91-release#p3@T1",
+    "s6-d1-t1-91-patch#p3@T1"
+   ],
+   "score_role": "arm",
+   "eval_intent": "draft-r4: 同快照冲突（问两侧）：s6-d1-t1-91-release#p1 与 s6-d1-t1-91-patch#p1 对同一",
+   "drafted_by": "Ronin 代理人（模型）起草，2026-10-07，未经人工审核",
+   "qtype": "lexical",
+   "qtype_reason": "关键词覆盖率 ≥ 0.8 → lexical｜覆盖率 1.00（7/7）；关键词：v1、接口、下线、时间、发布、补丁、公告；未覆盖：—；r8 0.00",
+   "category": "trap",
+   "trap_kind": "K2",
+   "trap_mechanism": "同快照冲突（问两侧）：s6-d1-t1-91-release#p1 与 s6-d1-t1-91-patch#p1 对同一对象说法矛盾，两侧都在 relevant",
+   "self_check": {
+    "r8": 0,
+    "lcs": 0.348,
+    "ap_substring": true,
+    "ids_exist": true,
+    "same_snapshot": true,
+    "no_overlap": true,
+    "pass": true
+   }
+  },
+  {
+   "id": "r4n-s6-d1-t1-91-qc",
+   "as_of": "T1",
+   "query": "v2接口最近一周调用成功的比例是多少？",
+   "relevant": [
+    "s6-d1-t1-91-patch#p2@T1"
+   ],
+   "answer_points": [
+    "v2接口调用成功率为99.2%"
+   ],
+   "distractors": [
+    "s6-d1-t1-91-release#p2@T1",
+    "s6-d1-t1-91-release#p3@T1"
+   ],
+   "score_role": "arm",
+   "eval_intent": "draft-r4: 元陈述：s6-d1-t1-91-release#p2 只说该指标未复测/无新数据/待发布/未入账/不再列入跟踪，不含数值",
+   "drafted_by": "Ronin 代理人（模型）起草，2026-10-07，未经人工审核",
+   "qtype": "paraphrase",
+   "qtype_reason": "覆盖率 < 0.8；不成 multi_hop（relevant 只有 1 个 doc_id）→ paraphrase｜覆盖率 0.57（4/7）；关键词：v2、接口、最近、一周、调用、成功、比例；未覆盖：最近、一周、比例；r8 0.00",
+   "category": "trap",
+   "trap_kind": "K3",
+   "trap_mechanism": "元陈述：s6-d1-t1-91-release#p2 只说该指标未复测/无新数据/待发布/未入账/不再列入跟踪，不含数值，却与问句同词；实测值在 s6-d1-t1-91-patch#p2",
+   "self_check": {
+    "r8": 0,
+    "lcs": 0.444,
+    "ap_substring": true,
+    "ids_exist": true,
+    "same_snapshot": true,
+    "no_overlap": true,
+    "pass": true
+   }
+  },
+  {
+   "id": "r4n-s1-d3-t0-91-qa",
+   "as_of": "T0",
+   "query": "本季度出口同比增长按修订后的数是多少？",
+   "relevant": [
+    "s1-d3-t0-91-statbrief#p1@T0"
+   ],
+   "answer_points": [
+    "本季度出口同比增速为5.4%"
+   ],
+   "distractors": [
+    "s1-d3-t0-91-memo#p1@T0",
+    "s1-d3-t0-91-statbrief#p3@T0"
+   ],
+   "score_role": "arm",
+   "eval_intent": "draft-r4: 同快照冲突：s1-d3-t0-91-memo#p1 给旧/错误值，s1-d3-t0-91-statbrief#p1 给现",
+   "drafted_by": "Ronin 代理人（模型）起草，2026-10-07，未经人工审核",
+   "qtype": "paraphrase",
+   "qtype_reason": "覆盖率 < 0.8；不成 multi_hop（relevant 只有 1 个 doc_id）→ paraphrase｜覆盖率 0.67（4/6）；关键词：本季度、出口、同比、增长、修订、数是；未覆盖：增长、数是；r8 0.09",
+   "category": "trap",
+   "trap_kind": "K2",
+   "trap_mechanism": "同快照冲突：s1-d3-t0-91-memo#p1 给旧/错误值，s1-d3-t0-91-statbrief#p1 给现行值并说明依据；错误一侧在 distractors",
+   "self_check": {
+    "r8": 0.091,
+    "lcs": 0.5,
+    "ap_substring": true,
+    "ids_exist": true,
+    "same_snapshot": true,
+    "no_overlap": true,
+    "pass": true
+   }
+  },
+  {
+   "id": "r4n-s1-d3-t0-91-qb",
+   "as_of": "T0",
+   "query": "出口增速，研判备忘和统计快报各用的是多少？哪个是修订后的？",
+   "relevant": [
+    "s1-d3-t0-91-memo#p1@T0",
+    "s1-d3-t0-91-statbrief#p1@T0"
+   ],
+   "answer_points": [
+    "本季度出口同比增速为6.1%",
+    "本季度出口同比增速为5.4%",
+    "比初步数下调0.7个百分点"
+   ],
+   "distractors": [
+    "s1-d3-t0-91-memo#p3@T0",
+    "s1-d3-t0-91-statbrief#p3@T0"
+   ],
+   "score_role": "arm",
+   "eval_intent": "draft-r4: 同快照冲突（问两侧）：s1-d3-t0-91-memo#p1 与 s1-d3-t0-91-statbrief#p1 对同",
+   "drafted_by": "Ronin 代理人（模型）起草，2026-10-07，未经人工审核",
+   "qtype": "lexical",
+   "qtype_reason": "关键词覆盖率 ≥ 0.8 → lexical｜覆盖率 0.88（7/8）；关键词：出口、增速、研判、备忘、统计、快报、各用、修订；未覆盖：各用；r8 0.00",
+   "category": "trap",
+   "trap_kind": "K2",
+   "trap_mechanism": "同快照冲突（问两侧）：s1-d3-t0-91-memo#p1 与 s1-d3-t0-91-statbrief#p1 对同一对象说法矛盾，两侧都在 relevant",
+   "self_check": {
+    "r8": 0,
+    "lcs": 0.269,
+    "ap_substring": true,
+    "ids_exist": true,
+    "same_snapshot": true,
+    "no_overlap": true,
+    "pass": true
+   }
+  },
+  {
+   "id": "r4n-s1-d3-t0-91-qc",
+   "as_of": "T0",
+   "query": "主要港口的货物吞吐比去年同期增长了多少？",
+   "relevant": [
+    "s1-d3-t0-91-statbrief#p2@T0"
+   ],
+   "answer_points": [
+    "主要港口货物吞吐量同比增长3.8%"
+   ],
+   "distractors": [
+    "s1-d3-t0-91-memo#p2@T0",
+    "s1-d3-t0-91-memo#p3@T0"
+   ],
+   "score_role": "arm",
+   "eval_intent": "draft-r4: 元陈述：s1-d3-t0-91-memo#p2 只说该指标未复测/无新数据/待发布/未入账/不再列入跟踪，不含数值，却与",
+   "drafted_by": "Ronin 代理人（模型）起草，2026-10-07，未经人工审核",
+   "qtype": "lexical",
+   "qtype_reason": "关键词覆盖率 ≥ 0.8 → lexical｜覆盖率 0.83（5/6）；关键词：主要、港口、货物、吞吐、去年同期、增长；未覆盖：去年同期；r8 0.00",
+   "category": "trap",
+   "trap_kind": "K3",
+   "trap_mechanism": "元陈述：s1-d3-t0-91-memo#p2 只说该指标未复测/无新数据/待发布/未入账/不再列入跟踪，不含数值，却与问句同词；实测值在 s1-d3-t0-91-statbrief#p2",
+   "self_check": {
+    "r8": 0,
+    "lcs": 0.579,
+    "ap_substring": true,
+    "ids_exist": true,
+    "same_snapshot": true,
+    "no_overlap": true,
+    "pass": true
+   }
+  },
+  {
+   "id": "r4n-s5-d1-t0-91-qa",
+   "as_of": "T0",
+   "query": "按原始调研，本地消费者网购渗透率实际是多少？",
+   "relevant": [
+    "s5-d1-t0-91-survey#p1@T0"
+   ],
+   "answer_points": [
+    "线上购物渗透率实测为54%"
+   ],
+   "distractors": [
+    "s5-d1-t0-91-repost#p1@T0",
+    "s5-d1-t0-91-survey#p3@T0"
+   ],
+   "score_role": "arm",
+   "eval_intent": "draft-r4: 同快照冲突：s5-d1-t0-91-repost#p1 给旧/错误值，s5-d1-t0-91-survey#p1 给现行",
+   "drafted_by": "Ronin 代理人（模型）起草，2026-10-07，未经人工审核",
+   "qtype": "paraphrase",
+   "qtype_reason": "覆盖率 < 0.8；不成 multi_hop（relevant 只有 1 个 doc_id）→ paraphrase｜覆盖率 0.50（3/6）；关键词：原始、调研、本地、消费者、网购、渗透率；未覆盖：本地、消费者、网购；r8 0.00",
+   "category": "trap",
+   "trap_kind": "K2",
+   "trap_mechanism": "同快照冲突：s5-d1-t0-91-repost#p1 给旧/错误值，s5-d1-t0-91-survey#p1 给现行值并说明依据；错误一侧在 distractors",
+   "self_check": {
+    "r8": 0,
+    "lcs": 0.45,
+    "ap_substring": true,
+    "ids_exist": true,
+    "same_snapshot": true,
+    "no_overlap": true,
+    "pass": true
+   }
+  },
+  {
+   "id": "r4n-s5-d1-t0-91-qb",
+   "as_of": "T0",
+   "query": "网购渗透率，转述文章和原始调研各说了多少？",
+   "relevant": [
+    "s5-d1-t0-91-repost#p1@T0",
+    "s5-d1-t0-91-survey#p1@T0"
+   ],
+   "answer_points": [
+    "线上购物渗透率已经超过六成",
+    "线上购物渗透率实测为54%"
+   ],
+   "distractors": [
+    "s5-d1-t0-91-repost#p3@T0",
+    "s5-d1-t0-91-survey#p3@T0"
+   ],
+   "score_role": "arm",
+   "eval_intent": "draft-r4: 同快照冲突（问两侧）：s5-d1-t0-91-repost#p1 与 s5-d1-t0-91-survey#p1 对同一",
+   "drafted_by": "Ronin 代理人（模型）起草，2026-10-07，未经人工审核",
+   "qtype": "multi_hop",
+   "qtype_reason": "覆盖率 < 0.8；relevant ≥2 个 doc_id，要点需 ≥2 个 doc_id 才能凑齐 → multi_hop｜覆盖率 0.57（4/7）；关键词：网购、渗透率、转述、文章、原始、调研、各说；未覆盖：网购、转述、各说；r8 0.00",
+   "category": "trap",
+   "trap_kind": "K2",
+   "trap_mechanism": "同快照冲突（问两侧）：s5-d1-t0-91-repost#p1 与 s5-d1-t0-91-survey#p1 对同一对象说法矛盾，两侧都在 relevant",
+   "self_check": {
+    "r8": 0,
+    "lcs": 0.211,
+    "ap_substring": true,
+    "ids_exist": true,
+    "same_snapshot": true,
+    "no_overlap": true,
+    "pass": true
+   }
+  },
+  {
+   "id": "r4n-s5-d1-t0-91-qc",
+   "as_of": "T0",
+   "query": "消费者平均隔多少天会再次下单？",
+   "relevant": [
+    "s5-d1-t0-91-survey#p2@T0"
+   ],
+   "answer_points": [
+    "平均复购周期为37天"
+   ],
+   "distractors": [
+    "s5-d1-t0-91-repost#p2@T0",
+    "s5-d1-t0-91-repost#p3@T0"
+   ],
+   "score_role": "arm",
+   "eval_intent": "draft-r4: 元陈述：s5-d1-t0-91-repost#p2 只说该指标未复测/无新数据/待发布/未入账/不再列入跟踪，不含数值，",
+   "drafted_by": "Ronin 代理人（模型）起草，2026-10-07，未经人工审核",
+   "qtype": "paraphrase",
+   "qtype_reason": "覆盖率 < 0.8；不成 multi_hop（relevant 只有 1 个 doc_id）→ paraphrase｜覆盖率 0.25（1/4）；关键词：消费者、平均、再次、下单；未覆盖：消费者、再次、下单；r8 0.00",
+   "category": "trap",
+   "trap_kind": "K3",
+   "trap_mechanism": "元陈述：s5-d1-t0-91-repost#p2 只说该指标未复测/无新数据/待发布/未入账/不再列入跟踪，不含数值，却与问句同词；实测值在 s5-d1-t0-91-survey#p2",
+   "self_check": {
+    "r8": 0,
+    "lcs": 0.214,
+    "ap_substring": true,
+    "ids_exist": true,
+    "same_snapshot": true,
+    "no_overlap": true,
+    "pass": true
+   }
+  },
+  {
+   "id": "r4n-s2-d3-t1-91-qa",
+   "as_of": "T1",
+   "query": "区域试点今年获批的是几个城市？",
+   "relevant": [
+    "s2-d3-t1-91-minutes#p1@T1"
+   ],
+   "answer_points": [
+    "会议批准的试点范围是8个城市"
+   ],
+   "distractors": [
+    "s2-d3-t1-91-interview#p1@T1",
+    "s2-d3-t1-91-minutes#p3@T1"
+   ],
+   "score_role": "arm",
+   "eval_intent": "draft-r4: 同快照冲突：s2-d3-t1-91-interview#p1 给旧/错误值，s2-d3-t1-91-minutes#p1",
+   "drafted_by": "Ronin 代理人（模型）起草，2026-10-07，未经人工审核",
+   "qtype": "paraphrase",
+   "qtype_reason": "覆盖率 < 0.8；不成 multi_hop（relevant 只有 1 个 doc_id）→ paraphrase｜覆盖率 0.40（2/5）；关键词：区域、试点、今年、获批、城市；未覆盖：区域、今年、获批；r8 0.00",
+   "category": "trap",
+   "trap_kind": "K2",
+   "trap_mechanism": "同快照冲突：s2-d3-t1-91-interview#p1 给旧/错误值，s2-d3-t1-91-minutes#p1 给现行值并说明依据；错误一侧在 distractors",
+   "self_check": {
+    "r8": 0,
+    "lcs": 0.429,
+    "ap_substring": true,
+    "ids_exist": true,
+    "same_snapshot": true,
+    "no_overlap": true,
+    "pass": true
+   }
+  },
+  {
+   "id": "r4n-s2-d3-t1-91-qb",
+   "as_of": "T1",
+   "query": "试点城市数量，CEO访谈和董事会纪要说法差在哪？",
+   "relevant": [
+    "s2-d3-t1-91-interview#p1@T1",
+    "s2-d3-t1-91-minutes#p1@T1"
+   ],
+   "answer_points": [
+    "今年会扩到12个城市",
+    "会议批准的试点范围是8个城市"
+   ],
+   "distractors": [
+    "s2-d3-t1-91-interview#p3@T1",
+    "s2-d3-t1-91-minutes#p3@T1"
+   ],
+   "score_role": "arm",
+   "eval_intent": "draft-r4: 同快照冲突（问两侧）：s2-d3-t1-91-interview#p1 与 s2-d3-t1-91-minutes#p1",
+   "drafted_by": "Ronin 代理人（模型）起草，2026-10-07，未经人工审核",
+   "qtype": "lexical",
+   "qtype_reason": "关键词覆盖率 ≥ 0.8 → lexical｜覆盖率 0.86（6/7）；关键词：CEO、试点、城市、数量、访谈、董事会、纪要；未覆盖：数量；r8 0.00",
+   "category": "trap",
+   "trap_kind": "K2",
+   "trap_mechanism": "同快照冲突（问两侧）：s2-d3-t1-91-interview#p1 与 s2-d3-t1-91-minutes#p1 对同一对象说法矛盾，两侧都在 relevant",
+   "self_check": {
+    "r8": 0,
+    "lcs": 0.273,
+    "ap_substring": true,
+    "ids_exist": true,
+    "same_snapshot": true,
+    "no_overlap": true,
+    "pass": true
+   }
+  },
+  {
+   "id": "r4n-s2-d3-t1-91-qc",
+   "as_of": "T1",
+   "query": "每个试点城市最多能拿多少补贴？",
+   "relevant": [
+    "s2-d3-t1-91-minutes#p2@T1"
+   ],
+   "answer_points": [
+    "每城试点补贴上限为300万元"
+   ],
+   "distractors": [
+    "s2-d3-t1-91-interview#p2@T1",
+    "s2-d3-t1-91-interview#p3@T1"
+   ],
+   "score_role": "arm",
+   "eval_intent": "draft-r4: 元陈述：s2-d3-t1-91-interview#p2 只说该指标未复测/无新数据/待发布/未入账/不再列入跟踪，不含",
+   "drafted_by": "Ronin 代理人（模型）起草，2026-10-07，未经人工审核",
+   "qtype": "paraphrase",
+   "qtype_reason": "覆盖率 < 0.8；不成 multi_hop（relevant 只有 1 个 doc_id）→ paraphrase｜覆盖率 0.40（2/5）；关键词：每个、试点、城市、最多能、补贴；未覆盖：每个、城市、最多能；r8 0.00",
+   "category": "trap",
+   "trap_kind": "K3",
+   "trap_mechanism": "元陈述：s2-d3-t1-91-interview#p2 只说该指标未复测/无新数据/待发布/未入账/不再列入跟踪，不含数值，却与问句同词；实测值在 s2-d3-t1-91-minutes#p2",
+   "self_check": {
+    "r8": 0,
+    "lcs": 0.357,
+    "ap_substring": true,
+    "ids_exist": true,
+    "same_snapshot": true,
+    "no_overlap": true,
+    "pass": true
+   }
+  },
+  {
+   "id": "r4n-s3-d2-t1-91-qa",
+   "as_of": "T1",
+   "query": "竞品G的合规模块按合同到底收不收钱？多少？",
+   "relevant": [
+    "s3-d2-t1-91-contract#p1@T1"
+   ],
+   "answer_points": [
+    "合规模块单独计费每月800元"
+   ],
+   "distractors": [
+    "s3-d2-t1-91-brochure#p1@T1",
+    "s3-d2-t1-91-contract#p3@T1"
+   ],
+   "score_role": "arm",
+   "eval_intent": "draft-r4: 同快照冲突：s3-d2-t1-91-brochure#p1 给旧/错误值，s3-d2-t1-91-contract#p1",
+   "drafted_by": "Ronin 代理人（模型）起草，2026-10-07，未经人工审核",
+   "qtype": "paraphrase",
+   "qtype_reason": "覆盖率 < 0.8；不成 multi_hop（relevant 只有 1 个 doc_id）→ paraphrase｜覆盖率 0.43（3/7）；关键词：G、竞品、合规、模块、合同、到底、收钱；未覆盖：G、竞品、到底、收钱；r8 0.00",
+   "category": "trap",
+   "trap_kind": "K2",
+   "trap_mechanism": "同快照冲突：s3-d2-t1-91-brochure#p1 给旧/错误值，s3-d2-t1-91-contract#p1 给现行值并说明依据；错误一侧在 distractors",
+   "self_check": {
+    "r8": 0,
+    "lcs": 0.211,
+    "ap_substring": true,
+    "ids_exist": true,
+    "same_snapshot": true,
+    "no_overlap": true,
+    "pass": true
+   }
+  },
+  {
+   "id": "r4n-s3-d2-t1-91-qb",
+   "as_of": "T1",
+   "query": "竞品G合规模块的收费，宣传册和合同报价单怎么说的？",
+   "relevant": [
+    "s3-d2-t1-91-brochure#p1@T1",
+    "s3-d2-t1-91-contract#p1@T1"
+   ],
+   "answer_points": [
+    "数据合规模块免费附送",
+    "合规模块单独计费每月800元",
+    "只适用于首年促销"
+   ],
+   "distractors": [
+    "s3-d2-t1-91-brochure#p3@T1",
+    "s3-d2-t1-91-contract#p3@T1"
+   ],
+   "score_role": "arm",
+   "eval_intent": "draft-r4: 同快照冲突（问两侧）：s3-d2-t1-91-brochure#p1 与 s3-d2-t1-91-contract#p1",
+   "drafted_by": "Ronin 代理人（模型）起草，2026-10-07，未经人工审核",
+   "qtype": "lexical",
+   "qtype_reason": "关键词覆盖率 ≥ 0.8 → lexical｜覆盖率 0.88（7/8）；关键词：G、竞品、合规、模块、收费、宣传册、合同、报价单；未覆盖：收费；r8 0.00",
+   "category": "trap",
+   "trap_kind": "K2",
+   "trap_mechanism": "同快照冲突（问两侧）：s3-d2-t1-91-brochure#p1 与 s3-d2-t1-91-contract#p1 对同一对象说法矛盾，两侧都在 relevant",
+   "self_check": {
+    "r8": 0,
+    "lcs": 0.391,
+    "ap_substring": true,
+    "ids_exist": true,
+    "same_snapshot": true,
+    "no_overlap": true,
+    "pass": true
+   }
+  },
+  {
+   "id": "r4n-s3-d2-t1-91-qc",
+   "as_of": "T1",
+   "query": "竞品G在合同里承诺的服务可用性是多少？",
+   "relevant": [
+    "s3-d2-t1-91-contract#p2@T1"
+   ],
+   "answer_points": [
+    "SLA承诺为99.95%"
+   ],
+   "distractors": [
+    "s3-d2-t1-91-brochure#p2@T1",
+    "s3-d2-t1-91-brochure#p3@T1"
+   ],
+   "score_role": "arm",
+   "eval_intent": "draft-r4: 元陈述：s3-d2-t1-91-brochure#p2 只说该指标未复测/无新数据/待发布/未入账/不再列入跟踪，不含数",
+   "drafted_by": "Ronin 代理人（模型）起草，2026-10-07，未经人工审核",
+   "qtype": "paraphrase",
+   "qtype_reason": "覆盖率 < 0.8；不成 multi_hop（relevant 只有 1 个 doc_id）→ paraphrase｜覆盖率 0.67（4/6）；关键词：G、竞品、合同、承诺、服务、可用性；未覆盖：服务、可用性；r8 0.00",
+   "category": "trap",
+   "trap_kind": "K3",
+   "trap_mechanism": "元陈述：s3-d2-t1-91-brochure#p2 只说该指标未复测/无新数据/待发布/未入账/不再列入跟踪，不含数值，却与问句同词；实测值在 s3-d2-t1-91-contract#p2",
+   "self_check": {
+    "r8": 0,
+    "lcs": 0.278,
+    "ap_substring": true,
+    "ids_exist": true,
+    "same_snapshot": true,
+    "no_overlap": true,
+    "pass": true
+   }
+  },
+  {
+   "id": "r4n-s4-d3-t0-91-qa",
+   "as_of": "T0",
+   "query": "电力折算标准煤现在该用多大的系数？",
+   "relevant": [
+    "s4-d3-t0-91-method#p1@T0"
+   ],
+   "answer_points": [
+    "该折算系数应为0.76"
+   ],
+   "distractors": [
+    "s4-d3-t0-91-calc#p1@T0",
+    "s4-d3-t0-91-method#p3@T0"
+   ],
+   "score_role": "arm",
+   "eval_intent": "draft-r4: 同快照冲突：s4-d3-t0-91-calc#p1 给旧/错误值，s4-d3-t0-91-method#p1 给现行值并",
+   "drafted_by": "Ronin 代理人（模型）起草，2026-10-07，未经人工审核",
+   "qtype": "paraphrase",
+   "qtype_reason": "覆盖率 < 0.8；不成 multi_hop（relevant 只有 1 个 doc_id）→ paraphrase｜覆盖率 0.40（2/5）；关键词：电力、折算、标准煤、该用、系数；未覆盖：电力、标准煤、该用；r8 0.00",
+   "category": "trap",
+   "trap_kind": "K2",
+   "trap_mechanism": "同快照冲突：s4-d3-t0-91-calc#p1 给旧/错误值，s4-d3-t0-91-method#p1 给现行值并说明依据；错误一侧在 distractors",
+   "self_check": {
+    "r8": 0,
+    "lcs": 0.25,
+    "ap_substring": true,
+    "ids_exist": true,
+    "same_snapshot": true,
+    "no_overlap": true,
+    "pass": true
+   }
+  },
+  {
+   "id": "r4n-s4-d3-t0-91-qb",
+   "as_of": "T0",
+   "query": "电力折标煤系数，测算表和方法更新说明各取多少？",
+   "relevant": [
+    "s4-d3-t0-91-calc#p1@T0",
+    "s4-d3-t0-91-method#p1@T0"
+   ],
+   "answer_points": [
+    "系数取0.82",
+    "该折算系数应为0.76"
+   ],
+   "distractors": [
+    "s4-d3-t0-91-calc#p3@T0",
+    "s4-d3-t0-91-method#p3@T0"
+   ],
+   "score_role": "arm",
+   "eval_intent": "draft-r4: 同快照冲突（问两侧）：s4-d3-t0-91-calc#p1 与 s4-d3-t0-91-method#p1 对同一对象",
+   "drafted_by": "Ronin 代理人（模型）起草，2026-10-07，未经人工审核",
+   "qtype": "multi_hop",
+   "qtype_reason": "覆盖率 < 0.8；relevant ≥2 个 doc_id，要点需 ≥2 个 doc_id 才能凑齐 → multi_hop｜覆盖率 0.67（4/6）；关键词：电力、标煤、系数、测算、更新、各取；未覆盖：标煤、各取；r8 0.00",
+   "category": "trap",
+   "trap_kind": "K2",
+   "trap_mechanism": "同快照冲突（问两侧）：s4-d3-t0-91-calc#p1 与 s4-d3-t0-91-method#p1 对同一对象说法矛盾，两侧都在 relevant",
+   "self_check": {
+    "r8": 0,
+    "lcs": 0.381,
+    "ap_substring": true,
+    "ids_exist": true,
+    "same_snapshot": true,
+    "no_overlap": true,
+    "pass": true
+   }
+  },
+  {
+   "id": "r4n-s4-d3-t0-91-qc",
+   "as_of": "T0",
+   "query": "今年产线实际利用了多少产能？",
+   "relevant": [
+    "s4-d3-t0-91-method#p2@T0"
+   ],
+   "answer_points": [
+    "本年度产线利用率为78%"
+   ],
+   "distractors": [
+    "s4-d3-t0-91-calc#p2@T0",
+    "s4-d3-t0-91-calc#p3@T0"
+   ],
+   "score_role": "arm",
+   "eval_intent": "draft-r4: 元陈述：s4-d3-t0-91-calc#p2 只说该指标未复测/无新数据/待发布/未入账/不再列入跟踪，不含数值，却与",
+   "drafted_by": "Ronin 代理人（模型）起草，2026-10-07，未经人工审核",
+   "qtype": "paraphrase",
+   "qtype_reason": "覆盖率 < 0.8；不成 multi_hop（relevant 只有 1 个 doc_id）→ paraphrase｜覆盖率 0.50（2/4）；关键词：今年、产线、利用、产能；未覆盖：今年、产能；r8 0.00",
+   "category": "trap",
+   "trap_kind": "K3",
+   "trap_mechanism": "元陈述：s4-d3-t0-91-calc#p2 只说该指标未复测/无新数据/待发布/未入账/不再列入跟踪，不含数值，却与问句同词；实测值在 s4-d3-t0-91-method#p2",
+   "self_check": {
+    "r8": 0,
+    "lcs": 0.385,
+    "ap_substring": true,
+    "ids_exist": true,
+    "same_snapshot": true,
+    "no_overlap": true,
+    "pass": true
+   }
+  },
+  {
+   "id": "r4n-s6-d0-t1-91-qa",
+   "as_of": "T1",
+   "query": "退款多少钱以上才要主管点头？",
+   "relevant": [
+    "s6-d0-t1-91-change#p1@T1"
+   ],
+   "answer_points": [
+    "退款审批阈值改为500美元以上"
+   ],
+   "distractors": [
+    "s6-d0-t1-91-sop#p1@T1",
+    "s6-d0-t1-91-change#p3@T1"
+   ],
+   "score_role": "arm",
+   "eval_intent": "draft-r4: 同快照冲突：s6-d0-t1-91-sop#p1 给旧/错误值，s6-d0-t1-91-change#p1 给现行值并说",
+   "drafted_by": "Ronin 代理人（模型）起草，2026-10-07，未经人工审核",
+   "qtype": "paraphrase",
+   "qtype_reason": "覆盖率 < 0.8；不成 multi_hop（relevant 只有 1 个 doc_id）→ paraphrase｜覆盖率 0.50（2/4）；关键词：退款、以上、主管、点头；未覆盖：主管、点头；r8 0.00",
+   "category": "trap",
+   "trap_kind": "K2",
+   "trap_mechanism": "同快照冲突：s6-d0-t1-91-sop#p1 给旧/错误值，s6-d0-t1-91-change#p1 给现行值并说明依据；错误一侧在 distractors",
+   "self_check": {
+    "r8": 0,
+    "lcs": 0.308,
+    "ap_substring": true,
+    "ids_exist": true,
+    "same_snapshot": true,
+    "no_overlap": true,
+    "pass": true
+   }
+  },
+  {
+   "id": "r4n-s6-d0-t1-91-qb",
+   "as_of": "T1",
+   "query": "退款要主管审批的金额线，手册和变更单各写的是多少？",
+   "relevant": [
+    "s6-d0-t1-91-sop#p1@T1",
+    "s6-d0-t1-91-change#p1@T1"
+   ],
+   "answer_points": [
+    "金额在300美元以上的退款需要主管审批",
+    "退款审批阈值改为500美元以上"
+   ],
+   "distractors": [
+    "s6-d0-t1-91-sop#p3@T1",
+    "s6-d0-t1-91-change#p3@T1"
+   ],
+   "score_role": "arm",
+   "eval_intent": "draft-r4: 同快照冲突（问两侧）：s6-d0-t1-91-sop#p1 与 s6-d0-t1-91-change#p1 对同一对象说",
+   "drafted_by": "Ronin 代理人（模型）起草，2026-10-07，未经人工审核",
+   "qtype": "lexical",
+   "qtype_reason": "关键词覆盖率 ≥ 0.8 → lexical｜覆盖率 0.86（6/7）；关键词：退款、主管、审批、金额、手册、变更、单各写；未覆盖：单各写；r8 0.00",
+   "category": "trap",
+   "trap_kind": "K2",
+   "trap_mechanism": "同快照冲突（问两侧）：s6-d0-t1-91-sop#p1 与 s6-d0-t1-91-change#p1 对同一对象说法矛盾，两侧都在 relevant",
+   "self_check": {
+    "r8": 0,
+    "lcs": 0.348,
+    "ap_substring": true,
+    "ids_exist": true,
+    "same_snapshot": true,
+    "no_overlap": true,
+    "pass": true
+   }
+  },
+  {
+   "id": "r4n-s6-d0-t1-91-qc",
+   "as_of": "T1",
+   "query": "客服上个月一次就把问题解决的比例是多少？",
+   "relevant": [
+    "s6-d0-t1-91-change#p2@T1"
+   ],
+   "answer_points": [
+    "上月首次解决率为74%"
+   ],
+   "distractors": [
+    "s6-d0-t1-91-sop#p2@T1",
+    "s6-d0-t1-91-sop#p3@T1"
+   ],
+   "score_role": "arm",
+   "eval_intent": "draft-r4: 元陈述：s6-d0-t1-91-sop#p2 只说该指标未复测/无新数据/待发布/未入账/不再列入跟踪，不含数值，却与问",
+   "drafted_by": "Ronin 代理人（模型）起草，2026-10-07，未经人工审核",
+   "qtype": "paraphrase",
+   "qtype_reason": "覆盖率 < 0.8；不成 multi_hop（relevant 只有 1 个 doc_id）→ paraphrase｜覆盖率 0.20（1/5）；关键词：客服、上个月、一次、解决、比例；未覆盖：客服、上个月、一次、比例；r8 0.00",
+   "category": "trap",
+   "trap_kind": "K3",
+   "trap_mechanism": "元陈述：s6-d0-t1-91-sop#p2 只说该指标未复测/无新数据/待发布/未入账/不再列入跟踪，不含数值，却与问句同词；实测值在 s6-d0-t1-91-change#p2",
+   "self_check": {
+    "r8": 0,
+    "lcs": 0.263,
+    "ap_substring": true,
+    "ids_exist": true,
+    "same_snapshot": true,
+    "no_overlap": true,
+    "pass": true
+   }
+  }
+ ]
+}

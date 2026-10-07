@@ -1,0 +1,23 @@
+{
+  "n_questions": 267,
+  "n_arm": 224,
+  "n_guardrail": 43,
+  "qtype_arm": {
+    "lexical": 60,
+    "multi_hop": 45,
+    "paraphrase": 119
+  },
+  "trap_adv_arm": 71,
+  "copied_corpus_md": 194,
+  "copied_trap_md": 24,
+  "rejected": [
+    {
+      "id": "r4n-s2-d0-t1-91-qc",
+      "reason": "问句要「平均」等多久。语料只有中位数11分钟，没有平均数。未复测那块是元陈述，陷阱结构在，但问的统计量和证据对不齐，答案有歧义。否决。",
+      "flags": [
+        "ambiguous"
+      ]
+    }
+  ],
+  "spec_batches": 67
+}

@@ -1,0 +1,329 @@
+{
+ "category_v2": {
+  "n_arm": 168,
+  "trap_adv": 15,
+  "ratio": 8.93,
+  "need": 51,
+  "changed": [
+   [
+    "s3-d3-01-q4",
+    "hard",
+    "trap"
+   ],
+   [
+    "s5-d0-t0-01-q4",
+    "trap",
+    "hard"
+   ],
+   [
+    "s5-d0-t0-01-q6",
+    "trap",
+    "hard"
+   ],
+   [
+    "s5-d0-t1-02-q1",
+    "trap",
+    "hard"
+   ],
+   [
+    "s5-d0-t1-02-q2",
+    "trap",
+    "hard"
+   ],
+   [
+    "s5-d0-t1-02-q3",
+    "trap",
+    "hard"
+   ],
+   [
+    "s5-d0-t1-02-q4",
+    "trap",
+    "hard"
+   ],
+   [
+    "s5-d1-t1-03-q1",
+    "trap",
+    "hard"
+   ],
+   [
+    "s5-d1-t1-03-q2",
+    "trap",
+    "hard"
+   ],
+   [
+    "s5-d1-t1-03-q3",
+    "trap",
+    "hard"
+   ],
+   [
+    "s5-d1-t1-03-q4",
+    "trap",
+    "hard"
+   ],
+   [
+    "s5-d2-t0-04-q1",
+    "trap",
+    "hard"
+   ],
+   [
+    "s5-d2-t0-04-q2",
+    "trap",
+    "hard"
+   ],
+   [
+    "s5-d2-t0-04-q3",
+    "trap",
+    "hard"
+   ],
+   [
+    "s5-d3-t1-05-q3",
+    "trap",
+    "hard"
+   ],
+   [
+    "s7-d0-t0-01-q1",
+    "trap",
+    "hard"
+   ],
+   [
+    "s7-d0-t0-01-q2",
+    "trap",
+    "hard"
+   ],
+   [
+    "s7-d0-t0-01-q3",
+    "trap",
+    "hard"
+   ],
+   [
+    "s7-d0-t0-01-q4",
+    "trap",
+    "hard"
+   ],
+   [
+    "s7-d0-t0-01-q5",
+    "trap",
+    "hard"
+   ],
+   [
+    "s7-d0-t0-01-q6",
+    "trap",
+    "hard"
+   ],
+   [
+    "s7-d0-t1-02-q1",
+    "trap",
+    "hard"
+   ],
+   [
+    "s7-d0-t1-02-q2",
+    "trap",
+    "hard"
+   ],
+   [
+    "s7-d0-t1-02-q3",
+    "trap",
+    "hard"
+   ],
+   [
+    "s7-d0-t1-02-q4",
+    "trap",
+    "hard"
+   ],
+   [
+    "s7-d0-t1-02-q5",
+    "trap",
+    "hard"
+   ],
+   [
+    "s7-d0-t1-02-q6",
+    "trap",
+    "hard"
+   ],
+   [
+    "s7-d1-t0-03-q1",
+    "trap",
+    "hard"
+   ],
+   [
+    "s7-d1-t0-03-q2",
+    "trap",
+    "hard"
+   ],
+   [
+    "s7-d1-t0-03-q3",
+    "trap",
+    "hard"
+   ],
+   [
+    "s7-d1-t0-03-q4",
+    "trap",
+    "hard"
+   ],
+   [
+    "s7-d2-t1-04-q1",
+    "trap",
+    "hard"
+   ],
+   [
+    "s7-d2-t1-04-q2",
+    "trap",
+    "hard"
+   ],
+   [
+    "s7-d2-t1-04-q3",
+    "trap",
+    "hard"
+   ],
+   [
+    "s7-d2-t1-04-q4",
+    "trap",
+    "hard"
+   ],
+   [
+    "s7-d3-t1-05-q1",
+    "trap",
+    "hard"
+   ],
+   [
+    "s7-d3-t1-05-q2",
+    "trap",
+    "hard"
+   ],
+   [
+    "s7-d3-t1-05-q3",
+    "adversarial",
+    "hard"
+   ],
+   [
+    "s7-d3-t1-05-q4",
+    "trap",
+    "hard"
+   ]
+  ]
+ },
+ "s6_d2_g2_A": {
+  "qtype": [
+   "lexical",
+   "lexical"
+  ],
+  "ap_ok": {
+   "本法自2024年7月1日起施行": true,
+   "第二百六十六条要求出资期限超出法定上限的存量公司逐步调整到位": true,
+   "本法施行前已登记设立的公司，出资期限超过本法规定的期限的，除法律、行政法规或者国务院另有规定外，应当逐步调整至本法规定的期限以内": true
+  },
+  "memo_users_ok": true
+ },
+ "part1": {
+  "n": 6,
+  "qtype": {
+   "paraphrase": 4,
+   "multi_hop": 2
+  },
+  "kinds": {
+   "K2": 6
+  },
+  "fail": []
+ },
+ "gap": {
+  "base_trap": 15,
+  "base_arm": 168,
+  "x_min_total_new": 51,
+  "plus_margin": 54,
+  "mined": 6,
+  "need_new_written": 48,
+  "drafted": 48
+ },
+ "part2": {
+  "n": 48,
+  "docs": 32,
+  "chunks": 96,
+  "qtype": {
+   "paraphrase": 30,
+   "multi_hop": 9,
+   "lexical": 9
+  },
+  "kinds": {
+   "K2": 32,
+   "K3": 16
+  },
+  "batches": 16,
+  "genres": {
+   "S2": 3,
+   "S3": 3,
+   "S4": 3,
+   "S6": 3,
+   "S1": 2,
+   "S5": 2
+  },
+  "snaps": {
+   "T1": 11,
+   "T0": 5
+  },
+  "fail": []
+ },
+ "check": {
+  "base_final": {
+   "exit": 0,
+   "qtype_arm": {
+    "lexical": 51,
+    "paraphrase": 83,
+    "multi_hop": 34
+   },
+   "n_arm": 168,
+   "n_guardrail": 43,
+   "trap_adv": 52,
+   "ratio": 30.95,
+   "need": 51,
+   "slack": 1,
+   "chunks": 692,
+   "syn": 0.8049,
+   "decontam": 0,
+   "lcs_flags": 0,
+   "license": 0,
+   "messages": []
+  },
+  "v2_only": {
+   "exit": 1,
+   "qtype_arm": {
+    "lexical": 51,
+    "paraphrase": 83,
+    "multi_hop": 34
+   },
+   "n_arm": 168,
+   "n_guardrail": 43,
+   "trap_adv": 15,
+   "ratio": 8.93,
+   "need": 51,
+   "slack": -36,
+   "chunks": 788,
+   "syn": 0.8287,
+   "decontam": 0,
+   "lcs_flags": 0,
+   "license": 0,
+   "messages": [
+    "trap+adversarial 比例 0.0893 < 0.3"
+   ]
+  },
+  "projected": {
+   "exit": 0,
+   "qtype_arm": {
+    "lexical": 60,
+    "paraphrase": 117,
+    "multi_hop": 45
+   },
+   "n_arm": 222,
+   "n_guardrail": 43,
+   "trap_adv": 69,
+   "ratio": 31.08,
+   "need": 67,
+   "slack": 2,
+   "chunks": 788,
+   "syn": 0.8287,
+   "decontam": 0,
+   "lcs_flags": 0,
+   "license": 0,
+   "messages": []
+  }
+ }
+}

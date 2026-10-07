@@ -1,0 +1,4790 @@
+{
+ "meta": {
+  "protocol": "slim: two independent model annotators; scoring-relevant disagreements (relevant / arm-guardrail / B issue), a seeded ~20% stratified sample of agreed rows and the 12 content corrections were reviewed by the Ronin agent (a model) on the owner's delegation, not row-by-row by a human; other disagreements merged by fixed rules",
+  "annotators": {
+   "A": "assistant draft (v2 gold-draft-v2.json)",
+   "B": "Cursor cloud agent on GPT-5.6 Sol, blind to A"
+  },
+  "source_xlsx": "/workspace/x1-labeling/ronin-review/RET-01.3-review-v4-ronin.xlsx",
+  "annotator_A": "/workspace/x1-labeling/v2/gold-draft-v2.json",
+  "annotator_B": "/workspace/cloud-agent-artifacts/bc-08c03b6b-f68a-58e3-9a94-9cf628851e7b/gold-blind-b.json",
+  "merged": "/workspace/x1-labeling/v4/merged-gold-v4.json",
+  "sample_seed": 20261007,
+  "qtype_rule_choice": "kw",
+  "qtype_rule": "qtype-kw-v1 (r8>0.2 -> lexical; key-term coverage >= 0.8 -> lexical; multi_hop structure -> multi_hop; else paraphrase); owner chose 2026-10-07",
+  "rule_versions": {
+   "qtype": "qtype-kw-v1",
+   "answer_points": "ap-merge-v1",
+   "distractors": "dis-merge-v1",
+   "category": "category-rule-v1"
+  },
+  "n_kept": 211,
+  "n_dropped": 0,
+  "floors": {
+   "qtype_arm": {
+    "lexical": 51,
+    "multi_hop": 34,
+    "paraphrase": 83
+   },
+   "n_arm": 168,
+   "n_guardrail": 43,
+   "trap_adv_ratio": 0.3095
+  },
+  "floor_warnings": [],
+  "note": "floors here are a quick self-count; run scripts/check_x1.py on the final file for the real gate",
+  "followup_fixes": {
+   "date": "2026-10-07",
+   "by": "Ronin 代理人（模型）",
+   "human_row_review": false,
+   "n_rows": 11,
+   "scope": "answer_points only",
+   "ids": [
+    "s2-d0-03-q1",
+    "s4-d3-t0-05-q1",
+    "s5-d1-t1-03-q3",
+    "s5-d3-t1-05-q1",
+    "s5-d3-t1-05-q2",
+    "s6-d2-g2-q1",
+    "s7-d0-t0-01-q6",
+    "s7-d1-t0-03-q4",
+    "s7-d2-t1-04-q2",
+    "s7-d3-t1-05-q1",
+    "s7-d3-t1-05-q4"
+   ]
+  },
+  "review_delegation": {
+   "kind": "model",
+   "name": "Ronin 代理人",
+   "delegated_by": "owner",
+   "human_row_review": false,
+   "date": "2026-10-07",
+   "workbook": "ronin-review/RET-01.3-review-v4-ronin.xlsx",
+   "notes": "ronin-review/REVIEW-NOTES.md",
+   "rows_reviewed": 104,
+   "content_fixes": 12,
+   "label_zh": "owner 委托 Ronin 代理人（模型）审核"
+  },
+  "owner_decisions": {
+   "confirmed_by": "owner (Oriental Ronin)",
+   "channel": "chat",
+   "confirmed_at": "2026-10-07T04:38+08:00",
+   "scope": "criterion/process decisions and one authorized hand-fill, confirmed by the owner in chat; the line-by-line review (116 rows + 20-row sample) and the hand-fill edit itself were done by the Ronin agent (a model), not by a human; reviewer.kind=model, human_row_review=false",
+   "all_follow_agent_suggestion": true,
+   "decisions": [
+    {
+     "n": 1,
+     "kind": "criterion",
+     "text": "只帮着定位题干限定语（哪家公司/哪一版）的块不算答案证据（不进 relevant）",
+     "round": 1
+    },
+    {
+     "n": 2,
+     "kind": "criterion",
+     "text": "几块都能各自单独答全的题不算 multi_hop，改判 paraphrase",
+     "round": 1
+    },
+    {
+     "n": 3,
+     "kind": "row",
+     "id": "s6-mh-15-new",
+     "text": "维持单跳（paraphrase）",
+     "round": 1
+    },
+    {
+     "n": 4,
+     "kind": "row",
+     "id": "s5-d1-t1-03-q4",
+     "text": "维持窄读法（只有 summary 案例算 relevant）",
+     "round": 1
+    },
+    {
+     "n": 5,
+     "kind": "row",
+     "id": "s6-d2-g3-q1",
+     "text": "维持干扰取舍（只留 call#p4）",
+     "round": 1
+    },
+    {
+     "n": 6,
+     "kind": "row",
+     "id": "s6-d0-t1-01-q2",
+     "text": "维持 memo#p2 为干扰",
+     "round": 1
+    },
+    {
+     "n": 7,
+     "kind": "process",
+     "text": "采用来源字段补丁（owner-delegated-agent-*）",
+     "round": 1
+    },
+    {
+     "n": 8,
+     "kind": "content",
+     "id": "g2-memo-e2",
+     "text": "采用法条改文“具体实施办法由国务院规定”，同步改语料块 s6-d2-g2-memo#p3@T1（见 corpus-patch/）",
+     "round": 1
+    },
+    {
+     "n": 9,
+     "kind": "process",
+     "text": "剩余 107 行（rule-merged 70 + consensus 37）不全审，抽 20 行按同一口径复查看错误率（seed 20261007，见 REVIEW-NOTES）",
+     "round": 1
+    },
+    {
+     "n": 10,
+     "round": 2,
+     "kind": "row-handfill",
+     "id": "s5-d2-t0-04-q1",
+     "text": "授权手填：把 s5-d2-t0-04-memo#p3@T0 补进 relevant，并加要点“线上二手平台用户活跃度较前一年提升约22%”；按已确认口径重判 qtype（结果仍为 multi_hop）"
+    },
+    {
+     "n": 11,
+     "round": 2,
+     "kind": "criterion",
+     "text": "p1 法条多跳题维持现状（p1-mh-06-new 仍 multi_hop）；口径：法条题以法条为证据，备忘只在 S6 题里算证据"
+    },
+    {
+     "n": 12,
+     "round": 2,
+     "kind": "content",
+     "text": "把 s6-d2-g2-memo p3 语料补丁并入 /workspace/x1-labeling/v2/drafts 正式语料（已并入，备份见 ronin-review/backup-20261007/）"
+    },
+    {
+     "n": 13,
+     "round": 2,
+     "kind": "process",
+     "text": "把 PROTOCOL 补丁草稿（决定 1、2 + 法条题证据口径）并入 /workspace/x1-labeling/v4/PROTOCOL.md（已并入，备份见 ronin-review/backup-20261007/）"
+    },
+    {
+     "n": 14,
+     "round": 2,
+     "kind": "process",
+     "text": "先放行检索评测；ap-merge-v1 要点合并规则另开小任务，只写任务卡 ronin-review/TASK-ap-merge-fix.md，不开 issue、不现在修"
+    }
+   ],
+   "protocol_patch_draft": "ronin-review/PROTOCOL-patch-draft.md (decisions 1-2; v4/PROTOCOL.md not edited)",
+   "rounds": [
+    {
+     "round": 1,
+     "confirmed_at": "2026-10-07T04:38+08:00",
+     "n": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+     ]
+    },
+    {
+     "round": 2,
+     "confirmed_at": "2026-10-07T04:48+08:00",
+     "n": [
+      10,
+      11,
+      12,
+      13,
+      14
+     ]
+    }
+   ]
+  },
+  "round2_fixes": {
+   "date": "2026-10-07",
+   "authorized_by": "owner (chat, 2026-10-07T04:48+08:00)",
+   "edited_by": "Ronin 代理人（模型）",
+   "human_row_review": false,
+   "ids": [
+    "s5-d2-t0-04-q1"
+   ],
+   "fields": [
+    "relevant",
+    "answer_points"
+   ],
+   "qtype_after": "multi_hop"
+  }
+ },
+ "queries": [
+  {
+   "id": "p1-lx-01-new",
+   "as_of": "T0",
+   "eval_intent": "draft: 按原文措辞检索单条规定",
+   "query": "数据出境安全评估办法规定评估结果有效期为几年？",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "p1-cac-o11#p13@T0"
+   ],
+   "answer_points": [
+    "通过数据出境安全评估的结果有效期为2年"
+   ],
+   "distractors": [
+    "p1-cac-o11#p11@T0",
+    "p1-cac-o11#p12@T0",
+    "p1-cac-o11#p14@T0"
+   ],
+   "qtype": "lexical"
+  },
+  {
+   "id": "p1-lx-02-new",
+   "as_of": "T0",
+   "eval_intent": "draft: 按原文措辞检索单条规定",
+   "query": "个人信息出境标准合同办法要求合同生效后多少个工作日内备案？",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "p1-cac-o13#p6@T0"
+   ],
+   "answer_points": [
+    "在标准合同生效之日起10个工作日内向所在地省级网信部门备案"
+   ],
+   "distractors": [
+    "p1-cac-o11#p6@T0",
+    "p1-cac-o13#p5@T0",
+    "p1-cac-o13#p7@T0"
+   ],
+   "qtype": "lexical"
+  },
+  {
+   "id": "p1-lx-03-new",
+   "as_of": "T1",
+   "eval_intent": "draft: 按原文措辞检索单条规定",
+   "query": "数据出境安全评估办法：省级网信部门收到申报材料后几个工作日内完成完备性查验？",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "p1-cac-o11#p6@T1"
+   ],
+   "answer_points": [
+    "自收到申报材料之日起5个工作日内完成完备性查验"
+   ],
+   "distractors": [
+    "p1-cac-o11#p11@T1",
+    "p1-cac-o11#p12@T1"
+   ],
+   "qtype": "lexical"
+  },
+  {
+   "id": "p1-lx-04-new",
+   "as_of": "T1",
+   "eval_intent": "draft: 按原文措辞检索单条规定",
+   "query": "数据出境安全评估办法规定国家网信部门发出书面受理通知书后多少个工作日内完成评估？",
+   "qtype": "lexical",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "p1-cac-o11#p11@T1"
+   ],
+   "answer_points": [
+    "自向数据处理者发出书面受理通知书之日起45个工作日内完成数据出境安全评估"
+   ],
+   "distractors": [
+    "p1-cac-o11#p6@T1",
+    "p1-cac-o16#p9@T1"
+   ]
+  },
+  {
+   "id": "p1-lx-05-new",
+   "as_of": "T1",
+   "eval_intent": "draft: 按原文措辞检索单条规定",
+   "query": "数据处理者对评估结果有异议的，收到结果后多少个工作日内可以申请复评？",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "p1-cac-o11#p12@T1"
+   ],
+   "answer_points": [
+    "在收到评估结果15个工作日内向国家网信部门申请复评"
+   ],
+   "distractors": [
+    "p1-cac-o11#p11@T1",
+    "p1-cac-o11#p14@T1",
+    "p1-cac-o16#p9@T1"
+   ],
+   "qtype": "lexical"
+  },
+  {
+   "id": "p1-lx-06-new",
+   "as_of": "T1",
+   "eval_intent": "draft: 按原文措辞检索单条规定",
+   "query": "个人信息出境认证办法自哪一天起施行？",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "p1-cac-o20#p9@T1"
+   ],
+   "answer_points": [
+    "本办法自2026年1月1日起施行"
+   ],
+   "distractors": [
+    "p1-cac-o13#p8@T1",
+    "p1-cac-o20#p8@T1"
+   ],
+   "qtype": "lexical"
+  },
+  {
+   "id": "p1-lx-07-new",
+   "as_of": "T1",
+   "eval_intent": "draft: 按原文措辞检索单条规定",
+   "query": "公司法规定，通过简易程序注销公司登记的公告期限不少于多少日？",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "p1-colaw-liquidation#p6@T1"
+   ],
+   "answer_points": [
+    "公告期限不少于二十日"
+   ],
+   "distractors": [
+    "p1-colaw-liquidation#p3@T1",
+    "p1-colaw-liquidation#p5@T1"
+   ],
+   "qtype": "lexical"
+  },
+  {
+   "id": "p1-lx-08-new",
+   "as_of": "T1",
+   "eval_intent": "draft: 按原文措辞检索单条规定",
+   "query": "股东对失权有异议的，应当自接到失权通知之日起多少日内向人民法院提起诉讼？",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "p1-colaw-capital-call#p3@T1"
+   ],
+   "answer_points": [
+    "自接到失权通知之日起三十日内，向人民法院提起诉讼"
+   ],
+   "distractors": [
+    "p1-colaw-capital-call#p2@T1",
+    "p1-colaw-equity#p3@T1"
+   ],
+   "qtype": "lexical"
+  },
+  {
+   "id": "p1-lx-09-new",
+   "as_of": "T0",
+   "eval_intent": "draft: 按原文措辞检索单条规定",
+   "query": "公司法（2018）规定一个自然人可以投资设立几个一人有限责任公司？",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "p1-colaw-oneperson#p3@T0"
+   ],
+   "answer_points": [
+    "一个自然人只能投资设立一个一人有限责任公司"
+   ],
+   "distractors": [
+    "p1-colaw-oneperson#p1@T0",
+    "p1-colaw-oneperson#p2@T0"
+   ],
+   "qtype": "lexical"
+  },
+  {
+   "id": "p1-lx-10-new",
+   "as_of": "T1",
+   "eval_intent": "draft: 按原文措辞检索单条规定",
+   "query": "2023年全国国内生产总值修订后的现价总量是多少亿元？",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "p2-gdp-national#p1@T1"
+   ],
+   "answer_points": [
+    "2023年全国国内生产总值修订后的现价总量是1294272亿元"
+   ],
+   "distractors": [
+    "p2-gdp-national#p2@T1",
+    "p2-gdp-national#p3@T1"
+   ],
+   "qtype": "lexical"
+  },
+  {
+   "id": "p1-lx-11-new",
+   "as_of": "T1",
+   "eval_intent": "draft: 按原文措辞检索单条规定",
+   "query": "公司法规定公司减少注册资本，应当自股东会作出决议之日起几日内通知债权人？",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "p1-colaw-liquidation#p3@T1"
+   ],
+   "answer_points": [
+    "自股东会作出减少注册资本决议之日起十日内通知债权人"
+   ],
+   "distractors": [
+    "p1-colaw-liquidation#p4@T1",
+    "p1-colaw-liquidation#p5@T1",
+    "p1-colaw-liquidation#p6@T1"
+   ],
+   "qtype": "lexical"
+  },
+  {
+   "id": "p1-lx-12-new",
+   "as_of": "T0",
+   "eval_intent": "draft: 按原文措辞检索单条规定",
+   "query": "数据出境安全评估办法所称重要数据是指什么？",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "p1-cac-o11#p16@T0"
+   ],
+   "answer_points": [
+    "本办法所称重要数据，是指一旦遭到篡改、破坏、泄露或者非法获取、非法利用等，可能危害国家安全、经济运行、社会稳定、公共健康和安全等的数据。"
+   ],
+   "distractors": [
+    "p1-cac-o11#p1@T0",
+    "p1-cac-o11#p7@T0"
+   ],
+   "qtype": "lexical"
+  },
+  {
+   "id": "p1-mh-02-new",
+   "as_of": "T1",
+   "eval_intent": "draft: 跨文档组合两条以上规定/材料要点作答",
+   "query": "非关基企业出境一般个人信息（不含敏感个人信息），旧规和新规分别到多少人就要报安全评估？",
+   "qtype": "multi_hop",
+   "score_role": "arm",
+   "category": "trap",
+   "relevant": [
+    "p1-cac-o11#p2@T1",
+    "p1-cac-o16#p7@T1"
+   ],
+   "answer_points": [
+    "自上年1月1日起累计向境外提供10万人个人信息",
+    "自当年1月1日起累计向境外提供100万人以上个人信息（不含敏感个人信息）"
+   ],
+   "distractors": [
+    "p1-cac-o13#p2@T1",
+    "p1-cac-o16#p8@T1"
+   ]
+  },
+  {
+   "id": "p1-mh-03-new",
+   "as_of": "T1",
+   "eval_intent": "draft: 跨文档组合两条以上规定/材料要点作答",
+   "query": "只算一般个人信息、不涉及敏感个人信息的话，签标准合同这条路，老办法和新规定各卡在多少人？",
+   "qtype": "multi_hop",
+   "score_role": "arm",
+   "category": "trap",
+   "relevant": [
+    "p1-cac-o13#p2@T1",
+    "p1-cac-o16#p8@T1"
+   ],
+   "answer_points": [
+    "自上年1月1日起累计向境外提供个人信息不满10万人的",
+    "处理个人信息不满100万人的",
+    "自当年1月1日起累计向境外提供10万人以上、不满100万人个人信息（不含敏感个人信息）"
+   ],
+   "distractors": [
+    "p1-cac-o11#p2@T1",
+    "p1-cac-o16#p7@T1",
+    "p1-cac-o20#p2@T1"
+   ]
+  },
+  {
+   "id": "p1-mh-04-new",
+   "as_of": "T1",
+   "eval_intent": "draft: 跨文档组合两条以上规定/材料要点作答",
+   "query": "不是关基、也不涉及重要数据的小公司，一年只出境几千人的一般个人信息，过去要签标准合同，如今还需要吗？",
+   "qtype": "multi_hop",
+   "score_role": "arm",
+   "category": "trap",
+   "relevant": [
+    "p1-cac-o13#p2@T1",
+    "p1-cac-o16#p4@T1",
+    "p1-cac-o16#p5@T1"
+   ],
+   "answer_points": [
+    "自上年1月1日起累计向境外提供个人信息不满10万人的",
+    "关键信息基础设施运营者以外的数据处理者自当年1月1日起累计向境外提供不满10万人个人信息（不含敏感个人信息）的",
+    "免予申报数据出境安全评估、订立个人信息出境标准合同、通过个人信息保护认证"
+   ],
+   "distractors": [
+    "p1-cac-o16#p8@T1"
+   ]
+  },
+  {
+   "id": "p1-mh-05-new",
+   "as_of": "T1",
+   "eval_intent": "draft: 跨文档组合两条以上规定/材料要点作答",
+   "query": "认证办法从哪天开始施行？新规下走标准合同的人数区间是多少？",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "p1-cac-o20#p9@T1",
+    "p1-cac-o16#p8@T1"
+   ],
+   "answer_points": [
+    "本办法自2026年1月1日起施行",
+    "自当年1月1日起累计向境外提供10万人以上、不满100万人个人信息（不含敏感个人信息）或者不满1万人敏感个人信息的"
+   ],
+   "distractors": [
+    "p1-cac-o11#p17@T1",
+    "p1-cac-o13#p8@T1",
+    "p1-cac-o20#p2@T1"
+   ],
+   "qtype": "multi_hop"
+  },
+  {
+   "id": "p1-mh-06-new",
+   "as_of": "T1",
+   "eval_intent": "draft: 跨文档组合两条以上规定/材料要点作答",
+   "query": "有限公司股东认缴的钱要几年内交齐？新法生效前设立、期限更长的公司要怎么处理？",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "p1-colaw-capital#p1@T1",
+    "p1-colaw-capital-transition#p1@T1"
+   ],
+   "answer_points": [
+    "自公司成立之日起五年内缴足",
+    "应当逐步调整至本法规定的期限以内"
+   ],
+   "distractors": [
+    "p1-colaw-capital-call#p2@T1",
+    "p1-colaw-capital-call#p4@T1",
+    "p1-colaw-capital-transition#p2@T1"
+   ],
+   "qtype": "multi_hop"
+  },
+  {
+   "id": "p1-mh-07-new",
+   "as_of": "T1",
+   "eval_intent": "draft: 跨文档组合两条以上规定/材料要点作答",
+   "query": "股东逾期不交出资，除了补交还要担什么？宽限期过了公司能怎么处置他的股权？",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "p1-colaw-capital-transition#p2@T1",
+    "p1-colaw-capital-call#p2@T1"
+   ],
+   "answer_points": [
+    "该股东丧失其未缴纳出资的股权",
+    "还应当对给公司造成的损失承担赔偿责任",
+    "公司经董事会决议可以向该股东发出失权通知"
+   ],
+   "distractors": [
+    "p1-colaw-capital-call#p1@T1",
+    "p1-colaw-capital-call#p3@T1"
+   ],
+   "qtype": "multi_hop"
+  },
+  {
+   "id": "p1-mh-08-new",
+   "as_of": "T1",
+   "eval_intent": "draft: 跨文档组合两条以上规定/材料要点作答",
+   "query": "董事会没去催缴出资导致损失，谁来赔？欠缴股东本人又要对公司赔什么？",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "p1-colaw-capital-call#p1@T1",
+    "p1-colaw-capital-transition#p2@T1"
+   ],
+   "answer_points": [
+    "负有责任的董事应当承担赔偿责任",
+    "还应当对给公司造成的损失承担赔偿责任"
+   ],
+   "distractors": [
+    "p1-colaw-capital-call#p2@T1",
+    "p1-colaw-capital-call#p5@T1"
+   ],
+   "qtype": "multi_hop"
+  },
+  {
+   "id": "p1-mh-09-new",
+   "as_of": "T1",
+   "eval_intent": "draft: 跨文档组合两条以上规定/材料要点作答",
+   "query": "现在一个人能单独设有限公司吗？他认缴的出资几年内要缴完？",
+   "qtype": "multi_hop",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "p1-colaw-oneperson#p1@T1",
+    "p1-colaw-capital#p1@T1"
+   ],
+   "answer_points": [
+    "自公司成立之日起五年内缴足",
+    "有限责任公司由一个以上五十个以下股东出资设立。"
+   ],
+   "distractors": [
+    "p1-colaw-capital#p3@T1",
+    "p1-colaw-oneperson#p2@T1"
+   ]
+  },
+  {
+   "id": "p1-mh-10-new",
+   "as_of": "T1",
+   "eval_intent": "draft: 跨文档组合两条以上规定/材料要点作答",
+   "query": "减资补亏之后，股东没交的出资能免掉吗？公司还不上债时，没到期的出资能被要求提前交吗？",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "p1-colaw-liquidation#p5@T1",
+    "p1-colaw-capital-call#p4@T1"
+   ],
+   "answer_points": [
+    "不得免除股东缴纳出资或者股款的义务",
+    "有权要求已认缴出资但未届出资期限的股东提前缴纳出资"
+   ],
+   "distractors": [
+    "p1-colaw-capital-call#p3@T1",
+    "p1-colaw-liquidation#p3@T1",
+    "p1-colaw-liquidation#p4@T1"
+   ],
+   "qtype": "multi_hop"
+  },
+  {
+   "id": "p1-mh-11-new",
+   "as_of": "T1",
+   "eval_intent": "draft: 跨文档组合两条以上规定/材料要点作答",
+   "query": "股东把股权卖给外人要先通知谁、别人有什么权利？卖的若是还没到期的认缴出资，由谁来交？",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "p1-colaw-equity#p1@T1",
+    "p1-colaw-capital-call#p5@T1"
+   ],
+   "answer_points": [
+    "其他股东在同等条件下有优先购买权",
+    "由受让人承担缴纳该出资的义务",
+    "应当将股权转让的数量、价格、支付方式和期限等事项书面通知其他股东"
+   ],
+   "distractors": [
+    "p1-colaw-capital-transition#p2@T1",
+    "p1-colaw-equity#p3@T1"
+   ],
+   "qtype": "multi_hop"
+  },
+  {
+   "id": "p1-mh-13-new",
+   "as_of": "T0",
+   "eval_intent": "draft: 跨文档组合两条以上规定/材料要点作答",
+   "query": "旧规下出境一般个人信息（不含敏感个人信息）到多少人要报评估，多少人以下可以签标准合同？",
+   "qtype": "multi_hop",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "p1-cac-o11#p2@T0",
+    "p1-cac-o13#p2@T0"
+   ],
+   "answer_points": [
+    "自上年1月1日起累计向境外提供10万人个人信息",
+    "自上年1月1日起累计向境外提供个人信息不满10万人的"
+   ],
+   "distractors": [
+    "p1-cac-o11#p16@T0",
+    "p1-cac-o13#p1@T0",
+    "p1-cac-o13#p6@T0"
+   ]
+  },
+  {
+   "id": "p1-mh-14-new",
+   "as_of": "T0",
+   "eval_intent": "draft: 跨文档组合两条以上规定/材料要点作答",
+   "query": "评估办法和标准合同办法分别是哪天开始施行的？",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "p1-cac-o11#p17@T0",
+    "p1-cac-o13#p8@T0"
+   ],
+   "answer_points": [
+    "本办法自2022年9月1日起施行",
+    "本办法自2023年6月1日起施行"
+   ],
+   "distractors": [
+    "p1-cac-o11#p13@T0",
+    "p1-cac-o13#p1@T0"
+   ],
+   "qtype": "multi_hop"
+  },
+  {
+   "id": "s1-d0-01-q1",
+   "as_of": "T1",
+   "eval_intent": "verify_accuracy",
+   "query": "后端响应延迟投诉占比已升到35%的那家公司，T1 时目标市场渗透率实际是多少？原定的覆盖计划怎么调整了？",
+   "qtype": "paraphrase",
+   "score_role": "guardrail",
+   "category": "trap",
+   "relevant": [
+    "s1-d0-01-memo#p1@T1"
+   ],
+   "answer_points": [
+    "目标市场渗透率实际为71%",
+    "原定覆盖计划需延后至下一财年"
+   ],
+   "distractors": [
+    "s1-d0-01-memo#p1@T0"
+   ]
+  },
+  {
+   "id": "s1-d0-01-q2",
+   "as_of": "T1",
+   "eval_intent": "detect_change",
+   "query": "T0 与 T1 之间，客户对响应延迟的投诉有何变化？这一变化如何影响战略优先级？",
+   "qtype": "paraphrase",
+   "score_role": "guardrail",
+   "category": "trap",
+   "relevant": [
+    "s1-d0-01-memo#p2@T1"
+   ],
+   "answer_points": [
+    "客户反馈中关于响应延迟的投诉占比升至35%，核心功能满意度降至7.9分，后端架构优化已被列为最高优先级事项"
+   ],
+   "distractors": [
+    "s1-d0-01-memo#p1@T1",
+    "s1-d0-01-memo#p2@T0",
+    "s1-d0-01-memo#p3@T1"
+   ]
+  },
+  {
+   "id": "s1-d0-01-q3",
+   "as_of": "T1",
+   "eval_intent": "assess_consistency",
+   "query": "那家响应延迟投诉占比升至35%的公司，到 T1 时财务模型作了怎样的调整？营收和利润率预计是多少？",
+   "qtype": "paraphrase",
+   "score_role": "guardrail",
+   "category": "trap",
+   "relevant": [
+    "s1-d0-01-memo#p3@T1"
+   ],
+   "answer_points": [
+    "财务模型因需求放缓出现下调",
+    "预计年度营收将达1.05亿美元，利润率预计为23%"
+   ],
+   "distractors": [
+    "s1-d0-01-memo#p3@T0"
+   ]
+  },
+  {
+   "id": "s1-d0-01-q4",
+   "as_of": "T1",
+   "eval_intent": "infer_cause_effect",
+   "query": "竞争对手在目标细分市场占有率已达19%的那家公司，从 T0 到 T1，外部监管变化如何影响了内部战略方向？",
+   "qtype": "paraphrase",
+   "score_role": "guardrail",
+   "category": "trap",
+   "relevant": [
+    "s1-d0-01-analysis#p3@T1",
+    "s1-d0-01-memo#p1@T1"
+   ],
+   "answer_points": [
+    "新监管标准正式发布，实施时间提前至三个月内，我方系统兼容性测试尚未完成，整改窗口期紧迫",
+    "最新数据表明，目标市场渗透率实际为71%，受区域政策调整影响，原定覆盖计划需延后至下一财年",
+    "必须立即投入资源应对"
+   ],
+   "distractors": [
+    "s1-d0-01-analysis#p2@T1",
+    "s1-d0-01-analysis#p3@T0",
+    "s1-d0-01-memo#p1@T0",
+    "s1-d0-01-memo#p3@T1"
+   ]
+  },
+  {
+   "id": "s1-d0-02-q1",
+   "as_of": "T1",
+   "eval_intent": "assess_t0_t1_shift_in_market_penetration_estimate",
+   "query": "用户留存率跌到59%的那家公司，T0 与 T1 之间目标市场渗透率的评估怎么变了？",
+   "qtype": "paraphrase",
+   "score_role": "guardrail",
+   "category": "trap",
+   "relevant": [
+    "s1-d0-02-memo#p1@T1"
+   ],
+   "answer_points": [
+    "最新数据分析表明，目标市场渗透率仅达12.3%，实际增速低于预期",
+    "原有渠道效率下滑，需重新评估资源分配策略以应对增长放缓风险"
+   ],
+   "distractors": [
+    "s1-d0-02-memo#p1@T0",
+    "s1-d0-02-memo#p2@T1",
+    "s1-d0-02-report#p3@T1"
+   ]
+  },
+  {
+   "id": "s1-d0-02-q2",
+   "as_of": "T1",
+   "eval_intent": "verify_system_performance_suitability_after_t1_update",
+   "query": "原材料交付周期拉长到45天的那家公司，T1 时技术系统性能还能满足原定的业务扩展需求吗？",
+   "qtype": "paraphrase",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s1-d0-02-memo#p2@T1"
+   ],
+   "answer_points": [
+    "系统需进行架构优化，否则无法支撑下一阶段业务扩张",
+    "核心模块在高负载压力下暴露出性能瓶颈，已触发两次非预期中断"
+   ],
+   "distractors": [
+    "s1-d0-02-memo#p1@T1",
+    "s1-d0-02-report#p1@T1",
+    "s1-d0-02-report#p3@T1"
+   ]
+  },
+  {
+   "id": "s1-d0-02-q3",
+   "as_of": "T1",
+   "eval_intent": "analyze_regulatory_shift_impact_on_strategic_feasibility",
+   "query": "从 T0 到 T1，外部监管环境的变化如何影响战略推进的合理性？",
+   "qtype": "paraphrase",
+   "score_role": "guardrail",
+   "category": "trap",
+   "relevant": [
+    "s1-d0-02-memo#p3@T1"
+   ],
+   "answer_points": [
+    "行业环境趋于严格，原战略推进节奏需调整以规避潜在合规风险",
+    "监管机构近期发布指导意见，暗示将加强对数据合规的审查力度"
+   ],
+   "distractors": [
+    "s1-d0-02-memo#p1@T1",
+    "s1-d0-02-memo#p3@T0",
+    "s1-d0-02-report#p3@T1"
+   ]
+  },
+  {
+   "id": "s1-d0-02-q4",
+   "as_of": "T1",
+   "eval_intent": "infer_implications_of_financial_model_revisions_for_investment_decisions",
+   "query": "用户留存率降到59%的那家公司，T1 更新后的财务模型对收入增长和利润率给出了什么预期？",
+   "qtype": "paraphrase",
+   "score_role": "guardrail",
+   "category": "trap",
+   "relevant": [
+    "s1-d0-02-report#p3@T1"
+   ],
+   "answer_points": [
+    "未来十二个月收入增长预期下调至5.8%",
+    "利润率将压缩至19.3%"
+   ],
+   "distractors": [
+    "s1-d0-02-report#p3@T0"
+   ]
+  },
+  {
+   "id": "s1-d0-03-q1",
+   "as_of": "T1",
+   "eval_intent": "assessing temporal shift in risk assessment",
+   "query": "T0 与 T1 之间，供应链稳定性评估有何本质变化？",
+   "qtype": "paraphrase",
+   "score_role": "guardrail",
+   "category": "trap",
+   "relevant": [
+    "s1-d0-03-memo#p1@T1"
+   ],
+   "answer_points": [
+    "最新监测数据表明，目标区域的供应链稳定性已出现实质性恶化，关键节点中断风险升级为高危状态"
+   ],
+   "distractors": [
+    "s1-d0-03-memo#p1@T0",
+    "s1-d0-03-memo#p2@T1",
+    "s1-d0-03-report#p1@T1"
+   ]
+  },
+  {
+   "id": "s1-d0-03-q2",
+   "as_of": "T1",
+   "eval_intent": "evaluating the validity of prior mitigation measures",
+   "query": "T0 时认为有效的缓冲机制，在 T1 中是否仍具备应对能力？",
+   "qtype": "paraphrase",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s1-d0-03-memo#p2@T1"
+   ],
+   "answer_points": [
+    "技术团队更新分析指出，外部环境变化已导致核心资源获取路径发生不可逆断裂，现有缓冲机制已无法覆盖新风险敞口"
+   ],
+   "distractors": [
+    "s1-d0-03-memo#p1@T1",
+    "s1-d0-03-memo#p3@T1",
+    "s1-d0-03-report#p1@T1"
+   ]
+  },
+  {
+   "id": "s1-d0-03-q3",
+   "as_of": "T1",
+   "eval_intent": "quantifying escalation in financial risk",
+   "query": "在市场波动率已突破历史峰值的那份研判中，T1 财务模型重新校准后预计利润缩水多少？",
+   "qtype": "paraphrase",
+   "score_role": "guardrail",
+   "category": "trap",
+   "relevant": [
+    "s1-d0-03-report#p3@T1"
+   ],
+   "answer_points": [
+    "未来季度利润将缩水达27%"
+   ],
+   "distractors": [
+    "s1-d0-03-report#p3@T0"
+   ]
+  },
+  {
+   "id": "s1-d0-03-q4",
+   "as_of": "T1",
+   "eval_intent": "tracking changes in operational coordination status",
+   "query": "T0 与 T1 之间，关于跨区域协作机制的描述发生了哪些关键转变？",
+   "qtype": "paraphrase",
+   "score_role": "guardrail",
+   "category": "trap",
+   "relevant": [
+    "s1-d0-03-report#p2@T1"
+   ],
+   "answer_points": [
+    "跨区域协作机制因突发网络故障出现严重中断，信息同步延迟加剧，通信协议优化已列为紧急事项",
+    "通信协议优化已列为紧急事项，须在48小时内完成"
+   ],
+   "distractors": [
+    "s1-d0-03-memo#p3@T1",
+    "s1-d0-03-report#p1@T1",
+    "s1-d0-03-report#p2@T0"
+   ]
+  },
+  {
+   "id": "s1-d0-04-q1",
+   "as_of": "T0",
+   "eval_intent": "assess_t0_factual_stability",
+   "query": "T0 时点下，核心市场渗透率是否处于稳定状态？其依据是什么？",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s1-d0-04-memo#p1@T0"
+   ],
+   "answer_points": [
+    "近期数据显示，核心市场渗透率在连续三周维持在68%以上，表明当前战略执行路径具备初步成效",
+    "团队评估认为，该数值已进入稳定区间，可作为后续资源调配的重要依据"
+   ],
+   "distractors": [
+    "s1-d0-04-memo#p2@T0",
+    "s1-d0-04-risk#p1@T0"
+   ],
+   "qtype": "lexical"
+  },
+  {
+   "id": "s1-d0-04-q2",
+   "as_of": "T1",
+   "eval_intent": "assess_t1_supply_chain_risk",
+   "query": "核心市场渗透率回落到66.2%的那家公司，T1 时供应链中哪一环节明显恶化？具体表现是什么？",
+   "qtype": "paraphrase",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s1-d0-04-memo#p2@T1"
+   ],
+   "answer_points": [
+    "供应链韧性测试中，尽管整体准时率仍达92%，但某关键节点延误率上升至11%，暴露出单一依赖风险"
+   ],
+   "distractors": [
+    "s1-d0-04-memo#p1@T1",
+    "s1-d0-04-memo#p3@T1",
+    "s1-d0-04-risk#p1@T1",
+    "s1-d0-04-risk#p2@T1"
+   ]
+  },
+  {
+   "id": "s1-d0-04-q3",
+   "as_of": "T1",
+   "eval_intent": "assess_customer_sentiment_shift",
+   "query": "渗透率回落至66.2%、三条海运通道被临时关闭的那家公司，T0 到 T1 客户满意度的描述有何关键变化？预示什么趋势？",
+   "qtype": "paraphrase",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s1-d0-04-memo#p3@T1"
+   ],
+   "answer_points": [
+    "客户反馈调查中，尽管平均满意度维持在4.3分，但针对售后服务的负面评论数量同比增加37%，提示服务模式存在结构性短板，亟待调整"
+   ],
+   "distractors": [
+    "s1-d0-04-memo#p2@T1",
+    "s1-d0-04-risk#p1@T1",
+    "s1-d0-04-risk#p2@T1"
+   ],
+   "stale_counterpart": [
+    "s1-d0-04-memo#p3@T0"
+   ]
+  },
+  {
+   "id": "s1-d0-04-q4",
+   "as_of": "T1",
+   "eval_intent": "assess_regulatory_compliance_response",
+   "query": "面临三条海运通道被临时关闭的那家出口企业，T1 文档中新法案对数据处理流程有什么影响？该如何应对？",
+   "qtype": "paraphrase",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s1-d0-04-risk#p3@T1"
+   ],
+   "answer_points": [
+    "新法案正式进入立法听证阶段，预计将在未来六个月内实施，现有数据跨境架构必须在四十五天内完成合规改造",
+    "否则将面临运营中断"
+   ],
+   "distractors": [
+    "s1-d0-04-memo#p1@T1",
+    "s1-d0-04-memo#p2@T1",
+    "s1-d0-04-risk#p1@T1"
+   ]
+  },
+  {
+   "id": "s1-d0-05-q1",
+   "as_of": "T0",
+   "eval_intent": "retrieve_T0_fact",
+   "query": "T0 时点关于目标区域基础设施状况的评估结论是什么？",
+   "qtype": "paraphrase",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s1-d0-05-memo#p1@T0"
+   ],
+   "answer_points": [
+    "根据当前情报，目标区域的基础设施部署已进入稳定阶段",
+    "主要通道保持畅通，未发现异常干扰迹象",
+    "该区域具备长期战略价值"
+   ],
+   "distractors": [
+    "s1-d0-05-memo#p2@T0",
+    "s1-d0-05-warn#p1@T0",
+    "s1-d0-05-warn#p3@T0"
+   ]
+  },
+  {
+   "id": "s1-d0-05-q2",
+   "as_of": "T1",
+   "eval_intent": "detect_T1_change",
+   "query": "T1 时点对同一区域基础设施状况的最新判断有何变化？",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s1-d0-05-memo#p1@T1"
+   ],
+   "answer_points": [
+    "最新监测显示，目标区域主要通道出现结构性损伤，部分路段存在非正常闭塞现象",
+    "需重新评估其战略可用性"
+   ],
+   "distractors": [
+    "s1-d0-05-memo#p2@T1",
+    "s1-d0-05-memo#p3@T1",
+    "s1-d0-05-warn#p1@T1",
+    "s1-d0-05-warn#p3@T1"
+   ],
+   "qtype": "paraphrase"
+  },
+  {
+   "id": "s1-d0-05-q3",
+   "as_of": "T0",
+   "eval_intent": "infer_T0_evidence",
+   "query": "T0 时点，安全团队对周边势力活动态势作出判断的依据是什么？",
+   "qtype": "paraphrase",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s1-d0-05-memo#p2@T0"
+   ],
+   "answer_points": [
+    "安全团队报告称，周边势力活动频率在近两周内维持低位，无明显升级信号"
+   ],
+   "distractors": [
+    "s1-d0-05-memo#p1@T0",
+    "s1-d0-05-warn#p1@T0",
+    "s1-d0-05-warn#p2@T0",
+    "s1-d0-05-warn#p3@T0"
+   ]
+  },
+  {
+   "id": "s1-d0-05-q4",
+   "as_of": "T1",
+   "eval_intent": "validate_T1_evidence",
+   "query": "T1 时点的安全预警是否基于新的技术监测数据？请说明理由。",
+   "qtype": "paraphrase",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s1-d0-05-warn#p1@T1",
+    "s1-d0-05-warn#p3@T1"
+   ],
+   "answer_points": [
+    "技术监测发现，加密链路遭遇定向干扰攻击，虽未突破防护，但暴露了系统脆弱点",
+    "多源情报证实，敏感议题已转化为实际军事集结信号"
+   ],
+   "distractors": [
+    "s1-d0-05-memo#p2@T1",
+    "s1-d0-05-memo#p3@T1",
+    "s1-d0-05-warn#p2@T1"
+   ]
+  },
+  {
+   "id": "s1-d1-01-q1",
+   "as_of": "T0",
+   "eval_intent": "verify_status",
+   "query": "T0 时，核心功能平均停留4.8分钟的那款产品，目标市场渗透率达到预期阈值的多少？文档把增长归因于什么？",
+   "qtype": "paraphrase",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s1-d1-01-memo#p1@T0"
+   ],
+   "answer_points": [
+    "目标市场渗透率已达到预期阈值的87%",
+    "主要得益于渠道扩张与客户反馈优化"
+   ],
+   "distractors": [
+    "s1-d1-01-analysis#p2@T0",
+    "s1-d1-01-analysis#p3@T0",
+    "s1-d1-01-memo#p2@T0"
+   ]
+  },
+  {
+   "id": "s1-d1-01-q2",
+   "as_of": "T1",
+   "eval_intent": "detect_change",
+   "query": "海外合规审查被推迟到90天的那家公司，T1 文档里供应链风险的描述与 T0 相比有何变化？",
+   "qtype": "paraphrase",
+   "score_role": "guardrail",
+   "category": "trap",
+   "relevant": [
+    "s1-d1-01-memo#p2@T1"
+   ],
+   "answer_points": [
+    "供应链波动已演变为实际交付延迟，影响3个重点区域，风险等级上调为中高，需启动应急预案"
+   ],
+   "distractors": [
+    "s1-d1-01-memo#p1@T1",
+    "s1-d1-01-memo#p2@T0",
+    "s1-d1-01-report#p2@T1"
+   ]
+  },
+  {
+   "id": "s1-d1-01-q3",
+   "as_of": "T1",
+   "eval_intent": "compare_value",
+   "query": "T1 文档里客户满意度调查的核心功能评分是多少？反映了什么问题？",
+   "qtype": "lexical",
+   "score_role": "guardrail",
+   "category": "trap",
+   "relevant": [
+    "s1-d1-01-memo#p3@T1"
+   ],
+   "answer_points": [
+    "核心功能评分下降至4.2/5.0",
+    "反映用户对新版本体验不满"
+   ],
+   "distractors": [
+    "s1-d1-01-memo#p3@T0"
+   ]
+  },
+  {
+   "id": "s1-d1-01-q4",
+   "as_of": "T1",
+   "eval_intent": "assess_update",
+   "query": "T1 文档中，竞争对手A新产品线的营销和价格对我方形成了什么局面？",
+   "qtype": "paraphrase",
+   "score_role": "guardrail",
+   "category": "trap",
+   "relevant": [
+    "s1-d1-01-report#p1@T1"
+   ],
+   "answer_points": [
+    "营销投入与价格优势形成双重压制",
+    "需立即制定反制措施"
+   ],
+   "distractors": [
+    "s1-d1-01-report#p1@T0"
+   ]
+  },
+  {
+   "id": "s1-d1-01-q5",
+   "as_of": "T1",
+   "eval_intent": "track_shift",
+   "query": "T1 文档的客户行为研究里，25-34岁用户占活跃用户的比例是多少？35岁以上群体又占多少？",
+   "qtype": "paraphrase",
+   "score_role": "guardrail",
+   "category": "trap",
+   "relevant": [
+    "s1-d1-01-analysis#p3@T1"
+   ],
+   "answer_points": [
+    "25-34岁用户占比降至56%",
+    "35岁以上群体增长至21%"
+   ],
+   "distractors": [
+    "s1-d1-01-analysis#p3@T0"
+   ]
+  },
+  {
+   "id": "s1-d1-01-q6",
+   "as_of": "T1",
+   "eval_intent": "reassess_conclusion",
+   "query": "T1 文档中关于技术标准模块化的评估结论是什么？我方架构适配进行到哪一步、遇到什么问题？",
+   "qtype": "paraphrase",
+   "score_role": "guardrail",
+   "category": "trap",
+   "relevant": [
+    "s1-d1-01-report#p2@T1"
+   ],
+   "answer_points": [
+    "技术标准模块化已成主流",
+    "我方架构适配验证已完成，但存在性能瓶颈"
+   ],
+   "distractors": [
+    "s1-d1-01-report#p2@T0"
+   ]
+  },
+  {
+   "id": "s1-d2-01-q1",
+   "as_of": "T1",
+   "eval_intent": "assess_change_in_factual_content",
+   "query": "在评级机构把短期展望调到负面观察的那份宏观研判里，T0 与 T1 对通胀走势的描述根本差异在哪？",
+   "qtype": "paraphrase",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s1-d2-01-memo#p1@T1"
+   ],
+   "answer_points": [
+    "尽管前期数据显示通胀回落，最新数据揭示核心通胀存在反弹苗头，部分服务类项目价格再度上扬"
+   ],
+   "distractors": [
+    "s1-d2-01-analysis#p1@T1",
+    "s1-d2-01-memo#p2@T1",
+    "s1-d2-01-analysis#p3@T1"
+   ],
+   "stale_counterpart": [
+    "s1-d2-01-memo#p1@T0"
+   ]
+  },
+  {
+   "id": "s1-d2-01-q2",
+   "as_of": "T1",
+   "eval_intent": "assess_reliability_of_early_assessment",
+   "query": "对比 T0 和 T1 的报告，企业资本开支的乐观预期是否依然成立？请说明依据。",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s1-d2-01-memo#p2@T1"
+   ],
+   "answer_points": [
+    "企业资本开支虽有小幅回升，但实际投资增速仍低于预期，尤其在高端制造领域出现观望情绪",
+    "信心修复不均衡"
+   ],
+   "distractors": [
+    "s1-d2-01-analysis#p2@T1",
+    "s1-d2-01-memo#p1@T1",
+    "s1-d2-01-report#p3@T1"
+   ],
+   "qtype": "paraphrase",
+   "stale_counterpart": [
+    "s1-d2-01-memo#p2@T0"
+   ]
+  },
+  {
+   "id": "s1-d2-01-q3",
+   "as_of": "T1",
+   "eval_intent": "identify_reason_for_change",
+   "query": "T1 文档中提到的跨境支付系统部署延迟，其主要原因是什么？",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s1-d2-01-report#p3@T1"
+   ],
+   "answer_points": [
+    "跨境支付系统测试中发现兼容性瓶颈，部署时间或延后至下一财年，影响预期效率提升"
+   ],
+   "distractors": [
+    "s1-d2-01-analysis#p3@T1",
+    "s1-d2-01-memo#p3@T1",
+    "s1-d2-01-report#p2@T1"
+   ],
+   "qtype": "paraphrase"
+  },
+  {
+   "id": "s1-d2-01-q4",
+   "as_of": "T1",
+   "eval_intent": "compare_assessments_across_timepoints",
+   "query": "T1 时对外部融资环境的判断为什么转向收紧？依据是什么？",
+   "qtype": "paraphrase",
+   "score_role": "guardrail",
+   "category": "trap",
+   "relevant": [
+    "s1-d2-01-analysis#p3@T1"
+   ],
+   "answer_points": [
+    "国际评级机构下调短期展望至负面观察",
+    "外部融资成本已开始攀升"
+   ],
+   "distractors": [
+    "s1-d2-01-analysis#p3@T0"
+   ]
+  },
+  {
+   "id": "s1-d2-01-q5",
+   "as_of": "T1",
+   "eval_intent": "track_shift_in_perception",
+   "query": "从 T0 到 T1，对绿色转型金融支持的评价发生了什么转变？",
+   "score_role": "guardrail",
+   "category": "trap",
+   "relevant": [
+    "s1-d2-01-analysis#p2@T1"
+   ],
+   "answer_points": [
+    "绿色转型投入虽增，但金融支持体系滞后，部分项目融资受阻，制约发展速度"
+   ],
+   "distractors": [
+    "s1-d2-01-analysis#p1@T1",
+    "s1-d2-01-analysis#p2@T0"
+   ],
+   "qtype": "paraphrase"
+  },
+  {
+   "id": "s1-d2-01-q6",
+   "as_of": "T1",
+   "eval_intent": "integrate_multiple_signals_to_form_conclusion",
+   "query": "T1 时，评级机构对主权信用展望作了什么调整？核心通胀和区域消费又各出现了什么信号？",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s1-d2-01-analysis#p3@T1",
+    "s1-d2-01-memo#p1@T1",
+    "s1-d2-01-report#p1@T1"
+   ],
+   "answer_points": [
+    "整体需求动能不足",
+    "国际评级机构下调短期展望至负面观察",
+    "最新数据揭示核心通胀存在反弹苗头",
+    "区域消费指数增长势头减弱"
+   ],
+   "distractors": [
+    "s1-d2-01-analysis#p1@T1",
+    "s1-d2-01-memo#p2@T1",
+    "s1-d2-01-report#p2@T1",
+    "s1-d2-01-report#p3@T1"
+   ],
+   "qtype": "multi_hop"
+  },
+  {
+   "id": "s1-d3-01-q1",
+   "as_of": "T1",
+   "eval_intent": "compare_evolution",
+   "query": "主干网络三天内中断三次的那个区域，T0 与 T1 两份备忘录对供应链稳定性的判断有哪些关键差异？",
+   "score_role": "guardrail",
+   "category": "trap",
+   "relevant": [
+    "s1-d3-01-memo#p1@T1"
+   ],
+   "answer_points": [
+    "最新监测数据表明，目标区域供应链已进入短期失衡状态，多个核心节点出现实质性中断迹象",
+    "外部干扰因素显著上升，导致物流周期普遍延长超过48小时，需立即调整应对策略"
+   ],
+   "distractors": [
+    "s1-d3-01-memo#p1@T0",
+    "s1-d3-01-report#p2@T1"
+   ],
+   "qtype": "paraphrase"
+  },
+  {
+   "id": "s1-d3-01-q2",
+   "as_of": "T1",
+   "eval_intent": "compare_evolution",
+   "query": "多边协调机制出现裂痕的那份研判中，T0 和 T1 对技术系统性能的描述有何实质变化？",
+   "score_role": "guardrail",
+   "category": "trap",
+   "relevant": [
+    "s1-d3-01-memo#p2@T1"
+   ],
+   "answer_points": [
+    "技术系统在最近一次测试中暴露出严重滞后问题，对突发中断的响应延迟高达37秒，远超安全阈值",
+    "原模型已失效，必须启用备用方案并重新训练"
+   ],
+   "distractors": [
+    "s1-d3-01-memo#p2@T0",
+    "s1-d3-01-report#p3@T1"
+   ],
+   "qtype": "paraphrase"
+  },
+  {
+   "id": "s1-d3-01-q3",
+   "as_of": "T1",
+   "eval_intent": "compare_evolution",
+   "query": "主干网络峰值负载冲到92%的那个区域，从 T0 到 T1 应急预演反映的协同效率如何演变？",
+   "score_role": "guardrail",
+   "category": "trap",
+   "relevant": [
+    "s1-d3-01-memo#p3@T1"
+   ],
+   "answer_points": [
+    "应急预演结果更新显示，跨部门协作在高压场景下的响应速度下降至不足预期的60%，且存在关键指令传递遗漏现象",
+    "现行流程已无法支撑紧急状态下的高效运作"
+   ],
+   "distractors": [
+    "s1-d3-01-memo#p3@T0",
+    "s1-d3-01-report#p2@T1"
+   ],
+   "qtype": "paraphrase"
+  },
+  {
+   "id": "s1-d3-01-q4",
+   "as_of": "T1",
+   "eval_intent": "infer_impact",
+   "query": "物流周期普遍延长超过48小时的那个区域，T1 报告里通信网络与多边合作的变化如何影响整体战略态势？",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s1-d3-01-report#p2@T1",
+    "s1-d3-01-report#p3@T1"
+   ],
+   "answer_points": [
+    "主干通信网络在近三日内遭遇三次区域性中断，峰值负载达92%，冗余链路已被迫启用",
+    "公开声明中出现立场分化，合作意愿显著减弱，存在集体脱钩趋势",
+    "多边协调机制出现明显裂痕"
+   ],
+   "distractors": [
+    "s1-d3-01-memo#p1@T1",
+    "s1-d3-01-memo#p2@T1"
+   ],
+   "qtype": "paraphrase"
+  },
+  {
+   "id": "s2-d0-01-q1",
+   "as_of": "T0",
+   "eval_intent": "extract_exact_value",
+   "query": "渠道成本已占总成本34%的那家公司，T0 时线下门店的营收占比大约多少？线上流量转化率又是多少？",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s2-d0-01-memo#p1@T0"
+   ],
+   "answer_points": [
+    "线下门店占比不足15%",
+    "线上流量转化率稳定在6.8%"
+   ],
+   "distractors": [
+    "s2-d0-01-memo#p3@T0",
+    "s2-d0-01-report#p1@T0"
+   ],
+   "qtype": "paraphrase"
+  },
+  {
+   "id": "s2-d0-01-q2",
+   "as_of": "T1",
+   "eval_intent": "detect_change_direction",
+   "query": "T1 时渠道成本占总成本的比例发生了什么变化？",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s2-d0-01-memo#p3@T1"
+   ],
+   "answer_points": [
+    "渠道成本压力持续加剧，目前占总成本达41%，其中平台佣金上涨22%",
+    "新方案拟通过自建私域流量降低对外部平台依赖"
+   ],
+   "distractors": [
+    "s2-d0-01-memo#p1@T1",
+    "s2-d0-01-report#p1@T1"
+   ],
+   "qtype": "paraphrase"
+  },
+  {
+   "id": "s2-d0-01-q3",
+   "as_of": "T1",
+   "eval_intent": "identify_contrast",
+   "query": "T0 与 T1 之间，关于代理商价格问题的描述有何关键差异？",
+   "qtype": "paraphrase",
+   "score_role": "guardrail",
+   "category": "trap",
+   "relevant": [
+    "s2-d0-01-memo#p2@T1"
+   ],
+   "answer_points": [
+    "经核实，多地代理商反映的价格不一致问题已演变为区域性窜货事件，影响品牌声誉",
+    "现强制推行统一价盘机制，并设立监察小组"
+   ],
+   "distractors": [
+    "s2-d0-01-memo#p2@T0",
+    "s2-d0-01-report#p2@T1"
+   ]
+  },
+  {
+   "id": "s2-d0-01-q4",
+   "as_of": "T1",
+   "eval_intent": "list_actions",
+   "query": "T1 时渠道信息同步机制升级后，投诉量和关键节点更新延迟分别有什么变化？",
+   "qtype": "lexical",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s2-d0-01-report#p3@T1"
+   ],
+   "answer_points": [
+    "投诉量下降至周均43起",
+    "关键节点更新延迟已减少80%"
+   ],
+   "distractors": [
+    "s2-d0-01-memo#p1@T1",
+    "s2-d0-01-memo#p2@T1",
+    "s2-d0-01-report#p2@T1"
+   ]
+  },
+  {
+   "id": "s2-d0-02-q1",
+   "as_of": "T0",
+   "eval_intent": "identify_root_cause",
+   "query": "根据T0文档，新客户获取成本上升的主要原因是什么？",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s2-d0-02-memo#p1@T0"
+   ],
+   "answer_points": [
+    "近期渠道反馈显示，新客户获取成本在上季度上升了18%，主要源于线上广告投放效率下降",
+    "团队初步判断是算法推荐系统未及时适配用户行为变化"
+   ],
+   "distractors": [
+    "s2-d0-02-memo#p2@T0",
+    "s2-d0-02-report#p1@T0",
+    "s2-d0-02-report#p3@T0"
+   ],
+   "qtype": "paraphrase"
+  },
+  {
+   "id": "s2-d0-02-q2",
+   "as_of": "T1",
+   "eval_intent": "detect_revision",
+   "query": "T1版本中关于新客户获取成本的解释有何变化？",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s2-d0-02-memo#p1@T1"
+   ],
+   "answer_points": [
+    "最新数据分析表明，新客户获取成本上升主因并非算法问题，而是外部市场环境波动导致流量质量整体下滑",
+    "原有投放模型仍具有效性"
+   ],
+   "distractors": [
+    "s2-d0-02-interview#p1@T1",
+    "s2-d0-02-memo#p2@T1",
+    "s2-d0-02-report#p1@T1"
+   ],
+   "qtype": "paraphrase"
+  },
+  {
+   "id": "s2-d0-02-q3",
+   "as_of": "T0",
+   "eval_intent": "extract_specific_value",
+   "query": "T0报告中提到的电商平台旗舰店贡献占比是多少？",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s2-d0-02-report#p1@T0"
+   ],
+   "answer_points": [
+    "本月渠道销售总额环比增长9.4%，主要驱动来自新上线的电商平台旗舰店，其首月贡献占比达23%"
+   ],
+   "distractors": [
+    "s2-d0-02-interview#p1@T0",
+    "s2-d0-02-report#p2@T0",
+    "s2-d0-02-report#p3@T0"
+   ],
+   "qtype": "lexical"
+  },
+  {
+   "id": "s2-d0-02-q4",
+   "as_of": "T1",
+   "eval_intent": "detect_correction",
+   "query": "T1报告修正后的销售总额变化趋势是什么？",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s2-d0-02-report#p1@T1"
+   ],
+   "answer_points": [
+    "本月渠道销售总额实际为环比下降3.1%，此前公布的9.4%增长数据系系统误报，现已修正"
+   ],
+   "distractors": [
+    "s2-d0-02-interview#p1@T1",
+    "s2-d0-02-report#p2@T1",
+    "s2-d0-02-report#p3@T1"
+   ],
+   "qtype": "paraphrase"
+  },
+  {
+   "id": "s2-d0-02-q5",
+   "as_of": "T0",
+   "eval_intent": "capture_initial_stance",
+   "query": "高管访谈中关于海外扩张的初始态度如何？",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s2-d0-02-interview#p2@T0"
+   ],
+   "answer_points": [
+    "关于海外扩张，目前暂无明确计划，重点仍将聚焦于国内市场的深度渗透与服务优化"
+   ],
+   "distractors": [
+    "s2-d0-02-interview#p1@T0",
+    "s2-d0-02-interview#p3@T0",
+    "s2-d0-02-memo#p1@T0"
+   ],
+   "qtype": "paraphrase"
+  },
+  {
+   "id": "s2-d0-02-q6",
+   "as_of": "T1",
+   "eval_intent": "assess_stance_change",
+   "query": "AI客户洞察系统延后到18个月上线的那家公司，T1 版本中高管对海外扩张的立场变了吗？具体体现在哪？",
+   "qtype": "paraphrase",
+   "score_role": "guardrail",
+   "category": "trap",
+   "relevant": [
+    "s2-d0-02-interview#p2@T1"
+   ],
+   "answer_points": [
+    "海外市场拓展已进入可行性研究阶段，初步选定东南亚作为首批试点区域，相关筹备工作正在推进"
+   ],
+   "distractors": [
+    "s2-d0-02-interview#p1@T1",
+    "s2-d0-02-interview#p2@T0"
+   ]
+  },
+  {
+   "id": "s2-d0-03-q1",
+   "as_of": "T1",
+   "eval_intent": "compare_changes_in_statements",
+   "query": "T0 和 T1 版本中关于新客户转化率的描述有何不同？",
+   "score_role": "guardrail",
+   "category": "trap",
+   "relevant": [
+    "s2-d0-03-memo#p1@T1"
+   ],
+   "answer_points": [
+    "渠道反馈显示，尽管广告投放有所优化，但新客户转化率实际出现小幅下滑，部分原因在于目标人群定位偏差"
+   ],
+   "distractors": [
+    "s2-d0-03-memo#p1@T0",
+    "s2-d0-03-memo#p2@T1"
+   ],
+   "qtype": "lexical"
+  },
+  {
+   "id": "s2-d0-03-q2",
+   "as_of": "T1",
+   "eval_intent": "track_shift_in_market_performance",
+   "query": "T1 版本中提到的二三线城市销售表现与 T0 版本相比发生了什么变化？",
+   "qtype": "paraphrase",
+   "score_role": "guardrail",
+   "category": "trap",
+   "relevant": [
+    "s2-d0-03-memo#p2@T1"
+   ],
+   "answer_points": [
+    "数据显示，一线城市销量虽有增长，但二三线城市实际表现远低于预期，区域推广策略需重新评估",
+    "原定 15% 的营收增长目标被下调至 8%"
+   ],
+   "distractors": [
+    "s2-d0-03-interview#p1@T1",
+    "s2-d0-03-memo#p1@T1",
+    "s2-d0-03-memo#p2@T0"
+   ]
+  },
+  {
+   "id": "s2-d0-03-q3",
+   "as_of": "T1",
+   "eval_intent": "detect_internal_consistency_break",
+   "query": "开放平台计划推迟到明年的那家公司，T0 与 T1 对技术团队状态的说法有没有矛盾？如有请说明。",
+   "score_role": "guardrail",
+   "category": "trap",
+   "relevant": [
+    "s2-d0-03-memo#p3@T1"
+   ],
+   "answer_points": [
+    "技术团队近期发现核心模块存在潜在内存泄漏问题，已在紧急修复中",
+    "界面简化项目已暂停，优先保障系统稳定性"
+   ],
+   "distractors": [
+    "s2-d0-03-interview#p3@T1",
+    "s2-d0-03-memo#p3@T0"
+   ],
+   "qtype": "paraphrase"
+  },
+  {
+   "id": "s2-d0-03-q4",
+   "as_of": "T1",
+   "eval_intent": "identify_shift_in_strategic_priority",
+   "query": "高管在两个时间点对长期战略的表述有何根本性转变？",
+   "score_role": "guardrail",
+   "category": "trap",
+   "relevant": [
+    "s2-d0-03-interview#p3@T1"
+   ],
+   "answer_points": [
+    "生态建设因技术整合难度超预期而暂缓，短期内将集中资源解决现有系统稳定性问题，开放平台计划推迟至明年"
+   ],
+   "distractors": [
+    "s2-d0-03-interview#p3@T0",
+    "s2-d0-03-memo#p3@T1"
+   ],
+   "qtype": "paraphrase"
+  },
+  {
+   "id": "s2-d0-04-q1",
+   "as_of": "T1",
+   "eval_intent": "evaluate factual consistency across timepoints",
+   "query": "T1时点下，该产品线在华东地区的实际销售表现与最初预期有何差异？",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s2-d0-04-memo#p1@T1"
+   ],
+   "answer_points": [
+    "华东地区经销商反映实际订单量低于预期，导致部分门店出现滞销风险",
+    "最新渠道反馈显示，尽管初期销售表现强劲，但部分区域出现库存积压问题",
+    "实际增幅仅为5%"
+   ],
+   "distractors": [
+    "s2-d0-04-memo#p2@T1",
+    "s2-d0-04-memo#p3@T1"
+   ],
+   "qtype": "paraphrase"
+  },
+  {
+   "id": "s2-d0-04-q2",
+   "as_of": "T1",
+   "eval_intent": "assess strategic evolution based on updated information",
+   "query": "暂停了30万台出货计划的那条产品线，从 T0 到 T1 推广策略有哪些关键调整？",
+   "qtype": "paraphrase",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s2-d0-04-memo#p3@T1"
+   ],
+   "answer_points": [
+    "原定第三季度的全国推广活动已被推迟至第四季度，重点转向解决现有渠道库存与售后问题",
+    "强化经销商支持体系"
+   ],
+   "distractors": [
+    "s2-d0-04-memo#p1@T1",
+    "s2-d0-04-memo#p2@T1"
+   ],
+   "stale_counterpart": [
+    "s2-d0-04-memo#p3@T0",
+    "s2-d0-04-memo#p2@T0"
+   ]
+  },
+  {
+   "id": "s2-d1-01-q1",
+   "as_of": "T1",
+   "eval_intent": "detect_contradiction_or_update",
+   "query": "T0 与 T1 版本中关于渠道合作进展的描述有何差异？请指出具体事实变更。",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s2-d1-01-memo#p1@T1"
+   ],
+   "answer_points": [
+    "经重新评估，原定新增15家核心分销商的计划已调整为仅拓展6家，主要因部分平台准入",
+    "库存同步机制虽已部署，但实际响应延迟仍常超过 6 小时",
+    "部分平台准入门槛提高及结算周期延长"
+   ],
+   "distractors": [
+    "s2-d1-01-memo#p2@T1",
+    "s2-d1-01-report#p1@T1"
+   ],
+   "qtype": "paraphrase",
+   "stale_counterpart": [
+    "s2-d1-01-memo#p1@T0"
+   ]
+  },
+  {
+   "id": "s2-d1-01-q2",
+   "as_of": "T1",
+   "eval_intent": "evaluate_factual_consistency",
+   "query": "T0 与 T1 版本中关于线上转化率的数据是否一致？若不一致，哪一版本更可信？请说明依据。",
+   "qtype": "paraphrase",
+   "score_role": "guardrail",
+   "category": "trap",
+   "relevant": [
+    "s2-d1-01-memo#p2@T1"
+   ],
+   "answer_points": [
+    "最新监测显示，线上渠道转化率实际为 6.9%，低于预期",
+    "此前宣称的推荐算法升级效果未达预期，技术团队正进行新一轮模型调优"
+   ],
+   "distractors": [
+    "s2-d1-01-memo#p2@T0",
+    "s2-d1-01-memo#p3@T1",
+    "s2-d1-01-report#p2@T1"
+   ],
+   "stale_counterpart": [
+    "s2-d1-01-memo#p2@T0"
+   ]
+  },
+  {
+   "id": "s2-d1-01-q3",
+   "as_of": "T1",
+   "eval_intent": "infer_intentional_change",
+   "query": "短视频互动率掉到18%的那家品牌，T0 与 T1 对线下门店扩张的态度有何变化？反映了怎样的战略调整？",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s2-d1-01-memo#p3@T1"
+   ],
+   "answer_points": [
+    "目前优先考虑现有门店的数字化改造，以提升运营效率而非扩大规模",
+    "原计划新开 8 家直营店的方案已被暂缓"
+   ],
+   "distractors": [
+    "s2-d1-01-memo#p1@T1",
+    "s2-d1-01-report#p2@T1"
+   ],
+   "qtype": "paraphrase",
+   "stale_counterpart": [
+    "s2-d1-01-memo#p3@T0"
+   ]
+  },
+  {
+   "id": "s2-d1-01-q4",
+   "as_of": "T1",
+   "eval_intent": "assess_internal_consistency",
+   "query": "T0 与 T1 版本中关于短视频平台营销效果的判断是否存在矛盾？如何解释这一转变？",
+   "score_role": "guardrail",
+   "category": "trap",
+   "relevant": [
+    "s2-d1-01-report#p2@T1"
+   ],
+   "answer_points": [
+    "短视频平台流量红利减弱，互动率已降至 18%，且达人内容同质化严重",
+    "建议减少投放预算，转向私域社群运营与长尾内容沉淀"
+   ],
+   "distractors": [
+    "s2-d1-01-memo#p2@T1",
+    "s2-d1-01-report#p2@T0"
+   ],
+   "qtype": "paraphrase"
+  },
+  {
+   "id": "s2-d2-01-q1",
+   "as_of": "T1",
+   "eval_intent": "evaluate_factual_consistency",
+   "query": "T0与T1版本中关于新版本界面的评价有何变化？",
+   "qtype": "paraphrase",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s2-d2-01-memo#p1@T1"
+   ],
+   "answer_points": [
+    "最新一轮渠道评估表明，新版本界面虽在初期获得好评，但用户实际使用中出现导航路径不清晰的问题",
+    "已启动UI重设计"
+   ],
+   "distractors": [
+    "s2-d2-01-memo#p2@T1",
+    "s2-d2-01-report#p1@T1"
+   ],
+   "stale_counterpart": [
+    "s2-d2-01-memo#p1@T0"
+   ]
+  },
+  {
+   "id": "s2-d2-01-q2",
+   "as_of": "T1",
+   "eval_intent": "evaluate_factual_consistency",
+   "query": "客服平均响应缩短到1.5小时的那家公司，T0 与 T1 关于定价策略的建议是否一致？请说明理由。",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s2-d2-01-memo#p2@T1"
+   ],
+   "answer_points": [
+    "经重新核算成本与利润模型，原定阶梯折扣方案被调整为捆绑促销策略，以增强整体收益而非单纯降低售价",
+    "该方案已在试点区域上线"
+   ],
+   "distractors": [
+    "s2-d2-01-memo#p1@T1",
+    "s2-d2-01-report#p2@T1"
+   ],
+   "qtype": "paraphrase",
+   "stale_counterpart": [
+    "s2-d2-01-memo#p2@T0"
+   ]
+  },
+  {
+   "id": "s2-d2-01-q3",
+   "as_of": "T1",
+   "eval_intent": "evaluate_factual_consistency",
+   "query": "T0与T1版本中提到的客服系统表现是否存在差异？具体体现在哪些方面？",
+   "score_role": "guardrail",
+   "category": "trap",
+   "relevant": [
+    "s2-d2-01-report#p2@T1"
+   ],
+   "answer_points": [
+    "客服系统已完成升级，平均响应时间缩短至1.5小时，智能应答覆盖率达76%，运营效率显著提升",
+    "不再需要临时增员"
+   ],
+   "distractors": [
+    "s2-d2-01-memo#p3@T1",
+    "s2-d2-01-report#p2@T0"
+   ],
+   "qtype": "paraphrase"
+  },
+  {
+   "id": "s2-d2-01-q4",
+   "as_of": "T1",
+   "eval_intent": "evaluate_factual_consistency",
+   "query": "T0与T1版本中关于跨区结算流程的进展描述有何不同？",
+   "score_role": "guardrail",
+   "category": "trap",
+   "relevant": [
+    "s2-d2-01-report#p3@T1"
+   ],
+   "answer_points": [
+    "跨区结算平台已进入最终测试阶段，预计下月正式启用，将大幅缩短账期，提升资金周转速度"
+   ],
+   "distractors": [
+    "s2-d2-01-memo#p3@T1",
+    "s2-d2-01-report#p3@T0"
+   ],
+   "qtype": "paraphrase"
+  },
+  {
+   "id": "s2-d3-01-q1",
+   "as_of": "T1",
+   "eval_intent": "evaluate the consistency and accuracy of factual updates across timepoints",
+   "query": "T0 与 T1 版本中关于渠道合作目标的变化是什么？",
+   "qtype": "paraphrase",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s2-d3-01-memo#p1@T1"
+   ],
+   "answer_points": [
+    "经重新评估，原定 15% 的用户增长目标已调整为 8%，主要因市场环境变化及渠道反馈实际转化率低于预期",
+    "后续策略将更注重质量而非数量"
+   ],
+   "distractors": [
+    "s2-d3-01-interview#p1@T1",
+    "s2-d3-01-memo#p2@T1"
+   ],
+   "stale_counterpart": [
+    "s2-d3-01-memo#p1@T0",
+    "s2-d3-01-memo#p2@T0"
+   ]
+  },
+  {
+   "id": "s2-d3-01-q2",
+   "as_of": "T1",
+   "eval_intent": "assess understanding of causal factors behind strategic adjustments",
+   "query": "T1 版本中为何原定的合作渠道数量减少？",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s2-d3-01-memo#p2@T1"
+   ],
+   "answer_points": [
+    "原计划中的两家核心渠道中，仅电商平台明确继续推进，垂直类应用因战略调整已退出合作",
+    "目前合作方数量缩减至单一"
+   ],
+   "distractors": [
+    "s2-d3-01-interview#p2@T1",
+    "s2-d3-01-memo#p1@T1",
+    "s2-d3-01-memo#p3@T1"
+   ],
+   "qtype": "paraphrase"
+  },
+  {
+   "id": "s2-d3-01-q3",
+   "as_of": "T1",
+   "eval_intent": "detect shifts in technical readiness and risk perception",
+   "query": "T0 与 T1 中关于技术准备状态的描述有何不同？",
+   "score_role": "guardrail",
+   "category": "trap",
+   "relevant": [
+    "s2-d3-01-memo#p3@T1"
+   ],
+   "answer_points": [
+    "技术团队预警，现有系统在高并发场景下存在潜在风险，接口优化工作已延迟至 7 月中旬"
+   ],
+   "distractors": [
+    "s2-d3-01-interview#p3@T0",
+    "s2-d3-01-memo#p2@T1",
+    "s2-d3-01-memo#p3@T0"
+   ],
+   "qtype": "paraphrase"
+  },
+  {
+   "id": "s2-d3-01-q4",
+   "as_of": "T1",
+   "eval_intent": "evaluate ability to identify overarching strategic pivot between versions",
+   "query": "高管在两次访谈中对渠道拓展策略的表述有何根本性转变？",
+   "qtype": "paraphrase",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s2-d3-01-interview#p1@T1"
+   ],
+   "answer_points": [
+    "CEO 改口称，由于外部竞争加剧，公司战略将转向“精耕细作”，新渠道拓展目标下调至覆盖 25% 的关键市场",
+    "不再追求广泛铺开"
+   ],
+   "distractors": [
+    "s2-d3-01-interview#p2@T1",
+    "s2-d3-01-memo#p1@T1"
+   ],
+   "stale_counterpart": [
+    "s2-d3-01-interview#p1@T0"
+   ]
+  },
+  {
+   "id": "s3-d0-01-q1",
+   "as_of": "T1",
+   "eval_intent": "identify_price_shift",
+   "query": "在流量通话套餐比价里，竞品A的基础套餐在T0与T1之间的价格变化是什么？",
+   "qtype": "lexical",
+   "score_role": "guardrail",
+   "category": "trap",
+   "relevant": [
+    "s3-d0-01-memo#p1@T1",
+    "s3-d0-01-report#p1@T1"
+   ],
+   "answer_points": [
+    "截至第二季度末，竞品A已将基础套餐调价至每月119元，流量增至70GB，通话时长提升至300分钟",
+    "最新数据显示，基础套餐平均价格已升至110元，竞品A的119元定价现处于行业领先位置"
+   ],
+   "distractors": [
+    "s3-d0-01-memo#p1@T0",
+    "s3-d0-01-memo#p2@T1",
+    "s3-d0-01-report#p1@T0"
+   ]
+  },
+  {
+   "id": "s3-d0-01-q2",
+   "as_of": "T1",
+   "eval_intent": "extract_service_upgrade",
+   "query": "竞品B在T1阶段新增了哪些服务功能？其价格如何调整？",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s3-d0-01-memo#p2@T1"
+   ],
+   "answer_points": [
+    "竞品B在高端套餐基础上新增家庭共享功能，价格上调至每月219元，尽管涨幅明显，但用户留存率仍维持在92%以上"
+   ],
+   "distractors": [
+    "s3-d0-01-memo#p1@T1",
+    "s3-d0-01-memo#p3@T1",
+    "s3-d0-01-report#p2@T1",
+    "s3-d0-01-report#p3@T1"
+   ],
+   "qtype": "lexical"
+  },
+  {
+   "id": "s3-d0-01-q3",
+   "as_of": "T1",
+   "eval_intent": "track_promo_transition",
+   "query": "在流量通话套餐比价里（竞品B新增家庭共享的那份），竞品C 在 T0 与 T1 之间调整了促销策略吗？具体变化是什么？",
+   "qtype": "paraphrase",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s3-d0-01-memo#p3@T1"
+   ],
+   "answer_points": [
+    "竞品C已于本季度初结束促销活动，标准套餐恢复至每月99元，且推出捆绑视频会员的新组合方案"
+   ],
+   "distractors": [
+    "s3-d0-01-memo#p2@T1"
+   ],
+   "stale_counterpart": [
+    "s3-d0-01-memo#p3@T0",
+    "s3-d0-01-report#p3@T0"
+   ]
+  },
+  {
+   "id": "s3-d0-01-q4",
+   "as_of": "T1",
+   "eval_intent": "infer_market_direction",
+   "query": "在流量通话套餐的比价材料里，从 T0 到 T1 竞品报价的整体趋势有何变化？",
+   "qtype": "paraphrase",
+   "score_role": "guardrail",
+   "category": "trap",
+   "relevant": [
+    "s3-d0-01-memo#p2@T1",
+    "s3-d0-01-memo#p3@T1",
+    "s3-d0-01-report#p1@T1"
+   ],
+   "answer_points": [
+    "最新数据显示，基础套餐平均价格已升至110元，竞品A的119元定价现处于行业领先位置",
+    "竞品B在高端套餐基础上新增家庭共享功能，价格上调至每月219元",
+    "竞品C已于本季度初结束促销活动，标准套餐恢复至每月99元"
+   ],
+   "distractors": [
+    "s3-d0-01-memo#p2@T0",
+    "s3-d0-01-memo#p3@T0",
+    "s3-d0-01-report#p1@T0"
+   ]
+  },
+  {
+   "id": "s3-d0-02-q1",
+   "as_of": "T0",
+   "eval_intent": "retrieve",
+   "query": "在A、B、C三家公司的基础版比价中，T0 时A公司的基础版定价是多少？",
+   "qtype": "paraphrase",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s3-d0-02-a#p1@T0",
+    "s3-d0-02-b#p1@T0",
+    "s3-d0-02-c#p1@T0"
+   ],
+   "answer_points": [
+    "A公司推出基础版服务，定价为每月99元，包含核心功能模块，支持5个用户席位",
+    "基础款月费99元",
+    "A公司以99元定位形成价格优势"
+   ],
+   "distractors": [
+    "s3-d0-02-a#p2@T0",
+    "s3-d0-02-a#p3@T0",
+    "s3-d0-02-b#p3@T0"
+   ]
+  },
+  {
+   "id": "s3-d0-02-q2",
+   "as_of": "T1",
+   "eval_intent": "retrieve",
+   "query": "T1时B公司是否降低了其标准版的月费？",
+   "qtype": "lexical",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s3-d0-02-a#p2@T1",
+    "s3-d0-02-b#p2@T1",
+    "s3-d0-02-c#p2@T1"
+   ],
+   "answer_points": [
+    "B公司宣布全面降价，标准版降至109元/月，取消独立报表工具，转而整合入主控台，优化系统性能并降低运维门槛",
+    "B公司下调基础套餐价格至每月109元，移除部分高级功能以控制成本，但维持8人用户上限",
+    "B公司经过价格下调后"
+   ],
+   "distractors": [
+    "s3-d0-02-a#p1@T1",
+    "s3-d0-02-a#p3@T1"
+   ]
+  },
+  {
+   "id": "s3-d0-02-q3",
+   "as_of": "T0",
+   "eval_intent": "retrieve",
+   "query": "C公司在T0时提供的基础版是否包含客户支持？",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s3-d0-02-a#p3@T0"
+   ],
+   "answer_points": [
+    "C公司以低价切入市场，基础版仅售每月69元，但限制功能数量，且不提供客户支持",
+    "尽管性价比突出，但用户反馈对长期维护能力存疑"
+   ],
+   "distractors": [
+    "s3-d0-02-a#p2@T0",
+    "s3-d0-02-b#p1@T0",
+    "s3-d0-02-b#p3@T0",
+    "s3-d0-02-c#p3@T0"
+   ],
+   "qtype": "lexical"
+  },
+  {
+   "id": "s3-d0-02-q4",
+   "as_of": "T1",
+   "eval_intent": "retrieve",
+   "query": "T1时A公司基础版新增了哪些核心功能？",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s3-d0-02-a#p1@T1",
+    "s3-d0-02-b#p1@T1"
+   ],
+   "answer_points": [
+    "新增团队协作工具",
+    "新增实时协同编辑与自动化工作流引擎"
+   ],
+   "distractors": [
+    "s3-d0-02-a#p2@T1",
+    "s3-d0-02-b#p3@T1",
+    "s3-d0-02-c#p1@T1"
+   ],
+   "qtype": "multi_hop"
+  },
+  {
+   "id": "s3-d0-02-q5",
+   "as_of": "T0",
+   "eval_intent": "retrieve",
+   "query": "在A、B、C三家公司的比价里，T0 时哪一家的定价低于90元？",
+   "qtype": "paraphrase",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s3-d0-02-a#p3@T0",
+    "s3-d0-02-b#p3@T0",
+    "s3-d0-02-c#p3@T0"
+   ],
+   "answer_points": [
+    "C公司以低价切入市场，基础版仅售每月69元",
+    "C公司以69元最低价进入市场",
+    "C公司依托开源生态，推出免费基础版"
+   ],
+   "distractors": [
+    "s3-d0-02-a#p1@T0",
+    "s3-d0-02-a#p2@T0"
+   ]
+  },
+  {
+   "id": "s3-d0-02-q6",
+   "as_of": "T1",
+   "eval_intent": "retrieve",
+   "query": "T1时C公司是否仍然提供免费的基础版本？",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s3-d0-02-b#p3@T1",
+    "s3-d0-02-a#p3@T1"
+   ],
+   "answer_points": [
+    "C公司关闭免费基础版入口，改推“成长计划”订阅制，首年费用149元，含全功能访问及优先技术支持",
+    "C公司因技术债务问题暂停新客户注册，原69元套餐已取消，现仅开放限时试用，正式版本将于下季度以149元起售"
+   ],
+   "distractors": [
+    "s3-d0-02-a#p1@T1",
+    "s3-d0-02-a#p2@T1",
+    "s3-d0-02-b#p1@T1",
+    "s3-d0-02-c#p3@T1"
+   ],
+   "qtype": "lexical"
+  },
+  {
+   "id": "s3-d0-03-q1",
+   "as_of": "T1",
+   "eval_intent": "compare",
+   "query": "竞品A在T0与T1期间的标准服务包价格有何变化？",
+   "score_role": "guardrail",
+   "category": "trap",
+   "relevant": [
+    "s3-d0-03-memo#p1@T1"
+   ],
+   "answer_points": [
+    "截至本报告发布时，竞品A已将标准服务包价格下调至每月269元，以应对市场竞争压力",
+    "保留基础技术支持与每周巡检服务"
+   ],
+   "distractors": [
+    "s3-d0-03-memo#p1@T0",
+    "s3-d0-03-memo#p2@T1",
+    "s3-d0-03-report#p1@T1"
+   ],
+   "qtype": "lexical"
+  },
+  {
+   "id": "s3-d0-03-q2",
+   "as_of": "T1",
+   "eval_intent": "identify",
+   "query": "竞品B 的“精英版”套餐在 T1 有哪些新优惠或功能调整？",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s3-d0-03-memo#p2@T1"
+   ],
+   "answer_points": [
+    "竞品B更新其“精英版”套餐，新增30天免费试用，并将价格调整为每月420元，市场推广力度加大"
+   ],
+   "distractors": [
+    "s3-d0-03-memo#p1@T1",
+    "s3-d0-03-memo#p3@T1",
+    "s3-d0-03-report#p2@T1"
+   ],
+   "qtype": "paraphrase"
+  },
+  {
+   "id": "s3-d0-03-q3",
+   "as_of": "T1",
+   "eval_intent": "compare",
+   "query": "我方主推套餐在T0和T1之间是否有价格或服务内容的变化？",
+   "qtype": "paraphrase",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s3-d0-03-memo#p3@T1"
+   ],
+   "answer_points": [
+    "我方主推套餐维持每月380元不变，但新增一项“客户忠诚计划”作为附加价值，涵盖额外培训资源"
+   ],
+   "distractors": [
+    "s3-d0-03-memo#p2@T1",
+    "s3-d0-03-report#p3@T1"
+   ],
+   "stale_counterpart": [
+    "s3-d0-03-memo#p3@T0"
+   ]
+  },
+  {
+   "id": "s3-d0-03-q4",
+   "as_of": "T1",
+   "eval_intent": "infer",
+   "query": "在我方主推套餐定价380元的那份比价里，从 T0 到 T1 竞品价格整体趋势如何？对我们的定位有何影响？",
+   "qtype": "paraphrase",
+   "score_role": "guardrail",
+   "category": "trap",
+   "relevant": [
+    "s3-d0-03-report#p3@T1"
+   ],
+   "answer_points": [
+    "目前市场呈现价格下探趋势，中端产品普遍低于350元，我方需评估是否调整定价策略或通过增值服务增强竞争力"
+   ],
+   "distractors": [
+    "s3-d0-03-memo#p1@T1",
+    "s3-d0-03-memo#p3@T0",
+    "s3-d0-03-report#p3@T0"
+   ]
+  },
+  {
+   "id": "s3-d0-04-q1",
+   "as_of": "T1",
+   "eval_intent": "fact_checking",
+   "query": "我方基础版报价279元的那份材料里，竞品A 的标准服务包在 T1 相比 T0 价格怎么变了？",
+   "score_role": "guardrail",
+   "category": "trap",
+   "relevant": [
+    "s3-d0-04-memo#p1@T1"
+   ],
+   "answer_points": [
+    "至本周期末，竞品A已将标准服务包调价至每月329元，涨幅约10.4%，并新增远程故障诊断功能作为附加权益"
+   ],
+   "distractors": [
+    "s3-d0-04-memo#p1@T0",
+    "s3-d0-04-memo#p2@T1",
+    "s3-d0-04-memo#p3@T1"
+   ],
+   "qtype": "paraphrase"
+  },
+  {
+   "id": "s3-d0-04-q2",
+   "as_of": "T1",
+   "eval_intent": "fact_checking",
+   "query": "我方基础版报价在T1相比T0是否调整？如有，具体变动为何？",
+   "score_role": "guardrail",
+   "category": "trap",
+   "relevant": [
+    "s3-d0-04-memo#p3@T1"
+   ],
+   "answer_points": [
+    "我方已更新基础版报价至每月279元，虽仍低于竞品A，但因成本上升，已取消部分免费集成服务",
+    "需客户额外支付集成费用"
+   ],
+   "distractors": [
+    "s3-d0-04-memo#p1@T1",
+    "s3-d0-04-memo#p2@T1",
+    "s3-d0-04-memo#p3@T0"
+   ],
+   "qtype": "paraphrase"
+  },
+  {
+   "id": "s3-d1-01-q1",
+   "as_of": "T1",
+   "eval_intent": "fact_retrieval",
+   "query": "在竞品C年度订阅价2,800元的那份比价中，竞品A 在 T1 的价格策略有何变化？",
+   "qtype": "paraphrase",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s3-d1-01-memo#p1@T1",
+    "s3-d1-01-report#p1@T1"
+   ],
+   "answer_points": [
+    "竞品A已完成服务整合，将原独立模块打包进主套餐，价格上调至349元/月，但用户满意度调查显示其综合性价比获得认可",
+    "至本周期末，竞品A已将基础套餐调涨至每月349元，并将高级功能模块纳入主套餐内，不再单独计价"
+   ],
+   "distractors": [
+    "s3-d1-01-memo#p2@T1",
+    "s3-d1-01-memo#p3@T1",
+    "s3-d1-01-report#p2@T1"
+   ]
+  },
+  {
+   "id": "s3-d1-01-q2",
+   "as_of": "T1",
+   "eval_intent": "comparison",
+   "query": "竞品B在T0与T1之间是否调整了其功能定价透明度？如何体现？",
+   "qtype": "lexical",
+   "score_role": "guardrail",
+   "category": "trap",
+   "relevant": [
+    "s3-d1-01-memo#p2@T1",
+    "s3-d1-01-report#p2@T1"
+   ],
+   "answer_points": [
+    "竞品B已公开其功能分级结构，基础版仍为199元/月，新增“专业版”定价为399元/月",
+    "明确标注所有功能模块包含在内",
+    "新增清晰的功能层级说明"
+   ],
+   "distractors": [
+    "s3-d1-01-memo#p1@T1",
+    "s3-d1-01-memo#p2@T0",
+    "s3-d1-01-report#p2@T0"
+   ]
+  },
+  {
+   "id": "s3-d1-01-q3",
+   "as_of": "T1",
+   "eval_intent": "fact_retrieval",
+   "query": "年度订阅价2,800元的那个竞品C，T0 时提供什么订阅方式？T1 又增加了哪些新选项？",
+   "qtype": "lexical",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s3-d1-01-memo#p3@T1"
+   ],
+   "answer_points": [
+    "竞品C推出按月订阅选项，月费为269元，同时保留年度优惠价2,800元，进一步增强对中小客户的吸引力"
+   ],
+   "distractors": [
+    "s3-d1-01-memo#p1@T1",
+    "s3-d1-01-memo#p2@T1",
+    "s3-d1-01-report#p3@T1"
+   ]
+  },
+  {
+   "id": "s3-d1-01-q4",
+   "as_of": "T1",
+   "eval_intent": "synthesis",
+   "query": "在竞品B新增399元专业版的那份比价里，T0 到 T1 竞品间价格竞争态势有哪些关键转变？",
+   "qtype": "paraphrase",
+   "score_role": "guardrail",
+   "category": "trap",
+   "relevant": [
+    "s3-d1-01-memo#p1@T1",
+    "s3-d1-01-memo#p2@T1",
+    "s3-d1-01-memo#p3@T1"
+   ],
+   "answer_points": [
+    "至本周期末，竞品A已将基础套餐调涨至每月349元，并将高级功能模块纳入主套餐内，不再单独计价",
+    "竞品B已公开其功能分级结构，基础版仍为199元/月，新增“专业版”定价为399元/月",
+    "竞品C推出按月订阅选项，月费为269元，同时保留年度优惠价2,800元，进一步增强对中小客户的吸引力"
+   ],
+   "distractors": [
+    "s3-d1-01-memo#p1@T0",
+    "s3-d1-01-memo#p2@T0",
+    "s3-d1-01-memo#p3@T0"
+   ]
+  },
+  {
+   "id": "s3-d2-01-q1",
+   "as_of": "T1",
+   "eval_intent": "compare_pricing_trends",
+   "query": "巡检频率被改为两周一次的那个竞品A，标准服务包在 T0 到 T1 期间价格怎么变了？",
+   "score_role": "guardrail",
+   "category": "trap",
+   "relevant": [
+    "s3-d2-01-competitor-pricing#p1@T1"
+   ],
+   "answer_points": [
+    "截至2024年第二季度，竞品A已将标准服务包上调至每月219元，尽管仍保持基础技术支持",
+    "巡检频率调整为每两周一次"
+   ],
+   "distractors": [
+    "s3-d2-01-competitor-pricing#p1@T0",
+    "s3-d2-01-competitor-pricing#p2@T1",
+    "s3-d2-01-quotation-snapshot#p1@T1"
+   ],
+   "qtype": "paraphrase"
+  },
+  {
+   "id": "s3-d2-01-q2",
+   "as_of": "T1",
+   "eval_intent": "identify_new_features",
+   "query": "在竞品C月费调到195元的那份比价里，以自动化报告为卖点的竞品B，T1 相比 T0 增加了哪些新服务内容？",
+   "qtype": "paraphrase",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s3-d2-01-competitor-pricing#p2@T1"
+   ],
+   "answer_points": [
+    "竞品B在新版本基础上增加30天免费试用期，并将月费降至229元，同时优化了报告生成算法",
+    "显著提升响应速度"
+   ],
+   "distractors": [
+    "s3-d2-01-competitor-pricing#p1@T1",
+    "s3-d2-01-competitor-pricing#p3@T1",
+    "s3-d2-01-quotation-snapshot#p2@T1"
+   ]
+  },
+  {
+   "id": "s3-d2-01-q3",
+   "as_of": "T1",
+   "eval_intent": "validate_internal_change",
+   "query": "我方基础版服务包在T1时的定价与服务范围是否发生变化？",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s3-d2-01-quotation-snapshot#p1@T1"
+   ],
+   "answer_points": [
+    "基础版服务包价格上调至每月189元，巡检周期由月度改为双周一次，同时新增云端日志分析功能"
+   ],
+   "distractors": [
+    "s3-d2-01-competitor-pricing#p1@T1",
+    "s3-d2-01-quotation-snapshot#p2@T1",
+    "s3-d2-01-quotation-snapshot#p3@T1"
+   ],
+   "qtype": "paraphrase"
+  },
+  {
+   "id": "s3-d2-01-q4",
+   "as_of": "T1",
+   "eval_intent": "track_support_policy_shift",
+   "query": "竞品C在两个时间点的客户支持策略有何差异？",
+   "score_role": "guardrail",
+   "category": "trap",
+   "relevant": [
+    "s3-d2-01-competitor-pricing#p3@T1"
+   ],
+   "answer_points": [
+    "竞品C在最新迭代中恢复客户专属客服通道，并将月费上调至195元，同时引入个性化定制选项"
+   ],
+   "distractors": [
+    "s3-d2-01-competitor-pricing#p2@T1",
+    "s3-d2-01-competitor-pricing#p3@T0",
+    "s3-d2-01-quotation-snapshot#p3@T1"
+   ],
+   "qtype": "paraphrase"
+  },
+  {
+   "id": "s3-d3-01-q1",
+   "as_of": "T1",
+   "eval_intent": "compare_pricing_trends",
+   "query": "附带云存储的竞品A套餐，在 T0 与 T1 阶段价格有何变化？",
+   "qtype": "lexical",
+   "score_role": "guardrail",
+   "category": "trap",
+   "relevant": [
+    "s3-d3-01-memo#p1@T1",
+    "s3-d3-01-report#p1@T1"
+   ],
+   "answer_points": [
+    "最新数据显示，竞品A已全面推行新版套餐，价格上调至119元/月，同时增加企业级安全认证",
+    "至最新快照，竞品A已将基础套餐调涨至119元/月，同时新增100GB云存储，整体价值提升"
+   ],
+   "distractors": [
+    "s3-d3-01-memo#p1@T0",
+    "s3-d3-01-report#p1@T0"
+   ]
+  },
+  {
+   "id": "s3-d3-01-q2",
+   "as_of": "T1",
+   "eval_intent": "assess_strategy_shift",
+   "query": "在竞品A附带云存储的那份比价里，竞品B在两个时间点的服务内容与报价策略有何差异？",
+   "qtype": "paraphrase",
+   "score_role": "guardrail",
+   "category": "trap",
+   "relevant": [
+    "s3-d3-01-memo#p2@T1",
+    "s3-d3-01-report#p2@T1"
+   ],
+   "answer_points": [
+    "月费降至129元",
+    "支持实时工单追踪",
+    "转而采用按需计费模式",
+    "月费最低可至99元"
+   ],
+   "distractors": [
+    "s3-d3-01-memo#p1@T1",
+    "s3-d3-01-memo#p2@T0",
+    "s3-d3-01-report#p2@T0"
+   ]
+  },
+  {
+   "id": "s3-d3-01-q3",
+   "as_of": "T1",
+   "eval_intent": "identify_model_change",
+   "query": "在竞品A附带云存储的那份比价里，竞品C的报价结构在T1相比T0发生了哪些关键调整？",
+   "qtype": "paraphrase",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s3-d3-01-memo#p3@T1",
+    "s3-d3-01-report#p3@T1"
+   ],
+   "answer_points": [
+    "竞品C的报价结构已完成标准化改革，所有功能模块统一纳入89元基础包，有效降低用户决策成本",
+    "竞品C调整订阅策略，取消阶梯加价，统一为89元/月，涵盖全部功能模块，价格透明度大幅提升"
+   ],
+   "distractors": [
+    "s3-d3-01-memo#p1@T1",
+    "s3-d3-01-report#p2@T1"
+   ]
+  },
+  {
+   "id": "s3-d3-01-q4",
+   "as_of": "T1",
+   "eval_intent": "infer_strategic_impact",
+   "query": "在竞品C统一为89元基础包的那份比价里，从 T0 到 T1 各竞品的定价策略如何影响其市场定位？",
+   "qtype": "multi_hop",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s3-d3-01-memo#p3@T1",
+    "s3-d3-01-report#p1@T1",
+    "s3-d3-01-report#p2@T1"
+   ],
+   "answer_points": [
+    "竞品A已全面推行新版套餐，价格上调至119元/月，同时增加企业级安全认证，目标客户转向中大型组织",
+    "竞品B的报价策略发生重大调整，取消固定高价，转而采用按需计费模式，月费最低可至99元，配合灵活服务包，大幅增强市场渗透力",
+    "竞品C调整订阅策略，取消阶梯加价，统一为89元/月，涵盖全部功能模块，价格透明度大幅提升，吸引大量中小客户迁移"
+   ],
+   "distractors": [
+    "s3-d3-01-memo#p2@T1"
+   ]
+  },
+  {
+   "id": "s4-d0-t0-01-q1",
+   "as_of": "T0",
+   "eval_intent": "evaluate_performance_gain",
+   "query": "v2.3 版成本模型相比旧版在哪些方面实现了性能提升？",
+   "qtype": "lexical",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s4-d0-t0-01-memo#p1@T0",
+    "s4-d0-t0-01-memo#p2@T0",
+    "s4-d0-t0-01-report#p1@T0",
+    "s4-d0-t0-01-report#p3@T0"
+   ],
+   "answer_points": [
+    "新模型的准确率从76%提升至89%",
+    "模型运行时长由平均4.7秒降至2.3秒",
+    "平均误差率下降至3.2%，较上一版本降低1.8个百分点",
+    "日均处理效率提升约15%"
+   ],
+   "distractors": [
+    "s4-d0-t0-01-analysis#p1@T0",
+    "s4-d0-t0-01-report#p2@T0",
+    "s4-d0-t0-01-summary#p3@T0"
+   ]
+  },
+  {
+   "id": "s4-d0-t0-01-q2",
+   "as_of": "T0",
+   "eval_intent": "assess_model_influence",
+   "query": "为何在高层会议中使用旧版模型的决策方案被质疑？",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s4-d0-t0-01-analysis#p2@T0"
+   ],
+   "answer_points": [
+    "在高层管理会议中，使用T0模型的决策方案被质疑为过于保守",
+    "而新模型提供更精细的成本拆解，有助于识别隐藏成本点，提升资源配置透明度"
+   ],
+   "distractors": [
+    "s4-d0-t0-01-analysis#p1@T0",
+    "s4-d0-t0-01-analysis#p3@T0",
+    "s4-d0-t0-01-report#p1@T0"
+   ],
+   "qtype": "lexical"
+  },
+  {
+   "id": "s4-d0-t0-01-q3",
+   "as_of": "T0",
+   "eval_intent": "identify_weakness",
+   "query": "新模型在处理非标准流程时存在什么局限性？",
+   "qtype": "paraphrase",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s4-d0-t0-01-memo#p3@T0"
+   ],
+   "answer_points": [
+    "当前模型仍存在对非标准流程的覆盖不足问题"
+   ],
+   "distractors": [
+    "s4-d0-t0-01-memo#p1@T0",
+    "s4-d0-t0-01-report#p1@T0",
+    "s4-d0-t0-01-report#p3@T0"
+   ]
+  },
+  {
+   "id": "s4-d0-t0-01-q4",
+   "as_of": "T0",
+   "eval_intent": "understand_transition_plan",
+   "query": "为确保模型平滑过渡，已采取哪些协同措施？",
+   "qtype": "paraphrase",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s4-d0-t0-01-plan#p3@T0"
+   ],
+   "answer_points": [
+    "已启动跨团队协作机制，确保模型变更前完成影响评估与沟通预案，保障平滑过渡"
+   ],
+   "distractors": [
+    "s4-d0-t0-01-analysis#p2@T0",
+    "s4-d0-t0-01-plan#p1@T0",
+    "s4-d0-t0-01-plan#p2@T0",
+    "s4-d0-t0-01-summary#p2@T0"
+   ]
+  },
+  {
+   "id": "s4-d0-t0-01-q5",
+   "as_of": "T0",
+   "eval_intent": "evaluate_context_sensitivity",
+   "query": "v2.3 版成本模型在哪些业务场景下表现出更强的适应性？",
+   "qtype": "lexical",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s4-d0-t0-01-memo#p2@T0",
+    "s4-d0-t0-01-report#p1@T0",
+    "s4-d0-t0-01-summary#p2@T0"
+   ],
+   "answer_points": [
+    "在复杂项目核算中，新模型的准确率从76%提升至89%",
+    "尤其在原材料价格波动场景下保持稳定输出",
+    "尤其在高负载时段表现更稳定"
+   ],
+   "distractors": [
+    "s4-d0-t0-01-report#p2@T0",
+    "s4-d0-t0-01-summary#p1@T0"
+   ]
+  },
+  {
+   "id": "s4-d0-t0-01-q6",
+   "as_of": "T0",
+   "eval_intent": "extract_recommendations",
+   "query": "多方反馈中提出的三个改进建议分别是什么？",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s4-d0-t0-01-feedback#p1@T0",
+    "s4-d0-t0-01-feedback#p2@T0",
+    "s4-d0-t0-01-feedback#p3@T0"
+   ],
+   "answer_points": [
+    "来自财务部反馈：希望增加“人工工时”维度的细分统计，以便更精确地分配间接人力成本",
+    "技术团队建议：应明确模型版本标识规则，避免在报表中出现混淆引用",
+    "运营部门提出：期望在模型中加入季节性因子调节功能，以应对周期性业务高峰"
+   ],
+   "distractors": [
+    "s4-d0-t0-01-analysis#p3@T0",
+    "s4-d0-t0-01-plan#p1@T0"
+   ],
+   "qtype": "paraphrase"
+  },
+  {
+   "id": "s4-d0-t1-02-q1",
+   "as_of": "T1",
+   "eval_intent": "identify_enhancements",
+   "query": "计划11月启动全量灰度的那版成本模型，T1 版本相比 T0 版本有哪些改进？",
+   "qtype": "multi_hop",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s4-d0-t1-02-memo#p1@T1",
+    "s4-d0-t1-02-memo#p2@T1",
+    "s4-d0-t1-02-report#p2@T1"
+   ],
+   "answer_points": [
+    "预测准确率从76.3%升至89.1%",
+    "引入动态分摊算法以提升跨项目资源分配的准确性",
+    "对人力工时与设备折旧的非线性权重调整"
+   ],
+   "distractors": [
+    "s4-d0-t1-02-guide#p2@T1",
+    "s4-d0-t1-02-plan#p1@T1",
+    "s4-d0-t1-02-review#p3@T1"
+   ]
+  },
+  {
+   "id": "s4-d0-t1-02-q2",
+   "as_of": "T1",
+   "eval_intent": "assess_accuracy",
+   "query": "计划11月全量灰度的那版成本模型，在高并发场景下的预测表现如何？",
+   "qtype": "multi_hop",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s4-d0-t1-02-memo#p2@T1",
+    "s4-d0-t1-02-report#p2@T1"
+   ],
+   "answer_points": [
+    "特别强化了高并发场景下的弹性成本预测能力",
+    "平均预算偏差减少28%",
+    "预测准确率从76.3%升至89.1%"
+   ],
+   "distractors": [
+    "s4-d0-t1-02-analysis#p1@T1",
+    "s4-d0-t1-02-analysis#p2@T1",
+    "s4-d0-t1-02-plan#p2@T1",
+    "s4-d0-t1-02-report#p1@T1"
+   ]
+  },
+  {
+   "id": "s4-d0-t1-02-q3",
+   "as_of": "T1",
+   "eval_intent": "explain_tradeoffs",
+   "query": "为何新版本在低频任务中出现预算预留增加？其优势是什么？",
+   "qtype": "lexical",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s4-d0-t1-02-analysis#p2@T1",
+    "s4-d0-t1-02-analysis#p3@T1"
+   ],
+   "answer_points": [
+    "在低频任务中，新版模型倾向于保守估计，导致预算预留增加约7.6%，但有效避免了超支风险",
+    "该策略已被运营团队采纳为标准配置",
+    "整体风险控制收益远超成本波动影响"
+   ],
+   "distractors": [
+    "s4-d0-t1-02-analysis#p1@T1",
+    "s4-d0-t1-02-memo#p2@T1"
+   ]
+  },
+  {
+   "id": "s4-d0-t1-02-q4",
+   "as_of": "T1",
+   "eval_intent": "extract_planned_features",
+   "query": "成本模型的下一步迭代路线图包含哪些关键任务？",
+   "qtype": "paraphrase",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s4-d0-t1-02-plan#p1@T1",
+    "s4-d0-t1-02-plan#p2@T1",
+    "s4-d0-t1-02-plan#p3@T1"
+   ],
+   "answer_points": [
+    "本年度模型优化计划聚焦三大方向：一是增强对异构硬件的成本映射能力，二是建立实时反馈闭环以动态修正参数",
+    "路线图明确要求每季度进行一次跨部门验证，确保模型适应实际业务变化",
+    "整合外部市场数据源实现成本趋势预警",
+    "模型可解释性模块的开发"
+   ],
+   "distractors": [
+    "s4-d0-t1-02-report#p3@T1",
+    "s4-d0-t1-02-review#p3@T1"
+   ]
+  },
+  {
+   "id": "s4-d0-t1-02-q5",
+   "as_of": "T1",
+   "eval_intent": "extract_instructions",
+   "query": "使用T1版本模型时，用户需要注意哪些操作规范？",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s4-d0-t1-02-guide#p1@T1",
+    "s4-d0-t1-02-guide#p2@T1",
+    "s4-d0-t1-02-guide#p3@T1"
+   ],
+   "answer_points": [
+    "本指南更新内容涵盖新模型的参数配置方法、典型场景应用示例及常见错误规避建议",
+    "用户应定期检查模型输出中的置信区间，当低于85%时需人工复核",
+    "所有新建项目必须采用T1版本作为默认测算基准，旧版本仅限历史数据追溯用途",
+    "需启用“弹性阈值”选项以适配突发流量场景"
+   ],
+   "distractors": [
+    "s4-d0-t1-02-memo#p3@T1",
+    "s4-d0-t1-02-plan#p2@T1",
+    "s4-d0-t1-02-review#p1@T1"
+   ],
+   "qtype": "paraphrase"
+  },
+  {
+   "id": "s4-d0-t1-02-q6",
+   "as_of": "T1",
+   "eval_intent": "summarize_recommendations",
+   "query": "评审会议对模型的后续发展提出了哪些建议？",
+   "qtype": "paraphrase",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s4-d0-t1-02-review#p2@T1"
+   ],
+   "answer_points": [
+    "在未来版本中加入成本敏感度分析功能",
+    "扩展对云服务阶梯定价的支持"
+   ],
+   "distractors": [
+    "s4-d0-t1-02-report#p3@T1",
+    "s4-d0-t1-02-review#p1@T1",
+    "s4-d0-t1-02-review#p3@T1"
+   ]
+  },
+  {
+   "id": "s4-d1-t0-03-q1",
+   "as_of": "T0",
+   "eval_intent": "understanding_model_changes",
+   "query": "新版本成本模型如何改进固定与可变成本的区分精度？",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s4-d1-t0-03-memo#p1@T0"
+   ],
+   "answer_points": [
+    "本次内部测算模型在成本结构分析中引入了动态分摊机制，显著提升了对固定成本与可变成本的区分精度",
+    "新版本通过加权平均法处理跨周期投入，使单位产出成本估算偏差率下降至5.2%以下"
+   ],
+   "distractors": [
+    "s4-d1-t0-03-analysis#p1@T0",
+    "s4-d1-t0-03-memo#p2@T0",
+    "s4-d1-t0-03-report#p1@T0"
+   ],
+   "qtype": "lexical"
+  },
+  {
+   "id": "s4-d1-t0-03-q2",
+   "as_of": "T0",
+   "eval_intent": "identifying_data_cleaning_impact",
+   "query": "本次模型迭代中移除了哪些冗余计算项？带来了什么影响？",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s4-d1-t0-03-memo#p2@T0"
+   ],
+   "answer_points": [
+    "针对历史数据中存在冗余计算项的问题，已剔除重复归集的间接费用模块",
+    "该调整使模型运行效率提升约18%，同时增强结果可解释性"
+   ],
+   "distractors": [
+    "s4-d1-t0-03-analysis#p1@T0",
+    "s4-d1-t0-03-analysis#p3@T0",
+    "s4-d1-t0-03-memo#p1@T0"
+   ],
+   "qtype": "paraphrase"
+  },
+  {
+   "id": "s4-d1-t0-03-q3",
+   "as_of": "T0",
+   "eval_intent": "extracting_feature_benefits",
+   "query": "新版本模型支持哪几类核心成本拆解？对预算规划有何帮助？",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s4-d1-t0-03-memo#p3@T0"
+   ],
+   "answer_points": [
+    "当前版本支持多维度成本拆解，包括人力、设备、运维及外部服务四类核心支出，为后续预算规划提供更细粒度支撑"
+   ],
+   "distractors": [
+    "s4-d1-t0-03-analysis#p3@T0",
+    "s4-d1-t0-03-report#p1@T0",
+    "s4-d1-t0-03-report#p3@T0"
+   ],
+   "qtype": "paraphrase"
+  },
+  {
+   "id": "s4-d1-t0-03-q4",
+   "as_of": "T0",
+   "eval_intent": "predicting_development_trajectory",
+   "query": "未来版本计划引入哪些关键技术能力？预期达到什么效果？",
+   "qtype": "paraphrase",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s4-d1-t0-03-plan#p1@T0",
+    "s4-d1-t0-03-plan#p2@T0",
+    "s4-d1-t0-03-plan#p3@T0"
+   ],
+   "answer_points": [
+    "计划下一阶段引入实时数据流接入能力，以支持动态成本重估，目标是将响应延迟压缩至分钟级",
+    "增加成本敏感度分析模块，帮助识别关键影响因子，辅助管理层制定策略调整预案",
+    "探索与外部经济指标联动建模，提升宏观环境变化应对能力"
+   ],
+   "distractors": [
+    "s4-d1-t0-03-analysis#p2@T0",
+    "s4-d1-t0-03-report#p3@T0"
+   ]
+  },
+  {
+   "id": "s4-d2-t1-04-q1",
+   "as_of": "T1",
+   "eval_intent": "quantitative_comparison",
+   "query": "可用性维持在99.98%以上的那版成本模型，相比旧版预测准确率提升了多少？",
+   "qtype": "paraphrase",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s4-d2-t1-04-memo#p2@T1"
+   ],
+   "answer_points": [
+    "误差率由原先的8.7%降至4.3%"
+   ],
+   "distractors": [
+    "s4-d2-t1-04-internal#p1@T1",
+    "s4-d2-t1-04-memo#p1@T1",
+    "s4-d2-t1-04-report#p1@T1",
+    "s4-d2-t1-04-summary#p2@T1"
+   ]
+  },
+  {
+   "id": "s4-d2-t1-04-q2",
+   "as_of": "T1",
+   "eval_intent": "numerical_fact",
+   "query": "跨区域部署时，边缘机房每单位算力的花费比中心机房便宜多少百分比？",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s4-d2-t1-04-report#p1@T1"
+   ],
+   "answer_points": [
+    "结果显示，边缘节点的单位计算成本较中心节点低19.6%",
+    "本报告基于最新版本的成本模型进行测算，重点分析了多区域部署下的资源利用率差异"
+   ],
+   "distractors": [
+    "s4-d2-t1-04-memo#p2@T1",
+    "s4-d2-t1-04-report#p2@T1"
+   ],
+   "qtype": "paraphrase"
+  },
+  {
+   "id": "s4-d2-t1-04-q3",
+   "as_of": "T1",
+   "eval_intent": "feature_identification",
+   "query": "边缘节点单位成本比中心低近两成的那版成本模型，做了哪些关键优化来减少资源浪费？",
+   "qtype": "multi_hop",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s4-d2-t1-04-memo#p1@T1",
+    "s4-d2-t1-04-report#p2@T1"
+   ],
+   "answer_points": [
+    "引入弹性伸缩阈值优化",
+    "资源浪费减少31%",
+    "引入动态权重调整机制以提升预测准确率"
+   ],
+   "distractors": [
+    "s4-d2-t1-04-internal#p1@T1",
+    "s4-d2-t1-04-internal#p3@T1",
+    "s4-d2-t1-04-report#p3@T1",
+    "s4-d2-t1-04-report#p1@T1"
+   ]
+  },
+  {
+   "id": "s4-d2-t1-04-q4",
+   "as_of": "T1",
+   "eval_intent": "intended_action",
+   "query": "为确保模型长期适用性，计划采取什么措施进行持续优化？",
+   "qtype": "paraphrase",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s4-d2-t1-04-memo#p3@T1"
+   ],
+   "answer_points": [
+    "后续将基于真实流量数据持续优化参数，确保长期适应性"
+   ],
+   "distractors": [
+    "s4-d2-t1-04-report#p1@T1",
+    "s4-d2-t1-04-report#p3@T1",
+    "s4-d2-t1-04-summary#p1@T1"
+   ]
+  },
+  {
+   "id": "s4-d3-t0-05-q1",
+   "as_of": "T0",
+   "eval_intent": "direct",
+   "query": "新版本成本模型在高并发场景下的平均响应延迟是多少？",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s4-d3-t0-05-memo#p1@T0"
+   ],
+   "answer_points": [
+    "模型在模拟高并发场景下表现稳定，平均响应延迟控制在210毫秒以内，资源峰值使用率未超过78%"
+   ],
+   "distractors": [
+    "s4-d3-t0-05-memo#p2@T0",
+    "s4-d3-t0-05-report#p3@T0",
+    "s4-d3-t0-05-summary#p1@T0"
+   ],
+   "qtype": "lexical"
+  },
+  {
+   "id": "s4-d3-t0-05-q2",
+   "as_of": "T0",
+   "eval_intent": "direct",
+   "query": "v1.4版本相比v1.2在初始化时间上缩短了多少秒？",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s4-d3-t0-05-analysis#p2@T0"
+   ],
+   "answer_points": [
+    "其初始化时间平均为47秒，较v1.2缩短了12秒，且具备更优的容错恢复能力",
+    "v1.4的部署复杂度略有上升，但通过自动化脚本可有效缓解"
+   ],
+   "distractors": [
+    "s4-d3-t0-05-analysis#p1@T0",
+    "s4-d3-t0-05-analysis#p3@T0",
+    "s4-d3-t0-05-memo#p1@T0"
+   ],
+   "qtype": "lexical"
+  },
+  {
+   "id": "s4-d3-t0-05-q3",
+   "as_of": "T0",
+   "eval_intent": "direct",
+   "query": "新版本成本模型在数据预处理阶段的效率提升了多少百分比？",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s4-d3-t0-05-memo#p2@T0"
+   ],
+   "answer_points": [
+    "测算结果显示，新模型在数据预处理阶段效率提升约19%，主要得益于动态调度机制的优化",
+    "该改进使任务队列吞吐量增加至每分钟1200条，较旧版本提升近三成"
+   ],
+   "distractors": [
+    "s4-d3-t0-05-memo#p1@T0",
+    "s4-d3-t0-05-memo#p3@T0",
+    "s4-d3-t0-05-summary#p1@T0"
+   ],
+   "qtype": "paraphrase"
+  },
+  {
+   "id": "s4-d3-t0-05-q4",
+   "as_of": "T0",
+   "eval_intent": "direct",
+   "score_role": "arm",
+   "relevant": [
+    "s4-d3-t0-05-report#p2@T0"
+   ],
+   "answer_points": [
+    "针对该问题，团队已实施缓冲区大小动态调整策略，并引入周期性垃圾回收机制"
+   ],
+   "distractors": [
+    "s4-d3-t0-05-report#p1@T0",
+    "s4-d3-t0-05-summary#p2@T0"
+   ],
+   "query": "为解决内存泄漏问题，团队采取了哪些具体措施？",
+   "qtype": "paraphrase",
+   "category": "hard"
+  },
+  {
+   "id": "s5-d0-t0-01-q1",
+   "as_of": "T0",
+   "eval_intent": "assess understanding of key points across sources",
+   "query": "综合多份文档来看，协作机制在响应速度和响应时间上有哪些量化成效？其推广又面临哪三大挑战？",
+   "qtype": "multi_hop",
+   "score_role": "arm",
+   "category": "trap",
+   "relevant": [
+    "s5-d0-t0-01-report#p1@T0",
+    "s5-d0-t0-01-analysis#p1@T0",
+    "s5-d0-t0-01-summary#p2@T0"
+   ],
+   "answer_points": [
+    "在公共服务响应速度上平均提升了约40%",
+    "在处理突发事件时平均缩短响应时间2.3小时",
+    "技术适配性不足、组织惯性阻力大、外部监督机制缺失"
+   ],
+   "distractors": [
+    "s5-d0-t0-01-press#p1@T0",
+    "s5-d0-t0-01-internal#p2@T0",
+    "s5-d0-t0-01-memo#p2@T0"
+   ]
+  },
+  {
+   "id": "s5-d0-t0-01-q2",
+   "as_of": "T0",
+   "eval_intent": "evaluate ability to identify conflicting claims and explain discrepancies",
+   "query": "关于社区服务里的协作平台（某市智慧协作平台），不同来源的评价有矛盾吗？请举例并分析原因。",
+   "qtype": "multi_hop",
+   "score_role": "arm",
+   "category": "trap",
+   "relevant": [
+    "s5-d0-t0-01-memo#p2@T0",
+    "s5-d0-t0-01-press#p1@T0",
+    "s5-d0-t0-01-press#p2@T0"
+   ],
+   "answer_points": [
+    "得分达87分",
+    "被视为创新典范",
+    "报道强调其“零延迟”响应能力",
+    "该平台实际覆盖范围仅限于主城区，偏远社区仍依赖传统方式，存在信息孤岛现象",
+    "在试点阶段曾出现沟通延迟问题",
+    "主要因责任划分不清导致执行脱节"
+   ],
+   "distractors": [
+    "s5-d0-t0-01-internal#p1@T0",
+    "s5-d0-t0-01-summary#p1@T0",
+    "s5-d0-t0-01-summary#p2@T0"
+   ]
+  },
+  {
+   "id": "s5-d0-t0-01-q3",
+   "as_of": "T0",
+   "eval_intent": "test precision in locating specific evidence within texts",
+   "query": "从文档中提取支持‘该机制在偏远地区效果不佳’这一观点的证据。",
+   "score_role": "arm",
+   "category": "trap",
+   "relevant": [
+    "s5-d0-t0-01-press#p2@T0",
+    "s5-d0-t0-01-report#p2@T0"
+   ],
+   "answer_points": [
+    "在资源紧张区域效果不显著",
+    "偏远社区仍依赖传统方式，存在信息孤岛现象"
+   ],
+   "distractors": [
+    "s5-d0-t0-01-memo#p1@T0",
+    "s5-d0-t0-01-press#p1@T0",
+    "s5-d0-t0-01-report#p1@T0"
+   ],
+   "qtype": "multi_hop"
+  },
+  {
+   "id": "s5-d0-t0-01-q4",
+   "as_of": "T0",
+   "eval_intent": "assess judgment in identifying most relevant source for a claim",
+   "query": "哪份文档最直接支持‘系统界面复杂影响使用率’这一说法？请说明理由。",
+   "score_role": "arm",
+   "category": "trap",
+   "relevant": [
+    "s5-d0-t0-01-internal#p1@T0"
+   ],
+   "answer_points": [
+    "在2023年第一季度的跨部门协调会上，多位负责人反映系统界面复杂，操作门槛高，导致基层人员使用意愿低",
+    "此问题被列为优先改进项"
+   ],
+   "distractors": [
+    "s5-d0-t0-01-analysis#p2@T0",
+    "s5-d0-t0-01-summary#p2@T0"
+   ],
+   "qtype": "paraphrase"
+  },
+  {
+   "id": "s5-d0-t0-01-q5",
+   "as_of": "T0",
+   "eval_intent": "test logical reasoning and caution in drawing conclusions",
+   "query": "根据现有材料，能否得出‘该机制已证明完全可行’的结论？为什么？",
+   "qtype": "multi_hop",
+   "score_role": "arm",
+   "category": "trap",
+   "relevant": [
+    "s5-d0-t0-01-memo#p3@T0",
+    "s5-d0-t0-01-report#p2@T0",
+    "s5-d0-t0-01-summary#p3@T0"
+   ],
+   "answer_points": [
+    "当前所有结论均基于局部经验与间接数据，尚无权威机构出具全面评估报告，应谨慎对待其广泛推广建议。",
+    "平台运行依赖人工协调，自动化程度不足，且在资源紧张区域效果不显著。",
+    "该机制的成效存在争议，需更多实证研究以明确其适用边界与改进方向。"
+   ],
+   "distractors": [
+    "s5-d0-t0-01-analysis#p1@T0",
+    "s5-d0-t0-01-press#p1@T0"
+   ]
+  },
+  {
+   "id": "s5-d0-t0-01-q6",
+   "as_of": "T0",
+   "eval_intent": "evaluate strategic thinking based on synthesized information",
+   "query": "如果要在未来一年内推动该机制全面推广，基于文档内容，应优先解决哪些问题？",
+   "qtype": "multi_hop",
+   "score_role": "arm",
+   "category": "trap",
+   "relevant": [
+    "s5-d0-t0-01-analysis#p3@T0",
+    "s5-d0-t0-01-internal#p1@T0",
+    "s5-d0-t0-01-internal#p2@T0",
+    "s5-d0-t0-01-summary#p2@T0"
+   ],
+   "answer_points": [
+    "建议在全面推广前，建立标准化培训体系，并设定阶段性评估节点，以动态优化机制设计。",
+    "多位负责人反映系统界面复杂，操作门槛高，导致基层人员使用意愿低。",
+    "若能整合现有政务平台接口，可降低重复录入负担，提升数据一致性。",
+    "但其推广面临三大挑战：技术适配性不足、组织惯性阻力大、外部监督机制缺失。这些因素共同制约其规模化应用"
+   ],
+   "distractors": [
+    "s5-d0-t0-01-memo#p1@T0",
+    "s5-d0-t0-01-press#p1@T0",
+    "s5-d0-t0-01-report#p3@T0"
+   ]
+  },
+  {
+   "id": "s5-d0-t1-02-q1",
+   "as_of": "T1",
+   "eval_intent": "assess understanding of information synthesis and narrative formation from secondary sources",
+   "query": "以城市交通拥堵指标和“青少年近视率超一半”为例，二手数据是怎样通过反复引用变成“被接受的真相”的？",
+   "qtype": "multi_hop",
+   "score_role": "arm",
+   "category": "trap",
+   "relevant": [
+    "s5-d0-t1-02-memo#p1@T1",
+    "s5-d0-t1-02-memo#p3@T1",
+    "s5-d0-t1-02-summary#p1@T1",
+    "s5-d0-t1-02-summary#p2@T1"
+   ],
+   "answer_points": [
+    "被多家媒体和智库间接转述",
+    "最早可追溯至2014年某高校调研",
+    "即使原始数据无法验证，只要被多次引用并嵌入正式论述，便可能成为“事实”本身",
+    "这些数据往往经过多次转述，每一次传递都可能引入轻微变形，最终形成一种“集体记忆式事实”。",
+    "尽管近年新调查显示实际比例为48.6%，但该“旧共识”仍主导舆论讨论，甚至影响教育政策方向。"
+   ],
+   "distractors": [
+    "s5-d0-t1-02-analysis#p1@T1",
+    "s5-d0-t1-02-analysis#p3@T1",
+    "s5-d0-t1-02-report#p1@T1"
+   ]
+  },
+  {
+   "id": "s5-d0-t1-02-q2",
+   "as_of": "T1",
+   "eval_intent": "evaluate reasoning about credibility in the absence of primary evidence",
+   "query": "当原始数据无法验证时，为何某些被转述的数据仍能在政策讨论中获得高度可信度？请从引用行为与制度惯性角度分析。",
+   "qtype": "paraphrase",
+   "score_role": "arm",
+   "category": "trap",
+   "relevant": [
+    "s5-d0-t1-02-memo#p2@T1",
+    "s5-d0-t1-02-memo#p3@T1",
+    "s5-d0-t1-02-summary#p3@T1"
+   ],
+   "answer_points": [
+    "即使原始数据无法验证，只要被多次引用并嵌入正式论述，便可能成为“事实”本身",
+    "由于原始报告的权威性已被广泛接受，修正数据并未引发足够关注，反而被归因于“样本偏差”或“测量误差”，反映出信息传播中的“确认偏误”现象。",
+    "尤其当新数据与既有叙事冲突时，往往面临更高的质疑门槛，导致认知滞后。",
+    "当一个数字被反复提及并嵌入主流话语，其真实性便逐渐让位于其象征意义。"
+   ],
+   "distractors": [
+    "s5-d0-t1-02-analysis#p1@T1",
+    "s5-d0-t1-02-report#p1@T1",
+    "s5-d0-t1-02-summary#p1@T1"
+   ]
+  },
+  {
+   "id": "s5-d0-t1-02-q3",
+   "as_of": "T1",
+   "eval_intent": "analyze the impact of reinterpretation on decision-making quality",
+   "query": "通勤白皮书被政府简报引用时出现的“数据语义微调”，会怎样影响政策的科学性？请举例说明后果。",
+   "qtype": "paraphrase",
+   "score_role": "arm",
+   "category": "trap",
+   "relevant": [
+    "s5-d0-t1-02-report#p2@T1",
+    "s5-d0-t1-02-report#p3@T1"
+   ],
+   "answer_points": [
+    "这种语义微调虽无恶意，却导致政策推演基础出现偏差",
+    "值得注意的是，该报告在发布后不久即被多家政府简报引用，作为制定“弹性工作制试点”政策的重要依据",
+    "有地方部门将“平均通勤时间”解释为“最常见通勤时长”，而原始定义实为“中位数时间”",
+    "其解释权便可能被重新分配。"
+   ],
+   "distractors": [
+    "s5-d0-t1-02-memo#p1@T1",
+    "s5-d0-t1-02-report#p1@T1"
+   ]
+  },
+  {
+   "id": "s5-d0-t1-02-q4",
+   "as_of": "T1",
+   "eval_intent": "evaluate ability to propose practical methods for assessing synthesized information",
+   "query": "关于通勤白皮书数据被重新诠释一事，材料认为引用公开数据除追溯源头外还要关注什么？民生报告一案又暴露了什么盲点？",
+   "qtype": "multi_hop",
+   "score_role": "arm",
+   "category": "trap",
+   "relevant": [
+    "s5-d0-t1-02-report#p3@T1",
+    "s5-d0-t1-02-analysis#p3@T1"
+   ],
+   "answer_points": [
+    "对公开数据的引用不仅需要追溯源头，更需关注其在不同语境下的再诠释过程，防止“数字神话”在制度层面固化。",
+    "此事件暴露了内部数据整合机制中的结构性盲点：权威性不等于准确性，一致性也不代表全面性。"
+   ],
+   "distractors": [
+    "s5-d0-t1-02-analysis#p1@T1",
+    "s5-d0-t1-02-report#p1@T1",
+    "s5-d0-t1-02-summary#p1@T1"
+   ]
+  },
+  {
+   "id": "s5-d1-t1-03-q1",
+   "as_of": "T1",
+   "eval_intent": "assess understanding of how secondary referencing can distort original data meaning",
+   "query": "在多个非官方渠道中流传的2018年消费者行为调查的核心结论，为何可能影响后续研究判断？",
+   "qtype": "paraphrase",
+   "score_role": "arm",
+   "category": "trap",
+   "relevant": [
+    "s5-d1-t1-03-memo#p1@T1",
+    "s5-d1-t1-03-memo#p2@T1",
+    "s5-d1-t1-03-memo#p3@T1"
+   ],
+   "answer_points": [
+    "尽管这一细节未在正式发布版本中说明，但在多份行业笔记中被反复提及，成为后续分析的重要参考依据",
+    "尽管原始数据已不再公开，但其核心结论被多次引用。",
+    "关于“线上购物渗透率”的统计值，在三份独立文档中分别记载为42%、46%和48%",
+    "这种不一致促使学者提出应谨慎对待二手引述，避免误读历史数据脉络"
+   ],
+   "distractors": [
+    "s5-d1-t1-03-note#p1@T1",
+    "s5-d1-t1-03-report#p1@T1"
+   ]
+  },
+  {
+   "id": "s5-d1-t1-03-q2",
+   "as_of": "T1",
+   "eval_intent": "evaluate awareness of limitations in outdated and poorly sourced statistics",
+   "query": "为什么说2019年白皮书中关于手机更换周期的数据虽然被广泛引用，但仍存在可靠性风险？",
+   "qtype": "paraphrase",
+   "score_role": "arm",
+   "category": "trap",
+   "relevant": [
+    "s5-d1-t1-03-report#p1@T1",
+    "s5-d1-t1-03-report#p2@T1"
+   ],
+   "answer_points": [
+    "值得注意的是，该数据源自一项2018年的小型调研，样本量仅为850人，且主要集中在一线城市",
+    "该报告指出，用户平均更换手机的时间为2.7年，这一数字在后续三年内被多次复述，甚至成为政策制定者的参考基准。",
+    "由于缺乏更新的权威数据，许多研究直接沿用此数值，未加批判性评估，导致长期形成认知惯性。"
+   ],
+   "distractors": [
+    "s5-d1-t1-03-memo#p1@T1",
+    "s5-d1-t1-03-memo#p3@T1",
+    "s5-d1-t1-03-summary#p2@T1"
+   ]
+  },
+  {
+   "id": "s5-d1-t1-03-q3",
+   "as_of": "T1",
+   "eval_intent": "analyze mechanisms of data distortion through informal channels",
+   "query": "那份记录2015年市场反馈的内部备忘录，其数据是怎样经非正式渠道被当作正式成果的？",
+   "score_role": "arm",
+   "category": "trap",
+   "relevant": [
+    "s5-d1-t1-03-note#p1@T1",
+    "s5-d1-t1-03-note#p2@T1"
+   ],
+   "answer_points": [
+    "一份2017年的项目备忘录提到，某部门曾收集2015年市场反馈数据，用于支持战略规划",
+    "在2021年的审计审查中发现，其中一份内部幻灯片将原始数据中的“满意度得分”从3.4夸大至4.1",
+    "该数据集虽未正式对外公布，但通过邮件流转，被多个团队间接引用，形成了隐性的信息传播网络。",
+    "其中一份内部幻灯片将原始数据中的“满意度得分”从3.4夸大至4.1，理由是“符合预期目标”",
+    "此类微调虽未改变整体趋势，却在后续汇报中被当作真实成果展示，引发信任危机。"
+   ],
+   "distractors": [
+    "s5-d1-t1-03-memo#p1@T1",
+    "s5-d1-t1-03-report#p1@T1"
+   ],
+   "qtype": "paraphrase"
+  },
+  {
+   "id": "s5-d1-t1-03-q4",
+   "as_of": "T1",
+   "eval_intent": "apply best practices for handling conflicting data in synthesis tasks",
+   "query": "当多份来源对同一事件的描述存在数值差异时，应采取何种方法确保汇编叙述的可信度？",
+   "qtype": "paraphrase",
+   "score_role": "arm",
+   "category": "trap",
+   "relevant": [
+    "s5-d1-t1-03-summary#p2@T1",
+    "s5-d1-t1-03-summary#p3@T1"
+   ],
+   "answer_points": [
+    "经交叉验证，发现前者包含了预注册人数，后者仅统计现场出席者",
+    "最终研究团队决定采用“分层标注法”，对每条信息注明其来源类型与潜在偏见"
+   ],
+   "distractors": [
+    "s5-d1-t1-03-memo#p3@T1",
+    "s5-d1-t1-03-report#p3@T1",
+    "s5-d1-t1-03-note#p3@T1"
+   ]
+  },
+  {
+   "id": "s5-d2-t0-04-q1",
+   "as_of": "T0",
+   "eval_intent": "identify common cited data across sources",
+   "query": "三份二手交易材料各自给出了哪些增长数字？它们是否引用了同一个数据点？",
+   "score_role": "arm",
+   "category": "trap",
+   "relevant": [
+    "s5-d2-t0-04-memo#p1@T0",
+    "s5-d2-t0-04-analysis#p1@T0",
+    "s5-d2-t0-04-report#p2@T0",
+    "s5-d2-t0-04-memo#p3@T0"
+   ],
+   "answer_points": [
+    "全国二手交易市场在2019年至2020年间年均增长率达17.3%",
+    "二手商品成交额在当年第四季度环比增长26.5%",
+    "2021年“二手”相关话题在微博上的讨论量同比增长35%",
+    "线上二手平台用户活跃度较前一年提升约22%"
+   ],
+   "distractors": [
+    "s5-d2-t0-04-analysis#p2@T0",
+    "s5-d2-t0-04-report#p1@T0"
+   ],
+   "qtype": "multi_hop"
+  },
+  {
+   "id": "s5-d2-t0-04-q2",
+   "as_of": "T0",
+   "eval_intent": "identify source type and rationale for credibility",
+   "query": "在二手交易相关材料里，哪些文档提到了未公开的内部数据？这些内容为什么被当作参考？",
+   "qtype": "multi_hop",
+   "score_role": "arm",
+   "category": "trap",
+   "relevant": [
+    "s5-d2-t0-04-analysis#p1@T0",
+    "s5-d2-t0-04-analysis#p3@T0",
+    "s5-d2-t0-04-memo#p1@T0"
+   ],
+   "answer_points": [
+    "此数据未对外公布，但在跨部门会议纪要中被提及，并成为后续策略调整的依据之一。",
+    "该信息未进入正式文档体系，但在团队交流中频繁被引用，形成隐性共识。",
+    "尽管原始报告未公开，但其结论在若干非正式渠道中广泛流传。"
+   ],
+   "distractors": [
+    "s5-d2-t0-04-report#p1@T0",
+    "s5-d2-t0-04-report#p2@T0"
+   ]
+  },
+  {
+   "id": "s5-d2-t0-04-q3",
+   "as_of": "T0",
+   "eval_intent": "evaluate handling of uncertain or unverified information",
+   "query": "三份文档如何处理未经证实或来源模糊的信息？请举例说明。",
+   "qtype": "multi_hop",
+   "score_role": "arm",
+   "category": "trap",
+   "relevant": [
+    "s5-d2-t0-04-analysis#p3@T0",
+    "s5-d2-t0-04-memo#p1@T0",
+    "s5-d2-t0-04-memo#p3@T0",
+    "s5-d2-t0-04-report#p1@T0",
+    "s5-d2-t0-04-report#p2@T0"
+   ],
+   "answer_points": [
+    "尽管原始报告未公开，但其结论在若干非正式渠道中广泛流传。",
+    "这一趋势被部分媒体归因于疫情推动的居家消费习惯变化，但缺乏直接数据支持。",
+    "该报告虽无官方背书，但被多家自媒体转载并作为论据使用。",
+    "尽管该数据来源未提供完整统计口径，仍被用于佐证市场热度。",
+    "该信息未进入正式文档体系，但在团队交流中频繁被引用，形成隐性共识。"
+   ],
+   "distractors": [
+    "s5-d2-t0-04-analysis#p2@T0"
+   ]
+  },
+  {
+   "id": "s5-d3-t1-05-q1",
+   "as_of": "T1",
+   "eval_intent": "assess ability to synthesize changes across time using outdated references",
+   "query": "在2022年与2023年间，某城市公共交通使用率的变化情况如何？有哪些因素导致了信息滞后？",
+   "score_role": "arm",
+   "category": "trap",
+   "relevant": [
+    "s5-d3-t1-05-memo#p1@T1",
+    "s5-d3-t1-05-memo#p2@T1"
+   ],
+   "answer_points": [
+    "在2022年的一项研究中，某机构对城市居民的通勤模式进行了调查，结果显示约43%的人每日乘坐公共交通工具",
+    "2023年另一项独立调查显示，使用公共交通的比例上升至51%，但该结果未被广泛传播",
+    "部分媒体和报告仍沿用旧数据，导致公众对实际变化产生误判，形成认知偏差。"
+   ],
+   "distractors": [
+    "s5-d3-t1-05-memo#p3@T1",
+    "s5-d3-t1-05-report#p1@T1",
+    "s5-d3-t1-05-report#p2@T1"
+   ],
+   "qtype": "paraphrase"
+  },
+  {
+   "id": "s5-d3-t1-05-q2",
+   "as_of": "T1",
+   "eval_intent": "evaluate understanding of data inertia and institutional reliance on obsolete metrics",
+   "query": "以公交使用率、制造业占比和员工满意度为例，为何新数据出现后旧统计仍被政策文件广泛引用？反映了什么问题？",
+   "score_role": "arm",
+   "category": "trap",
+   "relevant": [
+    "s5-d3-t1-05-analysis#p2@T1",
+    "s5-d3-t1-05-report#p2@T1",
+    "s5-d3-t1-05-memo#p2@T1"
+   ],
+   "answer_points": [
+    "事实固化",
+    "数据惯性",
+    "但该结果未被广泛传播",
+    "部分媒体和报告仍沿用旧数据，导致公众对实际变化产生误判，形成认知偏差。",
+    "但多数地方政府报告仍沿用旧值，造成政策目标与现实脱节。",
+    "管理层对此类引用持默许态度，认为其具有稳定预期的作用。"
+   ],
+   "distractors": [
+    "s5-d3-t1-05-analysis#p1@T1",
+    "s5-d3-t1-05-memo#p3@T1",
+    "s5-d3-t1-05-report#p3@T1"
+   ],
+   "qtype": "multi_hop"
+  },
+  {
+   "id": "s5-d3-t1-05-q3",
+   "as_of": "T1",
+   "eval_intent": "assess capability to infer trends from fragmented, non-public sources",
+   "query": "离职面谈与匿名反馈交叉分析后，发现了哪项没写进正式报告的员工侧趋势？",
+   "score_role": "arm",
+   "category": "trap",
+   "relevant": [
+    "s5-d3-t1-05-analysis#p3@T1"
+   ],
+   "answer_points": [
+    "通过对离职面谈记录与匿名反馈系统的交叉分析，可识别出员工对远程办公支持度的显著提升",
+    "可识别出员工对远程办公支持度的显著提升，这一趋势虽未体现在正式报告中，但已被高层视为关键管理改进方向。"
+   ],
+   "distractors": [
+    "s5-d3-t1-05-analysis#p1@T1",
+    "s5-d3-t1-05-analysis#p2@T1"
+   ],
+   "qtype": "lexical"
+  },
+  {
+   "id": "s6-d0-t1-01-q1",
+   "as_of": "T1",
+   "eval_intent": "confirm_change",
+   "query": "顾问备忘中复验窗口的最新调整是什么？旧窗口如何处理？",
+   "qtype": "lexical",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s6-d0-t1-01-memo#p1@T1"
+   ],
+   "answer_points": [
+    "顾问备忘中关于复验窗口的调整已正式生效，原定两周的复验周期现已延长至三周",
+    "旧版中的两周窗口仅保留用于历史对照参考，不再作为现行标准执行"
+   ],
+   "distractors": [
+    "s6-d0-t1-01-memo#p2@T1",
+    "s6-d0-t1-01-patch#p1@T1",
+    "s6-d0-t1-01-patch#p2@T1"
+   ]
+  },
+  {
+   "id": "s6-d0-t1-01-q2",
+   "as_of": "T1",
+   "eval_intent": "locate_and_explain",
+   "query": "渠道纪要中关于口头折扣的信息发生了什么位置变动？原因是什么？",
+   "qtype": "lexical",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s6-d0-t1-01-channel#p1@T1"
+   ],
+   "answer_points": [
+    "渠道纪要中涉及口头折扣的条款已从主文迁移至附录，此举旨在分离操作细节与核心政策声明，避免信息冗余影响关键判断的传达效率。"
+   ],
+   "distractors": [
+    "s6-d0-t1-01-memo#p2@T1",
+    "s6-d0-t1-01-channel#p2@T1",
+    "s6-d0-t1-01-channel#p3@T1",
+    "s6-d0-t1-01-patch#p1@T1"
+   ]
+  },
+  {
+   "id": "s6-d0-t1-01-q3",
+   "as_of": "T1",
+   "eval_intent": "explain_status",
+   "query": "战略判断的结论段目前处于什么状态？为何不再标记为已签发？",
+   "qtype": "lexical",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s6-d0-t1-01-memo#p3@T1"
+   ],
+   "answer_points": [
+    "战略判断部分的结论段落已更新为“待复验”状态，不再以“已签发”形式呈现，反映当前评估仍需进一步验证，确保风险控制闭环完整。"
+   ],
+   "distractors": [
+    "s6-d0-t1-01-patch#p2@T1",
+    "s6-d0-t1-01-channel#p1@T1",
+    "s6-d0-t1-01-memo#p1@T1"
+   ]
+  },
+  {
+   "id": "s6-d0-t1-02-q1",
+   "as_of": "T1",
+   "eval_intent": "verify_specific_change_in_source",
+   "query": "供应商交付周期从四周改为六周后，这一变更分别被同步到了哪些工具或排期里？",
+   "qtype": "lexical",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s6-d0-t1-02-internal#p1@T1",
+    "s6-d0-t1-02-memo#p1@T1",
+    "s6-d0-t1-02-report#p1@T1"
+   ],
+   "answer_points": [
+    "系统上线计划也已重新排期",
+    "该变更已录入项目管理工具，影响范围覆盖所有依赖模块。",
+    "该调整已在本周内部通报，并同步更新至项目排期表。"
+   ],
+   "distractors": [
+    "s6-d0-t1-02-internal#p2@T1",
+    "s6-d0-t1-02-memo#p3@T1"
+   ]
+  },
+  {
+   "id": "s6-d0-t1-02-q2",
+   "as_of": "T1",
+   "eval_intent": "extract_current_status_from_channel_report",
+   "query": "渠道纪要中关于对手入门档产品的最新说法是什么？",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s6-d0-t1-02-internal#p2@T1",
+    "s6-d0-t1-02-memo#p2@T1",
+    "s6-d0-t1-02-report#p2@T1"
+   ],
+   "answer_points": [
+    "渠道纪要中新增信息：对手入门档产品已停止销售，当前无直接竞争压力，建议加快市场推广节奏",
+    "渠道方面，新增一条对手产品线的动态信息：其入门档型号已于上季度末正式停售，目前市场中无同级竞品可替代",
+    "渠道反馈补充指出，此前误传的对手入门档仍在售信息已被更正，实际该产品线已全面下架"
+   ],
+   "distractors": [
+    "s6-d0-t1-02-internal#p1@T1",
+    "s6-d0-t1-02-internal#p3@T1",
+    "s6-d0-t1-02-memo#p3@T1"
+   ],
+   "qtype": "lexical"
+  },
+  {
+   "id": "s6-d0-t1-02-q3",
+   "as_of": "T1",
+   "eval_intent": "confirm_role_transfer_source",
+   "query": "项目负责人从甲组调到乙组这件事，会议记录里是怎么写的？乙组接手后负责什么？",
+   "qtype": "paraphrase",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s6-d0-t1-02-memo#p3@T1"
+   ],
+   "answer_points": [
+    "原由甲组负责的项目推进工作现已移交至乙组",
+    "乙组将全面接管后续协调与执行任务"
+   ],
+   "distractors": [
+    "s6-d0-t1-02-internal#p3@T1",
+    "s6-d0-t1-02-memo#p1@T1",
+    "s6-d0-t1-02-report#p1@T1",
+    "s6-d0-t1-02-report#p3@T1"
+   ]
+  },
+  {
+   "id": "s6-d0-t1-03-q1",
+   "as_of": "T1",
+   "eval_intent": "verify",
+   "query": "在最新的成本测算中，外包单价是否仍被使用？",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s6-d0-t1-03-memo#p1@T1",
+    "s6-d0-t1-03-internal#p1@T1",
+    "s6-d0-t1-03-report#p1@T1"
+   ],
+   "answer_points": [
+    "内部测算把外包单价从上一版模型里撤下，以避免误导后续成本评估",
+    "内部测算把外包单价从上一版模型里撤下，该字段已被标记为过时，后续分析将基于更新后的参数集",
+    "内部测算把外包单价从上一版模型里撤下，确保当前评估不依赖已废弃的数据字段，防止误用历史偏差影响决策",
+    "该调整已同步至最新数据管道，确保分析基准的一致性。"
+   ],
+   "distractors": [
+    "s6-d0-t1-03-internal#p2@T1",
+    "s6-d0-t1-03-memo#p2@T1",
+    "s6-d0-t1-03-memo#p3@T1",
+    "s6-d0-t1-03-report#p2@T1"
+   ],
+   "qtype": "lexical"
+  },
+  {
+   "id": "s6-d0-t1-03-q2",
+   "as_of": "T1",
+   "eval_intent": "extract",
+   "query": "成本模型版本号发生了什么变化？旧版本如何处理？",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s6-d0-t1-03-memo#p2@T1",
+    "s6-d0-t1-03-internal#p2@T1",
+    "s6-d0-t1-03-report#p2@T1"
+   ],
+   "answer_points": [
+    "成本模型版本号从甲版改成乙版，旧版只作归档处理，不再参与任何实时计算流程",
+    "成本模型版本号从甲版改成乙版，旧版仅保留于历史存档库，不参与任何实时或批量计算任务",
+    "成本模型版本号从甲版改成乙版，旧版只作归档，相关文档已标注“仅历史参考”标签，禁止在新项目中启用"
+   ],
+   "distractors": [
+    "s6-d0-t1-03-internal#p1@T1",
+    "s6-d0-t1-03-memo#p1@T1",
+    "s6-d0-t1-03-report#p3@T1"
+   ],
+   "qtype": "multi_hop"
+  },
+  {
+   "id": "s6-d0-t1-03-q3",
+   "as_of": "T1",
+   "eval_intent": "infer",
+   "query": "报价单里的打包项改成分行列出后，三份材料各自说这样做是为了什么？",
+   "qtype": "multi_hop",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s6-d0-t1-03-internal#p3@T1",
+    "s6-d0-t1-03-memo#p3@T1",
+    "s6-d0-t1-03-report#p3@T1"
+   ],
+   "answer_points": [
+    "符合最新合规披露要求",
+    "提升明细可读性并支持独立定价校验",
+    "为未来自动化比价提供结构化基础"
+   ],
+   "distractors": [
+    "s6-d0-t1-03-internal#p2@T1",
+    "s6-d0-t1-03-memo#p1@T1",
+    "s6-d0-t1-03-memo#p2@T1"
+   ]
+  },
+  {
+   "id": "s6-d1-c1-q1",
+   "as_of": "T1",
+   "eval_intent": "identify_regulatory_duration_change_and_conditions",
+   "query": "出境评估结论现在的有效期是多长？满足什么条件可以续期，续期能延多久？",
+   "qtype": "paraphrase",
+   "score_role": "arm",
+   "category": "trap",
+   "relevant": [
+    "p1-cac-o16#p9@T1",
+    "s6-d1-c1-memo#p1@T1",
+    "s6-d1-c1-memo#p2@T1"
+   ],
+   "answer_points": [
+    "通过数据出境安全评估的结果有效期为3年，自评估结果出具之日起计算。",
+    "有效期届满，需要继续开展数据出境活动且未发生需要重新申报数据出境安全评估情形的，数据处理者可以在有效期届满前60个工作日内通过所在地省级网信部门向国家网信部门提出延长评估结果有效期申请。",
+    "经国家网信部门批准，可以延长评估结果有效期3年。"
+   ],
+   "distractors": [
+    "p1-cac-o11#p13@T1",
+    "p1-cac-o11#p14@T1"
+   ],
+   "conflict_pair": {
+    "in_force": "p1-cac-o16#p9@T1",
+    "superseded": "p1-cac-o11#p13@T1",
+    "precedence": "p1-cac-o16#p11@T1"
+   }
+  },
+  {
+   "id": "s6-d1-c1-q2-new",
+   "as_of": "T1",
+   "eval_intent": "draft: 跨文档组合两条以上规定/材料要点作答",
+   "query": "出境评估结论原先管两年，现在能管几年？到期前多久可以申请续期？",
+   "score_role": "arm",
+   "category": "trap",
+   "relevant": [
+    "p1-cac-o11#p13@T1",
+    "p1-cac-o16#p9@T1"
+   ],
+   "answer_points": [
+    "通过数据出境安全评估的结果有效期为2年",
+    "通过数据出境安全评估的结果有效期为3年",
+    "可以在有效期届满前60个工作日内通过所在地省级网信部门向国家网信部门提出延长评估结果有效期申请"
+   ],
+   "distractors": [
+    "p1-cac-o11#p11@T1",
+    "p1-cac-o11#p14@T1",
+    "p1-cac-o16#p11@T1"
+   ],
+   "qtype": "multi_hop"
+  },
+  {
+   "id": "s6-d1-c2-q1",
+   "as_of": "T1",
+   "eval_intent": "must_include",
+   "query": "不属于关基的企业，出境个人信息到多少人才需要报评估？这条线和以前比有什么不同？",
+   "qtype": "paraphrase",
+   "score_role": "arm",
+   "category": "trap",
+   "relevant": [
+    "p1-cac-o16#p7@T1",
+    "p1-cac-o11#p2@T1",
+    "s6-d1-c2-memo#p1@T1",
+    "s6-d1-c2-memo#p2@T1",
+    "s6-d1-c2-memo#p3@T1"
+   ],
+   "answer_points": [
+    "关键信息基础设施运营者以外的数据处理者向境外提供重要数据，或者自当年1月1日起累计向境外提供100万人以上个人信息（不含敏感个人信息）或者1万人以上敏感个人信息",
+    "自上年1月1日起累计向境外提供10万人个人信息或者1万人敏感个人信息的数据处理者向境外提供个人信息",
+    "此次更新把一般个人信息的申报线从10万人提高到100万人，统计起点由上年改为当年，实际放宽了一般运营者的申报义务；敏感个人信息仍以1万人为线"
+   ],
+   "distractors": [
+    "p1-cac-o13#p2@T1",
+    "p1-cac-o16#p8@T1"
+   ],
+   "conflict_pair": {
+    "in_force": "p1-cac-o16#p7@T1",
+    "superseded": "p1-cac-o11#p2@T1",
+    "precedence": "p1-cac-o16#p11@T1"
+   }
+  },
+  {
+   "id": "s6-d1-c3-q1",
+   "as_of": "T1",
+   "eval_intent": "identify_relevant_scope_change",
+   "query": "标准合同的适用区间在新规下有何变化？",
+   "qtype": "lexical",
+   "score_role": "arm",
+   "category": "trap",
+   "relevant": [
+    "s6-d1-c3-memo#p1@T1",
+    "p1-cac-o13#p2@T1",
+    "p1-cac-o16#p8@T1"
+   ],
+   "answer_points": [
+    "累计向境外提供10万人以上、不满100万人个人信息",
+    "不满1万人敏感个人信息",
+    "自上年1月1日起累计向境外提供个人信息不满10万人的"
+   ],
+   "distractors": [
+    "p1-cac-o16#p5@T1",
+    "p1-cac-o16#p7@T1"
+   ],
+   "conflict_pair": {
+    "in_force": "p1-cac-o16#p8@T1",
+    "superseded": "p1-cac-o13#p2@T1",
+    "precedence": "p1-cac-o16#p11@T1"
+   }
+  },
+  {
+   "id": "s6-d1-c4-q1",
+   "as_of": "T1",
+   "eval_intent": "identify_exemption_criteria",
+   "query": "令16新增的个人信息出境豁免，哪些主体能享受？要满足什么条件？",
+   "qtype": "paraphrase",
+   "score_role": "arm",
+   "category": "trap",
+   "relevant": [
+    "p1-cac-o16#p4@T1",
+    "p1-cac-o16#p5@T1",
+    "s6-d1-c4-memo#p1@T1"
+   ],
+   "answer_points": [
+    "为订立、履行个人作为一方当事人的合同，如跨境购物、跨境寄递、跨境汇款、跨境支付、跨境开户、机票酒店预订、签证办理、考试服务等，确需向境外提供个人信息的",
+    "按照依法制定的劳动规章制度和依法签订的集体合同实施跨境人力资源管理，确需向境外提供员工个人信息的",
+    "紧急情况下为保护自然人的生命健康和财产安全，确需向境外提供个人信息的",
+    "关键信息基础设施运营者以外的数据处理者自当年1月1日起累计向境外提供不满10万人个人信息（不含敏感个人信息）的。"
+   ],
+   "distractors": [
+    "p1-cac-o13#p2@T1",
+    "p1-cac-o16#p6@T1",
+    "p1-cac-o16#p8@T1"
+   ]
+  },
+  {
+   "id": "s6-d2-g1-q1",
+   "as_of": "T1",
+   "eval_intent": "fact_recall",
+   "query": "根据2023年公司法，有限责任公司股东认缴出资的最长期限是什么？此前法律有何不同？",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s6-d2-g1-memo#p1@T1",
+    "p1-colaw-capital#p1@T1"
+   ],
+   "answer_points": [
+    "2018法第二十六条无此期限",
+    "全体股东认缴的出资额由股东按照公司章程的规定自公司成立之日起五年内缴足。"
+   ],
+   "distractors": [
+    "p1-colaw-capital-transition#p1@T1",
+    "s6-d2-g1-memo#p2@T1"
+   ],
+   "qtype": "lexical"
+  },
+  {
+   "id": "s6-d2-g2-q1",
+   "as_of": "T1",
+   "eval_intent": "fact_recall",
+   "query": "新公司法（2023修订）的施行日期是什么？其第二百六十六条对出资期限有何要求？旧法（2018修正）的施行日期为何？",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s6-d2-g2-memo#p1@T1",
+    "p1-colaw-capital-transition#p1@T1"
+   ],
+   "answer_points": [
+    "本法自2024年7月1日起施行",
+    "第二百六十六条要求出资期限超出法定上限的存量公司逐步调整到位",
+    "本法施行前已登记设立的公司，出资期限超过本法规定的期限的，除法律、行政法规或者国务院另有规定外，应当逐步调整至本法规定的期限以内",
+    "旧法（2018修正）的施行日期为二〇〇六年一月一日"
+   ],
+   "distractors": [
+    "p1-colaw-capital#p1@T1",
+    "s6-d2-g2-memo#p2@T1"
+   ],
+   "qtype": "lexical"
+  },
+  {
+   "id": "s6-d2-g3-q1",
+   "as_of": "T1",
+   "eval_intent": "understand_the_impact_of_regulatory_change",
+   "query": "根据2023年最新法规，未按期出资的责任主体和责任形式发生了哪些变化？",
+   "qtype": "multi_hop",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "p1-colaw-capital-call#p1@T1",
+    "p1-colaw-capital-call#p2@T1",
+    "p1-colaw-capital-call#p5@T1",
+    "p1-colaw-capital-transition#p2@T1",
+    "s6-d2-g3-memo#p1@T1"
+   ],
+   "answer_points": [
+    "由受让人承担缴纳该出资的义务",
+    "2018法向已足额出资股东承担违约责任；2023法改为对公司损失承担赔偿责任，并新增董事会核查催缴、宽限期不少于六十日后失权、加速到期、未届期转让由受让人缴纳。",
+    "股东未按期足额缴纳出资的，除应当向公司足额缴纳外，还应当对给公司造成的损失承担赔偿责任。",
+    "未及时履行前款规定的义务，给公司造成损失的，负有责任的董事应当承担赔偿责任。",
+    "宽限期自公司发出催缴书之日起，不得少于六十日。"
+   ],
+   "distractors": [
+    "p1-colaw-capital-call#p4@T1"
+   ]
+  },
+  {
+   "id": "s6-d3-t1-01-q1",
+   "as_of": "T1",
+   "eval_intent": "verify",
+   "query": "在最新版本中，二手转述如何处理旧报价？",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s6-d3-t1-01-memo#p1@T1",
+    "s6-d3-t1-01-note#p1@T1",
+    "s6-d3-t1-01-report#p1@T1"
+   ],
+   "answer_points": [
+    "二手转述把旧报价标成已过期，不再当现行口径"
+   ],
+   "distractors": [
+    "s6-d3-t1-01-memo#p2@T1",
+    "s6-d3-t1-01-memo#p3@T1",
+    "s6-d3-t1-01-report#p3@T1"
+   ],
+   "qtype": "lexical"
+  },
+  {
+   "id": "s6-d3-t1-01-q2",
+   "as_of": "T1",
+   "eval_intent": "verify",
+   "query": "汇编备注中的信息来源发生了什么变化？",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s6-d3-t1-01-memo#p2@T1",
+    "s6-d3-t1-01-note#p2@T1",
+    "s6-d3-t1-01-report#p2@T1"
+   ],
+   "answer_points": [
+    "汇编备注把出处从访谈改成备忘附件，以反映信息来源的真实文件形式，增强可追溯性",
+    "汇编备注把出处从访谈改成备忘附件，体现对原始资料来源的规范标注",
+    "汇编备注把出处从访谈改成备忘附件，使原始材料定位更准确，便于后续查证"
+   ],
+   "distractors": [
+    "s6-d3-t1-01-memo#p1@T1",
+    "s6-d3-t1-01-note#p1@T1",
+    "s6-d3-t1-01-report#p3@T1"
+   ],
+   "qtype": "lexical"
+  },
+  {
+   "id": "s6-d3-t1-01-q3",
+   "as_of": "T1",
+   "eval_intent": "verify",
+   "query": "转述稿中关于份额的说法有何变动？",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s6-d3-t1-01-memo#p3@T1",
+    "s6-d3-t1-01-note#p3@T1",
+    "s6-d3-t1-01-report#p3@T1"
+   ],
+   "answer_points": [
+    "转述稿删掉了未核实的份额说法，确保内容仅包含经确认的数据，提升整体可信度",
+    "转述稿删掉了未核实的份额说法，符合内容审核标准，强化信息可靠性",
+    "转述稿删掉了未核实的份额说法，保证输出内容基于可验证事实，减少推测成分"
+   ],
+   "distractors": [
+    "s6-d3-t1-01-memo#p1@T1",
+    "s6-d3-t1-01-note#p2@T1"
+   ],
+   "qtype": "lexical"
+  },
+  {
+   "id": "s6-d3-t1-02-q1",
+   "as_of": "T1",
+   "eval_intent": "verify_specific_factual_change",
+   "query": "补丁记录中对竞品入门档的最新状态是什么？",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s6-d3-t1-02-memo#p1@T1",
+    "s6-d3-t1-02-report#p1@T1",
+    "s6-d3-t1-02-summary#p1@T1"
+   ],
+   "answer_points": [
+    "补丁记录把竞品入门档标成停售，相关系统已同步更新状态",
+    "补丁记录把竞品入门档标成停售，此变更已在最新版本中生效，建议停止对该型号的市场推广活动",
+    "补丁记录把竞品入门档标成停售，系统标记已更新，影响范围涵盖所有对外展示与内部分析模块"
+   ],
+   "distractors": [
+    "s6-d3-t1-02-memo#p2@T1",
+    "s6-d3-t1-02-memo#p3@T1",
+    "s6-d3-t1-02-summary#p3@T1"
+   ],
+   "qtype": "lexical"
+  },
+  {
+   "id": "s6-d3-t1-02-q2",
+   "as_of": "T1",
+   "eval_intent": "identify_process_change",
+   "query": "复验安排在变更说明中发生了什么变动？",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s6-d3-t1-02-memo#p2@T1",
+    "s6-d3-t1-02-report#p2@T1",
+    "s6-d3-t1-02-summary#p2@T1"
+   ],
+   "answer_points": [
+    "变更说明把复验安排从下月初改到月中，原定流程已调整，相关团队须重新规划时间节点并确认执行进度",
+    "变更说明把复验安排从下月初改到月中，相关责任部门需在本周内提交新的时间表以确保流程衔接",
+    "变更说明把复验安排从下月初改到月中，相关协调会议已重新排期，确保各环节无缝对接"
+   ],
+   "distractors": [
+    "s6-d3-t1-02-memo#p1@T1",
+    "s6-d3-t1-02-report#p1@T1",
+    "s6-d3-t1-02-summary#p3@T1"
+   ],
+   "qtype": "lexical"
+  },
+  {
+   "id": "s6-d3-t1-02-q3",
+   "as_of": "T1",
+   "eval_intent": "assess_document_status",
+   "query": "汇编中关于两份纪要的结论目前处于什么状态？",
+   "qtype": "lexical",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s6-d3-t1-02-memo#p3@T1",
+    "s6-d3-t1-02-report#p3@T1",
+    "s6-d3-t1-02-summary#p3@T1"
+   ],
+   "answer_points": [
+    "汇编把两份纪要的结论合成一条待核，当前尚未完成最终验证，需在下一周期前完成核实并归档",
+    "汇编把两份纪要的结论合成一条待核，目前处于待确认状态，暂不纳入正式决策依据",
+    "汇编把两份纪要的结论合成一条待核，当前状态为“待核实”，需指定负责人推进闭环处理"
+   ],
+   "distractors": [
+    "s6-d3-t1-02-memo#p1@T1",
+    "s6-d3-t1-02-memo#p2@T1",
+    "s6-d3-t1-02-report#p2@T1"
+   ]
+  },
+  {
+   "id": "s6-d3-t1-03-q1",
+   "as_of": "T1",
+   "eval_intent": "synthetic_factual",
+   "query": "补丁记录中关于旧成本模型的用途是什么？",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s6-d3-t1-03-memo#p1@T1",
+    "s6-d3-t1-03-report#p1@T1"
+   ],
+   "answer_points": [
+    "补丁记录注明旧成本模型只供对照，不得用于实际核算",
+    "补丁记录注明旧成本模型只供对照，用于对比分析新方案的效益差异，严禁在正式决策中引用"
+   ],
+   "distractors": [
+    "s6-d3-t1-03-memo#p2@T1",
+    "s6-d3-t1-03-memo#p3@T1",
+    "s6-d3-t1-03-report#p3@T1"
+   ],
+   "qtype": "lexical"
+  },
+  {
+   "id": "s6-d3-t1-03-q2",
+   "as_of": "T1",
+   "eval_intent": "synthetic_factual",
+   "query": "变更说明中对渠道折扣的最新状态如何描述？",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "s6-d3-t1-03-memo#p2@T1",
+    "s6-d3-t1-03-report#p2@T1"
+   ],
+   "answer_points": [
+    "变更说明中将渠道折扣描述为已撤回，表明此前发布的折扣政策不再有效，相关合作方需依据现行协议执行",
+    "变更说明把渠道折扣写成已撤回，明确指出原定优惠机制已终止，相关客户需重新协商合作条款"
+   ],
+   "distractors": [
+    "s6-d3-t1-03-memo#p1@T1",
+    "s6-d3-t1-03-memo#p3@T1",
+    "s6-d3-t1-03-report#p3@T1"
+   ],
+   "qtype": "lexical"
+  },
+  {
+   "id": "s6-mh-12-new",
+   "as_of": "T1",
+   "eval_intent": "draft: 跨文档组合两条以上规定/材料要点作答",
+   "query": "顾问备忘列了哪些未按期出资的新规则？转让未到期股权后受让人没交，原股东还要担什么责？",
+   "qtype": "paraphrase",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "p1-colaw-capital-call#p5@T1",
+    "s6-d2-g3-memo#p1@T1",
+    "s6-d2-g3-memo#p3@T1"
+   ],
+   "answer_points": [
+    "转让人对受让人未按期缴纳的出资承担补充责任",
+    "2023法改为对公司损失承担赔偿责任，并新增董事会核查催缴、宽限期不少于六十日后失权、加速到期、未届期转让由受让人缴纳。"
+   ],
+   "distractors": [
+    "p1-colaw-capital-call#p2@T1",
+    "p1-colaw-equity#p1@T1"
+   ]
+  },
+  {
+   "id": "s6-mh-15-new",
+   "as_of": "T1",
+   "eval_intent": "draft: 跨文档组合两条以上规定/材料要点作答",
+   "query": "顾问备忘说存量公司要调整出资期限；新法本身给新设公司的缴足期限是几年？",
+   "qtype": "paraphrase",
+   "score_role": "arm",
+   "category": "hard",
+   "relevant": [
+    "p1-colaw-capital#p1@T1"
+   ],
+   "answer_points": [
+    "全体股东认缴的出资额由股东按照公司章程的规定自公司成立之日起五年内缴足"
+   ],
+   "distractors": [
+    "p1-colaw-capital-transition#p1@T1",
+    "p1-colaw-capital-transition#p2@T1",
+    "s6-d2-g1-memo#p3@T1"
+   ]
+  },
+  {
+   "id": "s7-d0-t0-01-q1",
+   "as_of": "T0",
+   "eval_intent": "identify_real_cause",
+   "query": "系统日志中‘连接超时’的真实原因是什么？",
+   "score_role": "arm",
+   "category": "trap",
+   "relevant": [
+    "s7-d0-t0-01-log#p1@T0"
+   ],
+   "answer_points": [
+    "系统日志中频繁出现“连接超时”警告，但网络监控工具显示带宽正常、延迟极低",
+    "经排查发现，该“超时”实为应用层心跳检测机制误判，而非真实网络故障"
+   ],
+   "distractors": [
+    "s7-d0-t0-01-log#p2@T0",
+    "s7-d0-t0-01-memo#p1@T0"
+   ],
+   "qtype": "lexical"
+  },
+  {
+   "id": "s7-d0-t0-01-q2",
+   "as_of": "T0",
+   "eval_intent": "resolve_conflict",
+   "query": "关于每月首日的安全重置，系统文档和内部备忘录的说法一致吗？",
+   "score_role": "arm",
+   "category": "trap",
+   "relevant": [
+    "s7-d0-t0-01-memo#p2@T0"
+   ],
+   "answer_points": [
+    "系统文档中提及“所有用户必须在每月首日完成安全重置”，而另一份内部备忘录指出“安全重置仅对高权限账户强制执行”",
+    "这两条信息存在同快照冲突陈述，同一时间点内出现矛盾指令，若未明确上下文，可能引发操作偏差"
+   ],
+   "distractors": [
+    "s7-d0-t0-01-internal#p2@T0",
+    "s7-d0-t0-01-qa#p1@T0",
+    "s7-d0-t0-01-qa#p3@T0"
+   ],
+   "qtype": "lexical"
+  },
+  {
+   "id": "s7-d0-t0-01-q3",
+   "as_of": "T0",
+   "eval_intent": "assess_reliability",
+   "query": "系统自称眼下没有已知漏洞，这种说法靠得住吗？",
+   "qtype": "paraphrase",
+   "score_role": "arm",
+   "category": "trap",
+   "relevant": [
+    "s7-d0-t0-01-memo#p3@T0"
+   ],
+   "answer_points": [
+    "该声明发布于一次重大补丁前，且未说明其时效性",
+    "可能误将“无漏洞”视为绝对事实"
+   ],
+   "distractors": [
+    "s7-d0-t0-01-arch#p3@T0",
+    "s7-d0-t0-01-report#p3@T0"
+   ]
+  },
+  {
+   "id": "s7-d0-t0-01-q4",
+   "as_of": "T0",
+   "eval_intent": "evaluate_bias",
+   "query": "‘用户活跃度提升30%’这一数据是否具有代表性？",
+   "score_role": "arm",
+   "category": "trap",
+   "relevant": [
+    "s7-d0-t0-01-report#p1@T0"
+   ],
+   "answer_points": [
+    "该合成叙述通过选择性呈现数据构建积极表象，实则掩盖了真实流失率上升的事实，属于典型的合成叙述误导",
+    "数据来源为仅包含注册用户的样本池，未涵盖流失用户"
+   ],
+   "distractors": [
+    "s7-d0-t0-01-arch#p1@T0",
+    "s7-d0-t0-01-qa#p2@T0",
+    "s7-d0-t0-01-report#p2@T0"
+   ],
+   "qtype": "paraphrase"
+  },
+  {
+   "id": "s7-d0-t0-01-q5",
+   "as_of": "T0",
+   "eval_intent": "detect_exclusions",
+   "query": "说全部服务都能不停机升级，这话有没有例外？",
+   "score_role": "arm",
+   "category": "trap",
+   "relevant": [
+    "s7-d0-t0-01-arch#p2@T0"
+   ],
+   "answer_points": [
+    "文档中写道：“所有服务均支持热升级”，但部分老旧服务仍需重启才能更新",
+    "尽管“支持热升级”在多数情况下成立，但未说明例外情况，导致该陈述在检索时被当作普遍规则使用"
+   ],
+   "distractors": [
+    "s7-d0-t0-01-arch#p1@T0",
+    "s7-d0-t0-01-internal#p1@T0",
+    "s7-d0-t0-01-report#p3@T0"
+   ],
+   "qtype": "paraphrase"
+  },
+  {
+   "id": "s7-d0-t0-01-q6",
+   "as_of": "T0",
+   "eval_intent": "extract_implicit_constraints",
+   "query": "FAQ中‘支持多设备登录’的限制条件是什么？",
+   "score_role": "arm",
+   "category": "trap",
+   "relevant": [
+    "s7-d0-t0-01-qa#p2@T0"
+   ],
+   "answer_points": [
+    "同时在线设备数上限为3个"
+   ],
+   "distractors": [
+    "s7-d0-t0-01-arch#p2@T0",
+    "s7-d0-t0-01-qa#p1@T0"
+   ],
+   "qtype": "paraphrase"
+  },
+  {
+   "id": "s7-d0-t1-02-q1",
+   "as_of": "T1",
+   "eval_intent": "identify_trap",
+   "query": "用户报“搜索功能失效”但服务状态正常的案例中，系统为什么会误判与‘搜索’相关的请求？",
+   "score_role": "arm",
+   "category": "trap",
+   "relevant": [
+    "s7-d0-t1-02-memo#p1@T1"
+   ],
+   "answer_points": [
+    "进一步排查发现，该问题源于关键词‘搜索’在不同上下文中具有双重含义——既指系统核心功能",
+    "检索模型误判请求意图，从而返回无关结果"
+   ],
+   "distractors": [
+    "s7-d0-t1-02-claim#p1@T1",
+    "s7-d0-t1-02-report#p3@T1"
+   ],
+   "qtype": "lexical"
+  },
+  {
+   "id": "s7-d0-t1-02-q2",
+   "as_of": "T1",
+   "eval_intent": "identify_trap",
+   "query": "一份材料先后被打上“已核实”和“待复查”两种标签，检索系统同时读到时会出什么问题？",
+   "score_role": "arm",
+   "category": "trap",
+   "relevant": [
+    "s7-d0-t1-02-memo#p2@T1"
+   ],
+   "answer_points": [
+    "值得注意的是，同一份文档在多个时间点被标记为“已验证”和“待审查”",
+    "当检索系统同时加载两个快照时，其判断依据出现冲突：一个版本声称内容准确，另一个则指出存在偏差",
+    "系统难以确定哪一信息应作为权威参考"
+   ],
+   "distractors": [
+    "s7-d0-t1-02-claim#p2@T1",
+    "s7-d0-t1-02-update#p2@T1"
+   ],
+   "qtype": "paraphrase"
+  },
+  {
+   "id": "s7-d0-t1-02-q3",
+   "as_of": "T1",
+   "eval_intent": "identify_trap",
+   "query": "文档里注明“此处只是推测”的自我说明，模型为什么会把它当成事实来用？",
+   "score_role": "arm",
+   "category": "trap",
+   "relevant": [
+    "s7-d0-t1-02-memo#p3@T1"
+   ],
+   "answer_points": [
+    "此外，文档中的元陈述如“本节内容为推测性分析”被误认为是事实陈述，导致检索结果中混入非确定性信息",
+    "此类自我指涉的描述虽有助于说明可信度，却常被模型当作真实数据处理，形成合成叙述陷阱"
+   ],
+   "distractors": [
+    "s7-d0-t1-02-brief#p2@T1",
+    "s7-d0-t1-02-report#p2@T1"
+   ],
+   "qtype": "paraphrase"
+  },
+  {
+   "id": "s7-d0-t1-02-q4",
+   "as_of": "T1",
+   "eval_intent": "explain_trap",
+   "query": "在医疗术语中，‘心衰’与‘心力衰竭’为何可能导致检索偏差？",
+   "score_role": "arm",
+   "category": "trap",
+   "relevant": [
+    "s7-d0-t1-02-brief#p1@T1"
+   ],
+   "answer_points": [
+    "在医疗知识库中，“心衰”与“心力衰竭”被用作同义词，但在部分文献中，“心衰”特指急性发作阶段",
+    "当检索系统未区分语义层级时，将两者等同处理，导致部分患者治疗方案被错误推荐",
+    "“心衰”特指急性发作阶段，而“心力衰竭”涵盖慢性与急性"
+   ],
+   "distractors": [
+    "s7-d0-t1-02-claim#p1@T1",
+    "s7-d0-t1-02-report#p3@T1"
+   ],
+   "qtype": "paraphrase"
+  },
+  {
+   "id": "s7-d0-t1-02-q5",
+   "as_of": "T1",
+   "eval_intent": "explain_trap",
+   "query": "系统如何因未识别版本时效性而产生矛盾输出？",
+   "score_role": "arm",
+   "category": "trap",
+   "relevant": [
+    "s7-d0-t1-02-brief#p3@T1"
+   ],
+   "answer_points": [
+    "系统还曾因同时引用两版修订稿而产生矛盾输出：一版称“剂量上限为50mg”，另一版则标注“需根据个体调整”",
+    "当检索器未能识别版本时效性差异时，生成的回答包含相互排斥的信息，严重削弱可信度"
+   ],
+   "distractors": [
+    "s7-d0-t1-02-claim#p2@T1",
+    "s7-d0-t1-02-update#p2@T1"
+   ],
+   "qtype": "lexical"
+  },
+  {
+   "id": "s7-d0-t1-02-q6",
+   "as_of": "T1",
+   "eval_intent": "explain_trap",
+   "query": "为什么预测性元陈述容易在合成叙述中被当作事实？",
+   "score_role": "arm",
+   "category": "trap",
+   "relevant": [
+    "s7-d0-t1-02-claim#p3@T1"
+   ],
+   "answer_points": [
+    "更为隐蔽的是，文档中一句“我们预计下季度将有新版本发布”被多次引用，且每次都被当作事实陈述使用",
+    "实际上，该句属于预测性元陈述，未经过正式确认"
+   ],
+   "distractors": [
+    "s7-d0-t1-02-analysis#p2@T1",
+    "s7-d0-t1-02-memo#p3@T1",
+    "s7-d0-t1-02-report#p2@T1"
+   ],
+   "qtype": "lexical"
+  },
+  {
+   "id": "s7-d1-t0-03-q1",
+   "as_of": "T0",
+   "eval_intent": "identify_underlying_causes_of_apparent_conflicts",
+   "query": "两个看似矛盾的系统状态报告为什么可能同时为真？材料给出了哪几种解释？",
+   "qtype": "multi_hop",
+   "score_role": "arm",
+   "category": "trap",
+   "relevant": [
+    "s7-d1-t0-03-memo#p2@T0",
+    "s7-d1-t0-03-reason#p1@T0",
+    "s7-d1-t0-03-reason#p2@T0"
+   ],
+   "answer_points": [
+    "二者均真实，但反映不同时间快照",
+    "源于部署流水线中各组件更新节奏不一致，造成同一时间点下多版本共存的快照冲突",
+    "系统在达成最终一致性前的短暂状态"
+   ],
+   "distractors": [
+    "s7-d1-t0-03-fact#p1@T0"
+   ]
+  },
+  {
+   "id": "s7-d1-t0-03-q2",
+   "as_of": "T0",
+   "eval_intent": "recognize_and_explain_lexical_collision_in_context",
+   "query": "以密钥轮换不同步导致‘认证失败’被误读为例，什么是词面撞车？它在技术文档里怎样表现？",
+   "score_role": "arm",
+   "category": "trap",
+   "relevant": [
+    "s7-d1-t0-03-memo#p1@T0"
+   ],
+   "answer_points": [
+    "这种词面撞车现象常导致误判",
+    "在某次跨部门协作中，系统日志显示‘用户认证失败’频繁出现",
+    "表面冲突，实则源于对‘失败’一词的语义理解差异",
+    "前者指连接中断，后者指验证机制失效"
+   ],
+   "distractors": [
+    "s7-d1-t0-03-claim#p1@T0",
+    "s7-d1-t0-03-fact#p1@T0",
+    "s7-d1-t0-03-reason#p1@T0"
+   ],
+   "qtype": "paraphrase"
+  },
+  {
+   "id": "s7-d1-t0-03-q3",
+   "as_of": "T0",
+   "eval_intent": "evaluate_the_credibility_of_meta-level_assertions",
+   "query": "如何判断一篇报告中的‘共识’描述是否具有误导性？",
+   "qtype": "paraphrase",
+   "score_role": "arm",
+   "category": "trap",
+   "relevant": [
+    "s7-d1-t0-03-claim#p1@T0",
+    "s7-d1-t0-03-claim#p3@T0",
+    "s7-d1-t0-03-fact#p2@T0"
+   ],
+   "answer_points": [
+    "这些引述均源自少数几位学者的非公开访谈，且未提供原始立场记录",
+    "有两项结论为负面或中性，且未被充分讨论",
+    "一个说法被‘多位分析师确认’，而该说法本身又‘基于行业标准’，形成闭环论证"
+   ],
+   "distractors": [
+    "s7-d1-t0-03-claim#p2@T0",
+    "s7-d1-t0-03-fact#p3@T0",
+    "s7-d1-t0-03-memo#p3@T0"
+   ]
+  },
+  {
+   "id": "s7-d1-t0-03-q4",
+   "as_of": "T0",
+   "eval_intent": "detect_and_analyze_artificial_consensus_creation",
+   "query": "第三方综述称“研究一致支持某疗法”的案例里，合成叙述如何靠选择性整合制造虚假一致性？",
+   "score_role": "arm",
+   "category": "trap",
+   "relevant": [
+    "s7-d1-t0-03-fact#p2@T0"
+   ],
+   "answer_points": [
+    "该叙述通过选择性强调正向结果构建了虚假共识，构成典型的合成叙述陷阱",
+    "有两项结论为负面或中性，且未被充分讨论"
+   ],
+   "distractors": [
+    "s7-d1-t0-03-claim#p1@T0",
+    "s7-d1-t0-03-claim#p2@T0"
+   ],
+   "qtype": "paraphrase"
+  },
+  {
+   "id": "s7-d2-t1-04-q1",
+   "as_of": "T1",
+   "eval_intent": "detect_lexical_collision",
+   "query": "以“搜索结果未按时间排序”的投诉为例，怎样识别术语歧义造成的词面撞车？",
+   "score_role": "arm",
+   "category": "trap",
+   "relevant": [
+    "s7-d2-t1-04-memo#p1@T1"
+   ],
+   "answer_points": [
+    "此现象源于术语“时间”的词面撞车——同一词汇在不同语境中指向不同维度，导致用户预期与系统行为错位",
+    "用户所指的“时间”实为“提交时间”，而系统默认按“处理时间”排序"
+   ],
+   "distractors": [
+    "s7-d2-t1-04-claim#p1@T1",
+    "s7-d2-t1-04-claim#p2@T1",
+    "s7-d2-t1-04-memo#p2@T1"
+   ],
+   "qtype": "paraphrase"
+  },
+  {
+   "id": "s7-d2-t1-04-q2",
+   "as_of": "T1",
+   "eval_intent": "resolve_conflicting_snapshots",
+   "query": "多份文档用同一组原始数据、一份说显著改善另一份说没达标时，怎么判断这算不算同快照冲突陈述？",
+   "score_role": "arm",
+   "category": "trap",
+   "relevant": [
+    "s7-d2-t1-04-data#p3@T1"
+   ],
+   "answer_points": [
+    "这种基于相同快照的不同解释，反映合成叙述中对数据的多重建构能力，若缺乏上下文比对，极易引发检索误解"
+   ],
+   "distractors": [
+    "s7-d2-t1-04-brief#p3@T1",
+    "s7-d2-t1-04-claim#p3@T1",
+    "s7-d2-t1-04-data#p1@T1",
+    "s7-d2-t1-04-memo#p2@T1"
+   ],
+   "qtype": "paraphrase"
+  },
+  {
+   "id": "s7-d2-t1-04-q3",
+   "as_of": "T1",
+   "eval_intent": "assess_meta_statement_fallacy",
+   "query": "元陈述与实际内容不一致时，可能引发哪些检索风险？",
+   "qtype": "paraphrase",
+   "score_role": "arm",
+   "category": "trap",
+   "relevant": [
+    "s7-d2-t1-04-claim#p3@T1",
+    "s7-d2-t1-04-memo#p3@T1"
+   ],
+   "answer_points": [
+    "此自相矛盾的元声明削弱了整份材料的可信度，构成元层级的检索陷阱，即对内容真实性本身的宣称与实际内容不符",
+    "自我宣称与实际证据链之间的脱节"
+   ],
+   "distractors": [
+    "s7-d2-t1-04-claim#p2@T1",
+    "s7-d2-t1-04-memo#p2@T1"
+   ]
+  },
+  {
+   "id": "s7-d2-t1-04-q4",
+   "as_of": "T1",
+   "eval_intent": "explain_synthetic_narrative",
+   "query": "合成叙述如何通过模糊定义和选择性呈现误导用户判断？",
+   "score_role": "arm",
+   "category": "trap",
+   "relevant": [
+    "s7-d2-t1-04-brief#p1@T1"
+   ],
+   "answer_points": [
+    "这种合成叙述通过选择性呈现数据和模糊操作定义，构建出看似合理但有偏差的整体印象，典型体现为对事实的非透明重构",
+    "一份关于用户满意度的分析报告称：“多数受访者表示体验良好",
+    "“满意”选项的定义被刻意模糊",
+    "样本仅来自高活跃用户群体"
+   ],
+   "distractors": [
+    "s7-d2-t1-04-brief#p2@T1",
+    "s7-d2-t1-04-claim#p3@T1",
+    "s7-d2-t1-04-data#p2@T1"
+   ],
+   "qtype": "paraphrase"
+  },
+  {
+   "id": "s7-d3-t1-05-q1",
+   "as_of": "T1",
+   "eval_intent": "identify_definition_discrepancy",
+   "query": "技术组说日志里没有登录失败记录、审计组却说全都抓到了，哪份材料解释了这是术语口径不同？",
+   "score_role": "arm",
+   "category": "trap",
+   "relevant": [
+    "s7-d3-t1-05-memo#p1@T1"
+   ],
+   "answer_points": [
+    "在某次跨部门数据对齐会议中，技术团队报告称“系统日志未记录用户登录失败事件”，而安全审计组却声称“所有登录失败均被完整捕获”",
+    "表面上看二者矛盾，实则因术语定义不同：前者指未写入特定日志文件，后者指已通过集中式监控平台覆盖",
+    "这种词面撞车现象常引发误判"
+   ],
+   "distractors": [
+    "s7-d3-t1-05-claim#p1@T1",
+    "s7-d3-t1-05-claim#p2@T1"
+   ],
+   "qtype": "paraphrase"
+  },
+  {
+   "id": "s7-d3-t1-05-q2",
+   "as_of": "T1",
+   "eval_intent": "detect_ambiguous_assessment",
+   "score_role": "arm",
+   "relevant": [
+    "s7-d3-t1-05-memo#p2@T1"
+   ],
+   "answer_points": [
+    "该指标实际完成度为87%，但经评估后仍视为达标。",
+    "这表明系统性地使用“达标”一词掩盖了真实绩效差距，构成元层面的陈述冲突。"
+   ],
+   "distractors": [
+    "s7-d3-t1-05-claim#p2@T1",
+    "s7-d3-t1-05-conflict#p2@T1"
+   ],
+   "query": "哪份文档借“完成度87%仍算达标”一例，揭示了‘达标’在不同评价标准下的多重解释？",
+   "qtype": "paraphrase",
+   "category": "trap"
+  },
+  {
+   "id": "s7-d3-t1-05-q3",
+   "as_of": "T1",
+   "eval_intent": "recognize_manipulative_citation",
+   "query": "哪一个文档展示了通过选择性引用专家来构建虚假权威的现象？",
+   "score_role": "arm",
+   "category": "adversarial",
+   "relevant": [
+    "s7-d3-t1-05-synthetic#p2@T1"
+   ],
+   "answer_points": [
+    "这种通过选择性引用构建权威感，是合成叙述的常见手法",
+    "更隐蔽的是，该材料同时引用“专家普遍认可”作为背书，但所列专家中仅有两人发表过相关研究"
+   ],
+   "distractors": [
+    "s7-d3-t1-05-memo#p1@T1",
+    "s7-d3-t1-05-memo#p3@T1",
+    "s7-d3-t1-05-synthetic#p1@T1"
+   ],
+   "qtype": "paraphrase"
+  },
+  {
+   "id": "s7-d3-t1-05-q4",
+   "as_of": "T1",
+   "eval_intent": "detect_semantic_dissonance",
+   "query": "哪份文档分析了‘进度保持在预期轨道上’这一说法与实际延迟之间的语义断裂？",
+   "score_role": "arm",
+   "category": "trap",
+   "relevant": [
+    "s7-d3-t1-05-conflict#p1@T1"
+   ],
+   "answer_points": [
+    "在一份项目总结报告中，反复强调“进度保持在预期轨道上”",
+    "但详细日程表显示，关键里程碑已延迟两周，且资源调配不足",
+    "这里的“预期轨道”未明确定义，导致词面重复掩盖了实质延误，形成语义断裂。"
+   ],
+   "distractors": [
+    "s7-d3-t1-05-claim#p2@T1",
+    "s7-d3-t1-05-claim#p3@T1",
+    "s7-d3-t1-05-conflict#p2@T1"
+   ],
+   "qtype": "lexical"
+  }
+ ]
+}

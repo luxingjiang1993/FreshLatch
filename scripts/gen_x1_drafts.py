@@ -25,7 +25,7 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-from freshlatch.eval.x1_checks import check_x1
+from freshlatch.eval.x1_checks import PUBLIC_LICENSES, check_x1
 from freshlatch.llm import DecodingParams, LLMClient
 from freshlatch.store.ingest import CLAUSE_RE, META_RE
 
@@ -1077,7 +1077,18 @@ def _load_out_questions(out: Path) -> list[dict[str, Any]] | str:
     return list(data["queries"])
 
 
-def _scan_doc_keys(roots: list[Path]) -> set[tuple[str, str]] | str:
+def _is_public_corpus_meta(meta: dict[str, str]) -> bool:
+    """公开法条才算「公开语料」。合成金标和公开文件放在同一目录，不能把合成 doc_id 当成公开占用。"""
+    provenance = meta.get("provenance", "").strip()
+    license_ = meta.get("license", "").strip()
+    return provenance == "public" or license_ in PUBLIC_LICENSES
+
+
+def _scan_doc_keys(
+    roots: list[Path],
+    *,
+    public_only: bool = False,
+) -> set[tuple[str, str]] | str:
     found: set[tuple[str, str]] = set()
     for root in roots:
         if not root.is_dir():
@@ -1088,6 +1099,8 @@ def _scan_doc_keys(roots: list[Path]) -> set[tuple[str, str]] | str:
             except (OSError, UnicodeError) as exc:
                 return f"无法读取已有文档 {path}: {exc}"
             meta, _body = _split_frontmatter(text)
+            if public_only and not _is_public_corpus_meta(meta):
+                continue
             doc_id = meta.get("doc_id", "").strip()
             as_of = meta.get("as_of", "").strip()
             if doc_id and as_of:
@@ -1286,7 +1299,7 @@ def _discard_open_commits(out: Path, batches: dict[str, Any]) -> str | None:
 
 
 def _public_doc_ids() -> set[str] | str:
-    found = _scan_doc_keys([PUBLIC_CORPUS, PUBLIC_TRAPS])
+    found = _scan_doc_keys([PUBLIC_CORPUS, PUBLIC_TRAPS], public_only=True)
     if isinstance(found, str):
         return found
     return {doc_id for doc_id, _as_of in found}
@@ -1542,10 +1555,15 @@ def _run_generate(args: argparse.Namespace, llm_client: Any) -> int:
     if isinstance(public_ids, str):
         print(f"错误: {public_ids}", file=sys.stderr)
         return 1
-    seen_docs = _scan_doc_keys([out, PUBLIC_CORPUS, PUBLIC_TRAPS])
+    seen_docs = _scan_doc_keys([out])
     if isinstance(seen_docs, str):
         print(f"错误: {seen_docs}", file=sys.stderr)
         return 1
+    public_keys = _scan_doc_keys([PUBLIC_CORPUS, PUBLIC_TRAPS], public_only=True)
+    if isinstance(public_keys, str):
+        print(f"错误: {public_keys}", file=sys.stderr)
+        return 1
+    seen_docs |= public_keys
     prev_usage = prev.get("token_usage") if isinstance(prev.get("token_usage"), dict) else {}
     decoding = DecodingParams(model=draft_model, temperature=temperature, seed=seed)
     state: dict[str, Any] = {

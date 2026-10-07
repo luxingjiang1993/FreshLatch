@@ -1,0 +1,49 @@
+{
+ "before": {
+  "id": "s6-d2-g2-q1",
+  "as_of": "T1",
+  "eval_intent": "fact_recall",
+  "query": "新公司法（2023修订）的施行日期是什么？其第二百六十六条对出资期限有何要求？旧法（2018修正）的施行日期为何？",
+  "score_role": "arm",
+  "category": "hard",
+  "relevant": [
+   "s6-d2-g2-memo#p1@T1",
+   "p1-colaw-capital-transition#p1@T1"
+  ],
+  "answer_points": [
+   "本法自2024年7月1日起施行",
+   "第二百六十六条要求出资期限超出法定上限的存量公司逐步调整到位",
+   "本法施行前已登记设立的公司，出资期限超过本法规定的期限的，除法律、行政法规或者国务院另有规定外，应当逐步调整至本法规定的期限以内",
+   "旧法（2018修正）的施行日期为二〇〇六年一月一日"
+  ],
+  "distractors": [
+   "p1-colaw-capital#p1@T1",
+   "s6-d2-g2-memo#p2@T1"
+  ],
+  "qtype": "lexical"
+ },
+ "after": {
+  "id": "s6-d2-g2-q1",
+  "as_of": "T1",
+  "eval_intent": "fact_recall",
+  "query": "新公司法（2023修订）的施行日期是什么？其第二百六十六条对出资期限有何要求？",
+  "score_role": "arm",
+  "category": "hard",
+  "relevant": [
+   "s6-d2-g2-memo#p1@T1",
+   "p1-colaw-capital-transition#p1@T1"
+  ],
+  "answer_points": [
+   "本法自2024年7月1日起施行",
+   "第二百六十六条要求出资期限超出法定上限的存量公司逐步调整到位",
+   "本法施行前已登记设立的公司，出资期限超过本法规定的期限的，除法律、行政法规或者国务院另有规定外，应当逐步调整至本法规定的期限以内"
+  ],
+  "distractors": [
+   "p1-colaw-capital#p1@T1",
+   "s6-d2-g2-memo#p2@T1"
+  ],
+  "qtype": "lexical",
+  "category_rule": "category-rule-v2-draft",
+  "trap_kind": "-"
+ }
+}

@@ -1,0 +1,56 @@
+{
+  "meta": {
+    "annotator": "Ronin 代理人（模型，本会话补写）",
+    "blind_second_label": false,
+    "reason": "54 题盲标后否决 1 题，trap+adv 余量不够 5 题。按同一设计补 1 个批次、3 题。没有另一份独立 A 稿。",
+    "date": "2026-10-07",
+    "category_rule": "category-rule-v2"
+  },
+  "queries": [
+    {
+      "id": "r4n-s6-d2-t1-91-qa",
+      "as_of": "T1",
+      "query": "夜班也算进去的话，仓库安检过关的比例是多少？",
+      "relevant": ["s6-d2-t1-91-audit#p1@T1"],
+      "answer_points": ["仓库安检通过比例写成百分之九十一"],
+      "distractors": ["s6-d2-t1-91-bulletin#p1@T1"],
+      "qtype": "paraphrase",
+      "category": "trap",
+      "trap_kind": "K2",
+      "score_role": "arm",
+      "eval_intent": "trap K2 同快照冲突：通报只含白班写成百分之九十六，审计计入夜班后写成百分之九十一；旧值在 distractors",
+      "template_flags": [],
+      "b_notes": "问计入夜班后的通过比例。审计块是百分之九十一，通报的百分之九十六在 distractors。问句和权威块都没有「更正/为准」。"
+    },
+    {
+      "id": "r4n-s6-d2-t1-91-qb",
+      "as_of": "T1",
+      "query": "一份只覆盖白班，另一份把夜班补了进去，过关比例两边分别是什么？",
+      "relevant": ["s6-d2-t1-91-bulletin#p1@T1", "s6-d2-t1-91-audit#p1@T1"],
+      "answer_points": ["仓库安检通过比例写成百分之九十六", "仓库安检通过比例写成百分之九十一"],
+      "distractors": [],
+      "qtype": "multi_hop",
+      "category": "trap",
+      "trap_kind": "K2",
+      "score_role": "arm",
+      "eval_intent": "trap K2 同快照冲突：问两侧过关比例，白班百分之九十六与计入夜班后的百分之九十一都在 relevant",
+      "template_flags": ["names_both_sources"],
+      "b_notes": "两侧都要。用白班/夜班区分两份材料，不用「哪份更可信」或「以…为准」。"
+    },
+    {
+      "id": "r4n-s6-d2-t1-91-qc",
+      "as_of": "T1",
+      "query": "这个月仓库里工伤报了几起？",
+      "relevant": ["s6-d2-t1-91-audit#p2@T1"],
+      "answer_points": ["该月因工受伤为七件"],
+      "distractors": ["s6-d2-t1-91-bulletin#p2@T1"],
+      "qtype": "paraphrase",
+      "category": "trap",
+      "trap_kind": "K3",
+      "score_role": "arm",
+      "eval_intent": "trap K3 元陈述：问工伤件数，审计附表为七件；通报「不再列入跟踪」在 distractors",
+      "template_flags": [],
+      "b_notes": "问实质件数。通报只说不再列入跟踪，不能拿来当件数。问句没有问状态本身。"
+    }
+  ]
+}
