@@ -58,7 +58,8 @@ def _lock_direct_versions(text: str) -> dict[str, set[str]]:
 
 def test_lock_direct_pins_match_requirements_txt():
     for path, digest in UNCHANGED.items():
-        data = (ROOT / path).read_bytes()
+        # Windows 检出可能把换行写成 CRLF。比对前归一成 LF，锁的是仓库内容。
+        data = (ROOT / path).read_bytes().replace(b"\r\n", b"\n")
         assert hashlib.sha256(data).hexdigest() == digest
     lock = (ROOT / "requirements.lock").read_text(encoding="utf-8")
     assert all(command in lock for command in COMMANDS)
