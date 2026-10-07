@@ -9,14 +9,13 @@ from __future__ import annotations
 import logging
 import os
 
-from freshlatch.models import NEURAL_RERANK_MODEL
+from freshlatch.models import NEURAL_RERANK_MODEL, RERANK_MODE_NEURAL
 from freshlatch.store.base import Chunk
 from freshlatch.store.local_embed import embed_offline_requested, local_embed_cache_dir
 from freshlatch.store.pipeline import rerank_lexical
 
 logger = logging.getLogger(__name__)
 NEURAL_RERANK_K = 10
-RERANK_MODE_NEURAL = "bge-reranker-base"
 RERANK_MODE_LEXICAL = "lexical"
 RERANK_MODE_FALLBACK = "lexical_fallback"
 RERANK_MODE_NONE = "none"
