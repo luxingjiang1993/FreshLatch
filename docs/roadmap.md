@@ -22,7 +22,7 @@ BACKLOG: C′ 外部嵌入平台化 | 图谱/采编 CMS | High-Recall SKU | Stud
 
 **默认阶段序（钉死）：** `V1 → I1 → V1.5`。  
 **唯一例外：** 自用痛点明确是「改稿再验」时，允许 V1 后先开 V1.5；**冲 mid 仍以 I1 为准**，不得用 V1.5 替代 I1。  
-**本期：** V1.5 / I2 / V2 / **I3 Exit 已齐**；**Hard-Gold 改臂闸流程已钉**（[#257](https://github.com/luxingjiang1993/FreshLatch/issues/257) · ADR-0033）；**#259 同库复跑已过线**。I3 关门时默认仍是 bm25。**2026-10-07** Oriental Ronin 拍板 DECISION-16 的 16 条之后，`PRODUCTION_RETRIEVAL_MODE` 为 `hybrid+rerank`。一键回退是 `set_retrieval_switch("bm25")`。缺向量仍是 `bm25_fallback`。这次拍板不是全库逐行人工审核。
+**本期：** V1.5 / I2 / V2 / **I3 Exit 已齐**；**Hard-Gold 改臂闸流程已钉**（[#257](https://github.com/luxingjiang1993/FreshLatch/issues/257) · ADR-0033）；**#259 同库复跑已过线**。I3 关门时默认仍是 bm25。**2026-10-07** Oriental Ronin 拍板 DECISION-16 的 16 条之后，`PRODUCTION_RETRIEVAL_MODE` 为 `hybrid+rerank`。精排是本地 `BAAI/bge-reranker-base`，只重排 top-10。一键回退是 `set_retrieval_switch("bm25")`。词重叠精排是 `set_retrieval_switch("hybrid+rerank_lexical")`。缺向量仍是 `bm25_fallback`。reranker 失败记 `last_rerank_mode=lexical_fallback`。这次拍板不是全库逐行人工审核。金标口径不变，人工只审过这 16 题。
 
 ---
 

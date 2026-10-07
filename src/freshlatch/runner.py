@@ -25,9 +25,13 @@ from freshlatch.store.base import (
 )
 from freshlatch.tools import FOCUS_DIMENSIONS
 
-# 运维开关只允许这三档。未设开关时用 PRODUCTION_RETRIEVAL_MODE。
-# set_retrieval_switch("bm25") 是一键回退,不改常量本身。
-RETRIEVAL_SWITCH_MODES = frozenset({"bm25", "hybrid", "hybrid+rerank"})
+# 运维开关。未设开关时用 PRODUCTION_RETRIEVAL_MODE（精排是 bge-reranker-base）。
+# set_retrieval_switch("bm25") 一键回退到 bm25。
+# set_retrieval_switch("hybrid+rerank_lexical") 只把精排切回 rerank_lexical。
+# 两者都不改 PRODUCTION_RETRIEVAL_MODE。
+RETRIEVAL_SWITCH_MODES = frozenset(
+    {"bm25", "hybrid", "hybrid+rerank", "hybrid+rerank_lexical"}
+)
 
 RETRIEVAL_EXHAUSTED = {"budget_exhausted": True,
                        "message": "检索预算已尽(24/Run)。请改用 read_source 直读原文,或基于现有证据下结论。"}
@@ -99,8 +103,9 @@ class RunContext:
         self.eval_retrieval_mode = mode
 
     def set_retrieval_switch(self, mode: str) -> None:
-        """运维开关:bm25 / hybrid / hybrid+rerank。bm25 即一键回退到 BM25。
+        """运维开关:bm25 / hybrid / hybrid+rerank / hybrid+rerank_lexical。
 
+        bm25 是一键回退到 BM25。hybrid+rerank_lexical 只把精排切回词重叠。
         不修改 PRODUCTION_RETRIEVAL_MODE。Agent 工具仍不能传 retrieval_mode。
         """
         if mode not in RETRIEVAL_SWITCH_MODES:
@@ -127,7 +132,13 @@ class RunContext:
             return RETRIEVAL_EXHAUSTED
         self.retrieval_used += 1
         requested = self._active_retrieval_mode()
-        if requested in {"dense", "hybrid", "hybrid+rerank", "bm25_fallback"}:
+        if requested in {
+            "dense",
+            "hybrid",
+            "hybrid+rerank",
+            "hybrid+rerank_lexical",
+            "bm25_fallback",
+        }:
             self.store.bind_eval_retrieval_mode(requested)
         else:
             self.store.bind_eval_retrieval_mode(None)
@@ -142,6 +153,7 @@ class RunContext:
         self.store.bind_eval_retrieval_mode(None)
         evidence_ids = [chunk_evidence_id(c) for c in hits]
         mode = getattr(self.store, "last_retrieval_mode", requested)
+        rerank_mode = getattr(self.store, "last_rerank_mode", "none")
         filters = {"as_of": as_of, "source_type": source_type, "top_k": top_k}
         if tenant_id is not None:
             filters["tenant_id"] = tenant_id
@@ -152,6 +164,7 @@ class RunContext:
             "filters": filters,
             "evidence_ids": evidence_ids,
             "retrieval_mode": mode,
+            "rerank_mode": rerank_mode,
             "used": self.retrieval_used,
             "hits": len(hits),
         })

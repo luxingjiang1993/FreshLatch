@@ -14,6 +14,7 @@ from freshlatch.store.local_embed import (
     _load_model,
     local_embed_cache_dir,
 )
+from freshlatch.store.neural_rerank import NEURAL_RERANK_MODEL
 
 
 def test_production_default_is_hybrid_rerank():
@@ -70,5 +71,7 @@ def test_warmup_script_refuses_offline(tmp_path):
     )
     assert proc.returncode == 2
     assert LOCAL_EMBED_MODEL in proc.stderr
+    assert NEURAL_RERANK_MODEL in proc.stderr
+    assert str(tmp_path) in proc.stderr or "FASTEMBED_CACHE_PATH" in proc.stderr
     assert "FASTEMBED_CACHE_PATH" in proc.stderr
     assert "ok model=" not in proc.stdout

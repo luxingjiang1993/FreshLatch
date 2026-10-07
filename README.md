@@ -170,7 +170,7 @@ For engineering acceptance boundaries, read `docs/evidence/` and root `CONTEXT.m
 
 ## Roadmap
 
-Next hop: Hard-Gold **passed** (#259). On 2026-10-07 a human set `PRODUCTION_RETRIEVAL_MODE` to `hybrid+rerank`. One-click rollback is `set_retrieval_switch("bm25")`. Missing vectors still record `bm25_fallback`. Warm up local embedding weights before serving the new default (`docs/ops/local-embed.md`). C′ (Word/Notion/open webhook) remains backlog. Live web, if any, is **ingest to T1 disk → then reverify** — not open-ended Q&A as the product. Details live in repo docs and ADRs under `docs/`.
+Next hop: Hard-Gold **passed** (#259). On 2026-10-07 a human set `PRODUCTION_RETRIEVAL_MODE` to `hybrid+rerank`. The rerank step is now the local `BAAI/bge-reranker-base` cross-encoder on hybrid's top-10 (Issue #294, from the MRR/nDCG gain in PR #293). One-click rollback to BM25 is `set_retrieval_switch("bm25")`. Lexical rerank remains available via `set_retrieval_switch("hybrid+rerank_lexical")`. A missing reranker records `last_rerank_mode=lexical_fallback`. Missing vectors still record `bm25_fallback`. Warm up both embedding and reranker weights before serving (`docs/ops/local-embed.md`; reranker weights about 1.1GB, first load about 8s, rerank p95 about 434ms). The gold set is unchanged: a human reviewed only the 16 DECISION-16 items. C′ (Word/Notion/open webhook) remains backlog. Live web, if any, is **ingest to T1 disk → then reverify** — not open-ended Q&A as the product. Details live in repo docs and ADRs under `docs/`.
 
 ---
 

@@ -1,7 +1,7 @@
 """本地 chunk / query embedding。模型固定为 BAAI/bge-small-zh-v1.5（fastembed，dim=512）。
 
 不读付费 API key，不走云端 embedding。
-``rerank_lexical`` 仍是 jieba token overlap，这里不加载神经 reranker。
+神经 reranker 在 ``neural_rerank.py``，模型是 ``BAAI/bge-reranker-base``，缓存目录同是 ``FASTEMBED_CACHE_PATH``。
 """
 
 from __future__ import annotations

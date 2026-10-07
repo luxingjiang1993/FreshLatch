@@ -2,7 +2,7 @@
 
 本文给论文和面试用。它记录决策链。2026-10-07 的切换由真人拍板，不是模型代批。
 
-生产默认现在是 hybrid+rerank。代码常量 `PRODUCTION_RETRIEVAL_MODE` 的值是 `hybrid+rerank`。一键回退是 `set_retrieval_switch("bm25")`，不改这个常量。缺向量仍记 `bm25_fallback`。切换前必须先预热本地 embedding 权重，见 `docs/ops/local-embed.md`。本文不调用阿里云 DashScope 的付费接口。下面各节里「当时仍是 bm25」的句子是那一天的记录，不是现在的默认。
+生产默认现在是 hybrid+rerank。代码常量 `PRODUCTION_RETRIEVAL_MODE` 的值是 `hybrid+rerank`。精排是本地 `BAAI/bge-reranker-base`（fastembed `TextCrossEncoder`，CPU），只重排 hybrid 的 top-10。依据是 [PR #293](https://github.com/luxingjiang1993/FreshLatch/pull/293) 的 MRR@10 与 nDCG@10，切换票是 [Issue #294](https://github.com/luxingjiang1993/FreshLatch/issues/294)。一键回退 BM25 是 `set_retrieval_switch("bm25")`。只切回词重叠精排是 `set_retrieval_switch("hybrid+rerank_lexical")`。两者都不改这个常量。缺向量仍记 `bm25_fallback`。reranker 失败记 `last_rerank_mode=lexical_fallback`。切换前必须先预热 embedding 与 reranker 权重，见 `docs/ops/local-embed.md`。本文不调用阿里云 DashScope 的付费接口。下面各节里「当时仍是 bm25」或「当时精排仍是 rerank_lexical」的句子是那一天的记录。
 
 表里的四位小数照抄各报告主表。json 里的更长小数在对应小节注明，不另做一次四舍五入。
 
@@ -11,7 +11,7 @@
 - BM25：BM25Okapi，用结巴（jieba）分词。
 - dense：把查询和 chunk 变成 embedding，按余弦排序。
 - hybrid：BM25 与 dense 各自的名次做倒数秩融合（RRF，常数 k=60）。加的是名次的倒数，不是两路分数乘一个系数。
-- hybrid+rerank：函数 `rerank_lexical` 只对 hybrid 已经给出的前 10 条做 rerank。做法是数结巴词的重叠，不是交叉编码器，也没有单独的 rerank 模型。
+- hybrid+rerank：先做 hybrid，再对已经给出的前 10 条做精排。2026-10-07 切换票之后，精排是本地 `BAAI/bge-reranker-base`。`rerank_lexical` 留作显式开关和 `lexical_fallback`。
 - Recall@10：前 10 条里出现任一 gold set 中的 chunk 记 1，否则记 0，再对题取平均。不是「gold set 里的 chunk 找回了百分之几」。
 - MRR@10、nDCG@10、p95。
 
@@ -34,7 +34,8 @@
 | 2026-10-07 | 显著性、代价、656 条顺序分差清单、一键回到 BM25 的冒烟。书面建议保持 bm25。 | [PR #285](https://github.com/luxingjiang1993/FreshLatch/pull/285) |
 | 2026-10-07 | 用户把目标改成 hybrid+rerank，先补工程缺口。切换仍等真人看 16 题。本文和这张票只记录，不实施。 | [Issue #286](https://github.com/luxingjiang1993/FreshLatch/issues/286) |
 | 2026-10-07 | Oriental Ronin 拍板 DECISION-16 的 16 条（不是全库逐行人工审核）。`s1-d0-05-q4` 去掉 `s1-d0-05-warn#p1@T1`。用 #283 已保存的 top-10 重算 BM25 vs hybrid：Recall@10 仍是 0.9196428571428571 对 0.9732142857142857，差 0.05357142857142857，95% 区间 0.022321428571428572 ~ 0.08928571428571429，McNemar 2/14/204/4，p 0.004180908203124997。nDCG@10 的 hybrid 均值从 0.779488160892922 变为 0.7803516716233564。切换决定由真人拍板，`PRODUCTION_RETRIEVAL_MODE` 改为 `hybrid+rerank`。 | `docs/evidence/issue-284/DECISION-16.md` |
-| 2026-10-07 | 本地神经 reranker 离线对照。决策列 K=10：`rerank_lexical` 对 `BAAI/bge-reranker-base`。Recall@10 两边都是 0.9732142857142857。nDCG@10 差 0.06231550367445169，区间 0.03897278888099252 ~ 0.08564412540024816。MRR@10 差 0.08152458900226757，区间 0.04773198341836735 ~ 0.1171530435090703。神经 p95 434.1544819999399 ms。取舍句是「建议另开切换票」。不改 `PRODUCTION_RETRIEVAL_MODE`。 | [Issue #292](https://github.com/luxingjiang1993/FreshLatch/issues/292) · `docs/evidence/neural-rerank/` |
+| 2026-10-07 | 本地神经 reranker 离线对照。决策列 K=10：`rerank_lexical` 对 `BAAI/bge-reranker-base`。Recall@10 两边都是 0.9732142857142857。nDCG@10 差 0.06231550367445169，区间 0.03897278888099252 ~ 0.08564412540024816。MRR@10 差 0.08152458900226757，区间 0.04773198341836735 ~ 0.1171530435090703。神经 p95 434.1544819999399 ms。取舍句是「建议另开切换票」。当时不改生产精排。 | [Issue #292](https://github.com/luxingjiang1993/FreshLatch/issues/292) · [PR #293](https://github.com/luxingjiang1993/FreshLatch/pull/293) · `docs/evidence/neural-rerank/` |
+| 2026-10-07 | Oriental Ronin 决定把生产精排从 `rerank_lexical` 切到本地 `BAAI/bge-reranker-base`。只重排 hybrid 的 top-10。K=30 不进生产。`PRODUCTION_RETRIEVAL_MODE` 仍是 `hybrid+rerank`。 | [Issue #294](https://github.com/luxingjiang1993/FreshLatch/issues/294) |
 
 ## 2. 冒烟集 36 题：不是三臂都满分
 
@@ -240,7 +241,7 @@ hybrid 臂先在整池上做倒数秩融合，再截成前 10 条。rerank 只�
 
 ## 10. 面试口述（约 1 分钟）
 
-生产默认现在是 hybrid+rerank，切换决定由真人在 2026-10-07 拍板。36 题的冒烟里，BM25 和 hybrid 的 Recall@10 都是 1.0，dense 是 0.9722，没有一起满分。那次 dense 的 embedding 是 text-embedding-v4，所以当时保持 BM25，先做 Hard-Gold。后来 224 道打分题上，hybrid 是 0.9732，BM25 是 0.9196，差 +0.0536，区间从 +0.0223 到 +0.0893。去掉 `s1-d0-05-q4` 的一块金标之后，这对 Recall@10 数字不变。rerank 不加载模型，只把 hybrid 已经给出的前 10 条按结巴词的重叠重新排队，Recall@10 因此和 hybrid 一样。这批语料 794 个 chunk，合成占比约 0.83，陷阱主要是哪一版说法还算数。业务语料更大、更吵时，rerank 可能更有用，这还没测。gold set 仍是模型标注；真人只拍了这 16 条，不是逐行审完全库。一键回退是 `set_retrieval_switch("bm25")`。缺向量记 `bm25_fallback`。切换后要先预热 `BAAI/bge-small-zh-v1.5`。本地 `BAAI/bge-reranker-base` 的对照在第 12 节，取舍句是「建议另开切换票」，这一分钟的口述不把神经 reranker 说成已经换上。
+生产默认现在是 hybrid+rerank，切换决定由真人在 2026-10-07 拍板。36 题的冒烟里，BM25 和 hybrid 的 Recall@10 都是 1.0，dense 是 0.9722，没有一起满分。那次 dense 的 embedding 是 text-embedding-v4，所以当时保持 BM25，先做 Hard-Gold。后来 224 道打分题上，hybrid 是 0.9732，BM25 是 0.9196，差 +0.0536，区间从 +0.0223 到 +0.0893。去掉 `s1-d0-05-q4` 的一块金标之后，这对 Recall@10 数字不变。rerank 不加载模型，只把 hybrid 已经给出的前 10 条按结巴词的重叠重新排队，Recall@10 因此和 hybrid 一样。这批语料 794 个 chunk，合成占比约 0.83，陷阱主要是哪一版说法还算数。业务语料更大、更吵时，rerank 可能更有用，这还没测。gold set 仍是模型标注；真人只拍了这 16 条，不是逐行审完全库。一键回退是 `set_retrieval_switch("bm25")`。缺向量记 `bm25_fallback`。切换后要先预热 `BAAI/bge-small-zh-v1.5` 和 `BAAI/bge-reranker-base`。第 12 节是对照，第 13 节是随后的切换：生产精排已经是 `BAAI/bge-reranker-base`，只处理 top-10。金标口径没变，真人只审了 DECISION-16 的 16 题。
 
 ## 11. 论文可用的方法与局限性
 
@@ -296,13 +297,29 @@ p95：lexical 7.125296000594972 ms，neural 1371.0923300004652 ms。神经这一
 
 跑数前写死：只看 K=10、`BAAI/bge-reranker-base`。四条同时成立才写「建议另开切换票」：nDCG@10 配对差的 95% 区间下界 > 0，点估计 ≥ 0.01，MRR@10 区间下界 > 0，神经 rerank 的 p95 ≤ 800 ms。本轮四条都成立。取舍句是：建议另开切换票。
 
-这句不是切换。`PRODUCTION_RETRIEVAL_MODE` 仍是 `hybrid+rerank`，实现仍是 `rerank_lexical`。K=30 的神经 p95 过了 800 ms，切换票如果要把候选从 10 扩到 30，不能把这一列当成延迟已经过线。v2-m3 没有数字。
+这句在写 #293 时不是切换。当时 `PRODUCTION_RETRIEVAL_MODE` 仍是 `hybrid+rerank`，实现仍是 `rerank_lexical`。K=30 的神经 p95 过了 800 ms，切换票如果要把候选从 10 扩到 30，不能把这一列当成延迟已经过线。v2-m3 没有数字。随后 Oriental Ronin 按这句另开了切换票，生产精排已改，见第 13 节。K=30 仍然不进生产。
 
 ### 面试说辞
 
 生产默认仍是 hybrid 加 lexical rerank，这一节没有改常量。在 n=224、金标 `50adc32` 上，把 hybrid 的同一组前 10 条交给本地 `BAAI/bge-reranker-base` 再排。Recall@10 两边都是 0.9732142857142857，因为集合没变。MRR@10 从 0.7566609977324263 到 0.8381855867346939，差 0.08152458900226757，区间 0.04773198341836735 ~ 0.1171530435090703。nDCG@10 从 0.7626148790864964 到 0.8249303827609481，差 0.06231550367445169，区间 0.03897278888099252 ~ 0.08564412540024816。CPU 上重排 p95 是 434.1544819999399 ms，门槛 800 ms。跑数前写死的四条都过了，所以写「建议另开切换票」，不在这张票里切换。K=30 再取 top-10 的神经 p95 是 1371.0923300004652 ms，过了门槛，而且那一列的 Recall@10 低于只排前 10 条。v2-m3 没跑。权重按 inode 去重 1129561896 字节，首次加载 8.242696646000695 秒。依赖放在评测文件，生产仍是 fastembed 0.7.1。金标仍是模型双标加代审，真人只审了 DECISION-16 的 16 题。
 
-## 13. 修订记录
+## 13. 生产精排已切到 BAAI/bge-reranker-base
+
+Oriental Ronin 在 #293 合入 main（`bfd4838`）之后决定切换。切换票是 [Issue #294](https://github.com/luxingjiang1993/FreshLatch/issues/294)。`PRODUCTION_RETRIEVAL_MODE` 仍是 `hybrid+rerank`。变的是这个臂的精排：本地 `BAAI/bge-reranker-base`，fastembed `TextCrossEncoder`，CPU，`cuda=False`。只把 hybrid 的前 10 条送进 cross-encoder。K=30 的神经 p95 是 1371.0923300004652 ms，超过 800 ms，生产不采用。
+
+依据是 #293 决策列（n=224，金标 `50adc3251737c318815105b3562a823198b80dc3`，bootstrap 10000，种子 20261007）。MRR@10 从 0.7566609977324263 到 0.8381855867346939，差 0.08152458900226757，区间 0.04773198341836735 ~ 0.1171530435090703。nDCG@10 从 0.7626148790864964 到 0.8249303827609481，差 0.06231550367445169，区间 0.03897278888099252 ~ 0.08564412540024816。Recall@10 两边都是 0.9732142857142857。神经 rerank p95 434.1544819999399 ms。首次加载 8.242696646000695 秒。权重按 inode 去重 1129561896 字节。
+
+金标口径不变。金标仍是模型双标加 Ronin 代理人（模型）代审。人工审核只覆盖 DECISION-16 的 16 道题。
+
+依赖钉在 `requirements.txt` 的 `fastembed==0.8.1`。`0.7.1` 没有 `TextCrossEncoder`。embedding 模型 id 仍是 `BAAI/bge-small-zh-v1.5`。预热脚本同时下载两份权重，缓存目录是 `FASTEMBED_CACHE_PATH`。
+
+权重缺失或推理报错时打 warning，退回 `rerank_lexical`，`last_rerank_mode=lexical_fallback`。检索臂仍记 `hybrid+rerank`。显式切回词重叠是 `set_retrieval_switch("hybrid+rerank_lexical")`，`rerank_mode=lexical`。一键回退 BM25 仍是 `set_retrieval_switch("bm25")`。
+
+### 面试说辞
+
+生产臂的名字还是 hybrid+rerank，精排已经换成本地 `BAAI/bge-reranker-base`，只排 hybrid 的前 10 条。换的依据是 #293：MRR@10 差 0.08152458900226757，区间从 0.04773198341836735 到 0.1171530435090703；nDCG@10 差 0.06231550367445169，区间从 0.03897278888099252 到 0.08564412540024816；CPU 上重排 p95 434.1544819999399 ms。Recall@10 没有变，因为还是那 10 个 id。K=30 的 p95 超了 800 ms，所以没有把候选池放大。权重约 1.1GB，首次加载约 8 秒。模型起不来就 warning，退回 lexical rerank，并写下 `last_rerank_mode=lexical_fallback`。还可以用开关只切回 lexical，或 `set_retrieval_switch("bm25")` 回到 BM25。金标仍是模型双标加代审，真人只审过那 16 题。
+
+## 14. 修订记录
 
 本次只改 `docs/evidence/retrieval-decision.md`。对照仓内源文件后的更正：
 
@@ -318,4 +335,5 @@ p95：lexical 7.125296000594972 ms，neural 1371.0923300004652 ms。神经这一
 10. 中文按技术写作习惯重写。已核对数字的含义不改。
 11. 关键专业名词改回英文原文，全文统一：BM25、dense、hybrid、rerank、Recall@10、MRR、nDCG@10、p95、embedding、bootstrap、McNemar、chunk、fallback（`bm25_fallback`）、gold set。去掉「词法 / 混合 / 稠密 / 重排」等译名。数字与其余表述不改。
 12. 2026-10-07 真人拍板后补记。`s1-d0-05-q4` 的金标去掉 `s1-d0-05-warn#p1@T1`。用 #283 的 `per-query.json` 重算 BM25 vs hybrid，不重新 embedding，不调用付费 API，不重计 p95。Recall@10 仍是 0.9196428571428571 对 0.9732142857142857，差 0.05357142857142857，95% 区间 0.022321428571428572 ~ 0.08928571428571429，McNemar 2/14/204/4，p 0.004180908203124997。MRR 仍是 0.7275333049886621 对 0.7739937641723357，差 0.04646045918367347。nDCG@10 的 hybrid 均值从 0.779488160892922 变为 0.7803516716233564，差从 0.05272092221584028 变为 0.053584432946274525，区间变为 0.03201358973245737 ~ 0.07548337519518822。切换决定由真人拍板。`PRODUCTION_RETRIEVAL_MODE` 改为 `hybrid+rerank`。`set_retrieval_switch("bm25")` 仍是一键回退。缺向量仍是 `bm25_fallback`。这次拍板只覆盖 DECISION-16 的 16 条，不是全库逐行人工审核。上文各节里写「当时仍是 bm25」的，保持为当时的记录。
-13. 2026-10-07 补第 12 节本地神经 reranker 对照。决策列 K=10，`BAAI/bge-reranker-base`，CPU。Recall@10 两边 0.9732142857142857。MRR@10 差 0.08152458900226757，区间 0.04773198341836735 ~ 0.1171530435090703。nDCG@10 差 0.06231550367445169，区间 0.03897278888099252 ~ 0.08564412540024816。神经 p95 434.1544819999399 ms。取舍句是「建议另开切换票」。不改 `PRODUCTION_RETRIEVAL_MODE`。K=30 的神经 p95 是 1371.0923300004652 ms，不进入取舍句。v2-m3 未跑。金标仍是模型双标加代审，人工审核只覆盖 DECISION-16 的 16 道题。
+13. 2026-10-07 补第 12 节本地神经 reranker 对照。决策列 K=10，`BAAI/bge-reranker-base`，CPU。Recall@10 两边 0.9732142857142857。MRR@10 差 0.08152458900226757，区间 0.04773198341836735 ~ 0.1171530435090703。nDCG@10 差 0.06231550367445169，区间 0.03897278888099252 ~ 0.08564412540024816。神经 p95 434.1544819999399 ms。取舍句是「建议另开切换票」。当时不改生产精排。K=30 的神经 p95 是 1371.0923300004652 ms，不进入取舍句。v2-m3 未跑。金标仍是模型双标加代审，人工审核只覆盖 DECISION-16 的 16 道题。
+14. 2026-10-07 补第 13 节。Oriental Ronin 决定把生产精排改为 `BAAI/bge-reranker-base`，只重排 hybrid 的 top-10。依据是上一条的 MRR@10 与 nDCG@10。`PRODUCTION_RETRIEVAL_MODE` 仍是 `hybrid+rerank`。失败记 `last_rerank_mode=lexical_fallback`。`set_retrieval_switch("hybrid+rerank_lexical")` 切回词重叠，`set_retrieval_switch("bm25")` 回到 BM25。金标口径不变，人工只审过 DECISION-16 的 16 题。fastembed 钉到 0.8.1。

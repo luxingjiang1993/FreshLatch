@@ -5,9 +5,10 @@ uvicorn==0.53.0
 python-multipart==0.0.20
 rank-bm25==0.2.2
 jieba==0.42.1
-# #286: local embedding used by #283/#285. Not a neural reranker.
-# rerank stays jieba token overlap in rerank_lexical.
-fastembed==0.7.1
+# #294: production rerank is local BAAI/bge-reranker-base (TextCrossEncoder, K=10).
+# fastembed 0.7.1 has no TextCrossEncoder. 0.8.1 is the locked pin.
+# Embedding model id stays BAAI/bge-small-zh-v1.5 (dim 512).
+fastembed==0.8.1
 huggingface-hub==0.36.2
 loguru==0.7.3
 mmh3==5.3.1

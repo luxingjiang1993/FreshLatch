@@ -220,8 +220,12 @@ retrieve **难金标**轨,与冒烟 `retrieve_gold` **分文件**(如 `retrieve_
 _Avoid_: 把 n=36 冒烟称作 Hard-Gold、骨架跑过即已换臂、与主张金标混报
 
 **Hard-Gold 过线 / 改臂授权闸**:
-在骨架之上的**决策闸**:须 dense 索引 + hard 臂对比 + I0 增益门(Hybrid 通过线于 hard 集成立)才**书面授权**开改臂**实现票**(Gate);不过线则冻 bm25。hard 评测库与 A0 **同库**=corpus+traps。本闸钉流程 ≠ 已换臂。2026-10-07 真人拍板 DECISION-16 的 16 条之后，生产默认是 `hybrid+rerank`；一键回退 `set_retrieval_switch("bm25")`。那次拍板不是全库逐行人工审核，也不是本闸本身。操作定义见 ADR-0033 与 `docs/research/Hard-Gold过线与改臂决议设计评估.md`;证据 `docs/evidence/hard-gold-arm/`、`docs/evidence/issue-284/DECISION-16.md`。
+在骨架之上的**决策闸**:须 dense 索引 + hard 臂对比 + I0 增益门(Hybrid 通过线于 hard 集成立)才**书面授权**开改臂**实现票**(Gate);不过线则冻 bm25。hard 评测库与 A0 **同库**=corpus+traps。本闸钉流程 ≠ 已换臂。2026-10-07 真人拍板 DECISION-16 的 16 条之后，生产默认是 `hybrid+rerank`；一键回退 `set_retrieval_switch("bm25")`。那次拍板不是全库逐行人工审核，也不是本闸本身。同日精排改为本地 `BAAI/bge-reranker-base`（只重排 top-10；见下条）。操作定义见 ADR-0033 与 `docs/research/Hard-Gold过线与改臂决议设计评估.md`;证据 `docs/evidence/hard-gold-arm/`、`docs/evidence/issue-284/DECISION-16.md`、`docs/evidence/neural-rerank/`。
 _Avoid_: 无 dense 判过线、用主张金标/control-c 顶替、grill 直接改生产臂、把本闸称作已换 hybrid、臂对比缺 traps 仍判门
+
+**生产精排**:
+`hybrid+rerank` 的精排是本地 `BAAI/bge-reranker-base`（fastembed `TextCrossEncoder`，CPU），只重排 hybrid 已经给出的 top-10。依据是 #293 的 MRR@10 与 nDCG@10 提升。权重缺失或推理报错时打 warning，退回 `rerank_lexical`，记 `last_rerank_mode=lexical_fallback`。切回词重叠：`set_retrieval_switch("hybrid+rerank_lexical")`。一键回退 BM25：`set_retrieval_switch("bm25")`。金标口径不变，人工只审过 DECISION-16 的 16 题。
+_Avoid_: 把 K=30 送进 cross-encoder、失败时静默仍标成神经精排、把这次切换说成全库人工 gold
 
 **I1 失败复盘（评测标签）**:
 答辩/冒烟用语,不是生产 Gate 或 disposition 枚举。桶名(找不到/找错/没用上)与漏拦/误拦的操作定义、corpus 路径见 ADR-0028 与 `docs/research/I1-失败三分法与HumanLatch语料设计评估.md`;语料落 `docs/evidence/i1/`。
