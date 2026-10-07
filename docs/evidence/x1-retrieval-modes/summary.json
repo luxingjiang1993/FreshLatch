@@ -1,0 +1,424 @@
+{
+  "level": "实验/冒烟",
+  "human_row_review": false,
+  "label_note": "模型双标 + Ronin 代理人（模型）代审，非人工逐行审核",
+  "questions_meta": {
+    "status": "owner-delegated-model-reviewed",
+    "category_rule": "category-rule-v2",
+    "qtype_rule": "qtype-kw-v1",
+    "human_row_review": false,
+    "reviewer": "Ronin 代理人（模型），受 owner 委托"
+  },
+  "gold_commit": "5de99c1",
+  "questions": "data/exp/x1/questions.json",
+  "corpus": "data/exp/x1/corpus",
+  "traps": "data/exp/x1/traps",
+  "n_questions": 267,
+  "n_arm": 224,
+  "n_guardrail": 43,
+  "n_chunks": 794,
+  "template47_n": 47,
+  "template47_absent": "r4n-s2-d0-t1-91-qc",
+  "production_retrieval_mode_before": "bm25",
+  "production_retrieval_mode_after": "bm25",
+  "config_embed_model": "text-embedding-v4",
+  "config_embed_dim": 1024,
+  "config_embed_status": "未跑",
+  "config_embed_reason": "embeddings.py 只调用 DashScope text-embedding-v4，本测量禁止付费 API",
+  "local_embed_model": "BAAI/bge-small-zh-v1.5",
+  "local_embed_dim": 512,
+  "local_embed_lib": "fastembed",
+  "dashscope_called": false,
+  "check_x1": {
+    "exit_code": 0,
+    "qtype_counts": {
+      "lexical": 60,
+      "paraphrase": 119,
+      "multi_hop": 45
+    },
+    "n_arm": 224,
+    "n_guardrail": 43,
+    "trap_adversarial_ratio": 0.3169642857142857,
+    "n_chunks": 794,
+    "synthetic_ratio": 0.8299748110831234,
+    "public_ratio": 0.17002518891687657,
+    "decontam_hits": 0,
+    "license_violations": 0,
+    "lcs_flags": 0
+  },
+  "recall_definition": "recall_at_k: any relevant id in top-10 => 1 else 0; macro mean",
+  "slices": [
+    {
+      "label": "总体",
+      "n": 224,
+      "by_mode": {
+        "bm25": {
+          "n": 224,
+          "Recall@10": 0.9196428571428571,
+          "MRR@10": 0.7275333049886621,
+          "p95_ms": 72.33532300006118,
+          "modes_seen": [
+            "bm25"
+          ]
+        },
+        "dense": {
+          "n": 224,
+          "Recall@10": 0.9330357142857143,
+          "MRR@10": 0.7601031037414966,
+          "p95_ms": 14.594081000041115,
+          "modes_seen": [
+            "dense"
+          ]
+        },
+        "hybrid": {
+          "n": 224,
+          "Recall@10": 0.9732142857142857,
+          "MRR@10": 0.7739937641723357,
+          "p95_ms": 84.91445499998918,
+          "modes_seen": [
+            "hybrid"
+          ]
+        },
+        "hybrid+rerank": {
+          "n": 224,
+          "Recall@10": 0.9732142857142857,
+          "MRR@10": 0.7566609977324263,
+          "p95_ms": 87.25277700000333,
+          "modes_seen": [
+            "hybrid+rerank"
+          ]
+        }
+      }
+    },
+    {
+      "label": "lexical",
+      "n": 60,
+      "by_mode": {
+        "bm25": {
+          "n": 60,
+          "Recall@10": 1.0,
+          "MRR@10": 0.9791666666666666,
+          "p95_ms": 76.40731600008621,
+          "modes_seen": [
+            "bm25"
+          ]
+        },
+        "dense": {
+          "n": 60,
+          "Recall@10": 0.9666666666666667,
+          "MRR@10": 0.9280555555555555,
+          "p95_ms": 14.644189000023289,
+          "modes_seen": [
+            "dense"
+          ]
+        },
+        "hybrid": {
+          "n": 60,
+          "Recall@10": 0.9833333333333333,
+          "MRR@10": 0.9527777777777777,
+          "p95_ms": 84.2115709999689,
+          "modes_seen": [
+            "hybrid"
+          ]
+        },
+        "hybrid+rerank": {
+          "n": 60,
+          "Recall@10": 0.9833333333333333,
+          "MRR@10": 0.9638888888888889,
+          "p95_ms": 86.84200699997291,
+          "modes_seen": [
+            "hybrid+rerank"
+          ]
+        }
+      }
+    },
+    {
+      "label": "paraphrase",
+      "n": 119,
+      "by_mode": {
+        "bm25": {
+          "n": 119,
+          "Recall@10": 0.8739495798319328,
+          "MRR@10": 0.6455148726157129,
+          "p95_ms": 72.33532300006118,
+          "modes_seen": [
+            "bm25"
+          ]
+        },
+        "dense": {
+          "n": 119,
+          "Recall@10": 0.8991596638655462,
+          "MRR@10": 0.7013505402160864,
+          "p95_ms": 14.810835999924166,
+          "modes_seen": [
+            "dense"
+          ]
+        },
+        "hybrid": {
+          "n": 119,
+          "Recall@10": 0.957983193277311,
+          "MRR@10": 0.7194544484460451,
+          "p95_ms": 85.74217299997144,
+          "modes_seen": [
+            "hybrid"
+          ]
+        },
+        "hybrid+rerank": {
+          "n": 119,
+          "Recall@10": 0.957983193277311,
+          "MRR@10": 0.6794651193810858,
+          "p95_ms": 92.00140500001908,
+          "modes_seen": [
+            "hybrid+rerank"
+          ]
+        }
+      }
+    },
+    {
+      "label": "multi_hop",
+      "n": 45,
+      "by_mode": {
+        "bm25": {
+          "n": 45,
+          "Recall@10": 0.9333333333333333,
+          "MRR@10": 0.6089153439153439,
+          "p95_ms": 68.97144200002003,
+          "modes_seen": [
+            "bm25"
+          ]
+        },
+        "dense": {
+          "n": 45,
+          "Recall@10": 0.9777777777777777,
+          "MRR@10": 0.6915343915343916,
+          "p95_ms": 14.25538300009066,
+          "modes_seen": [
+            "dense"
+          ]
+        },
+        "hybrid": {
+          "n": 45,
+          "Recall@10": 1.0,
+          "MRR@10": 0.6798412698412698,
+          "p95_ms": 83.49603500005287,
+          "modes_seen": [
+            "hybrid"
+          ]
+        },
+        "hybrid+rerank": {
+          "n": 45,
+          "Recall@10": 1.0,
+          "MRR@10": 0.6844973544973545,
+          "p95_ms": 83.55257999994592,
+          "modes_seen": [
+            "hybrid+rerank"
+          ]
+        }
+      }
+    },
+    {
+      "label": "hard",
+      "n": 153,
+      "by_mode": {
+        "bm25": {
+          "n": 153,
+          "Recall@10": 0.9215686274509803,
+          "MRR@10": 0.7420920219939827,
+          "p95_ms": 69.4863420000047,
+          "modes_seen": [
+            "bm25"
+          ]
+        },
+        "dense": {
+          "n": 153,
+          "Recall@10": 0.9150326797385621,
+          "MRR@10": 0.7458761282290695,
+          "p95_ms": 14.466410999943946,
+          "modes_seen": [
+            "dense"
+          ]
+        },
+        "hybrid": {
+          "n": 153,
+          "Recall@10": 0.9673202614379085,
+          "MRR@10": 0.786743956841996,
+          "p95_ms": 83.02664300003926,
+          "modes_seen": [
+            "hybrid"
+          ]
+        },
+        "hybrid+rerank": {
+          "n": 153,
+          "Recall@10": 0.9673202614379085,
+          "MRR@10": 0.7700850710654632,
+          "p95_ms": 87.25277700000333,
+          "modes_seen": [
+            "hybrid+rerank"
+          ]
+        }
+      }
+    },
+    {
+      "label": "trap",
+      "n": 71,
+      "by_mode": {
+        "bm25": {
+          "n": 71,
+          "Recall@10": 0.9154929577464789,
+          "MRR@10": 0.696160295103957,
+          "p95_ms": 79.29467700000714,
+          "modes_seen": [
+            "bm25"
+          ]
+        },
+        "dense": {
+          "n": 71,
+          "Recall@10": 0.971830985915493,
+          "MRR@10": 0.7907612340710932,
+          "p95_ms": 15.15592700002344,
+          "modes_seen": [
+            "dense"
+          ]
+        },
+        "hybrid": {
+          "n": 71,
+          "Recall@10": 0.9859154929577465,
+          "MRR@10": 0.7465179968701096,
+          "p95_ms": 87.74544499999593,
+          "modes_seen": [
+            "hybrid"
+          ]
+        },
+        "hybrid+rerank": {
+          "n": 71,
+          "Recall@10": 0.9859154929577465,
+          "MRR@10": 0.7277330650570087,
+          "p95_ms": 88.33483799992337,
+          "modes_seen": [
+            "hybrid+rerank"
+          ]
+        }
+      }
+    },
+    {
+      "label": "adversarial",
+      "n": 0,
+      "by_mode": {
+        "bm25": {
+          "n": 0,
+          "Recall@10": null,
+          "MRR@10": null,
+          "p95_ms": null,
+          "modes_seen": []
+        },
+        "dense": {
+          "n": 0,
+          "Recall@10": null,
+          "MRR@10": null,
+          "p95_ms": null,
+          "modes_seen": []
+        },
+        "hybrid": {
+          "n": 0,
+          "Recall@10": null,
+          "MRR@10": null,
+          "p95_ms": null,
+          "modes_seen": []
+        },
+        "hybrid+rerank": {
+          "n": 0,
+          "Recall@10": null,
+          "MRR@10": null,
+          "p95_ms": null,
+          "modes_seen": []
+        }
+      }
+    },
+    {
+      "label": "合成模板陷阱47",
+      "n": 47,
+      "by_mode": {
+        "bm25": {
+          "n": 47,
+          "Recall@10": 0.9787234042553191,
+          "MRR@10": 0.8,
+          "p95_ms": 81.33665499997278,
+          "modes_seen": [
+            "bm25"
+          ]
+        },
+        "dense": {
+          "n": 47,
+          "Recall@10": 1.0,
+          "MRR@10": 0.8753799392097265,
+          "p95_ms": 17.391193000094063,
+          "modes_seen": [
+            "dense"
+          ]
+        },
+        "hybrid": {
+          "n": 47,
+          "Recall@10": 0.9787234042553191,
+          "MRR@10": 0.8439716312056738,
+          "p95_ms": 87.74544499999593,
+          "modes_seen": [
+            "hybrid"
+          ]
+        },
+        "hybrid+rerank": {
+          "n": 47,
+          "Recall@10": 0.9787234042553191,
+          "MRR@10": 0.8170212765957446,
+          "p95_ms": 92.00140500001908,
+          "modes_seen": [
+            "hybrid+rerank"
+          ]
+        }
+      }
+    }
+  ],
+  "threshold": [
+    {
+      "mode": "dense",
+      "recall_delta": 0.013392857142857206,
+      "p95_ms": 14.594081000041115,
+      "meets": true
+    },
+    {
+      "mode": "hybrid",
+      "recall_delta": 0.0535714285714286,
+      "p95_ms": 84.91445499998918,
+      "meets": true
+    },
+    {
+      "mode": "hybrid+rerank",
+      "recall_delta": 0.0535714285714286,
+      "p95_ms": 87.25277700000333,
+      "meets": true
+    }
+  ],
+  "rerank_gate": {
+    "hybrid_recall": 0.9732142857142857,
+    "rerank_recall": 0.9732142857142857,
+    "p95_ms": 87.25277700000333,
+    "verdict": "生产默认关",
+    "budget_ms": 800.0
+  },
+  "modes_seen": {
+    "bm25": [
+      "bm25"
+    ],
+    "dense": [
+      "dense"
+    ],
+    "hybrid": [
+      "hybrid"
+    ],
+    "hybrid+rerank": [
+      "hybrid+rerank"
+    ]
+  },
+  "conclusion": "按总体「Recall@10 严格高于 bm25 且 p95≤800ms」，dense、hybrid、hybrid+rerank 都过线。建议只把 hybrid 放进另开的讨论票：总体 Recall@10 0.9196 → 0.9732，p95 84.914 ms。hybrid 的 lexical 是 0.9833，低于 bm25 的 1.0000，总体增益来自 paraphrase 与 multi_hop。dense 总体只高到 0.9330，但 lexical 0.9667 低于 bm25 的 1.0000，hard 0.9150 也低于 bm25 的 0.9216。hybrid+rerank 的总体 Recall@10 与 hybrid 相同，仓库预登记门（须严格高于 hybrid）的判决是「生产默认关」，不建议为 rerank 另开切换票。本轮不是授权：生产默认仍是 bm25；向量是本地 bge-small-zh-v1.5，不是配置里的 text-embedding-v4；题集是模型双标加模型代审。",
+  "llm_tokens": 0,
+  "p95_note": "单次 perf_counter；重复运行有毫秒级抖动；Recall/MRR 由排序决定"
+}
