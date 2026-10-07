@@ -174,7 +174,44 @@ class SQLiteStore(RetrievalStore):
 
     # -- 写入 -----------------------------------------------------------------
 
+    def _forget_vec_if_text_changed(self, chunks: list[Chunk]) -> None:
+        """正文变了就丢掉传入的 vec。旧向量不能跟着新正文继续参与 rank_dense。"""
+        if not chunks:
+            return
+        with self._conn() as conn:
+            for chunk in chunks:
+                row = conn.execute(
+                    "SELECT text FROM chunks WHERE chunk_id = ?",
+                    (chunk.chunk_id,),
+                ).fetchone()
+                if row is not None and row["text"] != chunk.text:
+                    chunk.vec = None
+
+    def _vec_to_store(self, conn: sqlite3.Connection, chunk: Chunk) -> bytes | None:
+        """同正文的空 vec 保留库内向量。正文已变则必须是新 vec，否则写 NULL。"""
+        if chunk.vec:
+            return chunk.vec
+        row = conn.execute(
+            "SELECT text, vec FROM chunks WHERE chunk_id = ?",
+            (chunk.chunk_id,),
+        ).fetchone()
+        if row is None or not row["vec"]:
+            return None
+        if row["text"] == chunk.text:
+            return row["vec"]
+        return None
+
     def add_document(self, doc: Document, chunks: list[Chunk]) -> None:
+        self._forget_vec_if_text_changed(chunks)
+        embedder = getattr(self, "chunk_embedder", None)
+        if embedder is not None:
+            from freshlatch.store.local_embed import fill_chunk_vecs
+
+            try:
+                fill_chunk_vecs(chunks, embedder)
+            except Exception:
+                # embedder 不可用：正文已变的块保持 vec 为空，不退回旧向量。
+                pass
         with self._conn() as conn:
             conn.execute(
                 "INSERT OR REPLACE INTO documents "
@@ -195,7 +232,8 @@ class SQLiteStore(RetrievalStore):
                 [
                     (c.doc_id, c.chunk_id, c.clause_id, c.title, c.text,
                      c.source_type, c.as_of, c.doc_version, c.checksum,
-                     c.tokens, c.parent_id, c.hypo_questions, c.vec,
+                     c.tokens, c.parent_id, c.hypo_questions,
+                     self._vec_to_store(conn, c),
                      normalize_tenant_id(c.tenant_id), int(bool(c.poison)),
                      int(bool(c.untrusted)))
                     for c in chunks

@@ -13,6 +13,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
 from freshlatch.packs import resolve_pack  # noqa: E402
 from freshlatch.store.ingest import ingest_into  # noqa: E402
+from freshlatch.store.local_embed import attach_local_embedder  # noqa: E402
 from freshlatch.store.sqlite_store import SQLiteStore  # noqa: E402
 
 
@@ -28,6 +29,7 @@ def main() -> None:
     args = build_parser().parse_args()
 
     store = SQLiteStore(args.db)
+    attach_local_embedder(store)
     n = ingest_into(store, Path(args.corpus))
     print(f"ingested {n} chunks into {args.db}")
 

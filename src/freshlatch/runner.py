@@ -25,6 +25,9 @@ from freshlatch.store.base import (
 )
 from freshlatch.tools import FOCUS_DIMENSIONS
 
+# 运维开关只允许这三档。bm25 是一键回到 PRODUCTION_RETRIEVAL_MODE 的取值,不改常量本身。
+RETRIEVAL_SWITCH_MODES = frozenset({"bm25", "hybrid", "hybrid+rerank"})
+
 RETRIEVAL_EXHAUSTED = {"budget_exhausted": True,
                        "message": "检索预算已尽(24/Run)。请改用 read_source 直读原文,或基于现有证据下结论。"}
 
@@ -79,6 +82,8 @@ class RunContext:
     quarantine_list: set[str] = field(default_factory=set)  # 隔离名单(W9 记忆卫生;槽位本期为空)
     # 仅 eval + arm_eval_retrieval_mode 可写入;online 忽略,Agent 工具签名也不接收该字段。
     eval_retrieval_mode: str | None = None
+    # 运维开关。None 表示沿用 PRODUCTION_RETRIEVAL_MODE。不改那个常量。
+    retrieval_switch: str | None = None
 
     def arm_eval_retrieval_mode(self, mode: str) -> None:
         """评测夹具:强制检索臂。生产 online 拒绝;未实装的臂拒绝,避免误标。"""
@@ -92,9 +97,20 @@ class RunContext:
             )
         self.eval_retrieval_mode = mode
 
+    def set_retrieval_switch(self, mode: str) -> None:
+        """运维开关:bm25 / hybrid / hybrid+rerank。bm25 即一键回到 BM25。
+
+        不修改 PRODUCTION_RETRIEVAL_MODE。Agent 工具仍不能传 retrieval_mode。
+        """
+        if mode not in RETRIEVAL_SWITCH_MODES:
+            raise ValueError(f"检索开关只接受 {sorted(RETRIEVAL_SWITCH_MODES)},收到 {mode}")
+        self.retrieval_switch = mode
+
     def _active_retrieval_mode(self) -> str:
         if self.mode == "eval" and self.eval_retrieval_mode:
             return self.eval_retrieval_mode
+        if self.retrieval_switch:
+            return self.retrieval_switch
         return PRODUCTION_RETRIEVAL_MODE
 
     def try_retrieve(self, query: str, *, source_type: str | None = None,
