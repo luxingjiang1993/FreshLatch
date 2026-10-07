@@ -25,7 +25,7 @@
 | L3 `control-c` | **跑通**；对照成立 ✅（must_stale 假绿 4/4） |
 | L3 `report` 重渲染 | 控制台 GBK emoji 曾失败；原 `run` 已写 `reports/report-20260930.md` |
 | I1 金样 `i1-s005` 重跑 | **跑通**；机判 `unknown` vs 金标 `stale` → 漏拦（与金样叙事一致） |
-| 仍未自动做 | 真人盲看；`scripts/w12_comprehensive_*`（§15 Out） |
+| 仍未自动做 | 真人盲看；`scripts/archive/w12_comprehensive_*`（§15 Out） |
 
 ---
 
@@ -112,7 +112,7 @@ pytest tests/unit/test_i2_injection_e2e.py::test_inj_t001_live_llm_lead_auditor_
 
 - 非 Hard-Gold；非「金标全过」；非假绿已根治  
 - 非 I1 漏拦已修复（金样仍复现漏拦）  
-- 未跑 `w12_comprehensive_*`；未做真人盲看  
+- 未跑 `scripts/archive/w12_comprehensive_*`；未做真人盲看  
 
 ---
 
