@@ -8,21 +8,10 @@
 
 from __future__ import annotations
 
+from freshlatch.evidence_id import parse_evidence_id
 from freshlatch.store.base import RetrievalStore
 
 EXPECTED_ID_TEMPLATE = "{t1_doc}#{anchor}@T1"
-
-
-def parse_evidence_id(eid: str) -> tuple[str, str, str] | None:
-    """`doc_id#anchor@as_of` → (doc_id, anchor, as_of);格式不合法返回 None。"""
-    try:
-        body, as_of = eid.rsplit("@", 1)
-        doc_id, anchor = body.rsplit("#", 1)
-    except ValueError:
-        return None
-    if not doc_id or not anchor or as_of not in ("T0", "T1"):
-        return None
-    return doc_id, anchor, as_of
 
 
 def expected_evidence_id(gold: dict, claim_id: str) -> str | None:
