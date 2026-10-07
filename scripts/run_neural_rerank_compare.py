@@ -14,6 +14,7 @@ import json
 import os
 import random
 import sys
+import tempfile
 import time
 from pathlib import Path
 from typing import Any, Callable
@@ -178,7 +179,7 @@ def _weight_bytes(cache_dir: str | None) -> int | None:
     roots: list[object] = []
     if cache_dir:
         roots.append(cache_dir)
-    roots.append("/tmp/fastembed_cache")
+    roots.append(str(Path(tempfile.gettempdir()) / "fastembed_cache"))
     return unique_bytes_matching(roots, "reranker")
 
 
