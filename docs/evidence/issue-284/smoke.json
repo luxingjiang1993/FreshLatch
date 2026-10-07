@@ -1,0 +1,24 @@
+{
+  "modes": [
+    {
+      "requested": "hybrid",
+      "retrieval_mode": "hybrid",
+      "hits": 10
+    },
+    {
+      "requested": "hybrid+rerank",
+      "retrieval_mode": "hybrid+rerank",
+      "hits": 10
+    },
+    {
+      "requested": "bm25",
+      "retrieval_mode": "bm25",
+      "hits": 10
+    }
+  ],
+  "online_refused": true,
+  "online_message": "生产路径不可强制 retrieval_mode",
+  "online_mode": "bm25",
+  "missing_vec_mode": "bm25_fallback",
+  "restored_mode": "hybrid"
+}

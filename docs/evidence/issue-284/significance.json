@@ -1,0 +1,103 @@
+{
+  "significance": {
+    "bm25_vs_hybrid": {
+      "left": "bm25",
+      "right": "hybrid",
+      "n": 224,
+      "recall_left": 0.9196428571428571,
+      "recall_right": 0.9732142857142857,
+      "recall_diff": {
+        "estimate": 0.05357142857142857,
+        "ci95_low": 0.022321428571428572,
+        "ci95_high": 0.08928571428571429
+      },
+      "mcnemar": {
+        "left_only": 2,
+        "right_only": 14,
+        "both_hit": 204,
+        "neither": 4,
+        "p_two_sided": 0.004180908203124997
+      }
+    },
+    "bm25_vs_hybrid+rerank": {
+      "left": "bm25",
+      "right": "hybrid+rerank",
+      "n": 224,
+      "recall_left": 0.9196428571428571,
+      "recall_right": 0.9732142857142857,
+      "recall_diff": {
+        "estimate": 0.05357142857142857,
+        "ci95_low": 0.022321428571428572,
+        "ci95_high": 0.08928571428571429
+      },
+      "mcnemar": {
+        "left_only": 2,
+        "right_only": 14,
+        "both_hit": 204,
+        "neither": 4,
+        "p_two_sided": 0.004180908203124997
+      }
+    },
+    "hybrid_vs_hybrid+rerank": {
+      "left": "hybrid",
+      "right": "hybrid+rerank",
+      "n": 224,
+      "recall_left": 0.9732142857142857,
+      "recall_right": 0.9732142857142857,
+      "recall_diff": {
+        "estimate": 0.0,
+        "ci95_low": 0.0,
+        "ci95_high": 0.0
+      },
+      "mcnemar": {
+        "left_only": 0,
+        "right_only": 0,
+        "both_hit": 218,
+        "neither": 6,
+        "p_two_sided": 1.0
+      }
+    }
+  },
+  "rank_metrics": [
+    {
+      "left": "bm25",
+      "right": "hybrid+rerank",
+      "metric": "mrr",
+      "left_mean": 0.7275333049886621,
+      "right_mean": 0.7566609977324263,
+      "estimate": 0.029127692743764172,
+      "ci95_low": 0.004495287698412699,
+      "ci95_high": 0.053800356079931964
+    },
+    {
+      "left": "bm25",
+      "right": "hybrid+rerank",
+      "metric": "ndcg",
+      "left_mean": 0.7267672386770819,
+      "right_mean": 0.7617513683560622,
+      "estimate": 0.03498412967898032,
+      "ci95_low": 0.014025113383670726,
+      "ci95_high": 0.05609085569277496
+    },
+    {
+      "left": "hybrid",
+      "right": "hybrid+rerank",
+      "metric": "mrr",
+      "left_mean": 0.7739937641723357,
+      "right_mean": 0.7566609977324263,
+      "estimate": -0.017332766439909296,
+      "ci95_low": -0.04196991035997732,
+      "ci95_high": 0.006196942318594101
+    },
+    {
+      "left": "hybrid",
+      "right": "hybrid+rerank",
+      "metric": "ndcg",
+      "left_mean": 0.779488160892922,
+      "right_mean": 0.7617513683560622,
+      "estimate": -0.017736792536859957,
+      "ci95_low": -0.03478236247276103,
+      "ci95_high": -0.0014390192270836006
+    }
+  ]
+}
