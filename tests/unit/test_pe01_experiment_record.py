@@ -226,6 +226,6 @@ def test_module_does_not_read_or_store_secrets():
 def test_locked_assignments_unchanged():
     repo = Path(__file__).resolve().parents[2]
     base = (repo / "src" / "freshlatch" / "store" / "base.py").read_text(encoding="utf-8")
-    llm = (repo / "src" / "freshlatch" / "llm.py").read_text(encoding="utf-8")
     assert 'PRODUCTION_RETRIEVAL_MODE = "hybrid+rerank"' in base
-    assert 'DEFAULT_MODEL = "qwen-flash"' in llm
+    from freshlatch.llm import DEFAULT_MODEL
+    assert DEFAULT_MODEL == "qwen-flash"

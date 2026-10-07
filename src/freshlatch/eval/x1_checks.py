@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import Any
 
 from freshlatch.evidence_id import parse_evidence_id
+from freshlatch.models import DRAFT_MODEL, EMBED_MODEL, FLAG_MODEL
 from freshlatch.store.base import Chunk, chunk_evidence_id
 from freshlatch.store.ingest import AS_OF_DIR, META_RE, load_corpus
 
@@ -28,10 +29,10 @@ MAX_PUBLIC_RATIO = 0.40
 LOCKED_CONFIG = {
     "top_k": 10,
     "rrf_k": 60,
-    "embed_model": "text-embedding-v4",
+    "embed_model": EMBED_MODEL,
     "embed_dim": 1024,
-    "draft_model": "qwen-flash",
-    "flag_model": "qwen-plus",
+    "draft_model": DRAFT_MODEL,
+    "flag_model": FLAG_MODEL,
     "flag_thinking": False,
     "lead_delta": 0.10,
     "budget_cny_max": 10,

@@ -612,11 +612,13 @@ def test_parse_prereg_ignores_other_hex_and_owner_freeze():
 
 
 def test_do_not_touch_git_diff_empty():
-    """x1 票仍锁住付费 embedding、hard gold 与语料。
+    """x1 票仍锁住 hard gold 与语料。
 
     2026-10-07 真人拍板改了 ``PRODUCTION_RETRIEVAL_MODE`` 和 Hard-Gold
     退出检查，所以 ``base.py`` 与 ``retrieve_eval.py`` 不再列入这份空 diff。
     HYG-01 只从 ``eval/__main__.py`` 删掉 src 导入 hack，所以该文件也不再列入。
+    #323 把 ``llm.py`` 与 ``embeddings.py`` 的模型字面量改成注册表别名，值不变，
+    所以这两份文件也不再列入。端点与模型名由 ``test_model_registry`` 锁定。
     """
     probe = subprocess.run(
         ["git", "rev-parse", "--verify", "--quiet", "main^{commit}"],
@@ -628,9 +630,7 @@ def test_do_not_touch_git_diff_empty():
     proc = subprocess.run(
         [
             "git", "diff", "--stat", "main", "--",
-            "src/freshlatch/store/embeddings.py",
             "src/freshlatch/store/ingest.py",
-            "src/freshlatch/llm.py",
             "docs/evidence/hard-gold-arm",
             "data/eval/retrieve_hard_gold.json",
             "data/corpus",

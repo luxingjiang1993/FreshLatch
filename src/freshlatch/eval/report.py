@@ -11,6 +11,7 @@ from datetime import datetime
 from pathlib import Path
 
 from freshlatch.eval.matrix import BUCKETS, EXPECTED_VERDICT
+from freshlatch.models import DEFAULT_MODEL
 
 BUCKET_ZH = {"must_stale": "必须判死", "must_fresh": "必须判活", "must_unknown": "必须判未知"}
 
@@ -33,7 +34,9 @@ def _decoding_block(raw: dict) -> list[str]:
     lines += [
         "",
         "> 复现条款:闸层(must_* 零违例)给定解码参数下逐位复现;判定层按文档化容差;"
-        "违例级背离触发人查。qwen-flash 是活托管端点,跨会话复现只能近似,此限制为留档声明。",
+        "违例级背离触发人查。"
+        + DEFAULT_MODEL
+        + " 是活托管端点,跨会话复现只能近似,此限制为留档声明。",
         "",
     ]
     return lines
@@ -198,7 +201,9 @@ def _render_control(raw: dict) -> str:
         f"# {title}({raw['recorded_at'][:10]})",
         "",
         f"- 仪器:`{instrument}`; prompt_id:`{prompt_id}`",
-        "- 基线:同模型(qwen-flash)无工具,只读 T0 摘要;输出契约 JSON mode 三档(alive/dead/unknown)",
+        "- 基线:同模型("
+        + DEFAULT_MODEL
+        + ")无工具,只读 T0 摘要;输出契约 JSON mode 三档(alive/dead/unknown)",
         f"- prompt 红线留档:{raw['redline_note']}",
         "- 对照成立判据:全部 must_stale 被判 alive(已死主张必须假绿,本产品必须红);"
         "must_unknown 判 alive = 没源的也敢判绿,同样记为对照信号",

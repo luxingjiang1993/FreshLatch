@@ -14,8 +14,12 @@ from typing import Any
 from dotenv import find_dotenv, load_dotenv
 from openai import OpenAI
 
-DASHSCOPE_BASE_URL = "https://dashscope.aliyuncs.com/compatible-mode/v1"
-DEFAULT_MODEL = "qwen-flash"
+from freshlatch.models import DEFAULT_MODEL, MODEL_REGISTRY
+
+_default_base = MODEL_REGISTRY["default_llm"].base_url
+if not isinstance(_default_base, str) or not _default_base:
+    raise RuntimeError("default_llm 缺少 base_url")
+DASHSCOPE_BASE_URL = _default_base
 
 
 @dataclass
