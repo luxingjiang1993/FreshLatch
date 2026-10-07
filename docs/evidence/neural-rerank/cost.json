@@ -1,0 +1,33 @@
+{
+  "model": "BAAI/bge-reranker-base",
+  "engine": "fastembed TextCrossEncoder",
+  "cuda": false,
+  "fastembed_version_score": "0.8.1",
+  "fastembed_version_dump": "0.7.1",
+  "load_s": 8.242696646000695,
+  "weight_bytes": 1129561896,
+  "p95_budget_ms": 800.0,
+  "p95_ms_k10": {
+    "lexical": 3.2369630007451633,
+    "neural": 434.1544819999399
+  },
+  "p95_ms_k30": {
+    "lexical": 7.125296000594972,
+    "neural": 1371.0923300004652
+  },
+  "extra_requirements": "requirements-eval-neural-rerank.txt",
+  "production_retrieval_mode": "hybrid+rerank",
+  "gold_commit": "50adc3251737c318815105b3562a823198b80dc3",
+  "n_arm": 224,
+  "supported_cross_encoders": [
+    "Xenova/ms-marco-MiniLM-L-6-v2",
+    "Xenova/ms-marco-MiniLM-L-12-v2",
+    "BAAI/bge-reranker-base",
+    "jinaai/jina-reranker-v1-tiny-en",
+    "jinaai/jina-reranker-v1-turbo-en",
+    "jinaai/jina-reranker-v2-base-multilingual"
+  ],
+  "v2_m3": "未跑。本环境的 fastembed TextCrossEncoder 支持列表没有 BAAI/bge-reranker-v2-m3。没有另装 sentence-transformers 或 torch。",
+  "recommendation": "建议另开切换票",
+  "weight_bytes_method": "unique inode; path contains reranker; same cache root once"
+}

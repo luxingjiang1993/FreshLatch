@@ -94,6 +94,24 @@ def mrr_at_k(ranked: list[str], relevant: list[str], k: int) -> float:
     return 0.0
 
 
+def ndcg_at_k(ranked: list[str], relevant: list[str], k: int) -> float:
+    """二元 nDCG@k。命中记 1，理想排序把相关 id 放在最前。"""
+    import math
+
+    rel = set(relevant)
+    if not rel:
+        return 0.0
+    dcg = 0.0
+    for i, eid in enumerate(ranked[:k], start=1):
+        if eid in rel:
+            dcg += 1.0 / math.log2(i + 1)
+    n_ideal = min(k, len(rel))
+    idcg = sum(1.0 / math.log2(i + 1) for i in range(1, n_ideal + 1))
+    if idcg <= 0.0:
+        return 0.0
+    return dcg / idcg
+
+
 def must_stale_replay_failures(store, gold: dict, claims: list[dict]) -> list[tuple]:
     """must_stale:变换后 query × as_of=T1 × top_k=10 须命中 causal_chain 锚。"""
     by_id = {c["claim_id"]: c for c in claims}
