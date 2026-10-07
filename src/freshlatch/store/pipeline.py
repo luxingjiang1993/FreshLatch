@@ -1,7 +1,9 @@
 """多 stage 打分管线:recall(BM25+jieba) → vector 融合 → rerank。
 
 评测臂已可跑 dense / hybrid / rerank(不是本期空实现、后续票填实)。
-生产默认是 hybrid+rerank(2026-10-07 真人拍板)。缺可用向量时调用方记 bm25_fallback。一键回退是 set_retrieval_switch("bm25")。
+生产默认是 hybrid+rerank。精排是本地 BAAI/bge-reranker-base，只重排 hybrid 的前 10 条（见 store/neural_rerank.py）。
+缺可用向量时调用方记 bm25_fallback。权重或推理失败时退回 rerank_lexical，记 last_rerank_mode=lexical_fallback。
+一键回退 BM25 是 set_retrieval_switch("bm25")。只切回词重叠精排是 set_retrieval_switch("hybrid+rerank_lexical")。
 """
 
 from __future__ import annotations
@@ -117,12 +119,12 @@ def stage_vector_fuse(chunks: list[Chunk], *, top_k: int) -> list[Chunk]:
 
 
 def stage_rerank(chunks: list[Chunk], *, top_k: int) -> list[Chunk]:
-    """第 3 级:生产默认仍透传。对比臂走 rerank_lexical,无增益不改这里。"""
+    """第 3 级占位。生产 hybrid+rerank 不走这里，走 neural_rerank.rerank_hybrid_candidates。"""
     return chunks[:top_k]
 
 
 def rerank_lexical(query: str, chunks: list[Chunk], *, top_k: int) -> list[Chunk]:
-    """本地词重叠精排,只重排已有候选。不是 bge,也不做 α 加权。"""
+    """词重叠精排,只重排已有候选。生产默认不再走这里;它是显式开关和 lexical_fallback。"""
     query_tokens = set(tokenize(query))
     scored: list[tuple[int, int, Chunk]] = []
     for index, chunk in enumerate(chunks):

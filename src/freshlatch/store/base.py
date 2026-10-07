@@ -177,8 +177,10 @@ class InMemoryStore(RetrievalStore):
             and (source_type is None or c.source_type == source_type)
         ]
         pool = filter_retrieve_pool(pool, tenant_id=tenant_id)
-        from freshlatch.store.pipeline import RRF_K, rank_dense, rerank_lexical, rrf_fuse
+        from freshlatch.store.neural_rerank import RERANK_MODE_NONE, rerank_hybrid_candidates
+        from freshlatch.store.pipeline import RRF_K, rank_dense, rrf_fuse
 
+        self.last_rerank_mode = RERANK_MODE_NONE
         requested = self._requested_retrieval_mode()
         if requested == "dense":
             query_vec = self._embed_query(query)
@@ -198,7 +200,7 @@ class InMemoryStore(RetrievalStore):
                 return recall_bm25(query, pool, top_k=top_k)
             self.last_retrieval_mode = "hybrid"
             return rrf_fuse(lexical, dense, k=RRF_K, top_k=top_k)
-        if requested == "hybrid+rerank":
+        if requested in {"hybrid+rerank", "hybrid+rerank_lexical"}:
             depth = max(top_k, len(pool))
             lexical = recall_bm25(query, pool, top_k=depth)
             query_vec = self._embed_query(query)
@@ -207,8 +209,15 @@ class InMemoryStore(RetrievalStore):
                 self.last_retrieval_mode = "bm25_fallback"
                 return recall_bm25(query, pool, top_k=top_k)
             fused = rrf_fuse(lexical, dense, k=RRF_K, top_k=top_k)
-            self.last_retrieval_mode = "hybrid+rerank"
-            return rerank_lexical(query, fused, top_k=top_k)
+            hits, rerank_mode = rerank_hybrid_candidates(
+                query,
+                fused,
+                top_k=top_k,
+                lexical_only=requested == "hybrid+rerank_lexical",
+            )
+            self.last_retrieval_mode = requested
+            self.last_rerank_mode = rerank_mode
+            return hits
         if requested == "bm25_fallback":
             self.last_retrieval_mode = "bm25_fallback"
             return recall_bm25(query, pool, top_k=top_k)

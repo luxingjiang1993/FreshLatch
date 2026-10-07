@@ -43,4 +43,4 @@ hard 臂对比与 A0 **同库** = `corpus + traps`；dense 须覆盖同库。骨
 
 ## 6. 2026-10-07 的生产默认
 
-第 2 节的 Exit 是 I3 骨架波当时的断言，那时 `PRODUCTION_RETRIEVAL_MODE` 是 `bm25`。2026-10-07 Oriental Ronin 拍板 `docs/evidence/issue-284/DECISION-16.md` 的 16 条之后，生产默认改为 `hybrid+rerank`。这次拍板不是全库逐行人工审核。切换后必须先预热本地 embedding 权重，步骤在 `docs/ops/local-embed.md`。一键回退是 `set_retrieval_switch("bm25")`。缺向量仍记 `bm25_fallback`。
+第 2 节的 Exit 是 I3 骨架波当时的断言，那时 `PRODUCTION_RETRIEVAL_MODE` 是 `bm25`。2026-10-07 Oriental Ronin 拍板 `docs/evidence/issue-284/DECISION-16.md` 的 16 条之后，生产默认改为 `hybrid+rerank`。同日精排改为本地 `BAAI/bge-reranker-base`，只重排 top-10。这次拍板不是全库逐行人工审核。切换后必须先预热 embedding 与 reranker 权重，步骤在 `docs/ops/local-embed.md`。一键回退是 `set_retrieval_switch("bm25")`。只切回词重叠是 `set_retrieval_switch("hybrid+rerank_lexical")`。缺向量仍记 `bm25_fallback`。reranker 失败记 `last_rerank_mode=lexical_fallback`。

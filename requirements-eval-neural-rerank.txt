@@ -1,9 +1,4 @@
-# 评测专用。不要装进跑 pytest 的生产环境。
-# 生产依赖仍是 requirements.txt 里的 fastembed==0.7.1，那里没有 TextCrossEncoder。
-# 用法：python -m venv /tmp/neural-rerank-venv && /tmp/neural-rerank-venv/bin/pip install -r requirements-eval-neural-rerank.txt
-# 没有 python3-venv、生产依赖已经在系统解释器里时：
-# pip install --target /tmp/nr-packages 'fastembed==0.8.1'
-# PYTHONPATH=/tmp/nr-packages 只跑 scripts/run_neural_rerank_compare.py 的 score。
-# hybrid 候选用系统里的 fastembed 0.7.1 另一步 dump。不要把 0.8.1 装进跑 pytest 的解释器。
+# #292 对照当时的评测额外依赖。生产 requirements.txt 现已钉 fastembed==0.8.1。
+# 本文件保留，避免当时的安装说明断掉。pytest 仍不下载权重。
 -r requirements.txt
 fastembed==0.8.1

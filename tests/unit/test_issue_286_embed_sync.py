@@ -295,9 +295,9 @@ def test_local_embed_source_has_no_dashscope_and_requirements_pin_fastembed():
     assert LOCAL_EMBED_MODEL == "BAAI/bge-small-zh-v1.5"
     assert LOCAL_EMBED_DIM == 512
     req = Path("requirements.txt").read_text(encoding="utf-8")
-    assert "fastembed==0.7.1" in req
+    assert "fastembed==0.8.1" in req
     assert "jieba==0.42.1" in req
-    assert "bge-reranker" not in req
+    assert "BAAI/bge-reranker-base" in req
     assert 'PRODUCTION_RETRIEVAL_MODE = "hybrid+rerank"' in Path(
         "src/freshlatch/store/base.py"
     ).read_text(encoding="utf-8")

@@ -49,6 +49,8 @@ I3 交付 Hard-Gold 骨架后，改生产默认臂仍处「另决议」空位。
 
 本 ADR 正文仍记录 2026-10-03 那一轮：那次会话不改 `PRODUCTION_RETRIEVAL_MODE`。2026-10-07 Oriental Ronin 拍板 `docs/evidence/issue-284/DECISION-16.md` 的 16 条。拍板范围只是这 16 条，不是全库逐行人工审核。生产默认改为 `hybrid+rerank`。一键回退仍是 `set_retrieval_switch("bm25")`。缺向量仍记 `bm25_fallback`。切换后须先预热本地 embedding 权重，见 `docs/ops/local-embed.md`。
 
+同日，[PR #293](https://github.com/luxingjiang1993/FreshLatch/pull/293) 的 K=10 对照之后，Oriental Ronin 把这个臂的精排从 `rerank_lexical` 改为本地 `BAAI/bge-reranker-base`（[Issue #294](https://github.com/luxingjiang1993/FreshLatch/issues/294)）。常量名仍是 `hybrid+rerank`。只重排 hybrid 的 top-10。MRR@10 差 0.08152458900226757，区间 0.04773198341836735 ~ 0.1171530435090703。nDCG@10 差 0.06231550367445169，区间 0.03897278888099252 ~ 0.08564412540024816。神经 p95 434.1544819999399 ms。K=30 不进生产。权重或推理失败时 warning，退回 `rerank_lexical`，记 `last_rerank_mode=lexical_fallback`。`set_retrieval_switch("hybrid+rerank_lexical")` 切回词重叠。金标口径不变：人工只审过这 16 题。预热要同时下载 reranker，约 1.1GB，首次加载约 8 秒。
+
 ## 后果
 
 - roadmap「改臂另决议」指向本 ADR 与 #257；下一跳 = dense+hard 复跑票。  

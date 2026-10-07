@@ -18,14 +18,14 @@ from freshlatch.store.base import PRODUCTION_RETRIEVAL_MODE
 ROOT = Path(__file__).resolve().parents[2]
 
 
-def test_production_mode_unchanged_and_reranker_not_in_prod_requirements():
+def test_production_mode_pins_bge_reranker_base():
     assert PRODUCTION_RETRIEVAL_MODE == "hybrid+rerank"
     req = (ROOT / "requirements.txt").read_text(encoding="utf-8")
-    assert "bge-reranker" not in req
-    assert "fastembed==0.7.1" in req
+    assert "fastembed==0.8.1" in req
+    assert "fastembed==0.7.1" not in req
+    assert "BAAI/bge-reranker-base" in req
     extra = (ROOT / "requirements-eval-neural-rerank.txt").read_text(encoding="utf-8")
     assert "fastembed==0.8.1" in extra
-    assert "bge-reranker" not in extra
 
 
 def test_order_by_scores_breaks_ties_by_input_order():
