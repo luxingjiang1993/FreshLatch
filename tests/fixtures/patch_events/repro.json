@@ -1,0 +1,66 @@
+[
+  {
+    "claim_id": "clause-bad",
+    "edit_type": "条款替换",
+    "construction_gold": "坏",
+    "before_text": "clause-bad 修改前",
+    "evidence_id": "doc#p1@T1",
+    "evidence_text": "clause-bad 证据正文"
+  },
+  {
+    "claim_id": "clause-ok",
+    "edit_type": "条款替换",
+    "construction_gold": "正确",
+    "before_text": "clause-ok 修改前",
+    "evidence_id": "doc#p1@T1",
+    "evidence_text": "clause-ok 证据正文"
+  },
+  {
+    "claim_id": "date-bad",
+    "edit_type": "日期",
+    "construction_gold": "坏",
+    "before_text": "date-bad 修改前",
+    "evidence_id": "doc#p1@T1",
+    "evidence_text": "date-bad 证据正文"
+  },
+  {
+    "claim_id": "date-ok",
+    "edit_type": "日期",
+    "construction_gold": "正确",
+    "before_text": "date-ok 修改前",
+    "evidence_id": "doc#p1@T1",
+    "evidence_text": "date-ok 证据正文"
+  },
+  {
+    "claim_id": "del-bad",
+    "edit_type": "删除",
+    "construction_gold": "坏",
+    "before_text": "del-bad 修改前",
+    "evidence_id": "doc#p1@T1",
+    "evidence_text": "del-bad 证据正文"
+  },
+  {
+    "claim_id": "del-ok",
+    "edit_type": "删除",
+    "construction_gold": "正确",
+    "before_text": "del-ok 修改前",
+    "evidence_id": "doc#p1@T1",
+    "evidence_text": "del-ok 证据正文"
+  },
+  {
+    "claim_id": "num-bad",
+    "edit_type": "数值",
+    "construction_gold": "坏",
+    "before_text": "num-bad 修改前",
+    "evidence_id": "doc#p1@T1",
+    "evidence_text": "num-bad 证据正文"
+  },
+  {
+    "claim_id": "num-ok",
+    "edit_type": "数值",
+    "construction_gold": "正确",
+    "before_text": "num-ok 修改前",
+    "evidence_id": "doc#p1@T1",
+    "evidence_text": "num-ok 证据正文"
+  }
+]
