@@ -1,4 +1,4 @@
-"""#286: 入库补向量、空 vec 不覆盖、单块缺失不整池 fallback、运维开关。
+"""#286: 入库补向量、正文变化作废旧 vec、单块缺失不整池 fallback、运维开关。
 
 不下载 BAAI 权重，不调用 DashScope。embedder 全部注入。
 """
@@ -109,23 +109,67 @@ def test_confirm_paste_uses_store_embedder(tmp_path):
     assert unpack_vec(stored.vec) == pytest.approx([0.4, 0.6])
 
 
-def test_sqlite_empty_readd_does_not_clobber_vec_and_embedder_refreshes(tmp_path):
+def test_same_text_keeps_vec_and_text_change_reembeds(tmp_path):
     store = SQLiteStore(tmp_path / "sync.db")
-    original = _chunk("d", "旧正文", [1.0, 0.0])
-    store.add_document(_doc(text="旧正文"), [original])
+    store.add_document(_doc(text="旧正文"), [_chunk("d", "旧正文", [1.0, 0.0])])
 
-    replacement = _chunk("d", "新正文但没向量", None)
-    store.add_document(_doc(text="新正文但没向量"), [replacement])
+    store.add_document(_doc(text="旧正文"), [_chunk("d", "旧正文", None)])
     kept = store.get_chunk("d", "p1", as_of="T1")
-    assert kept.text == "新正文但没向量"
     assert unpack_vec(kept.vec) == [1.0, 0.0]
 
     store.chunk_embedder = lambda texts: [[0.0, 1.0] for _ in texts]
-    refreshed = _chunk("d", "再次替换", None)
-    store.add_document(_doc(text="再次替换"), [refreshed])
+    store.add_document(_doc(text="再次替换"), [_chunk("d", "再次替换", [1.0, 0.0])])
     updated = store.get_chunk("d", "p1", as_of="T1")
     assert updated.text == "再次替换"
     assert unpack_vec(updated.vec) == [0.0, 1.0]
+
+
+def test_text_change_without_embedder_drops_stale_vec(tmp_path):
+    store = SQLiteStore(tmp_path / "stale.db")
+    near = _chunk("d", "席位标价", [1.0, 0.0], clause="p1")
+    other = _chunk("d", "旁注", [0.0, 1.0], clause="p2")
+    store.add_document(_doc(text="席位标价"), [near, other])
+    store.query_embedder = lambda _q: [1.0, 0.0]
+    store.bind_eval_retrieval_mode("dense")
+    hits = store.retrieve("席位标价", as_of="T1", top_k=5)
+    assert store.last_retrieval_mode == "dense"
+    assert chunk_evidence_id(hits[0]) == "d#p1@T1"
+
+    store.add_document(
+        _doc(text="渠道访谈纪要"),
+        [_chunk("d", "渠道访谈纪要", [1.0, 0.0], clause="p1")],
+    )
+    stored = store.get_chunk("d", "p1", as_of="T1")
+    assert stored.text == "渠道访谈纪要"
+    assert stored.vec is None
+
+    store.bind_eval_retrieval_mode("dense")
+    hits = store.retrieve("席位标价", as_of="T1", top_k=5)
+    assert store.last_retrieval_mode == "dense"
+    assert [chunk_evidence_id(c) for c in hits] == ["d#p2@T1"]
+
+    store.add_document(
+        _doc(text="旁注已改"),
+        [_chunk("d", "旁注已改", None, clause="p2")],
+    )
+    store.bind_eval_retrieval_mode("hybrid")
+    fallback = store.retrieve("席位标价", as_of="T1", top_k=5)
+    assert store.last_retrieval_mode == "bm25_fallback"
+    assert all(c.vec is None for c in fallback)
+
+
+def test_embedder_failure_on_text_change_drops_old_vec(tmp_path):
+    store = SQLiteStore(tmp_path / "boom.db")
+    store.add_document(_doc(text="旧正文"), [_chunk("d", "旧正文", [1.0, 0.0])])
+
+    def _boom(_texts: list[str]) -> list[list[float]]:
+        raise RuntimeError("embed 断了")
+
+    store.chunk_embedder = _boom
+    store.add_document(_doc(text="新正文"), [_chunk("d", "新正文", [1.0, 0.0])])
+    stored = store.get_chunk("d", "p1", as_of="T1")
+    assert stored.text == "新正文"
+    assert stored.vec is None
 
 
 def test_add_invalidation_does_not_clear_vec(tmp_path):
