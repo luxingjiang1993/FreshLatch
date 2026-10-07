@@ -7,8 +7,11 @@ n 为冒烟级,不声称统计显著,不报方差。BM25 确定性,无 temperatu
 from __future__ import annotations
 
 import json
+import logging
 from datetime import date
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 from freshlatch.models import EMBED_MODEL
 from freshlatch.store.base import InMemoryStore, chunk_evidence_id
@@ -528,7 +531,11 @@ def run_transform_compare(
                     temperature=record.get("temperature"),
                     seed=record.get("seed"),
                 ) or bare
-            except Exception:
+            except Exception as exc:
+                logger.warning(
+                    "查询改写失败，回落 bare query exc_type=%s",
+                    type(exc).__name__,
+                )
                 llm_q = bare
         b, t, l = score(bare, relevant), score(templ, relevant), score(llm_q, relevant)
         bare_scores.append(b)

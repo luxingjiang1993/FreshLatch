@@ -369,7 +369,12 @@ class ForensicAgent:
                     if text:
                         exists = True
                         break
-                except Exception:
+                except Exception as exc:
+                    logger.warning(
+                        "read_source 探测失败 as_of=%s exc_type=%s",
+                        as_of,
+                        type(exc).__name__,
+                    )
                     continue
             known[doc_id] = exists
             return exists

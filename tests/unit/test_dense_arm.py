@@ -55,11 +55,20 @@ def test_missing_vec_falls_back_and_is_not_reported_as_dense():
     assert ev["evidence_ids"]
 
 
-def test_embedder_failure_is_fallback():
+def test_embedder_failure_is_fallback(caplog):
+    import logging
+
     store = _store([_chunk("near", "近邻块", [1.0, 0.0])])
     def _boom(_q):
         raise RuntimeError("断 embed")
     store.query_embedder = _boom
     store.bind_eval_retrieval_mode("dense")
-    store.retrieve("查询", as_of="T1")
+    with caplog.at_level(logging.WARNING):
+        assert store._embed_query("查询原文不应进日志") is None
+        store.retrieve("查询原文不应进日志", as_of="T1")
     assert store.last_retrieval_mode == "bm25_fallback"
+    warnings = [r.message for r in caplog.records if r.levelno >= logging.WARNING]
+    assert any("exc_type=RuntimeError" in message for message in warnings)
+    joined = "\n".join(warnings)
+    assert "查询原文不应进日志" not in joined
+    assert "断 embed" not in joined

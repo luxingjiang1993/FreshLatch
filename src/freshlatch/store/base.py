@@ -2,11 +2,14 @@
 
 from __future__ import annotations
 
+import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import List, Optional
 
 from freshlatch.models import AsOf
+
+logger = logging.getLogger(__name__)
 
 # 生产默认臂。评测可强制其它枚举值,但未实装的臂不得把 BM25 结果误标过去(后续票再放开)。
 PRODUCTION_RETRIEVAL_MODE = "hybrid+rerank"
@@ -103,7 +106,8 @@ class RetrievalStore(ABC):
             return None
         try:
             vec = embedder(query)
-        except Exception:
+        except Exception as exc:
+            logger.warning("embedder 调用失败 exc_type=%s", type(exc).__name__)
             return None
         if not vec:
             return None
