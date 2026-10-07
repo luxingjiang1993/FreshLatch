@@ -1,0 +1,95 @@
+dry-run 不是预注册正式表
+seed=20261007
+n=8
+主比较
+T-C point=0 ci95_low=0 ci95_high=0 established=False
+T-B1 point=0 ci95_low=0 ci95_high=0 established=False
+T-B2 point=0 ci95_low=0 ci95_high=0 established=False
+消融
+no_chunk_bind
+no_auto_verify
+soft_warning
+retrieval_bm25
+抽检
+模型评委加单人抽检
+用户单人抽检
+抽检表
+num-ok
+num-ok 修改前
+生成-T-num-ok
+num-ok 证据正文
+doc#p1@T1
+num-bad
+num-bad 修改前
+生成-T-num-bad
+num-bad 证据正文
+doc#p1@T1
+date-ok
+date-ok 修改前
+生成-T-date-ok
+date-ok 证据正文
+doc#p1@T1
+date-bad
+date-bad 修改前
+生成-T-date-bad
+date-bad 证据正文
+doc#p1@T1
+clause-ok
+clause-ok 修改前
+生成-T-clause-ok
+clause-ok 证据正文
+doc#p1@T1
+clause-bad
+clause-bad 修改前
+生成-T-clause-bad
+clause-bad 证据正文
+doc#p1@T1
+del-ok
+del-ok 修改前
+生成-T-del-ok
+del-ok 证据正文
+doc#p1@T1
+del-bad
+del-bad 修改前
+生成-T-del-bad
+del-bad 证据正文
+doc#p1@T1
+不一致裁决表
+缺失清单
+抽中=8
+模型评委加单人抽检
+用户单人抽检
+冲突清单
+clause-bad
+clause-bad 修改前
+生成-T-clause-bad
+clause-bad 证据正文
+doc#p1@T1
+坏
+正确
+三评委一致
+date-bad
+date-bad 修改前
+生成-T-date-bad
+date-bad 证据正文
+doc#p1@T1
+坏
+正确
+三评委一致
+del-bad
+del-bad 修改前
+生成-T-del-bad
+del-bad 证据正文
+doc#p1@T1
+坏
+正确
+三评委一致
+num-bad
+num-bad 修改前
+生成-T-num-bad
+num-bad 证据正文
+doc#p1@T1
+坏
+正确
+三评委一致
+缺失清单
