@@ -16,8 +16,9 @@ from freshlatch.store.local_embed import (
 )
 
 
-def test_production_default_unchanged():
-    assert PRODUCTION_RETRIEVAL_MODE == "bm25"
+def test_production_default_is_hybrid_rerank():
+    """2026-10-07 真人拍板后的生产默认。缺向量仍走 bm25_fallback，不在本断言里。"""
+    assert PRODUCTION_RETRIEVAL_MODE == "hybrid+rerank"
 
 
 def test_cache_dir_comes_from_env(monkeypatch, tmp_path):

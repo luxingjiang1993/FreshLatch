@@ -39,4 +39,8 @@ PYTHONPATH=src python -m freshlatch.eval retrieve --retrieve-gold data/eval/retr
 ## 5. 改臂另决议（指针）
 
 过线布尔与改臂**授权闸**见 **ADR-0033** · 评估 `docs/research/Hard-Gold过线与改臂决议设计评估.md` · 证据 `docs/evidence/hard-gold-arm/`（[#257](https://github.com/luxingjiang1993/FreshLatch/issues/257) · [#259](https://github.com/luxingjiang1993/FreshLatch/issues/259)）。  
-hard 臂对比与 A0 **同库** = `corpus + traps`；dense 须覆盖同库。骨架 Exit ≠ 已换臂；过线后改配置仍须 **Gate** 实现票。
+hard 臂对比与 A0 **同库** = `corpus + traps`；dense 须覆盖同库。骨架 Exit ≠ 已换臂。#259 过线当时未改常量。
+
+## 6. 2026-10-07 的生产默认
+
+第 2 节的 Exit 是 I3 骨架波当时的断言，那时 `PRODUCTION_RETRIEVAL_MODE` 是 `bm25`。2026-10-07 Oriental Ronin 拍板 `docs/evidence/issue-284/DECISION-16.md` 的 16 条之后，生产默认改为 `hybrid+rerank`。这次拍板不是全库逐行人工审核。切换后必须先预热本地 embedding 权重，步骤在 `docs/ops/local-embed.md`。一键回退是 `set_retrieval_switch("bm25")`。缺向量仍记 `bm25_fallback`。

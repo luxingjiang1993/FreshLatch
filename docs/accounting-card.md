@@ -1,4 +1,6 @@
-# Accounting Card — 为何生产默认仍是 BM25
+# Accounting Card — Phase A 为何当时保持 BM25
+
+> **现状（2026-10-07）：** 生产默认已改为 `hybrid+rerank`。本页表格仍是 Phase A 冒烟（n=36）的预锁假设，不是现在的常量。回退见 `set_retrieval_switch("bm25")`。决策见 `docs/evidence/retrieval-decision.md`。
 
 > **档：** 演示 / 冒烟层（n=36）；**不报方差**；**不作统计显著声明**。  
 > **数字真相源：** `reports/retrieve-*.md`（Phase A / PR #167）；本页只收敛叙事，不另造第二份数字。  

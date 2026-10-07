@@ -367,11 +367,11 @@ def test_v15_prelock_library_fixture_equivalent(tmp_path: Path):
 # ---------------------------------------------------------------------------
 
 
-def test_v15_valid_actions_and_default_arm_unchanged():
-    """HumanLatch 仍仅 discard|renew;生产默认臂仍 bm25。"""
+def test_v15_valid_actions_and_default_arm():
+    """HumanLatch 仍仅 discard|renew。生产默认是 hybrid+rerank。"""
     assert VALID_ACTIONS == ("discard", "renew")
     assert "confirm_patch" not in VALID_ACTIONS
-    assert PRODUCTION_RETRIEVAL_MODE == "bm25"
+    assert PRODUCTION_RETRIEVAL_MODE == "hybrid+rerank"
 
 
 def test_v15_prelock_constants_match_adr0029():

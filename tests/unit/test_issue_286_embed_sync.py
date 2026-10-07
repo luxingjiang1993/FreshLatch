@@ -241,8 +241,8 @@ def test_online_switch_roundtrip_does_not_change_default():
     store.query_embedder = lambda _q: [1.0, 0.0]
     ctx = RunContext(store=store, mode="online")
     ctx.try_retrieve("席位标价", as_of="T1", top_k=2)
-    assert ctx.events[-1]["retrieval_mode"] == "bm25"
-    assert PRODUCTION_RETRIEVAL_MODE == "bm25"
+    assert ctx.events[-1]["retrieval_mode"] == "hybrid+rerank"
+    assert PRODUCTION_RETRIEVAL_MODE == "hybrid+rerank"
 
     ctx.set_retrieval_switch("hybrid")
     ctx.try_retrieve("席位标价", as_of="T1", top_k=2)
@@ -255,7 +255,15 @@ def test_online_switch_roundtrip_does_not_change_default():
     ctx.set_retrieval_switch("bm25")
     ctx.try_retrieve("席位标价", as_of="T1", top_k=2)
     assert ctx.events[-1]["retrieval_mode"] == "bm25"
-    assert PRODUCTION_RETRIEVAL_MODE == "bm25"
+    assert PRODUCTION_RETRIEVAL_MODE == "hybrid+rerank"
+
+    bare = RunContext(
+        store=_mem([_chunk("bare", "竞品定价已变", None)]),
+        mode="online",
+    )
+    bare.try_retrieve("竞品定价", as_of="T1", top_k=2)
+    assert bare.events[-1]["retrieval_mode"] == "bm25_fallback"
+    assert PRODUCTION_RETRIEVAL_MODE == "hybrid+rerank"
 
     with pytest.raises(RuntimeError, match="生产路径不可强制 retrieval_mode"):
         ctx.arm_eval_retrieval_mode("hybrid")
@@ -290,7 +298,7 @@ def test_local_embed_source_has_no_dashscope_and_requirements_pin_fastembed():
     assert "fastembed==0.7.1" in req
     assert "jieba==0.42.1" in req
     assert "bge-reranker" not in req
-    assert 'PRODUCTION_RETRIEVAL_MODE = "bm25"' in Path(
+    assert 'PRODUCTION_RETRIEVAL_MODE = "hybrid+rerank"' in Path(
         "src/freshlatch/store/base.py"
     ).read_text(encoding="utf-8")
 

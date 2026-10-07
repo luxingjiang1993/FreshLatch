@@ -170,7 +170,7 @@ For engineering acceptance boundaries, read `docs/evidence/` and root `CONTEXT.m
 
 ## Roadmap
 
-Next hop: Hard-Gold **passed** (#259) but **did not switch** the production arm — Gate human-final to change `PRODUCTION_RETRIEVAL_MODE`, or freeze `bm25`. C′ (Word/Notion/open webhook) remains backlog. Live web, if any, is **ingest to T1 disk → then reverify** — not open-ended Q&A as the product. Details live in repo docs and ADRs under `docs/`.
+Next hop: Hard-Gold **passed** (#259). On 2026-10-07 a human set `PRODUCTION_RETRIEVAL_MODE` to `hybrid+rerank`. One-click rollback is `set_retrieval_switch("bm25")`. Missing vectors still record `bm25_fallback`. Warm up local embedding weights before serving the new default (`docs/ops/local-embed.md`). C′ (Word/Notion/open webhook) remains backlog. Live web, if any, is **ingest to T1 disk → then reverify** — not open-ended Q&A as the product. Details live in repo docs and ADRs under `docs/`.
 
 ---
 

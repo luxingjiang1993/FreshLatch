@@ -69,7 +69,7 @@ def test_rerank_default_stays_off_unless_both_gates_pass():
     from freshlatch.store.base import PRODUCTION_RETRIEVAL_MODE
     from freshlatch.store.pipeline import rerank_lexical
 
-    assert PRODUCTION_RETRIEVAL_MODE == "bm25"
+    assert PRODUCTION_RETRIEVAL_MODE == "hybrid+rerank"
     assert RERANK_P95_BUDGET_MS == 800.0
     assert rerank_default_verdict(hybrid=1.0, rerank=1.0, p95_ms=10) == "生产默认关"
     assert rerank_default_verdict(hybrid=0.5, rerank=0.8, p95_ms=900) == "生产默认关"

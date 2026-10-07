@@ -9,7 +9,7 @@ from typing import List, Optional
 from freshlatch.models import AsOf
 
 # 生产默认臂。评测可强制其它枚举值,但未实装的臂不得把 BM25 结果误标过去(后续票再放开)。
-PRODUCTION_RETRIEVAL_MODE = "bm25"
+PRODUCTION_RETRIEVAL_MODE = "hybrid+rerank"
 RETRIEVAL_MODE_ENUM = frozenset(
     {"bm25", "dense", "hybrid", "hybrid+rerank", "bm25_fallback"}
 )

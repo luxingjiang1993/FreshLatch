@@ -220,7 +220,7 @@ retrieve **难金标**轨,与冒烟 `retrieve_gold` **分文件**(如 `retrieve_
 _Avoid_: 把 n=36 冒烟称作 Hard-Gold、骨架跑过即已换臂、与主张金标混报
 
 **Hard-Gold 过线 / 改臂授权闸**:
-在骨架之上的**决策闸**:须 dense 索引 + hard 臂对比 + I0 增益门(Hybrid 通过线于 hard 集成立)才**书面授权**开改臂**实现票**(Gate);不过线则冻 bm25。hard 评测库与 A0 **同库**=corpus+traps。本闸钉流程 ≠ 已换臂。操作定义见 ADR-0033 与 `docs/research/Hard-Gold过线与改臂决议设计评估.md`;证据 `docs/evidence/hard-gold-arm/`。
+在骨架之上的**决策闸**:须 dense 索引 + hard 臂对比 + I0 增益门(Hybrid 通过线于 hard 集成立)才**书面授权**开改臂**实现票**(Gate);不过线则冻 bm25。hard 评测库与 A0 **同库**=corpus+traps。本闸钉流程 ≠ 已换臂。2026-10-07 真人拍板 DECISION-16 的 16 条之后，生产默认是 `hybrid+rerank`；一键回退 `set_retrieval_switch("bm25")`。那次拍板不是全库逐行人工审核，也不是本闸本身。操作定义见 ADR-0033 与 `docs/research/Hard-Gold过线与改臂决议设计评估.md`;证据 `docs/evidence/hard-gold-arm/`、`docs/evidence/issue-284/DECISION-16.md`。
 _Avoid_: 无 dense 判过线、用主张金标/control-c 顶替、grill 直接改生产臂、把本闸称作已换 hybrid、臂对比缺 traps 仍判门
 
 **I1 失败复盘（评测标签）**:

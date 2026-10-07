@@ -103,7 +103,8 @@ def test_retrieve_trajectory_records_contract(memory_store):
     assert ev["query"] == "竞品 价格"
     assert ev["filters"] == {"as_of": "T1", "source_type": "private", "top_k": 10}
     assert ev["evidence_ids"] == [chunk_evidence_id(c) for c in hits]
-    assert ev["retrieval_mode"] == PRODUCTION_RETRIEVAL_MODE == "bm25"
+    assert PRODUCTION_RETRIEVAL_MODE == "hybrid+rerank"
+    assert ev["retrieval_mode"] == "bm25_fallback"
     assert ev["hits"] == len(hits)
     assert all(eid.count("#") == 1 and "@" in eid for eid in ev["evidence_ids"])
 

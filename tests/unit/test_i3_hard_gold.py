@@ -1,6 +1,6 @@
-"""I3 #251：Hard-Gold 骨架（分文件 · 不改臂 · traps/对抗≥30%）。
+"""I3 #251：Hard-Gold 骨架（分文件 · 骨架波不改臂 · traps/对抗≥30%）。
 
-零 LLM。断言 PRODUCTION_RETRIEVAL_MODE == bm25。
+零 LLM。2026-10-07 真人拍板后 PRODUCTION_RETRIEVAL_MODE == hybrid+rerank。
 #259：hard 臂对比与 A0 同库 = corpus + traps。
 """
 
@@ -55,9 +55,9 @@ def test_hard_gold_n_and_trap_ratio_preregistered():
     assert stats["trap_adversarial_ratio"] >= 0.30
 
 
-def test_production_retrieval_mode_still_bm25():
-    """Exit 硬断言：本波不改臂。"""
-    assert PRODUCTION_RETRIEVAL_MODE == "bm25"
+def test_production_retrieval_mode_is_hybrid_rerank():
+    """2026-10-07 真人拍板后的生产默认。骨架波当时的 Exit 是 bm25，见 docs/hard-gold.md。"""
+    assert PRODUCTION_RETRIEVAL_MODE == "hybrid+rerank"
 
 
 def test_run_hard_gold_bm25_report(tmp_path):
@@ -68,14 +68,14 @@ def test_run_hard_gold_bm25_report(tmp_path):
         out_dir=tmp_path,
         dense_db=tmp_path / "no-dense.sqlite",  # 强制无 dense
     )
-    assert out["production_retrieval_mode"] == "bm25"
+    assert out["production_retrieval_mode"] == "hybrid+rerank"
     assert Path(out["report_path"]).is_file()
     body = Path(out["report_path"]).read_text(encoding="utf-8")
-    assert "未授权改臂" in body or "不改臂" in body
-    assert "bm25" in body.lower()
+    assert "hybrid+rerank" in body
+    assert 'set_retrieval_switch("bm25")' in body
     assert out["stats"]["n"] >= 20
     raw = json.loads(Path(out["json_path"]).read_text(encoding="utf-8"))
-    assert raw["production_retrieval_mode"] == "bm25"
+    assert raw["production_retrieval_mode"] == "hybrid+rerank"
 
 
 def _write_dummy_dense(db_path: Path) -> int:
