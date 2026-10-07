@@ -5,10 +5,7 @@ prompt 红线(§4.2):不得透露 T1 存在、不得透露金标。正式 contro
 """
 
 import json
-import sys
 from pathlib import Path
-
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
 from freshlatch.llm import LLMClient  # noqa: E402
 from freshlatch.store.sqlite_store import SQLiteStore  # noqa: E402

@@ -9,13 +9,11 @@ from __future__ import annotations
 
 import argparse
 import json
-import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(REPO_ROOT / "src"))
 
 from freshlatch.models import Claim  # noqa: E402
 from freshlatch.sheet import (  # noqa: E402

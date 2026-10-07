@@ -13,9 +13,12 @@ data/dense/
 # Claude Code 会话配置
 .claude/
 
-# Python 字节码
+# Python 字节码与 editable 安装元数据
 __pycache__/
 *.pyc
+*.egg-info/
+build/
+dist/
 .coverage
 .pytest_cache/
 htmlcov/

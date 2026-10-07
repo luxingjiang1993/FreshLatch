@@ -8,12 +8,6 @@ c3 误伤修复行为验收测试
 
 import json
 import sys
-from pathlib import Path
-
-# 添加项目源代码路径
-project_root = Path(__file__).parent.parent
-src_path = str(project_root / "src")
-sys.path.insert(0, src_path)
 
 from freshlatch.tools import FOCUS_DIMENSIONS
 

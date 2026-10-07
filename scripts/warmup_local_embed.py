@@ -12,9 +12,6 @@ reranker 模型固定为 BAAI/bge-reranker-base（TextCrossEncoder，CPU）。
 from __future__ import annotations
 
 import sys
-from pathlib import Path
-
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
 from freshlatch.store.local_embed import (  # noqa: E402
     EMBED_CACHE_ENV,

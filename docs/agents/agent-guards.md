@@ -32,4 +32,4 @@ Advanced/optional — not enabled in this repo by default.
 ## Authority commands
 - typecheck: `python -m compileall -q src`
 - test: `pytest`
-- lint: *(none locked; optional `ruff` if added later)*
+- lint: `ruff check`（规则集锁在 `pyproject.toml` 的 `[tool.ruff.lint] select`；首版只拦语法级与未定义名）

@@ -20,7 +20,6 @@ import tempfile
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(REPO_ROOT / "src"))
 
 CLAIM = {"claim_id": "c1", "statement": "竞品客单价仍显著高于我们",
          "status": "stale", "reason": "T1 竞品降价(POC)"}

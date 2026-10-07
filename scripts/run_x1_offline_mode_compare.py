@@ -19,10 +19,6 @@ from pathlib import Path
 from typing import Any, Callable
 
 ROOT = Path(__file__).resolve().parents[1]
-SRC = ROOT / "src"
-if str(SRC) not in sys.path:
-    sys.path.insert(0, str(SRC))
-
 # 先丢掉密钥，避免任何下游误读后去打付费接口。
 os.environ.pop("DASHSCOPE_API_KEY", None)
 

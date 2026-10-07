@@ -15,8 +15,6 @@ import json
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
-
 from freshlatch.eval.control import run_control, run_control_c  # noqa: E402
 from freshlatch.eval.report import console_summary, render_report, write_outputs  # noqa: E402
 from freshlatch.eval.retrieve_eval import (  # noqa: E402
