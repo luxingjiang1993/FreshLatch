@@ -32,6 +32,12 @@ def test_hyg01_packaging_contract():
             continue
         assert pin in pyproject, pin
 
+    runtime, _, dev_extra = pyproject.partition("[project.optional-dependencies]")
+    assert "pytest==9.1.1" not in runtime
+    assert "httpx==0.28.1" not in runtime
+    assert "pytest==9.1.1" in dev_extra
+    assert "httpx==0.28.1" in dev_extra
+
     assert "sys.path.insert" not in _read("tests/conftest.py")
     ci = _read(".github/workflows/ci.yml")
     assert 'pip install -e ".[dev]"' in ci

@@ -31,11 +31,10 @@ dependencies = [
     "python-dotenv==1.2.3",
     "langgraph==1.2.10",
     "langgraph-checkpoint-sqlite==3.1.1",
-    "pytest==9.1.1",
-    "httpx==0.28.1",
 ]
 
 [project.optional-dependencies]
+# pytest 与 httpx 只服务测试：src/ 不导入它们。httpx 用于测试里的 MockTransport。
 dev = [
     "pytest==9.1.1",
     "httpx==0.28.1",
