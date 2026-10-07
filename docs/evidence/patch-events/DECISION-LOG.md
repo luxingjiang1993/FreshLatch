@@ -69,3 +69,14 @@
 - 不得把主实验写成成功。
 
 消融、共形预留集和评委 κ 都不改变上面三条的分界。
+
+## 跑数据前偏离 · Amendment 1
+
+日期：2026-10-08。决定人：真人作者（Oriental Ronin，#325，2026-10-08 01:40 UTC+8）。此时尚无任何评委数据。同一条写在 `PREREG.md` 文末「修订记录 Amendment 1」。原锁定表保留，旁边加注「见 Amendment 1」。本页不改比较、指标、配额、算子和种子。
+
+查阅日期：2026-10-08。
+
+1. DeepSeek 评委 model：原值 `deepseek-ai/DeepSeek-V3`，新值 `deepseek-flash`。`thinking` 仍关闭。temperature 仍为 0。原因：DeepSeek 官网已无 V3 模型 id。文档：https://api-docs.deepseek.com/quick_start/pricing ，https://api-docs.deepseek.com/api/create-chat-completion 。非思考模式的 temperature 取值是 0 到 2；没有作用只针对思考模式（https://api-docs.deepseek.com/guides/thinking_mode），所以不改成别的温度。
+2. 禁止名单：去掉 `deepseek-flash`。保留 `deepseek-reasoner`、`deepseek-v4-pro`、`deepseek-chat`。加入 `deepseek-ai/DeepSeek-V3`。
+3. Kimi base_url：原值 `https://api.moonshot.ai/v1`，新值 `https://api.moonshot.cn/v1`。model 仍为 `kimi-k2.6`。thinking 仍关闭。temperature：原值 0，新值 0.6。原因：国内站非思考模式温度强制为 0.6（https://platform.moonshot.cn/docs/guide/kimi-k2-6-quickstart）。
+4. Qwen 的 model 与 temperature=0 不变。回声校验改为对照这些新登记值。

@@ -89,8 +89,12 @@ def _unset_keys(monkeypatch):
 def test_rubric_is_prereg_verbatim_and_models_are_locked():
     assert judges.RUBRIC == _prereg_rubric()
     assert judges.JUDGES["qwen"].model == "qwen2.5-72b-instruct"
-    assert judges.JUDGES["deepseek"].model == "deepseek-ai/DeepSeek-V3"
+    assert judges.JUDGES["deepseek"].model == "deepseek-flash"
+    assert judges.JUDGES["deepseek"].temperature == 0
     assert judges.JUDGES["kimi"].model == "kimi-k2.6"
+    assert judges.JUDGES["kimi"].temperature == 0.6
+    assert judges.JUDGES["kimi"].base_url == "https://api.moonshot.cn/v1"
+    assert judges.JUDGES["qwen"].temperature == 0
     assert judges.JUDGES["kimi"].thinking == {"type": "disabled"}
     assert judges.JUDGES["deepseek"].thinking == {"type": "disabled"}
     assert judges.JUDGES["qwen"].thinking is None
@@ -99,7 +103,9 @@ def test_rubric_is_prereg_verbatim_and_models_are_locked():
         assert spec.model not in spec.forbidden_models
     assert "qwen-flash" in judges.JUDGES["qwen"].forbidden_models
     assert "deepseek-chat" in judges.JUDGES["deepseek"].forbidden_models
+    assert "deepseek-ai/DeepSeek-V3" in judges.JUDGES["deepseek"].forbidden_models
     assert "deepseek-v4-pro" in judges.JUDGES["deepseek"].forbidden_models
+    assert "deepseek-flash" not in judges.JUDGES["deepseek"].forbidden_models
     assert "kimi-latest" in judges.JUDGES["kimi"].forbidden_models
     assert "kimi-k3" in judges.JUDGES["kimi"].forbidden_models
     assert any("code" in item for item in judges.JUDGES["kimi"].forbidden_models)
@@ -137,11 +143,11 @@ def test_qwen_request_has_locked_model_and_only_four_user_fields(tmp_path):
     assert [message["role"] for message in call["messages"]] == ["system", "user"]
 
 
-def test_deepseek_and_kimi_send_temperature_zero_and_thinking_disabled(tmp_path):
+def test_deepseek_and_kimi_send_registered_temperature_and_thinking_disabled(tmp_path):
     transport = Scripted(
         [
-            _ok("deepseek-ai/DeepSeek-V3"),
-            _ok("kimi-k2.6"),
+            _ok("deepseek-flash"),
+            _ok("kimi-k2.6", temperature=0.6),
         ]
     )
     judges.run_judges(
@@ -150,12 +156,39 @@ def test_deepseek_and_kimi_send_temperature_zero_and_thinking_disabled(tmp_path)
         logs_dir=tmp_path,
         judge_ids=("deepseek", "kimi"),
     )
-    assert transport.calls[0]["model"] == "deepseek-ai/DeepSeek-V3"
+    assert transport.calls[0]["model"] == "deepseek-flash"
+    assert transport.calls[0]["temperature"] == 0
     assert transport.calls[1]["model"] == "kimi-k2.6"
+    assert transport.calls[1]["temperature"] == 0.6
+    assert transport.calls[1]["base_url"] == "https://api.moonshot.cn/v1"
     for call in transport.calls:
-        assert call["temperature"] == 0
         assert call["thinking"] == {"type": "disabled"}
         assert call["messages"][0]["content"] == judges.RUBRIC
+
+
+def test_echo_voids_when_model_or_temperature_differs_from_registry(tmp_path):
+    stale_model = Scripted([_ok("deepseek-ai/DeepSeek-V3", temperature=0)])
+    stale = judges.run_judges(
+        [_item()],
+        transport=stale_model,
+        logs_dir=tmp_path / "stale-model",
+        judge_ids=("deepseek",),
+    )
+    assert stale["judges"]["deepseek"]["void"] is True
+    assert stale["judges"]["deepseek"]["labels"] == {}
+    assert stale_model.calls[0]["model"] == "deepseek-flash"
+    assert stale_model.calls[0]["temperature"] == 0
+
+    wrong_temp = Scripted([_ok("kimi-k2.6", temperature=0)])
+    rejected = judges.run_judges(
+        [_item()],
+        transport=wrong_temp,
+        logs_dir=tmp_path / "kimi-temp",
+        judge_ids=("kimi",),
+    )
+    assert rejected["judges"]["kimi"]["void"] is True
+    assert wrong_temp.calls[0]["temperature"] == 0.6
+    assert len(wrong_temp.calls) == 1
 
 
 def test_bad_echo_voids_the_judge_and_does_not_change_temperature(tmp_path):
@@ -186,8 +219,8 @@ def test_parse_failure_retries_once_then_records_missing(tmp_path):
         [
             _ok("qwen2.5-72b-instruct", content="不是 JSON"),
             _ok("qwen2.5-72b-instruct", content="还是不行"),
-            _ok("deepseek-ai/DeepSeek-V3", content='{"A":"是","B":"否"}'),
-            _ok("kimi-k2.6", content='{"A":"是","B":"否"}'),
+            _ok("deepseek-flash", content='{"A":"是","B":"否"}'),
+            _ok("kimi-k2.6", temperature=0.6, content='{"A":"是","B":"否"}'),
         ]
     )
     result = judges.run_judges([_item()], transport=transport, logs_dir=tmp_path)
@@ -319,25 +352,25 @@ def test_logs_have_required_fields_and_no_secrets(tmp_path, monkeypatch):
     transport = Scripted(
         [
             _ok("qwen2.5-72b-instruct"),
-            _ok("deepseek-ai/DeepSeek-V3"),
-            _ok("kimi-k2.6"),
+            _ok("deepseek-flash"),
+            _ok("kimi-k2.6", temperature=0.6),
         ]
     )
     judges.run_judges([_item()], transport=transport, logs_dir=tmp_path)
     blob = "\n".join(path.read_text(encoding="utf-8") for path in tmp_path.glob("*.jsonl"))
     for value in sentinels.values():
         assert value not in blob
-    for judge_id, model in (
-        ("qwen", "qwen2.5-72b-instruct"),
-        ("deepseek", "deepseek-ai/DeepSeek-V3"),
-        ("kimi", "kimi-k2.6"),
+    for judge_id, model, temperature in (
+        ("qwen", "qwen2.5-72b-instruct", 0),
+        ("deepseek", "deepseek-flash", 0),
+        ("kimi", "kimi-k2.6", 0.6),
     ):
         record = json.loads((tmp_path / f"{judge_id}.jsonl").read_text(encoding="utf-8"))
         for key in _LOG_KEYS:
             assert key in record
         assert record["请求的 model"] == model
         assert record["响应回显的 model"] == model
-        assert record["请求的 temperature"] == 0
+        assert record["请求的 temperature"] == temperature
         assert record["解析结果"] == {"A": "是", "B": "否"}
         user = (
             "修改前：\n修改前正文\n\n"
@@ -416,7 +449,21 @@ def test_real_transport_uses_fake_sdk_and_keeps_the_key_out_of_logs(tmp_path, mo
         logs_dir=tmp_path,
         judge_ids=("deepseek",),
     )
-    assert captured["kwargs"]["model"] == "deepseek-ai/DeepSeek-V3"
+    assert captured["kwargs"]["model"] == "deepseek-flash"
     assert captured["kwargs"]["temperature"] == 0
+    assert captured["base_url"] == "https://api.deepseek.com"
     assert captured["kwargs"]["extra_body"] == {"thinking": {"type": "disabled"}}
     assert "SENTINEL_DEEPSEEK" not in (tmp_path / "deepseek.jsonl").read_text(encoding="utf-8")
+
+    monkeypatch.setenv("MOONSHOT_API_KEY", "SENTINEL_MOONSHOT")
+    judges.run_judges(
+        [_item()],
+        transport=judges.real_transport,
+        logs_dir=tmp_path,
+        judge_ids=("kimi",),
+    )
+    assert captured["kwargs"]["model"] == "kimi-k2.6"
+    assert captured["kwargs"]["temperature"] == 0.6
+    assert captured["base_url"] == "https://api.moonshot.cn/v1"
+    assert captured["kwargs"]["extra_body"] == {"thinking": {"type": "disabled"}}
+    assert "SENTINEL_MOONSHOT" not in (tmp_path / "kimi.jsonl").read_text(encoding="utf-8")
