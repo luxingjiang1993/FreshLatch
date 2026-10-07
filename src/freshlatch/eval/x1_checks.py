@@ -273,18 +273,66 @@ def _load_config(config: dict | Path | str) -> dict[str, Any]:
     return json.loads(Path(config).read_text(encoding="utf-8"))
 
 
-def check_x1(
-    corpus_dir: Path | str,
-    traps_dir: Path | str,
-    questions: Path | str | list | dict,
-    config: dict | Path | str,
-    *,
-    floor_overrides: dict[str, Any] | None = None,
-) -> CheckResult:
-    """执行 x1 检查。floor_overrides 仅供单测覆盖规模，不改变锁定常量。"""
-    corpus_dir = Path(corpus_dir)
-    traps_dir = Path(traps_dir)
-    cfg = _load_config(config)
+@dataclass
+class ConfigVerdict:
+    """配置校验结果。floors 是应用后的规模下限。"""
+
+    messages: list[str]
+    has_violation: bool
+    threshold_unlocked: bool
+    decontam_max: float | None
+    floors: dict[str, Any]
+
+
+@dataclass
+class CorpusVerdict:
+    """语料与许可扫描结果。"""
+
+    chunks: list[Chunk]
+    by_eid: dict[str, Chunk]
+    n_chunks: int
+    license_violations: int
+    synthetic_ratio: float
+    public_ratio: float
+    messages: list[str]
+    has_violation: bool
+
+
+@dataclass
+class QuestionVerdict:
+    """单题检查结果。"""
+
+    messages: list[str]
+    has_violation: bool
+    record: str
+    counted_arm: bool
+    counted_guardrail: bool
+    counted_qtype: str | None
+    counted_trap: bool
+    decontam_hit: bool
+    lcs_flag: int
+
+
+@dataclass
+class SummaryVerdict:
+    """题集汇总与退出码。"""
+
+    messages: list[str]
+    has_violation: bool
+    exit_code: int
+    trap_adversarial_ratio: float
+    qtype_counts: dict[str, int]
+    n_arm: int
+    n_guardrail: int
+    decontam_hits: int
+    lcs_flags: int
+
+
+def validate_x1_config(
+    cfg: dict[str, Any],
+    floor_overrides: dict[str, Any] | None,
+) -> ConfigVerdict:
+    """校验锁定配置与去污染阈值。缺键或 null 不代入任何数字。"""
     messages: list[str] = []
     threshold_unlocked = False
     has_violation = False
@@ -323,7 +371,6 @@ def check_x1(
             has_violation = True
             messages.append(f"{key} 必须为 {expected}，得到 {got}")
 
-    # 配置下限不得比锁定常量更松；应用值允许测试覆盖。
     ov = floor_overrides or {}
     apply_min_chunks = int(ov["min_chunks"]) if "min_chunks" in ov else MIN_CHUNKS
     apply_min_per = int(ov["min_per_qtype"]) if "min_per_qtype" in ov else MIN_PER_QTYPE
@@ -381,6 +428,31 @@ def check_x1(
         elif "max_public_ratio" not in ov:
             apply_max_pub = float(cfg["max_public_ratio"])
 
+    return ConfigVerdict(
+        messages=messages,
+        has_violation=has_violation,
+        threshold_unlocked=threshold_unlocked,
+        decontam_max=decontam_max,
+        floors={
+            "min_chunks": apply_min_chunks,
+            "min_per_qtype": apply_min_per,
+            "min_trap_adversarial_ratio": apply_min_trap,
+            "min_synthetic_ratio": apply_min_syn,
+            "max_public_ratio": apply_max_pub,
+        },
+    )
+
+
+def scan_x1_corpus(
+    corpus_dir: Path | str,
+    traps_dir: Path | str,
+    floors: dict[str, Any],
+) -> CorpusVerdict:
+    """扫描语料许可、规模与合成/公开占比。"""
+    corpus_dir = Path(corpus_dir)
+    traps_dir = Path(traps_dir)
+    messages: list[str] = []
+    has_violation = False
     chunks = _load_all_chunks(corpus_dir, traps_dir)
     extra = _load_extra_meta(corpus_dir)
     extra.update(_load_extra_meta(traps_dir))
@@ -443,6 +515,9 @@ def check_x1(
 
     synthetic_ratio = (n_synthetic / n_chunks) if n_chunks else 0.0
     public_ratio = (n_public / n_chunks) if n_chunks else 0.0
+    apply_min_chunks = floors["min_chunks"]
+    apply_min_syn = floors["min_synthetic_ratio"]
+    apply_max_pub = floors["max_public_ratio"]
     if n_chunks < apply_min_chunks:
         has_violation = True
         messages.append(f"chunk 数 {n_chunks} < {apply_min_chunks}")
@@ -453,160 +528,214 @@ def check_x1(
         has_violation = True
         messages.append(f"公开占比 {public_ratio:.4f} > {apply_max_pub}")
 
-    queries = _load_questions(questions)
+    return CorpusVerdict(
+        chunks=chunks,
+        by_eid=by_eid,
+        n_chunks=n_chunks,
+        license_violations=license_bad_chunks,
+        synthetic_ratio=synthetic_ratio,
+        public_ratio=public_ratio,
+        messages=messages,
+        has_violation=has_violation,
+    )
+
+
+def check_x1_question(
+    item: dict[str, Any],
+    *,
+    chunks: list[Chunk],
+    by_eid: dict[str, Chunk],
+    decontam_max: float | None,
+) -> QuestionVerdict:
+    """检查一道题。消息字符串与拆分前的单题段相同。"""
+    messages: list[str] = []
+    has_violation = False
+    qid = str(item.get("id", ""))
+    qtype = item.get("qtype")
+    category = item.get("category")
+    score_role = item.get("score_role", "arm")
+    if score_role is None:
+        score_role = "arm"
+    relevant = item.get("relevant")
+    distractors = item.get("distractors")
+    required_q = ("id", "qtype", "category", "relevant", "distractors", "eval_intent", "as_of")
+    missing = [k for k in required_q if k not in item]
+    if missing:
+        has_violation = True
+        messages.append(f"{qid or '?'} 缺字段 {missing}")
+    if qtype not in QTYPES:
+        has_violation = True
+        messages.append(f"{qid} qtype 非法")
+    if category not in CATEGORIES:
+        has_violation = True
+        messages.append(f"{qid} category 非法")
+    if score_role not in SCORE_ROLES:
+        has_violation = True
+        messages.append(f"{qid} score_role 非法")
+        score_role = "arm"
+    if not isinstance(relevant, list):
+        has_violation = True
+        messages.append(f"{qid} relevant 必须是列表")
+        relevant = []
+    if not isinstance(distractors, list):
+        has_violation = True
+        messages.append(f"{qid} distractors 必须是列表")
+
+    counted_arm = False
+    counted_guardrail = False
+    counted_qtype: str | None = None
+    counted_trap = False
+    is_guardrail = score_role == "guardrail"
+    if is_guardrail:
+        counted_guardrail = True
+        if qtype == "multi_hop":
+            has_violation = True
+            messages.append(f"{qid} 护栏题不得为 multi_hop")
+    else:
+        counted_arm = True
+        if isinstance(qtype, str) and qtype in {"lexical", "paraphrase", "multi_hop"}:
+            counted_qtype = qtype
+        if category in {"trap", "adversarial"}:
+            counted_trap = True
+        if len(relevant) == 0:
+            has_violation = True
+            messages.append(f"{qid} arm 题 relevant 不得为空")
+
+    query_ok = False
+    cleaned_q = ""
+    if "query" not in item:
+        has_violation = True
+        messages.append(f"{qid} 缺 query")
+    elif not isinstance(item.get("query"), str):
+        has_violation = True
+        messages.append(f"{qid} query 不是字符串")
+    else:
+        cleaned_q = strip_law_names(clean_text(item["query"]))
+        if not cleaned_q:
+            has_violation = True
+            messages.append(f"{qid} query 去白名单后为空")
+        else:
+            query_ok = True
+
+    r8: float | None = None
+    lcs: float | None = None
+    lcs_flag = 0
+    decontam = 0
+
+    skip_decontam = is_guardrail and len(relevant) == 0
+    rel_chunks: list[Chunk] = []
+    for eid in relevant:
+        ch = by_eid.get(str(eid))
+        if ch is None:
+            has_violation = True
+            messages.append(f"{qid} relevant 找不到 {eid}")
+        else:
+            rel_chunks.append(ch)
+    rel_clean = [clean_chunk_text(c.text) for c in rel_chunks]
+
+    if qtype == "multi_hop" and not is_guardrail:
+        doc_ids = []
+        for eid in relevant:
+            parsed = parse_evidence_id(str(eid))
+            if parsed is None:
+                continue
+            doc_id = parsed[0]
+            if doc_id:
+                doc_ids.append(doc_id)
+        if len(relevant) < 2 or len(set(doc_ids)) < 2:
+            has_violation = True
+            messages.append(f"{qid} multi_hop 须跨至少两个 doc_id")
+        points = item.get("answer_points")
+        if not isinstance(points, list) or len(points) < 2:
+            has_violation = True
+            messages.append(f"{qid} 须有至少 2 条 answer_points")
+        elif not all(isinstance(p, str) for p in points):
+            has_violation = True
+            messages.append(f"{qid} answer_points 必须是字符串列表")
+        else:
+            cleaned_pts = [clean_text(p) for p in points]
+            if any(not p for p in cleaned_pts):
+                has_violation = True
+                messages.append(f"{qid} answer_points 清洗后有空串")
+            else:
+                for ch in chunks:
+                    body = clean_chunk_text(ch.text)
+                    if all(p in body for p in cleaned_pts):
+                        has_violation = True
+                        messages.append(f"{qid} answer_points 集中在同一 chunk")
+                        break
+
+    if not skip_decontam and query_ok:
+        if qtype == "lexical":
+            r8 = None
+            lcs = None
+            if len(cleaned_q) >= LEXICAL_MIN_LEN and any(
+                cleaned_q in body for body in rel_clean
+            ):
+                decontam = 1
+        elif qtype in {"paraphrase", "multi_hop"}:
+            r8 = eight_gram_overlap(cleaned_q, rel_clean)
+            lcs = lcs_ratio(cleaned_q, rel_clean)
+            if (
+                decontam_max is not None
+                and r8 is not None
+                and r8 > decontam_max
+            ):
+                decontam = 1
+            if lcs is not None and lcs >= LCS_FLAG_MIN:
+                lcs_flag = 1
+
+    return QuestionVerdict(
+        messages=messages,
+        has_violation=has_violation,
+        record=_record_line(qid, r8, lcs, lcs_flag, decontam, str(score_role)),
+        counted_arm=counted_arm,
+        counted_guardrail=counted_guardrail,
+        counted_qtype=counted_qtype,
+        counted_trap=counted_trap,
+        decontam_hit=bool(decontam),
+        lcs_flag=lcs_flag,
+    )
+
+
+def summarize_x1(
+    questions: list[QuestionVerdict],
+    *,
+    floors: dict[str, Any],
+    threshold_unlocked: bool,
+    prior_violation: bool,
+) -> SummaryVerdict:
+    """汇总题型地板与退出码。阈值未锁定时退出码为 2，优先于违规的 1。"""
+    messages: list[str] = []
+    has_violation = prior_violation
     qtype_counts = {"lexical": 0, "paraphrase": 0, "multi_hop": 0}
     n_arm = 0
     n_guardrail = 0
     n_trap_adv = 0
     decontam_hits = 0
     lcs_flags = 0
-    records: list[str] = []
-
-    required_q = ("id", "qtype", "category", "relevant", "distractors", "eval_intent", "as_of")
-
-    for item in queries:
-        qid = str(item.get("id", ""))
-        qtype = item.get("qtype")
-        category = item.get("category")
-        score_role = item.get("score_role", "arm")
-        if score_role is None:
-            score_role = "arm"
-        relevant = item.get("relevant")
-        distractors = item.get("distractors")
-        missing = [k for k in required_q if k not in item]
-        if missing:
+    for question in questions:
+        if question.has_violation:
             has_violation = True
-            messages.append(f"{qid or '?'} 缺字段 {missing}")
-        if qtype not in QTYPES:
-            has_violation = True
-            messages.append(f"{qid} qtype 非法")
-        if category not in CATEGORIES:
-            has_violation = True
-            messages.append(f"{qid} category 非法")
-        if score_role not in SCORE_ROLES:
-            has_violation = True
-            messages.append(f"{qid} score_role 非法")
-            score_role = "arm"
-        if not isinstance(relevant, list):
-            has_violation = True
-            messages.append(f"{qid} relevant 必须是列表")
-            relevant = []
-        if not isinstance(distractors, list):
-            has_violation = True
-            messages.append(f"{qid} distractors 必须是列表")
-
-        is_guardrail = score_role == "guardrail"
-        if is_guardrail:
+        if question.counted_guardrail:
             n_guardrail += 1
-            if qtype == "multi_hop":
-                has_violation = True
-                messages.append(f"{qid} 护栏题不得为 multi_hop")
-        else:
+        if question.counted_arm:
             n_arm += 1
-            if qtype in qtype_counts:
-                qtype_counts[qtype] += 1
-            if category in {"trap", "adversarial"}:
-                n_trap_adv += 1
-            if len(relevant) == 0:
-                has_violation = True
-                messages.append(f"{qid} arm 题 relevant 不得为空")
-
-        query_ok = False
-        cleaned_q = ""
-        if "query" not in item:
-            has_violation = True
-            messages.append(f"{qid} 缺 query")
-        elif not isinstance(item.get("query"), str):
-            has_violation = True
-            messages.append(f"{qid} query 不是字符串")
-        else:
-            cleaned_q = strip_law_names(clean_text(item["query"]))
-            if not cleaned_q:
-                has_violation = True
-                messages.append(f"{qid} query 去白名单后为空")
-            else:
-                query_ok = True
-
-        r8: float | None = None
-        lcs: float | None = None
-        lcs_flag = 0
-        decontam = 0
-
-        skip_decontam = is_guardrail and len(relevant) == 0
-        rel_chunks: list[Chunk] = []
-        for eid in relevant:
-            ch = by_eid.get(str(eid))
-            if ch is None:
-                has_violation = True
-                messages.append(f"{qid} relevant 找不到 {eid}")
-            else:
-                rel_chunks.append(ch)
-        rel_clean = [clean_chunk_text(c.text) for c in rel_chunks]
-
-        if qtype == "multi_hop" and not is_guardrail:
-            doc_ids = []
-            for eid in relevant:
-                parsed = parse_evidence_id(str(eid))
-                if parsed is None:
-                    continue
-                doc_id = parsed[0]
-                if doc_id:
-                    doc_ids.append(doc_id)
-            if len(relevant) < 2 or len(set(doc_ids)) < 2:
-                has_violation = True
-                messages.append(f"{qid} multi_hop 须跨至少两个 doc_id")
-            points = item.get("answer_points")
-            if not isinstance(points, list) or len(points) < 2:
-                has_violation = True
-                messages.append(f"{qid} 须有至少 2 条 answer_points")
-            elif not all(isinstance(p, str) for p in points):
-                has_violation = True
-                messages.append(f"{qid} answer_points 必须是字符串列表")
-            else:
-                cleaned_pts = [clean_text(p) for p in points]
-                if any(not p for p in cleaned_pts):
-                    has_violation = True
-                    messages.append(f"{qid} answer_points 清洗后有空串")
-                else:
-                    for ch in chunks:
-                        body = clean_chunk_text(ch.text)
-                        if all(p in body for p in cleaned_pts):
-                            has_violation = True
-                            messages.append(f"{qid} answer_points 集中在同一 chunk")
-                            break
-
-        if not skip_decontam and query_ok:
-            if qtype == "lexical":
-                r8 = None
-                lcs = None
-                if len(cleaned_q) >= LEXICAL_MIN_LEN and any(
-                    cleaned_q in body for body in rel_clean
-                ):
-                    decontam = 1
-            elif qtype in {"paraphrase", "multi_hop"}:
-                r8 = eight_gram_overlap(cleaned_q, rel_clean)
-                lcs = lcs_ratio(cleaned_q, rel_clean)
-                if (
-                    decontam_max is not None
-                    and r8 is not None
-                    and r8 > decontam_max
-                ):
-                    decontam = 1
-                if lcs is not None and lcs >= LCS_FLAG_MIN:
-                    lcs_flag = 1
-
-        if decontam:
+        if question.counted_qtype:
+            qtype_counts[question.counted_qtype] += 1
+        if question.counted_trap:
+            n_trap_adv += 1
+        if question.decontam_hit:
             decontam_hits += 1
-        if lcs_flag:
+        if question.lcs_flag:
             lcs_flags += 1
-        records.append(
-            _record_line(qid, r8, lcs, lcs_flag, decontam, str(score_role))
-        )
 
     if decontam_hits:
         has_violation = True
         messages.append(f"去污染命中 {decontam_hits}")
 
+    apply_min_per = floors["min_per_qtype"]
+    apply_min_trap = floors["min_trap_adversarial_ratio"]
     for qt, n in qtype_counts.items():
         if n < apply_min_per:
             has_violation = True
@@ -626,20 +755,64 @@ def check_x1(
         exit_code = 1
     else:
         exit_code = 0
-
-    return CheckResult(
+    return SummaryVerdict(
+        messages=messages,
+        has_violation=has_violation,
         exit_code=exit_code,
+        trap_adversarial_ratio=trap_ratio,
         qtype_counts=qtype_counts,
         n_arm=n_arm,
         n_guardrail=n_guardrail,
-        trap_adversarial_ratio=trap_ratio,
-        n_chunks=n_chunks,
-        synthetic_ratio=synthetic_ratio,
-        public_ratio=public_ratio,
         decontam_hits=decontam_hits,
-        license_violations=license_bad_chunks,
         lcs_flags=lcs_flags,
-        records=records,
+    )
+
+
+def check_x1(
+    corpus_dir: Path | str,
+    traps_dir: Path | str,
+    questions: Path | str | list | dict,
+    config: dict | Path | str,
+    *,
+    floor_overrides: dict[str, Any] | None = None,
+) -> CheckResult:
+    """执行 x1 检查。floor_overrides 仅供单测覆盖规模，不改变锁定常量。"""
+    cfg = _load_config(config)
+    config_v = validate_x1_config(cfg, floor_overrides)
+    corpus_v = scan_x1_corpus(corpus_dir, traps_dir, config_v.floors)
+    question_vs = [
+        check_x1_question(
+            item,
+            chunks=corpus_v.chunks,
+            by_eid=corpus_v.by_eid,
+            decontam_max=config_v.decontam_max,
+        )
+        for item in _load_questions(questions)
+    ]
+    summary = summarize_x1(
+        question_vs,
+        floors=config_v.floors,
+        threshold_unlocked=config_v.threshold_unlocked,
+        prior_violation=config_v.has_violation or corpus_v.has_violation,
+    )
+    messages = list(config_v.messages)
+    messages.extend(corpus_v.messages)
+    for question in question_vs:
+        messages.extend(question.messages)
+    messages.extend(summary.messages)
+    return CheckResult(
+        exit_code=summary.exit_code,
+        qtype_counts=summary.qtype_counts,
+        n_arm=summary.n_arm,
+        n_guardrail=summary.n_guardrail,
+        trap_adversarial_ratio=summary.trap_adversarial_ratio,
+        n_chunks=corpus_v.n_chunks,
+        synthetic_ratio=corpus_v.synthetic_ratio,
+        public_ratio=corpus_v.public_ratio,
+        decontam_hits=summary.decontam_hits,
+        license_violations=corpus_v.license_violations,
+        lcs_flags=summary.lcs_flags,
+        records=[question.record for question in question_vs],
         messages=messages,
     )
 
