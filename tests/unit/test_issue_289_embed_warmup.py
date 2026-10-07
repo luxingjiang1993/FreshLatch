@@ -59,6 +59,7 @@ def test_warmup_script_refuses_offline(tmp_path):
     env = os.environ.copy()
     env["FRESHLATCH_EMBED_OFFLINE"] = "1"
     env["FASTEMBED_CACHE_PATH"] = str(tmp_path)
+    env["PYTHONIOENCODING"] = "utf-8"
     env.pop("HF_HUB_OFFLINE", None)
     root = Path(__file__).resolve().parents[2]
     proc = subprocess.run(
@@ -67,6 +68,7 @@ def test_warmup_script_refuses_offline(tmp_path):
         env=env,
         capture_output=True,
         text=True,
+        encoding="utf-8",
         check=False,
     )
     assert proc.returncode == 2
