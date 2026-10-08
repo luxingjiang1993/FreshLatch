@@ -259,6 +259,26 @@ def real_transport(request: Mapping[str, Any]) -> dict[str, Any]:
     }
 
 
+def _item_void_reason(exc: BaseException) -> str:
+    """只留错误类型和整数状态码。不含异常正文。"""
+    code = _status_code(exc)
+    name = type(exc).__name__
+    if code is None:
+        return name
+    return f"{name} {code}"
+
+
+def _missing_rate(labels: Mapping[str, Mapping[str, Any]], ordered: Sequence[Mapping[str, Any]]) -> float | None:
+    if not ordered:
+        return None
+    missing = 0
+    for item in ordered:
+        block = labels.get(str(item["claim_id"]))
+        if not isinstance(block, dict) or block.get("A") not in _LABELS or block.get("B") not in _LABELS:
+            missing += 1
+    return _as_float(Fraction(missing, len(ordered)))
+
+
 def _status_code(exc: BaseException) -> int | None:
     """只留整数状态码。不读异常正文，也不读 headers。"""
     code = getattr(exc, "status_code", None)
@@ -405,7 +425,10 @@ def run_judges(
     logs_dir: Path,
     judge_ids: Sequence[str] = JUDGE_IDS,
 ) -> dict[str, Any]:
-    """逐评委、逐条调用。解析失败只再请求一次。作废则丢掉该评委已有标签。"""
+    """逐评委、逐条调用。解析失败只再请求一次。回声作废则丢掉该评委已有标签。
+
+    非拒绝类传输错误只把该条记缺失，不重试，同一评委的下一条和其他评委继续。
+    """
     directory = Path(logs_dir)
     directory.mkdir(parents=True, exist_ok=True)
     seen: set[str] = set()
@@ -433,6 +456,7 @@ def run_judges(
             request = _request(spec, user)
             digest = _prompt_sha256(user)
             parsed: dict[str, str] | None = None
+            item_void: str | None = None
             for _attempt in range(2):
                 started = time.perf_counter()
                 try:
@@ -453,7 +477,8 @@ def run_judges(
                             status_code=_status_code(exc),
                         ),
                     )
-                    raise
+                    item_void = _item_void_reason(exc)
+                    break
                 elapsed = time.perf_counter() - started
                 reason = _void_reason(spec, result)
                 parsed = None if reason else parse_labels(str(result.get("content") or ""))
@@ -480,7 +505,9 @@ def run_judges(
             if void:
                 break
             claim_id = str(item["claim_id"])
-            if parsed is None:
+            if item_void is not None:
+                labels[claim_id] = {"A": None, "B": None, "void_reason": item_void}
+            elif parsed is None:
                 labels[claim_id] = {"A": None, "B": None}
             else:
                 labels[claim_id] = parsed
@@ -489,6 +516,7 @@ def run_judges(
             "void": void,
             "void_reason": void_reason,
             "labels": labels,
+            "missing_rate": None if void else _missing_rate(labels, ordered),
         }
 
     rows = []
@@ -500,6 +528,7 @@ def run_judges(
             if block is None or block["void"]:
                 row[judge_id] = {"A": None, "B": None}
             else:
-                row[judge_id] = block["labels"].get(claim_id, {"A": None, "B": None})
+                stored = block["labels"].get(claim_id, {"A": None, "B": None})
+                row[judge_id] = {"A": stored.get("A"), "B": stored.get("B")}
         rows.append(row)
     return {"judges": judges_out, "kappa": agreement(rows)}

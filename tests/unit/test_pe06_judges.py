@@ -176,6 +176,7 @@ def test_echo_voids_when_model_or_temperature_differs_from_registry(tmp_path):
     )
     assert stale["judges"]["deepseek"]["void"] is True
     assert stale["judges"]["deepseek"]["labels"] == {}
+    assert stale["judges"]["deepseek"]["missing_rate"] is None
     assert stale_model.calls[0]["model"] == "deepseek-flash"
     assert stale_model.calls[0]["temperature"] == 0
 
@@ -209,6 +210,7 @@ def test_bad_echo_voids_the_judge_and_does_not_change_temperature(tmp_path):
         )
         assert result["judges"]["qwen"]["void"] is True
         assert result["judges"]["qwen"]["labels"] == {}
+        assert result["judges"]["qwen"]["missing_rate"] is None
         assert len(transport.calls) == 1
         assert transport.calls[0]["temperature"] == 0
         assert transport.calls[0]["model"] == "qwen3-235b-a22b-instruct-2507"
@@ -488,47 +490,66 @@ def _assert_no_secret(blob: str) -> None:
         assert token not in blob
 
 
-def test_nonrefusal_errors_are_logged_then_propagate(tmp_path, monkeypatch):
-    """继续口径未在预注册写明。这里只锁住先记日志再原样抛出。"""
+def test_nonrefusal_errors_mark_that_item_missing_and_continue(tmp_path, monkeypatch):
     monkeypatch.setenv("DASHSCOPE_API_KEY", "SENTINEL_DASHSCOPE")
-    forbidden = Scripted([_StatusError(403), _ok("deepseek-flash")])
-    with pytest.raises(_StatusError):
-        judges.run_judges(
-            [_item()],
-            transport=forbidden,
-            logs_dir=tmp_path / "forbidden",
-            judge_ids=("qwen", "deepseek"),
-        )
-    assert len(forbidden.calls) == 1
-    failed = json.loads((tmp_path / "forbidden" / "qwen.jsonl").read_text(encoding="utf-8"))
+    qwen_model = judges.JUDGES["qwen"].model
+    assert qwen_model == "qwen3-235b-a22b-instruct-2507"
+    forbidden = Scripted(
+        [
+            _StatusError(403),
+            _ok(qwen_model),
+            _ok("deepseek-flash"),
+            _ok("deepseek-flash"),
+        ]
+    )
+    result = judges.run_judges(
+        [_item(claim_id="c1"), _item(claim_id="c2")],
+        transport=forbidden,
+        logs_dir=tmp_path / "forbidden",
+        judge_ids=("qwen", "deepseek"),
+    )
+    assert len(forbidden.calls) == 4
+    qwen = result["judges"]["qwen"]
+    assert qwen["void"] is False
+    assert qwen["void_reason"] == ""
+    assert qwen["labels"]["c1"] == {"A": None, "B": None, "void_reason": "_StatusError 403"}
+    assert qwen["labels"]["c2"] == {"A": "是", "B": "否"}
+    assert qwen["missing_rate"] == 0.5
+    assert result["judges"]["deepseek"]["void"] is False
+    assert result["judges"]["deepseek"]["missing_rate"] == 0.0
+    assert result["judges"]["deepseek"]["labels"]["c1"]["A"] == "是"
+    failed = json.loads((tmp_path / "forbidden" / "qwen.jsonl").read_text(encoding="utf-8").splitlines()[0])
     for key in _LOG_KEYS:
         assert key in failed
     assert failed["请求的 model"] == "qwen3-235b-a22b-instruct-2507"
     assert failed["请求的 temperature"] == 0
-    assert failed["响应回显的 model"] is None
-    assert failed["原始输出"] == ""
-    assert failed["解析结果"] is None
     assert failed["错误类型"] == "_StatusError"
     assert failed["状态码"] == 403
-    assert isinstance(failed["延迟"], (int, float)) and not isinstance(failed["延迟"], bool)
-    assert failed["延迟"] >= 0
-    _assert_no_secret((tmp_path / "forbidden" / "qwen.jsonl").read_text(encoding="utf-8"))
-    assert not (tmp_path / "forbidden" / "deepseek.jsonl").exists()
+    blob = (tmp_path / "forbidden" / "qwen.jsonl").read_text(encoding="utf-8")
+    _assert_no_secret(blob)
+    dumped = json.dumps(result, ensure_ascii=False)
+    assert "SENTINEL_DASHSCOPE" not in dumped
+    assert "HEADER_SENTINEL" not in dumped
+    assert "Authorization" not in dumped
 
-    dropped = Scripted([_TransientError(), _ok("qwen3-235b-a22b-instruct-2507")])
-    with pytest.raises(_TransientError):
-        judges.run_judges(
-            [_item(claim_id="c1"), _item(claim_id="c2")],
-            transport=dropped,
-            logs_dir=tmp_path / "dropped",
-            judge_ids=("qwen",),
-        )
-    assert len(dropped.calls) == 1
-    transient = json.loads((tmp_path / "dropped" / "qwen.jsonl").read_text(encoding="utf-8"))
-    assert transient["错误类型"] == "_TransientError"
-    assert transient["状态码"] is None
+    dropped = Scripted(
+        [
+            _TransientError(),
+            _ok("qwen3-235b-a22b-instruct-2507"),
+        ]
+    )
+    quiet = judges.run_judges(
+        [_item(claim_id="c1"), _item(claim_id="c2")],
+        transport=dropped,
+        logs_dir=tmp_path / "dropped",
+        judge_ids=("qwen",),
+    )
+    assert len(dropped.calls) == 2
+    assert quiet["judges"]["qwen"]["labels"]["c1"]["void_reason"] == "_TransientError"
+    assert quiet["judges"]["qwen"]["labels"]["c2"] == {"A": "是", "B": "否"}
+    assert quiet["judges"]["qwen"]["missing_rate"] == 0.5
+    transient = json.loads((tmp_path / "dropped" / "qwen.jsonl").read_text(encoding="utf-8").splitlines()[0])
     assert transient["请求的 model"] == "qwen3-235b-a22b-instruct-2507"
-    assert transient["请求的 temperature"] == 0
     _assert_no_secret((tmp_path / "dropped" / "qwen.jsonl").read_text(encoding="utf-8"))
 
 
@@ -556,13 +577,12 @@ def test_real_transport_logs_sdk_status_error_without_retry(tmp_path, monkeypatc
     monkeypatch.setattr("dotenv.find_dotenv", lambda *args, **kwargs: "")
     monkeypatch.setattr("openai.OpenAI", _Client)
 
-    with pytest.raises(_StatusError):
-        judges.run_judges(
-            [_item()],
-            transport=judges.real_transport,
-            logs_dir=tmp_path,
-            judge_ids=("qwen",),
-        )
+    result = judges.run_judges(
+        [_item()],
+        transport=judges.real_transport,
+        logs_dir=tmp_path,
+        judge_ids=("qwen",),
+    )
     assert captured["creates"] == 1
     assert captured["max_retries"] == 0
     assert captured["api_key"] == "SENTINEL_DASHSCOPE"
@@ -572,6 +592,9 @@ def test_real_transport_logs_sdk_status_error_without_retry(tmp_path, monkeypatc
     assert record["状态码"] == 403
     assert record["请求的 temperature"] == 0
     _assert_no_secret(log)
+    assert result["judges"]["qwen"]["void"] is False
+    assert result["judges"]["qwen"]["labels"]["c1"]["void_reason"] == "_StatusError 403"
+    assert result["judges"]["qwen"]["missing_rate"] == 1.0
 
 
 def test_parse_retry_logs_both_attempts(tmp_path):
