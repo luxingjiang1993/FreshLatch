@@ -8,7 +8,8 @@
 每收到一条回文，立刻追加写入 ``docs/evidence/patch-events/formal-generations.jsonl``。
 同一 claim_id、arm、phase 已在文件里则跳过，不再发请求。
 样本来自 ``SPLIT-pe-v2.json`` 的 n=30。不调用 ``load_formal_ids``，不读 pilot。
-不跑消融，不调用自动核验。
+``main`` 不跑消融，不调用自动核验。
+``replay_saved_generations`` 只回放已经保存的文本，不发请求。
 """
 
 from __future__ import annotations
@@ -38,6 +39,7 @@ from freshlatch.eval.patch_events_metrics import (
 )
 from freshlatch.evidence_id import parse_evidence_id
 from freshlatch.eval.patch_events_generate import build_prompt
+from freshlatch.eval.patch_events_verify import verify_edit
 from freshlatch.eval.patch_events_send import (
     append_b2_diffs as send_b2_diffs,
     append_sent,
@@ -123,6 +125,106 @@ def ingested_t1(candidates: Sequence[Mapping[str, Any]]) -> set[str]:
         if as_of == "T1":
             found.add(evidence_id)
     return found
+
+
+def _saved_index(generations: Sequence[Mapping[str, Any]]) -> dict[tuple[str, str, str], Mapping[str, Any]]:
+    index: dict[tuple[str, str, str], Mapping[str, Any]] = {}
+    for item in generations:
+        index[(str(item["claim_id"]), str(item["arm"]), str(item["phase"]))] = item
+    return index
+
+
+def _from_saved(item: Mapping[str, Any], request: Mapping[str, Any]) -> dict[str, Any]:
+    """rewrite 与 diff 的文本只进 after_text。claim 的文本只进 claim_text。"""
+    field = str(item.get("output_field") or "")
+    phase = str(request["phase"])
+    text = "" if item.get("text") is None else str(item["text"])
+    if phase in {"rewrite", "diff"} and field == "after_text":
+        return {"after_text": text, "evidence_id": request.get("evidence_id", "")}
+    if phase == "claim" and field == "claim_text":
+        return {"claim_text": text}
+    return {"void": True}
+
+
+def _drop_unrecorded(record: Mapping[str, Any], saved: Mapping[str, Any] | None) -> dict[str, Any]:
+    cleaned = dict(record)
+    if saved is None or "latency_ms" not in saved:
+        cleaned.pop("latency_ms", None)
+    if saved is None or "cost" not in saved:
+        cleaned.pop("cost", None)
+    return cleaned
+
+
+def replay_saved_generations(
+    candidates: Sequence[object],
+    generations: Sequence[Mapping[str, Any]],
+    *,
+    decoding: Decoding | None = None,
+) -> dict[str, Any]:
+    """按 claim_id、臂、阶段回放保存的文本，再跑已有消融开关。
+
+    温度 0 和种子 20261007 只用来不触发「种子缺省则作废」。
+    保存的那次请求没有发出种子。
+    保存行里没有的延迟和成本不补成 0。
+    """
+    chosen = decoding if decoding is not None else Decoding(temperature=0, seed=SEED)
+    saved = _saved_index(generations)
+
+    def generator(request: Mapping[str, Any]) -> dict[str, Any]:
+        item = saved.get((str(request["claim_id"]), str(request["arm"]), str(request["phase"])))
+        if item is None:
+            return {"void": True}
+        return _from_saved(item, request)
+
+    rows = list(candidates)
+    ingested = ingested_t1(rows)
+    arms = run_arms(
+        rows,
+        generator=generator,
+        verifier=verify_edit,
+        decoding=chosen,
+        ingested_t1=ingested,
+    )
+    primary_error = None
+    comparisons = None
+    try:
+        compared = compare_primary(
+            primary_comparison_rows(arms),
+            ingested_t1=ingested,
+            streams=named_streams(),
+        )
+    except ValueError as exc:
+        primary_error = str(exc)
+    else:
+        comparisons = compared["comparisons"]
+    ablations = run_ablations(
+        rows,
+        generator=generator,
+        verifier=verify_edit,
+        decoding=chosen,
+        ingested_t1=ingested,
+    )
+    played = {
+        arm: [
+            _drop_unrecorded(record, saved.get((str(record["claim_id"]), arm, "rewrite")))
+            for record in arms[arm]
+        ]
+        for arm in ARMS
+    }
+    replayed_ablations = {
+        column: [
+            _drop_unrecorded(record, saved.get((str(record["claim_id"]), "T", "rewrite")))
+            for record in ablations[column]
+        ]
+        for column in (*ABLATION_ORDER, HYBRID_COLUMN)
+    }
+    return {
+        "arms": played,
+        "voids": arms["voids"],
+        "primary_error": primary_error,
+        "comparisons": comparisons,
+        "ablations": replayed_ablations,
+    }
 
 
 def run_formal(
