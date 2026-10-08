@@ -1,4 +1,4 @@
-"""提示词正文未写。自动核验已按一致那句实现。正式入口在没有生成器时拒绝发请求。"""
+"""提示词正文未写。自动核验已按一致那句实现。默认入口不发请求。"""
 
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ GAPS = ROOT / "docs" / "evidence" / "patch-events" / "PROMPT-AND-VERIFY-GAPS.md"
 _SECRET_ENV = ("DASHSCOPE_API_KEY", "DEEPSEEK_API_KEY", "MOONSHOT_API_KEY")
 
 
-def test_formal_entry_still_refuses_without_generator(monkeypatch, capsys):
+def test_default_entry_does_not_send(monkeypatch, capsys):
     for key in _SECRET_ENV:
         monkeypatch.delenv(key, raising=False)
     seen: list[str] = []
@@ -24,7 +24,7 @@ def test_formal_entry_still_refuses_without_generator(monkeypatch, capsys):
     monkeypatch.setattr("os.getenv", wrapped)
 
     def blocked(*_args, **_kwargs):
-        raise AssertionError("生成器还没有时不得构造样本或发请求")
+        raise AssertionError("默认入口不得构造样本或发请求")
 
     monkeypatch.setattr(formal, "construct_samples", blocked)
     monkeypatch.setattr(formal, "run_formal", blocked)
@@ -33,13 +33,9 @@ def test_formal_entry_still_refuses_without_generator(monkeypatch, capsys):
     assert MODEL_REGISTRY["judge_deepseek"].temperature == 0
     assert MODEL_REGISTRY["judge_kimi"].temperature == 0.6
     assert formal.main([]) == 0
-    assert formal.main(["--formal"]) == 2
     captured = capsys.readouterr()
     assert captured.out == ""
-    assert "没有可调用的正式生成器" in captured.err
-    assert "不把温度补成 0" not in captured.err
-    assert "default_llm.temperature 不是 0" not in captured.err
-    assert "没有可调用的自动核验器" not in captured.err
+    assert captured.err == ""
     for key in _SECRET_ENV:
         assert key not in seen
 

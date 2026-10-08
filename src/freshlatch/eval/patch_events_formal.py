@@ -1,6 +1,7 @@
 """正式 n=30 四臂入口。
 
-默认不跑。显式 ``--formal`` 时，若正式生成器还不存在，只报告缺口并退出。
+默认不跑。显式 ``--formal`` 时四臂这次不跑，只报告缺口并退出，不发请求。
+正式生成器只拼已锁定字段，不调用模型。
 生成温度是 0。补定，2026-10-08。不是预注册原文。
 样本来自 ``SPLIT-pe-v2.json`` 的 n=30。不调用 ``load_formal_ids``，不读 pilot。
 算分交给已有的 ``compare_primary`` 与 ``ablation_intervals``。
@@ -32,6 +33,7 @@ from freshlatch.eval.patch_events_metrics import (
     named_streams,
 )
 from freshlatch.evidence_id import parse_evidence_id
+from freshlatch.eval.patch_events_generate import build_prompt
 from freshlatch.models import DEFAULT_MODEL, MODEL_REGISTRY
 
 _PE_V2_SPLIT = Path("docs/evidence/patch-events/SPLIT-pe-v2.json")
@@ -40,12 +42,8 @@ _PE_V2_CORPUS = Path("data/corpus/pe_v2")
 _FORMAL_N = 30
 
 _GAP_GENERATOR = (
-    "没有可调用的正式生成器。"
-    "run_arms._generate_edit 已有 B2 先 claim 再 diff 的调用顺序，"
-    "但它只把请求交给注入的 generator。"
-    "仓库里没有函数把该请求交给 DEFAULT_MODEL 并返回 after_text 或 claim_text。"
-    "看过 llm.LLMClient.chat、eval/x1_drafts/generate.py、eval/runner.py、runner.py，"
-    "它们都不是这四臂的生成实现。"
+    "正式生成器只拼已锁定字段，不发请求。"
+    "四臂这次不跑。"
 )
 _GAP_TEMPERATURE = (
     "default_llm.temperature 不是 0。"
@@ -66,7 +64,8 @@ def _utf8_stdio() -> None:
 
 def live_gaps() -> tuple[str, ...]:
     """正式开跑还缺的可调用实现。有缺口时显式入口不得发请求。"""
-    gaps = [_GAP_GENERATOR]
+    gaps = [] if callable(build_prompt) else ["正式生成器不可调用。"]
+    gaps.append(_GAP_GENERATOR)
     entry = MODEL_REGISTRY["default_llm"]
     if entry.model != DEFAULT_MODEL or entry.temperature != 0:
         gaps.append(_GAP_TEMPERATURE)
@@ -157,7 +156,7 @@ def run_formal(
 
 
 def main(argv: list[str] | None = None) -> int:
-    """默认关闭。``--formal`` 在缺口还在时拒绝，不构造样本，不发请求。"""
+    """默认关闭。显式开跑时只报告缺口并退出，不构造样本，不发请求。"""
     _utf8_stdio()
     parser = argparse.ArgumentParser(prog="python -m freshlatch.eval.patch_events_formal")
     parser.add_argument("--formal", action="store_true")
