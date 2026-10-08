@@ -93,7 +93,7 @@ MODEL_REGISTRY: dict[str, ModelEntry] = {
     ),
     "judge_qwen": ModelEntry(
         purpose="judge_qwen",
-        model="qwen2.5-72b-instruct",
+        model="qwen3-235b-a22b-instruct-2507",
         platform="dashscope",
         base_url=_DASHSCOPE,
         env_key="DASHSCOPE_API_KEY",

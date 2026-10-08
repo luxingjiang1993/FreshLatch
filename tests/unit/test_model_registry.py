@@ -175,7 +175,7 @@ def test_registry_rows_and_aliases_keep_current_values():
             "DASHSCOPE_API_KEY",
         ),
         "judge_qwen": (
-            "qwen2.5-72b-instruct",
+            "qwen3-235b-a22b-instruct-2507",
             "dashscope",
             "https://dashscope.aliyuncs.com/compatible-mode/v1",
             "DASHSCOPE_API_KEY",
@@ -228,7 +228,7 @@ def test_registry_rows_and_aliases_keep_current_values():
     qwen = JUDGES["qwen"]
     deepseek = JUDGES["deepseek"]
     kimi = JUDGES["kimi"]
-    assert qwen.model == "qwen2.5-72b-instruct"
+    assert qwen.model == "qwen3-235b-a22b-instruct-2507"
     assert qwen.base_url == "https://dashscope.aliyuncs.com/compatible-mode/v1"
     assert qwen.env_key == "DASHSCOPE_API_KEY"
     assert qwen.thinking is None

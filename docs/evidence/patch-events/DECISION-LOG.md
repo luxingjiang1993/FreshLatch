@@ -91,3 +91,17 @@
 4. 清单显示 `claim_id`、修改前、修改后、证据、`construction_gold`、映射后的最终标签、来源（三评委一致 / 用户裁决）。不显示组别、消融、各家评委各自的选择。有未完成裁决时拒绝生成，不输出冲突结论。`construction_gold` 不被最终标签替换。清单只用于报告与复核。
 
 理由：不用多数票，是遵循本页和 `PREREG.md` 里不用多数票填缺失的原禁令。不拿单家比，是为了不把各评委的选择露给用户。A 与 B 都为「是」才映成正确，贴合 fail-closed：任一为「否」就按坏修改对待。清单在需要的裁决写完之后才生成，抽检名单仍然先于不一致结果定下来，盲态保持。原因还有一条：原 `PREREG.md` 没有定义比较对象，也没有定义「是 / 否」到「正确 / 坏」的映射。
+
+## 跑数据前偏离 · Amendment 3
+
+日期：2026-10-08。决定人：用户（Oriental Ronin，2026-10-08 12:43 UTC+8）。转述人：Ronin 代理人。此时尚无 pilot，也尚无正式评委数据。同一条写在 `PREREG.md` 文末「修订记录 Amendment 3」。原锁定表与 Amendment 1、Amendment 2 原文保留。本条取代 Amendment 1 第 4 条中的 Qwen 模型名。本页不改比较、指标、配额、算子和种子。记录于 #366。
+
+1. Qwen 评委 model：原值 `qwen2.5-72b-instruct`，新值 `qwen3-235b-a22b-instruct-2507`。temperature 仍为 0。不加 thinking 参数（纯 instruct）。endpoint 与密钥变量名 `DASHSCOPE_API_KEY` 不变。DeepSeek、Kimi 不动。
+2. 原因：该登记模型已于 2026-05-13 在阿里云百炼下线（官方公告）。2026-10-08 12:39 冒烟返回 403 access_denied，GET /models 列表中无此模型。Amendment 1 写「Qwen 不变」时模型已下线。选择理由：开源权重、带日期固定快照、纯 instruct，接口将来下线仍可自部署复现。
+3. 冒烟证据（2026-10-08 12:44，单次调用）：HTTP 成功，返回 model 与登记一致，temperature=0 无报错，无 reasoning_content，输出 JSON 可解析，延迟 1.44s，tokens 67/9。
+
+已知局限（不改规则）：
+
+- DeepSeek、Kimi、Qwen 的响应都不回传 temperature。现行 echo 规则对缺失字段不判不符，因此实际只核对了 model。请求侧发出的 temperature 记入 judge log 作为证据。论文如实说明。
+- Kimi 关 thinking 后仍报 reasoning_tokens=1。仅备注。
+

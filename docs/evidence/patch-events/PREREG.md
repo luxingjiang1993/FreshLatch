@@ -245,3 +245,15 @@ Qwen2.5-72B 与 `qwen-flash` 同属通义，但是另一个 model 字符串，�
 3. 范围：所有有最终标签的条目都参与比较，不限于抽检样本。
 4. 清单列出 `claim_id`、修改前、修改后、证据、`construction_gold`、映射后的最终标签、最终标签来源（「三评委一致」或「用户裁决」）。不显示组别、消融、各家评委各自的选择。有未完成裁决时拒绝生成，不输出冲突结论。缺评委标签不把整份清单判成未完成，这些条目只出现在缺失清单。
 5. `construction_gold` 不被最终标签替换。冲突清单只用于报告与复核。
+
+## 修订记录 Amendment 3（2026-10-08，任何 pilot 或正式数据收集之前）
+
+用户决定（Oriental Ronin，2026-10-08 12:43 UTC+8）。转述人：Ronin 代理人。此时尚无 pilot，也尚无正式评委数据。上面的原锁定表与 Amendment 1、Amendment 2 原文不删、不改。本修订只替换 Qwen 评委的 model 字符串。不改判据、种子、配额、构造算子、评分细则、DeepSeek、Kimi、endpoint、密钥变量名。记录于 #366。
+
+本修订取代 Amendment 1 第 4 条中的 Qwen 模型名。
+
+1. Qwen 评委的 model 字符串：原值 `qwen2.5-72b-instruct`，新值 `qwen3-235b-a22b-instruct-2507`。temperature 仍为 0。不加 thinking 参数，使用纯 instruct 版。endpoint 仍为 DashScope 兼容地址。密钥变量名仍为 `DASHSCOPE_API_KEY`。
+2. 原因：`qwen2.5-72b-instruct` 已于 2026-05-13 在阿里云百炼下线（官方公告）。2026-10-08 12:39 评委冒烟返回 403 access_denied，GET /models 列表中无此模型。Amendment 1 写下「Qwen 不变」时，该模型已经下线。选择 `qwen3-235b-a22b-instruct-2507` 的理由：开源权重、带日期的固定快照、纯 instruct；接口将来下线时仍可自部署复现。
+3. 新模型冒烟（2026-10-08 12:44，单次调用）：HTTP 成功。返回的 model 为 `qwen3-235b-a22b-instruct-2507`，与登记一致。temperature=0 无报错。无 reasoning_content。输出 JSON 可解析。延迟 1.44s。tokens 67/9。
+4. 发生在任何 pilot 或正式数据收集之前，属收数据前偏差（pre-data deviation）。回声校验继续对照本修订的登记值。
+
