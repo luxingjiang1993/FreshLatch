@@ -139,13 +139,13 @@ Honest snapshot of this public repo:
 |--|--|
 | **Runs locally** | Reverify Sheet UI, main reverify chain, human void/renew, synthetic corpora, gate unit tests |
 | **Synthetic** | Demo and eval materials are labeled synthetic — not real client dockets |
-| **Not claimed** | Live SaaS, paying customers, "W12 passed," or closed Phase-1 measurement — do not cite this repo that way |
+| **Not claimed** | Live SaaS, paying customers, "W12 passed," closed statistical measurement, full-corpus human gold, n=100, two human blind reviews, or "T is better" on the release gate — do not cite this repo that way |
 | **V1.5 (smoke)** | Evidence-bound form patch seam is in-repo（propose/confirm + reverify + export）. See `docs/evidence/v15/`. **薄对话** remains Out. Not Hard-Gold. |
 | **I2 (smoke)** | Security demos in-repo：ACL tenant filter · injection fail-closed · poison metadata drop. See `docs/evidence/i2/` + `docs/security.md`. ≠ #4. Not penetration cert / Hard-Gold. |
 | **V2 (smoke / adoption)** | Publish hook + claim ledger in-repo：Memo UI/CLI gate · inbound check allow/deny · read-only discard∪renew ledger. See `docs/evidence/v2/`. `curl` ≠ webhook/plugin platform Done. Not Hard-Gold; does not hard-bind「可发」. |
 | **I3 (smoke / interview hardening)** | Policy bypass · B′ fixtures · Hard-Gold skeleton in-repo. See `docs/evidence/i3/`. Not arm-change authorization / policy platform / real-incident postmortem. |
-| **Hard-Gold** | #259 same-corpus rerun **passed the gate**; production default still `bm25`; **not switched**. Next hop = Gate implementation ticket human-final or freeze bm25. See `docs/evidence/hard-gold-arm/`. Do not cite as “already hybrid”. |
-| **Known gaps** | Retrieval is still BM25-first (production default `bm25`). Some modules (e.g. memory hygiene) exist in code but are not all on the default main path. A whitelist thin URL (`www.mckinsey.com`) exists for the T1 ingest demo; open-ended live web and an open crawler are still not built. Thin dialogue / chat-as-verdict is deliberately not shipped in V1.5. Word/Notion/open webhook platforms remain Backlog C′ (not V2 Done). Next hop: arm-change Gate human-final **or** freeze `bm25`; C′ stays backlog. |
+| **Hard-Gold** | #259 same-corpus rerun **passed the gate** on 2026-10-03 and did not switch the arm. On 2026-10-07 a human set production default to `hybrid+rerank` (local `BAAI/bge-reranker-base` on hybrid's top-10). Do not cite #259 as “already hybrid”. A human reviewed only the 16 DECISION-16 items. |
+| **Known gaps** | Production default is `hybrid+rerank`. Speakable claims for retrieval and the release gate are only in [`docs/evidence/当前可说口径.md`](docs/evidence/当前可说口径.md). The n=30 release-gate comparisons do not hold; do not say T is better. Some modules (e.g. memory hygiene) exist in code but are not all on the default main path. A whitelist thin URL (`www.mckinsey.com`) exists for the T1 ingest demo; open-ended live web and an open crawler are still not built. Thin dialogue / chat-as-verdict is deliberately not shipped in V1.5. Word/Notion/open webhook platforms remain Backlog C′ (not V2 Done). C′ stays backlog. |
 
 Layer identity: smoke / adoption / interview hardening — **not** closed statistical measurement.
 
@@ -163,6 +163,7 @@ For engineering acceptance boundaries, read `docs/evidence/` and root `CONTEXT.m
 | Architecture diagram | [`docs/现状四闸-结构图.html`](docs/现状四闸-结构图.html) |
 | Architecture & specs | [`docs/spec/README.md`](docs/spec/README.md) |
 | Evidence & acceptance | [`docs/evidence/`](docs/evidence/) |
+| What may be said now | [`docs/evidence/当前可说口径.md`](docs/evidence/当前可说口径.md) |
 | Agent / contributor norms | [`AGENTS.md`](AGENTS.md) |
 
 ---

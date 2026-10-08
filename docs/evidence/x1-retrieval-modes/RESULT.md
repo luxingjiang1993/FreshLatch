@@ -1,5 +1,7 @@
 # x1 检索模式对比（离线测量）
 
+> 后记（2026-10-08）：下面正文是这次测量落盘时的原文，不改写。「`PRODUCTION_RETRIEVAL_MODE` 仍为 bm25」描述的是当时。现在的生产默认是 `hybrid+rerank`。现在该念哪一句，见 [`../当前可说口径.md`](../当前可说口径.md)。
+
 > 层：实验 / 冒烟。单次确定性运行，不报方差，不作统计显著。
 > 不是改臂授权。`PRODUCTION_RETRIEVAL_MODE` 仍为 bm25。
 > 数据：模型双标 + Ronin 代理人（模型）代审，`human_row_review=false`，不是人工逐行审核。
