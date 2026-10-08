@@ -4,6 +4,10 @@
 
 这一页记录投稿和范围。它不是预注册。改这一页不改变 `PREREG.md` 里的比较、指标、配额、算子、种子和评委。`PREREG.md` 跑数后不得修改；要改口径只能另写新文件，并声明旧页作废。
 
+## 平行轨指针（2026-10-08）
+
+与冲甲主链平行的对照设计探针：地图 #434、决议 #435、ADR-0035。旁路根目录 `docs/evidence/patch-events-alt/`，锁页 `PROBE-LOCK.md`。主指标为自然误放+放行率；结构为同文四闸；B1′ 禁 id+延迟核验；假绿另测；升级闸三档（可分开 / 分不开 / 不值得升级）。**不**回写本目录 `PREREG.md`，**不**改主 `compare_primary`，**不**用本轨数字填主 `RESULT` 成立格。评估见 `docs/research/patch_events-平行轨可识别对照设计评估.md`。
+
 ## 已锁进预注册的决定
 
 下面各项的可执行定义在 `docs/evidence/patch-events/PREREG.md`。这里只留索引。

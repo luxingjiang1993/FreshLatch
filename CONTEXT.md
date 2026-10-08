@@ -267,3 +267,19 @@ _Avoid_: 已开源数据集、数据已释放(仅因 C4 存在)、多垂类数�
 **对抗套件目录 (Adversarial Catalog)**:
 假绿/对抗用例的版本化索引(`docs/research/adversarial/`,`catalog_version` semver,条目 `ATK-<FAMILY>-NN`)。Batch 5 仅为骨架(ADR-0022);目录存在 ≠ 仪器已过;禁报统计通过率、禁 pass_rate 列;与金标/预登记/ATK-CS 只指针。
 _Avoid_: 对抗已通过证书、套件通过率表(本批)、仪器已过(仅因目录有行)
+
+**patch_events 平行轨**:
+与冲甲主链（路线 B / #431）完全平行的对照设计探针轨：检验更干净、可识别的比较能否露出 T 相对 B1/B2 差异并更适产品叙事。成功 ≠ 甲成立。实现只许旁路（`compare_alt_*`、`docs/evidence/patch-events-alt/`）或只读复用旧 jsonl/夹具；对主 `compare_primary` 与冲甲预注册正文零 diff。操作定义见 ADR-0035 与 `docs/research/patch_events-平行轨可识别对照设计评估.md`。
+_Avoid_: 改主 compare_primary 追甲、本轨数字填主 RESULT、称探针为甲、回写旧 PREREG、复活路线 A
+
+**同文四闸**:
+平行轨探针主结构：先锁定一份共享 `after_text`，再让 C/T/B1′/B2 只做闸判（比闸不比改写器）。分头四臂生成不是本轨主结构。
+_Avoid_: 把同文四闸写进冲甲主预注册当作已激活主仪器、用同文夹具差填冲甲成立格
+
+**B1′（真事后核验对照）**:
+平行轨中的收紧 B1：禁止看 evidence id / 绑定；同文锁定后才延迟获得 evidence 正文核验；拒绝不得记成 T。用于避免现行 B1 与 T 信息集过近而成假对照。
+_Avoid_: 让 B1′ 看 binding id、把 B1′ 拒绝记成 T、把收紧写成削弱对照凑差
+
+**平行轨升级闸**:
+探针结果三档预锁：可分开（允许另开主论文级新预注册文件，不取代冲甲页）/ 分不开（不升级，写技术报告）/ 不值得升级（放弃旁路主论文预注册）。可分开 ≠ 甲。见结果后改闸作废。
+_Avoid_: 可分开称作甲成立、见阴性后放宽升级闸、升级时反写主 compare_primary
