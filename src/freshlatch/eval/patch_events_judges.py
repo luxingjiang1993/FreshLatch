@@ -39,6 +39,7 @@ _LABELS = ("是", "否")
 _QUESTIONS = ("A", "B")
 JUDGE_IDS = ("qwen", "deepseek", "kimi")
 _PAIRS = (("qwen", "deepseek"), ("qwen", "kimi"), ("deepseek", "kimi"))
+USER_SPOTCHECK_IDENTITY = "模型评委加单人抽检"
 
 
 @dataclass(frozen=True)
@@ -421,6 +422,52 @@ def agreement(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
                 complete.append([label for label in labels if label is not None])
         report[question] = {"cohen": cohen, "fleiss": _fleiss(complete)}
     return report
+
+
+def _spot_label(block: object, question: str) -> str | None:
+    if not isinstance(block, Mapping):
+        return None
+    return _label({"user": block}, "user", question)
+
+
+def user_judge_agreement(
+    rows: Sequence[Mapping[str, Any]],
+    user_labels: Mapping[str, Mapping[str, Any]] | None = None,
+) -> dict[str, Any]:
+    """用户抽检标签对每一位评委。题目 A 与 B 分开。
+
+    一致率等于两边标签相同的条数，除以两边都有标签的条数。
+    Cohen's κ 调用评委两两已经在用的 ``_cohen``。缺失不插补。
+    身份是模型评委加单人抽检。
+    """
+    labels = {} if user_labels is None else user_labels
+    questions: dict[str, list[dict[str, Any]]] = {}
+    for question in _QUESTIONS:
+        per_judge: list[dict[str, Any]] = []
+        for judge_id in JUDGE_IDS:
+            pairs: list[tuple[str, str]] = []
+            matched = 0
+            for row in rows:
+                user = _spot_label(labels.get(str(row["claim_id"])), question)
+                judge = _label(row, judge_id, question)
+                if user is None or judge is None:
+                    continue
+                pairs.append((user, judge))
+                if user == judge:
+                    matched += 1
+            cohen = _cohen(pairs)
+            both = int(cohen["n"])
+            per_judge.append(
+                {
+                    "judge_id": judge_id,
+                    "agreement": None if both == 0 else _as_float(Fraction(matched, both)),
+                    "matched": matched,
+                    "n": both,
+                    "kappa": cohen["kappa"],
+                }
+            )
+        questions[question] = per_judge
+    return {"identity": USER_SPOTCHECK_IDENTITY, "questions": questions}
 
 
 def run_judges(
