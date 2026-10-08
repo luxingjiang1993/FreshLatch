@@ -1,4 +1,4 @@
-"""四臂提示词正文只重述已锁定的句子。B2 的 diff 段不写提示词，不发请求。"""
+"""四臂提示词正文只重述已锁定的句子。B2 的 diff 段是补定 draft，不是预注册原文。"""
 
 from __future__ import annotations
 
@@ -92,6 +92,11 @@ def test_each_shell_keeps_only_its_locked_fields():
     assert "after_text" not in claim
     assert "挡住写完 B2 的 claim 提示词。" not in claim
     assert "已定" not in diff
-    assert "这一段不写提示词。" in diff
     assert "### B2 diff 段提示词" in diff
-    assert "挡住 B2 的 diff 阶段提示词。" in diff
+    assert "补定 draft，不是预注册原文" in diff
+    assert (
+        "根据下面给出的 before_text、上一阶段的 claim_text，以及请求里已经有的 evidence_text，改写一句纯文本。这一句是 after_text。claim_text 不是 after_text。不要输出 diff 标记。提示词不再检索。"
+        in diff
+    )
+    assert "这一段不写提示词。" not in diff
+    assert "挡住 B2 的 diff 阶段提示词。" not in diff

@@ -158,7 +158,7 @@ def test_dispatch_sends_locked_body_and_skips_diff(monkeypatch):
     assert skipped["sent"] is False
     assert "after_text" not in skipped
     assert "claim_text" not in skipped
-    assert build_prompt(diff)["prompt"] == ""
+    assert "补定 draft，不是预注册原文" in build_prompt(diff)["prompt"]
 
     def filled(_request):
         return {
