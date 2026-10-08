@@ -7,7 +7,7 @@
 
 ## 跑针
 
-- **代码针**：4288000
+- **代码针**：3a50302
 - **激活**：PREREG-B 已激活（2026-10-08）；门闩=docs/evidence/patch-events/GATE-K-PROBE.md；批准=本会话明文
 - **n** = 100（`load_pe_v2_formal_n100()` / `SPLIT-pe-v2.json` n100）
 - **生成路径**：`docs/evidence/patch-events/formal-generations-b.jsonl`（n_lines=400；sha256=`80e6fc85323b32b385c2af2cc964310cab9a895a3b97dee548d33a98d61b52d9`）
