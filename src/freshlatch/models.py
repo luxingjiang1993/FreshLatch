@@ -57,6 +57,8 @@ MODEL_REGISTRY: dict[str, ModelEntry] = {
         platform="dashscope",
         base_url=_DASHSCOPE,
         env_key="DASHSCOPE_API_KEY",
+        # 四臂生成温度。补定，2026-10-08。不是预注册原文。
+        temperature=0,
     ),
     "embed": ModelEntry(
         purpose="embed",
