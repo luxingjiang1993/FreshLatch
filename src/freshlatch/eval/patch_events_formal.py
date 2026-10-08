@@ -1,10 +1,11 @@
 """正式 n=30 四臂入口。
 
-默认不跑。显式 ``--formal`` 时四臂这次不跑，只报告缺口并退出，不发请求。
-正式生成器只拼已锁定字段，不调用模型。
-生成温度是 0。补定，2026-10-08。不是预注册原文。
+默认不跑，退出 0，不发请求。
+显式 ``--formal`` 时，用已合入的提示词正文向 ``DEFAULT_MODEL`` 发请求。
+温度只读 ``default_llm.temperature``。补定，2026-10-08。不是预注册原文。
+只发 C、T、B1 的 rewrite，以及 B2 的 claim。B2 的 diff 不发请求。
 样本来自 ``SPLIT-pe-v2.json`` 的 n=30。不调用 ``load_formal_ids``，不读 pilot。
-算分交给已有的 ``compare_primary`` 与 ``ablation_intervals``。
+不跑消融，不调用自动核验。
 """
 
 from __future__ import annotations
@@ -34,6 +35,7 @@ from freshlatch.eval.patch_events_metrics import (
 )
 from freshlatch.evidence_id import parse_evidence_id
 from freshlatch.eval.patch_events_generate import build_prompt
+from freshlatch.eval.patch_events_send import dispatch_prompt, formal_requests, live_chat
 from freshlatch.models import DEFAULT_MODEL, MODEL_REGISTRY
 
 _PE_V2_SPLIT = Path("docs/evidence/patch-events/SPLIT-pe-v2.json")
@@ -41,10 +43,6 @@ _PE_V2_DOCKET = Path("data/pe_v2_docket.json")
 _PE_V2_CORPUS = Path("data/corpus/pe_v2")
 _FORMAL_N = 30
 
-_GAP_GENERATOR = (
-    "正式生成器只拼已锁定字段，不发请求。"
-    "四臂这次不跑。"
-)
 _GAP_TEMPERATURE = (
     "default_llm.temperature 不是 0。"
     "补定，2026-10-08。不是预注册原文。"
@@ -63,9 +61,8 @@ def _utf8_stdio() -> None:
 
 
 def live_gaps() -> tuple[str, ...]:
-    """正式开跑还缺的可调用实现。有缺口时显式入口不得发请求。"""
+    """温度或模型与登记不一致时，显式入口不得发请求。"""
     gaps = [] if callable(build_prompt) else ["正式生成器不可调用。"]
-    gaps.append(_GAP_GENERATOR)
     entry = MODEL_REGISTRY["default_llm"]
     if entry.model != DEFAULT_MODEL or entry.temperature != 0:
         gaps.append(_GAP_TEMPERATURE)
@@ -156,7 +153,7 @@ def run_formal(
 
 
 def main(argv: list[str] | None = None) -> int:
-    """默认关闭。显式开跑时只报告缺口并退出，不构造样本，不发请求。"""
+    """默认关闭，退出 0，不发请求。显式 ``--formal`` 才发送已合入正文。"""
     _utf8_stdio()
     parser = argparse.ArgumentParser(prog="python -m freshlatch.eval.patch_events_formal")
     parser.add_argument("--formal", action="store_true")
@@ -167,7 +164,10 @@ def main(argv: list[str] | None = None) -> int:
     if gaps:
         sys.stderr.write("\n".join(gaps) + "\n")
         return 2
-    raise RuntimeError("正式生成与核验的接线尚未接到可调用实现")
+    rows = load_pe_v2_formal_n30()
+    for request in formal_requests(rows):
+        dispatch_prompt(request, live_chat)
+    return 0
 
 
 if __name__ == "__main__":

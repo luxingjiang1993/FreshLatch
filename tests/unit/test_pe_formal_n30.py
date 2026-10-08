@@ -82,8 +82,8 @@ def test_formal_source_does_not_send(monkeypatch, capsys):
     assert captured.out == ""
     assert captured.err == ""
     gaps = "\n".join(formal.live_gaps())
-    assert "不发请求" in gaps
-    assert "四臂这次不跑" in gaps
+    assert gaps == ""
+    assert "四臂这次不跑" not in Path(formal.__file__).read_text(encoding="utf-8")
     assert "没有可调用的正式生成器" not in gaps
     assert "没有可调用的自动核验器" not in gaps
     source = Path(formal.__file__).read_text(encoding="utf-8")
