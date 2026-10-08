@@ -33,6 +33,11 @@ def _bytes(path: Path) -> bytes | None:
     return path.read_bytes()
 
 
+def _generations_lf() -> bytes:
+    """检出在 Windows 上会把 LF 换成 CRLF。哈希前先换回 LF。"""
+    return _GENERATIONS.read_bytes().replace(b"\r\n", b"\n")
+
+
 def _block_network(monkeypatch) -> None:
     def blocked(*_args, **_kwargs):
         raise AssertionError("测试不得连网")
@@ -85,9 +90,11 @@ def _guard(monkeypatch):
 
 
 def _saved_rows() -> list[dict]:
-    raw = _GENERATIONS.read_bytes()
+    raw = _generations_lf()
     assert hashlib.sha256(raw).hexdigest() == _GENERATIONS_SHA256
-    rows = [json.loads(line) for line in raw.decode("utf-8").splitlines() if line.strip()]
+    text = raw.decode("utf-8")
+    assert text.count("\n") == 120
+    rows = [json.loads(line) for line in text.splitlines() if line.strip()]
     assert len(rows) == 120
     return rows
 
@@ -139,9 +146,13 @@ def _result_cells() -> None:
 
 
 def test_saved_file_hash_rejects_any_edited_line():
-    raw = _GENERATIONS.read_bytes()
-    assert hashlib.sha256(raw).hexdigest() == _GENERATIONS_SHA256
-    assert raw.count(b"\n") == 120
+    normalized = _generations_lf()
+    assert hashlib.sha256(normalized).hexdigest() == _GENERATIONS_SHA256
+    assert normalized.decode("utf-8").count("\n") == 120
+    crlf = normalized.replace(b"\n", b"\r\n")
+    assert hashlib.sha256(crlf.replace(b"\r\n", b"\n")).hexdigest() == _GENERATIONS_SHA256
+    changed = normalized.replace(b"\n", b"\n ", 1)
+    assert hashlib.sha256(changed).hexdigest() != _GENERATIONS_SHA256
 
 
 def test_field_routing_keeps_claim_text_out_of_after_text():
