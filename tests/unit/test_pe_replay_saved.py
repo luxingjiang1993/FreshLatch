@@ -22,7 +22,7 @@ _ROOT = Path(__file__).resolve().parents[2]
 _GENERATIONS = _ROOT / "docs" / "evidence" / "patch-events" / "formal-generations.jsonl"
 _RESULT = _ROOT / "docs" / "evidence" / "patch-events" / "RESULT.md"
 _PREREG = _ROOT / "docs" / "evidence" / "patch-events" / "PREREG.md"
-_GENERATIONS_SHA256 = "3cede5e84fa7bd0d8fdabd954263d1239bda54b6e8dfcf62f5806c70f8cb330e"
+_GENERATIONS_SHA256 = "36b79124f2102e7d033a65aedf9b3f7ce54d6c9ade2291b15c60a72ac764093b"
 _PRIMARY_NAMES = ("T-C", "T-B1", "T-B2")
 _ARM_LABELS = ("C", "T（fail-closed）", "B1", "B2")
 
@@ -93,9 +93,9 @@ def _saved_rows() -> list[dict]:
     raw = _generations_lf()
     assert hashlib.sha256(raw).hexdigest() == _GENERATIONS_SHA256
     text = raw.decode("utf-8")
-    assert text.count("\n") == 120
+    assert text.count("\n") == 150
     rows = [json.loads(line) for line in text.splitlines() if line.strip()]
-    assert len(rows) == 120
+    assert len(rows) == 150
     return rows
 
 
@@ -148,7 +148,7 @@ def _result_cells() -> None:
 def test_saved_file_hash_rejects_any_edited_line():
     normalized = _generations_lf()
     assert hashlib.sha256(normalized).hexdigest() == _GENERATIONS_SHA256
-    assert normalized.decode("utf-8").count("\n") == 120
+    assert normalized.decode("utf-8").count("\n") == 150
     crlf = normalized.replace(b"\n", b"\r\n")
     assert hashlib.sha256(crlf.replace(b"\r\n", b"\n")).hexdigest() == _GENERATIONS_SHA256
     changed = normalized.replace(b"\n", b"\n ", 1)
@@ -182,7 +182,7 @@ def test_field_routing_keeps_claim_text_out_of_after_text():
     assert "after_text" not in misplaced
 
 
-def test_replay_current_rows_refuses_without_b2_after_text(monkeypatch):
+def test_replay_saved_rows_keep_b2_diff_text(monkeypatch):
     rows = _saved_rows()
     assert all("latency_ms" not in item and "cost" not in item and "seed" not in item for item in rows)
     counts = {(item["arm"], item["phase"], item["output_field"]) for item in rows}
@@ -191,6 +191,7 @@ def test_replay_current_rows_refuses_without_b2_after_text(monkeypatch):
         ("T", "rewrite", "after_text"),
         ("B1", "rewrite", "after_text"),
         ("B2", "claim", "claim_text"),
+        ("B2", "diff", "after_text"),
     }
     saved = {
         "C": _text_index(rows, "C", "rewrite", "after_text"),
@@ -216,14 +217,15 @@ def test_replay_current_rows_refuses_without_b2_after_text(monkeypatch):
     report = formal.replay_saved_generations(formal.load_pe_v2_formal_n30(), rows)
 
     assert calls == ["compare_primary", "run_ablations"]
-    assert report["comparisons"] is None
-    assert report["primary_error"] is not None
-    assert "B2" in report["primary_error"]
-    assert report["arms"]["B2"] == []
-    b2_voids = [item for item in report["voids"] if item["arm"] == "B2"]
-    assert len(b2_voids) == 30
-    assert {item["reason"] for item in b2_voids} == {"生成失败"}
-    assert [item for item in report["voids"] if item["reason"] in {"种子缺省", "温度缺省"}] == []
+    assert report["primary_error"] is None
+    assert [item["name"] for item in report["comparisons"]] == list(_PRIMARY_NAMES)
+    b2_saved = _text_index(rows, "B2", "diff", "after_text")
+    played_b2 = report["arms"]["B2"]
+    assert len(played_b2) == 30
+    assert [item["after_text"] for item in played_b2] == [
+        b2_saved[item["claim_id"]] for item in played_b2
+    ]
+    assert report["voids"] == []
     for arm in ("C", "T", "B1"):
         played = report["arms"][arm]
         assert len(played) == 30
@@ -245,9 +247,9 @@ def test_ablations_reuse_saved_t_text_and_leave_production_retrieval(monkeypatch
     assert _retrieval_mode("retrieval_bm25") == "bm25"
     assert _retrieval_mode(HYBRID_COLUMN) == PRODUCTION_RETRIEVAL_MODE
     names = [] if report["comparisons"] is None else [item["name"] for item in report["comparisons"]]
-    assert names == [] or names == list(_PRIMARY_NAMES)
+    assert names == list(_PRIMARY_NAMES)
     assert all(HYBRID_COLUMN not in name for name in (*names, *_PRIMARY_NAMES))
-    assert "B2" in report["primary_error"]
+    assert report["primary_error"] is None
     for column in (*ABLATION_ORDER, HYBRID_COLUMN):
         played = report["ablations"][column]
         assert len(played) == 30
