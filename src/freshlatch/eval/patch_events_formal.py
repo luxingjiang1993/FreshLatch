@@ -4,6 +4,8 @@
 显式 ``--formal`` 时，用已合入的提示词正文向 ``DEFAULT_MODEL`` 发请求。
 温度只读 ``default_llm.temperature``。补定，2026-10-08。不是预注册原文。
 只发 C、T、B1 的 rewrite，以及 B2 的 claim。B2 的 diff 不发请求。
+每收到一条回文，立刻追加写入 ``docs/evidence/patch-events/formal-generations.jsonl``。
+同一 claim_id、arm、phase 已在文件里则跳过，不再发请求。
 样本来自 ``SPLIT-pe-v2.json`` 的 n=30。不调用 ``load_formal_ids``，不读 pilot。
 不跑消融，不调用自动核验。
 """
@@ -35,13 +37,20 @@ from freshlatch.eval.patch_events_metrics import (
 )
 from freshlatch.evidence_id import parse_evidence_id
 from freshlatch.eval.patch_events_generate import build_prompt
-from freshlatch.eval.patch_events_send import dispatch_prompt, formal_requests, live_chat
+from freshlatch.eval.patch_events_send import (
+    append_sent,
+    dispatch_prompt,
+    formal_requests,
+    live_chat,
+    written_keys,
+)
 from freshlatch.models import DEFAULT_MODEL, MODEL_REGISTRY
 
 _PE_V2_SPLIT = Path("docs/evidence/patch-events/SPLIT-pe-v2.json")
 _PE_V2_DOCKET = Path("data/pe_v2_docket.json")
 _PE_V2_CORPUS = Path("data/corpus/pe_v2")
 _FORMAL_N = 30
+_GENERATIONS = Path("docs/evidence/patch-events/formal-generations.jsonl")
 
 _GAP_TEMPERATURE = (
     "default_llm.temperature 不是 0。"
@@ -51,6 +60,10 @@ _GAP_TEMPERATURE = (
 
 def _repo_root() -> Path:
     return Path(__file__).resolve().parents[3]
+
+
+def generations_path() -> Path:
+    return _repo_root() / _GENERATIONS
 
 
 def _utf8_stdio() -> None:
@@ -165,8 +178,15 @@ def main(argv: list[str] | None = None) -> int:
         sys.stderr.write("\n".join(gaps) + "\n")
         return 2
     rows = load_pe_v2_formal_n30()
+    path = generations_path()
+    done = written_keys(path)
     for request in formal_requests(rows):
-        dispatch_prompt(request, live_chat)
+        key = (str(request["claim_id"]), str(request["arm"]), str(request["phase"]))
+        if key in done:
+            continue
+        result = dispatch_prompt(request, live_chat)
+        if append_sent(path, result):
+            done.add(key)
     return 0
 
 

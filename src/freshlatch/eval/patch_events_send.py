@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
+import json
+import os
 from collections.abc import Callable, Mapping, Sequence
+from pathlib import Path
 from typing import Any
 
 from freshlatch.eval.patch_events_generate import build_prompt
@@ -50,15 +53,56 @@ def dispatch_prompt(
     }
     if (arm == "B2" and phase == "diff") or prompt == "":
         return result
-    text = chat(
-        prompt,
-        model=DEFAULT_MODEL,
-        temperature=MODEL_REGISTRY["default_llm"].temperature,
-    )
+    model = DEFAULT_MODEL
+    temperature = MODEL_REGISTRY["default_llm"].temperature
+    text = chat(prompt, model=model, temperature=temperature)
     field = str(built["output_field"])
     result["sent"] = True
+    result["output_field"] = field
+    result["model"] = model
+    result["temperature"] = temperature
     result[field] = "" if text is None else str(text)
     return result
+
+
+def generation_record(result: Mapping[str, Any]) -> dict[str, Any]:
+    """只留下回文和实际使用的模型、温度。不带密钥，不带提示词里没有的请求字段。"""
+    field = str(result["output_field"])
+    return {
+        "claim_id": result["claim_id"],
+        "arm": result["arm"],
+        "phase": result["phase"],
+        "output_field": field,
+        "text": result[field],
+        "model": result["model"],
+        "temperature": result["temperature"],
+    }
+
+
+def written_keys(path: Path) -> set[tuple[str, str, str]]:
+    """文件里已经有的 claim_id、arm、phase。文件不存在则是空集。"""
+    if not path.is_file():
+        return set()
+    keys: set[tuple[str, str, str]] = set()
+    for line in path.read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        item = json.loads(line)
+        keys.add((str(item["claim_id"]), str(item["arm"]), str(item["phase"])))
+    return keys
+
+
+def append_sent(path: Path, result: Mapping[str, Any]) -> bool:
+    """未发送的结果不写行。写完并落到磁盘后才返回。"""
+    if not result.get("sent"):
+        return False
+    path.parent.mkdir(parents=True, exist_ok=True)
+    line = json.dumps(generation_record(result), ensure_ascii=False)
+    with path.open("a", encoding="utf-8") as handle:
+        handle.write(line + "\n")
+        handle.flush()
+        os.fsync(handle.fileno())
+    return True
 
 
 def live_chat(prompt: str, *, model: str, temperature: float) -> str:
