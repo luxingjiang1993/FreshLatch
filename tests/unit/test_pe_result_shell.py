@@ -1,4 +1,4 @@
-"""结果表壳子：格子按预注册排齐，数字格保持「未填」。"""
+"""结果表：评委一致性已填，其余数字格保持「未填」。"""
 
 from __future__ import annotations
 
@@ -105,23 +105,44 @@ def test_shell_follows_locked_comparisons_and_leaves_numbers_blank():
     fleiss = [table for table in tables if table[0][0] == "题" and "Fleiss" in table[0][1]]
     assert len(fleiss) == 1
     assert [row[0] for row in fleiss[0][1:]] == ["A", "B"]
+    assert [(row[2], row[3]) for row in cohen[0][1:]] == [
+        ("0.926829268292683", "30"),
+        ("0.7715736040609137", "30"),
+        ("0.8421052631578947", "30"),
+        ("0.926829268292683", "30"),
+        ("0.7804878048780488", "30"),
+        ("0.85", "30"),
+    ]
+    assert [(row[1], row[2]) for row in fleiss[0][1:]] == [
+        ("0.8473713962690785", "30"),
+        ("0.8523783488244943", "30"),
+    ]
 
-    value_cells: list[str] = []
-    for table in tables:
-        header, *rows = table
-        assert rows
+    projects = [table for table in tables if table[0] == ["项目", "值"]]
+    assert len(projects) == 2
+    assert projects[0][1:] == [
+        ["固定放行数 k", EMPTY],
+        ["共形预留 false-accept rate 上界", "未做"],
+        ["语料缺额", "0"],
+    ]
+    assert projects[1][1:] == [
+        ["抽检一致率", EMPTY],
+        ["用户对评委的 Cohen's κ", EMPTY],
+    ]
+
+    for table in (arms, comparisons, ablations):
+        header = table[0]
         indexes = [i for i, name in enumerate(header) if name not in LABEL_HEADERS]
         assert indexes
-        for row in rows:
+        for row in table[1:]:
             assert len(row) == len(header)
             for index in indexes:
-                value_cells.append(row[index])
-    assert value_cells
-    assert set(value_cells) == {EMPTY}
-    for cell in value_cells:
-        assert re.search(r"\d", cell) is None
+                assert row[index] == EMPTY
+                assert re.search(r"\d", row[index]) is None
 
-    # 数字只出现在臂名 B1/B2、术语 BM25、以及表头 p95 / 95% 区间。
-    assert set(re.findall(r"\d+", text)) <= {"1", "2", "25", "95"}
-    for banned in ("a001", "a002", "b004", "d002", "否/否", "是/是", "是/否", "否/是"):
-        assert banned not in text
+    assert "n=30 的 Cohen's κ 与 Fleiss' κ 按仓库 `agreement` 写入。" in text
+    assert re.search(r"[abcd]\d{3}", text) is None
+    yes, no = "是", "否"
+    for left in (yes, no):
+        for right in (yes, no):
+            assert f"{left}/{right}" not in text
