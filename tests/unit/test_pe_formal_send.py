@@ -57,6 +57,12 @@ def _spy_env(monkeypatch) -> list[str]:
     return seen
 
 
+def _generations_bytes() -> bytes | None:
+    if not _REAL_GENERATIONS.exists():
+        return None
+    return _REAL_GENERATIONS.read_bytes()
+
+
 def _refuse_expansion(monkeypatch):
     def blocked(*_args, **_kwargs):
         raise AssertionError("不得扩到构造、消融或核验")
@@ -70,6 +76,7 @@ def _refuse_expansion(monkeypatch):
 
 
 def test_default_entry_still_exits_without_sending(monkeypatch, capsys):
+    before_generations = _generations_bytes()
     seen = _spy_env(monkeypatch)
     _block_network(monkeypatch)
 
@@ -81,12 +88,12 @@ def test_default_entry_still_exits_without_sending(monkeypatch, capsys):
     monkeypatch.setattr(formal, "generations_path", blocked)
     monkeypatch.setattr("freshlatch.llm.LLMClient", lambda *_args, **_kwargs: blocked())
     assert formal.main([]) == 0
-    assert not _REAL_GENERATIONS.exists()
     captured = capsys.readouterr()
     assert captured.out == ""
     assert captured.err == ""
     for key in _SECRET_ENV:
         assert key not in seen
+    assert _generations_bytes() == before_generations
 
 
 def test_formal_requests_skip_diff_and_request_model():
@@ -211,6 +218,7 @@ def test_live_chat_uses_user_message_and_passed_decoding(monkeypatch):
 
 
 def test_unsent_diff_and_empty_prompt_do_not_write(monkeypatch, tmp_path):
+    before_generations = _generations_bytes()
     seen = _spy_env(monkeypatch)
     _block_network(monkeypatch)
     monkeypatch.setattr(
@@ -234,12 +242,13 @@ def test_unsent_diff_and_empty_prompt_do_not_write(monkeypatch, tmp_path):
     skipped = send.dispatch_prompt({**request, "arm": "C", "phase": "rewrite"}, refuse)
     assert send.append_sent(path, skipped) is False
     assert not path.exists()
-    assert not _REAL_GENERATIONS.exists()
     for key in _SECRET_ENV:
         assert key not in seen
+    assert _generations_bytes() == before_generations
 
 
 def test_formal_flag_sends_four_requests_from_stub_row(monkeypatch, capsys, tmp_path):
+    before_generations = _generations_bytes()
     seen = _spy_env(monkeypatch)
     _block_network(monkeypatch)
     _refuse_expansion(monkeypatch)
@@ -300,10 +309,11 @@ def test_formal_flag_sends_four_requests_from_stub_row(monkeypatch, capsys, tmp_
     for key in _SECRET_ENV:
         assert key not in blob
         assert key not in seen
-    assert not _REAL_GENERATIONS.exists()
+    assert _generations_bytes() == before_generations
 
 
 def test_existing_key_skips_the_request(monkeypatch, tmp_path):
+    before_generations = _generations_bytes()
     seen = _spy_env(monkeypatch)
     _block_network(monkeypatch)
     monkeypatch.setattr(
@@ -357,12 +367,13 @@ def test_existing_key_skips_the_request(monkeypatch, tmp_path):
         "新回文",
         "新回文",
     ]
-    assert not _REAL_GENERATIONS.exists()
     for key in _SECRET_ENV:
         assert key not in seen
+    assert _generations_bytes() == before_generations
 
 
 def test_temperature_or_model_gap_does_not_send(monkeypatch, capsys, tmp_path):
+    before_generations = _generations_bytes()
     seen = _spy_env(monkeypatch)
     _block_network(monkeypatch)
 
@@ -389,9 +400,9 @@ def test_temperature_or_model_gap_does_not_send(monkeypatch, capsys, tmp_path):
     assert formal.main(["--formal"]) == 2
     assert capsys.readouterr().err
     assert not (tmp_path / "formal-generations.jsonl").exists()
-    assert not _REAL_GENERATIONS.exists()
     for key in _SECRET_ENV:
         assert key not in seen
+    assert _generations_bytes() == before_generations
 
 
 def test_send_source_names_n30_and_keeps_client_out_of_formal():
