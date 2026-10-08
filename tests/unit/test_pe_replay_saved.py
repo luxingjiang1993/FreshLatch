@@ -10,6 +10,8 @@ import os
 import socket
 from pathlib import Path
 
+import pytest
+
 from freshlatch.eval import patch_events_formal as formal
 from freshlatch.eval.patch_events_ablation import HYBRID_COLUMN, _retrieval_mode
 from freshlatch.eval.patch_events_metrics import ABLATION_ORDER, SEED
