@@ -15,9 +15,12 @@ from freshlatch.eval.patch_events_construct import QUOTAS, ConstructedEdit, Shor
 
 _NOTE = Path("docs/evidence/patch-events/PILOT-NOTE.md")
 _SPLIT = Path("docs/evidence/patch-events/SPLIT.json")
+_ROUTE_B_SPLIT = Path("docs/evidence/patch-events/SPLIT-pe-v2-route-b.json")
 _DOCKET = Path("data/t0_docket.json")
 _CORPUS = Path("data/corpus")
 _FORMAL_REFUSAL = "pilot 未结束，不得读取正式集"
+_ROUTE_B_FORMAL_N = 100
+_ROUTE_B_QUOTA_N100 = 100
 
 
 def _repo_root() -> Path:
@@ -122,3 +125,51 @@ def load_formal_ids(root: Path) -> dict[str, list[str]]:
         "n30": [str(row["claim_id"]) for row in payload["n30"]],
         "n100": [str(row["claim_id"]) for row in payload["n100"]],
     }
+
+
+def route_b_split_path(root: Path | None = None) -> Path:
+    """路线 B 正式 n=100 名单路径（写死）。不激活主跑，不发模型。"""
+    base = _repo_root() if root is None else Path(root)
+    return base / _ROUTE_B_SPLIT
+
+
+def load_route_b_manifest(root: Path | None = None) -> dict[str, Any]:
+    """读取路线 B 写死名单。不改配额，不构造样本，不发模型。"""
+    path = route_b_split_path(root)
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def load_route_b_formal_n100_ids(root: Path | None = None) -> list[str]:
+    """正式 n=100 的 claim_id 列表。pilot id 不得出现。"""
+    payload = load_route_b_manifest(root)
+    target = int(payload["quotas_target"]["n100"])
+    if target != _ROUTE_B_QUOTA_N100:
+        raise RuntimeError("路线 B 不得改小 PREREG-B 的 n=100 配额")
+    ids = [str(row["claim_id"]) for row in payload["n100"]]
+    if len(ids) != len(set(ids)):
+        raise RuntimeError("路线 B 正式 n=100 含重复主张")
+    if len(ids) > _ROUTE_B_FORMAL_N:
+        raise RuntimeError("路线 B 正式名单超过 n=100")
+    pilot_ids = {str(row["claim_id"]) for row in payload["pilot"]}
+    if set(ids) & pilot_ids:
+        raise RuntimeError("路线 B 正式 n 与 pilot 重叠")
+    gap = int(payload["gaps"]["n100"])
+    if gap != target - len(ids):
+        raise RuntimeError("路线 B gaps.n100 与配额/已建条数不一致")
+    return ids
+
+
+def route_b_result_fields(root: Path | None = None) -> dict[str, int]:
+    """结果表可抄字段：语料缺额 = gaps.n100。不得为凑齐改小配额。"""
+    payload = load_route_b_manifest(root)
+    target = int(payload["quotas_target"]["n100"])
+    if target != _ROUTE_B_QUOTA_N100:
+        raise RuntimeError("路线 B 不得改小 PREREG-B 的 n=100 配额")
+    built = len(payload["n100"])
+    gap = int(payload["gaps"]["n100"])
+    if gap != target - built:
+        raise RuntimeError("语料缺额必须等于配额目标减已建条数")
+    fields = payload.get("result_fields") or {}
+    if int(fields.get("语料缺额", -1)) != gap:
+        raise RuntimeError("result_fields.语料缺额 与 gaps.n100 不一致")
+    return {"语料缺额": gap}

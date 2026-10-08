@@ -37,6 +37,11 @@ from freshlatch.eval.patch_events_metrics import (
     compare_primary,
     named_streams,
 )
+from freshlatch.eval.patch_events_split import (
+    load_route_b_formal_n100_ids,
+    route_b_result_fields,
+    route_b_split_path,
+)
 from freshlatch.evidence_id import parse_evidence_id
 from freshlatch.eval.patch_events_generate import build_prompt
 from freshlatch.eval.patch_events_verify import verify_edit
@@ -51,6 +56,7 @@ from freshlatch.eval.patch_events_send import (
 from freshlatch.models import DEFAULT_MODEL, MODEL_REGISTRY
 
 _PE_V2_SPLIT = Path("docs/evidence/patch-events/SPLIT-pe-v2.json")
+_PE_V2_ROUTE_B_SPLIT = Path("docs/evidence/patch-events/SPLIT-pe-v2-route-b.json")
 _PE_V2_DOCKET = Path("data/pe_v2_docket.json")
 _PE_V2_CORPUS = Path("data/corpus/pe_v2")
 _FORMAL_N = 30
@@ -110,6 +116,22 @@ def load_pe_v2_formal_n30(root: Path | None = None) -> list[dict[str, Any]]:
     missing = [claim_id for claim_id in ids if claim_id not in by_id]
     if missing:
         raise RuntimeError("正式 n=30 划分里的主张没有构造结果")
+    return [dict(by_id[claim_id]) for claim_id in ids]
+
+
+def load_pe_v2_route_b_formal_n100(root: Path | None = None) -> list[dict[str, Any]]:
+    """只取路线 B 写死名单的正式 n=100 构造记录。不进 ``main``，不发模型。"""
+    base = _repo_root() if root is None else Path(root)
+    if route_b_split_path(base) != base / _PE_V2_ROUTE_B_SPLIT:
+        raise RuntimeError("路线 B 名单路径必须写死为 SPLIT-pe-v2-route-b.json")
+    ids = load_route_b_formal_n100_ids(base)
+    # 缺额语义可抄进结果表；本 loader 不改配额、不激活主跑、不发模型。
+    _ = route_b_result_fields(base)
+    built = construct_samples(base / _PE_V2_DOCKET, base / _PE_V2_CORPUS)
+    by_id = {str(row.record["claim_id"]): row.record for row in built.n100}
+    missing = [claim_id for claim_id in ids if claim_id not in by_id]
+    if missing:
+        raise RuntimeError("路线 B 正式 n=100 划分里的主张没有构造结果")
     return [dict(by_id[claim_id]) for claim_id in ids]
 
 
