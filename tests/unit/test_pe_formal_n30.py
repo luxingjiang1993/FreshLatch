@@ -70,7 +70,7 @@ def test_formal_flag_stops_on_missing_callables(monkeypatch, capsys):
         raise AssertionError("缺实现时不得构造样本或跑臂")
 
     def must_not_verify(_request):
-        raise AssertionError("温度未锁定时正式入口不得调用自动核验")
+        raise AssertionError("生成器还没有时正式入口不得调用自动核验")
 
     monkeypatch.setattr("freshlatch.eval.patch_events_verify.verify_edit", must_not_verify)
     monkeypatch.setattr(formal, "construct_samples", blocked)
@@ -83,14 +83,19 @@ def test_formal_flag_stops_on_missing_callables(monkeypatch, capsys):
     text = captured.err
     assert "没有可调用的正式生成器" in text
     assert "没有可调用的自动核验器" not in text
-    assert "不把温度补成 0" in text
+    assert "不把温度补成 0" not in text
+    assert "default_llm.temperature 不是 0" not in text
     assert "_generate_edit" in text
     source = Path(formal.__file__).read_text(encoding="utf-8")
     assert "LLMClient(" not in source
     assert "chat.completions" not in source
+    assert "补定，2026-10-08。不是预注册原文。" in source
     assert DEFAULT_MODEL == "qwen-flash"
     assert MODEL_REGISTRY["default_llm"].model == "qwen-flash"
-    assert MODEL_REGISTRY["default_llm"].temperature is None
+    assert MODEL_REGISTRY["default_llm"].temperature == 0
+    assert MODEL_REGISTRY["judge_qwen"].temperature == 0
+    assert MODEL_REGISTRY["judge_deepseek"].temperature == 0
+    assert MODEL_REGISTRY["judge_kimi"].temperature == 0.6
 
 
 def test_loader_and_run_use_formal_n30_not_pilot(monkeypatch):

@@ -254,7 +254,12 @@ def test_registry_rows_and_aliases_keep_current_values():
     assert kimi.thinking == {"type": "disabled"}
     assert kimi.forbidden_models == frozenset({"kimi-latest", "kimi-k3", "kimi-k2.7-code"})
     assert qwen.temperature == 0
-    assert MODEL_REGISTRY["default_llm"].temperature is None
+    assert MODEL_REGISTRY["default_llm"].temperature == 0
+    assert MODEL_REGISTRY["x1_draft"].temperature is None
+    assert MODEL_REGISTRY["x1_flag"].temperature is None
+    assert MODEL_REGISTRY["judge_qwen"].temperature == 0
+    assert MODEL_REGISTRY["judge_deepseek"].temperature == 0
+    assert MODEL_REGISTRY["judge_kimi"].temperature == 0.6
     assert MODEL_REGISTRY["judge_qwen"].forbidden_models == qwen.forbidden_models
     assert MODEL_REGISTRY["judge_deepseek"].forbidden_models == deepseek.forbidden_models
     assert MODEL_REGISTRY["judge_kimi"].forbidden_models == kimi.forbidden_models

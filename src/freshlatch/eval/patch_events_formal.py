@@ -1,6 +1,7 @@
 """正式 n=30 四臂入口。
 
-默认不跑。显式 ``--formal`` 时，若正式生成器还不存在或温度未锁定，只报告缺口并退出。
+默认不跑。显式 ``--formal`` 时，若正式生成器还不存在，只报告缺口并退出。
+生成温度是 0。补定，2026-10-08。不是预注册原文。
 样本来自 ``SPLIT-pe-v2.json`` 的 n=30。不调用 ``load_formal_ids``，不读 pilot。
 算分交给已有的 ``compare_primary`` 与 ``ablation_intervals``。
 """
@@ -47,9 +48,8 @@ _GAP_GENERATOR = (
     "它们都不是这四臂的生成实现。"
 )
 _GAP_TEMPERATURE = (
-    "default_llm 没有登记 temperature。"
-    "预注册写明温度缺省则该次生成作废。"
-    "正式入口不把温度补成 0。"
+    "default_llm.temperature 不是 0。"
+    "补定，2026-10-08。不是预注册原文。"
 )
 
 
@@ -68,7 +68,7 @@ def live_gaps() -> tuple[str, ...]:
     """正式开跑还缺的可调用实现。有缺口时显式入口不得发请求。"""
     gaps = [_GAP_GENERATOR]
     entry = MODEL_REGISTRY["default_llm"]
-    if entry.model != DEFAULT_MODEL or entry.temperature is None:
+    if entry.model != DEFAULT_MODEL or entry.temperature != 0:
         gaps.append(_GAP_TEMPERATURE)
     return tuple(gaps)
 
