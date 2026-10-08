@@ -36,6 +36,8 @@
 | 20 | [20-PhaseI3-InterviewHardening.md](20-PhaseI3-InterviewHardening.md) | Phase I3 面试加固三轨(#8 政策旁路 · B′夹具 · Hard-Gold骨架;ADR-0032;[#248](https://github.com/luxingjiang1993/FreshLatch/issues/248)) |
 | 21 | [21-文档口径对齐与onboarding修订.md](21-文档口径对齐与onboarding修订.md) | 文档回填：README/路线图/早期规格与 ADR+代码对齐（不改臂、无新决议） |
 | 22 | [22-工程卫生与可维护性整改.md](22-工程卫生与可维护性整改.md) | Hygiene：HYG-01…05。不改现行 hybrid+rerank / bge-reranker-base / fastembed 0.8.1，不改 gold 与评测口径 |
+| 23 | [23-正式论文开工闸.md](23-正式论文开工闸.md) | 正式论文开工闸：B2 diff 补定、主比较抄表、五处冻表面；不回写 PREREG |
+| 24 | [24-patch-events-平行轨对照探针.md](24-patch-events-平行轨对照探针.md) | 平行轨对照探针：同文四闸 · `compare_alt_*` · 升级闸；与冲甲主链零 diff（ADR-0035；#434/#435） |
 
 ## 决议来源索引(本规格各节的权威出处)
 
