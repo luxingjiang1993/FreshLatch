@@ -37,12 +37,12 @@
 - notes: 新测试；建议 ALT-01 后跑。
 
 ### Evidence *(after Matt `/implement`)*
-- typecheck:
-- tests:
-- paths:
+- typecheck: `python -m compileall -q src` → exit 0
+- tests: `pytest tests/unit/test_pe_alt_firewall.py tests/unit/test_pe_alt_natural.py -q` → 11 passed, exit 0
+- paths: ok · `tests/unit/test_pe_alt_firewall.py`（未触 Do-not-touch：五处冻表面 / 主预注册 / `compare_primary`）
 
 ## Handoff
-`2026-10-08 | ALT-04 | ready | 建议 ALT-01 后；/before-implement ALT-04`
+`2026-10-08 | ALT-04 | implemented | 待收口；勿自行 close #453`
 
 ## Blocked by
 ALT-01（建议；若仅静态路径断言可先开，但仍标依赖旁路模块存在）
