@@ -1,4 +1,4 @@
-"""提示词正文和核验谓词未写。正式入口在温度未锁定时拒绝发请求。"""
+"""提示词正文未写。自动核验已按一致那句实现。正式入口在温度未锁定时拒绝发请求。"""
 
 from __future__ import annotations
 
@@ -34,7 +34,8 @@ def test_formal_entry_still_refuses_while_temperature_unlocked(monkeypatch, caps
     captured = capsys.readouterr()
     assert captured.out == ""
     assert "不把温度补成 0" in captured.err
-    assert "没有可调用的自动核验器" in captured.err
+    assert "没有可调用的正式生成器" in captured.err
+    assert "没有可调用的自动核验器" not in captured.err
     for key in _SECRET_ENV:
         assert key not in seen
 
@@ -72,7 +73,8 @@ def test_gap_note_lists_sentences_that_block_prompt_and_verifier():
         "高分代表放行还是拒绝。留空。",
         "没有一句规定高分代表放行还是拒绝。",
         "挡住把 `score` 当结果用。",
-        "这次不锁这类例子。",
+        "逐字相同则过，不同则不过，只多了首尾空白仍过。",
+        "`score` 为空。",
         "不写四臂提示词正文。",
         "不规定分数刻度。",
         "不把生成温度写成 0，也不写成已锁定。",
@@ -119,7 +121,10 @@ def test_gap_note_lists_sentences_that_block_prompt_and_verifier():
         "`score` 的范围和方向。",
         "仍然空着的六句",
         "不规定一致、支撑、矛盾的算法。",
+        "因此没有可调用的自动核验函数。",
+        "这次不锁这类例子。",
+        "没有可调用的自动核验器",
     ):
         assert closed not in text
     assert "你是修改核对员" not in text
-    assert not (ROOT / "src" / "freshlatch" / "eval" / "patch_events_verify.py").exists()
+    assert (ROOT / "src" / "freshlatch" / "eval" / "patch_events_verify.py").is_file()
