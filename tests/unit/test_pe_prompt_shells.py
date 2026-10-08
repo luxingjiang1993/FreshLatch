@@ -11,10 +11,8 @@ _SHARED = (
     "不要求模型输出 JSON 或 diff。",
     "不设专门失败令牌。",
     "不让模型打分。",
-    "### 指示正文",
-    "挡住 C、T、B1 与 B2 claim 的提示词正文。",
-    "### before_text 段",
-    "挡住把待改原文写进 C、T、B1 与 B2 claim 的提示词。",
+    "补定，2026-10-08。不是预注册原文。",
+    "before_text 写进 C、T、B1 和 B2 的 claim 提示词。",
 )
 
 
@@ -36,6 +34,8 @@ def test_four_shells_stay_separate_and_unsent():
         assert "temperature" not in body.lower()
         assert "你是" not in body
         assert "请输出" not in body
+        assert "挡住把待改原文写进" not in body
+        assert "留空。挡住 C、T、B1 与 B2 claim 的提示词正文。" not in body
     formal = (ROOT / "src" / "freshlatch" / "eval" / "patch_events_formal.py").read_text(encoding="utf-8")
     arms = (ROOT / "src" / "freshlatch" / "eval" / "patch_events_arms.py").read_text(encoding="utf-8")
     assert "prompts/" not in formal
@@ -53,6 +53,8 @@ def test_each_shell_keeps_only_its_locked_fields():
     assert "提示词里不放 evidence。" in c_text
     assert "输出：纯文本 after_text。" in c_text
     assert "evidence_text" not in c_text
+    assert "B1 带上请求里已经有的 evidence_text。" not in c_text
+    assert "B2 的 claim 也带上这份 evidence_text。" not in c_text
     assert "evidence_id" not in c_text
     assert "claim_text" not in c_text
     assert "证据段" not in c_text
@@ -61,25 +63,28 @@ def test_each_shell_keeps_only_its_locked_fields():
     assert "提示词里不再检索。" in t_text
     assert "输出：纯文本 after_text。" in t_text
     assert "无证据改写" not in t_text
+    assert "B1 带上请求里已经有的 evidence_text。" not in t_text
+    assert "B2 的 claim 也带上这份 evidence_text。" not in t_text
     assert "claim_text" not in t_text
     assert "证据段" not in t_text
 
     assert "做法：改写。" in b1_text
     assert "输出：纯文本 after_text。" in b1_text
+    assert "B1 带上请求里已经有的 evidence_text。" in b1_text
     assert "无证据改写" not in b1_text
     assert "不再检索" not in b1_text
     assert "claim_text" not in b1_text
+    assert "B2 的 claim 也带上这份 evidence_text。" not in b1_text
     assert "hard reject" not in b1_text
-    assert "### B1 证据段" in b1_text
-    assert "挡住写完 B1 提示词。" in b1_text
+    assert "挡住写完 B1 提示词。" not in b1_text
 
     claim, diff = b2_text.split("## diff 段", 1)
     assert "输出一句纯文本 claim_text。" in claim
     assert "只陈述要改什么。" in claim
     assert "不带 diff。diff 不在 claim 阶段输出。" in claim
+    assert "B2 的 claim 也带上这份 evidence_text。" in claim
     assert "after_text" not in claim
-    assert "### B2 claim 证据段" in claim
-    assert "挡住写完 B2 的 claim 提示词。" in claim
+    assert "挡住写完 B2 的 claim 提示词。" not in claim
     assert "已定" not in diff
     assert "这一段不写提示词。" in diff
     assert "### B2 diff 段提示词" in diff
