@@ -39,6 +39,18 @@ def test_formal_entry_still_refuses_while_temperature_unlocked(monkeypatch, caps
         assert key not in seen
 
 
+def _status_rows(text: str) -> list[tuple[str, str, str, str]]:
+    rows: list[tuple[str, str, str, str]] = []
+    for line in text.splitlines():
+        if not line.startswith("|"):
+            continue
+        cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
+        if len(cells) != 4 or cells[0] == "事项" or set(cells[1]) <= {"-", ":"}:
+            continue
+        rows.append((cells[0], cells[1], cells[2], cells[3]))
+    return rows
+
+
 def test_gap_note_lists_sentences_that_block_prompt_and_verifier():
     text = GAPS.read_text(encoding="utf-8")
     assert "状态：正文未写" in text
@@ -51,21 +63,40 @@ def test_gap_note_lists_sentences_that_block_prompt_and_verifier():
         "T 的证据只用请求里已有的 `evidence_text`。提示词里不再检索。",
         "无法修改时不另设失败标记。缺 `after_text` 或 `void` 已经算生成失败。",
         "`score` 不另定范围。已有规则仍是有分就按分从高到低，同分按 `claim_id`。",
-        "claim 相对 `before_text` 是什么，diff 相对 `after_text` 是什么。未定。",
-        "「一致」「支撑」「矛盾」怎么比。未定。",
-        "高分代表放行还是拒绝。未定。",
-        "没有一句定义 claim 与 `before_text` 的差别",
-        "没有一句定义 diff 相对 `after_text` 的形状。",
-        "没有一句把「不过」写成可执行谓词。",
-        "没有一句规定一致是子串包含、同一数字，还是别的关系。",
-        "没有一句说自动核验复用这两句，也没有一句说不复用。",
+        "claim 是一句纯文本，只陈述要改什么，不带 diff。",
+        "diff 是后一阶段从 `before_text` 到 `after_text` 的差异，不在 claim 阶段输出。",
+        "`after_text` 去掉首尾空白后，和所绑 `evidence_text` 逐字相同才算一致，否则核验不过。",
+        "支撑和矛盾不另判。",
+        "不是预注册原文。",
+        "2026-10-08",
+        "高分代表放行还是拒绝。留空。",
         "没有一句规定高分代表放行还是拒绝。",
+        "挡住把 `score` 当结果用。",
         "这次不锁这类例子。",
         "不写四臂提示词正文。",
         "不规定分数刻度。",
         "不把生成温度写成 0，也不写成已锁定。",
+        "不把 2026-10-08 的补定写成预注册原文。",
     ):
         assert sentence in text
+    rows = _status_rows(text)
+    assert rows
+    for _item, status, date, blocks in rows:
+        assert status in {"已定", "补定", "留空"}
+        if status == "补定":
+            assert date == "2026-10-08"
+            assert blocks == ""
+        elif status == "留空":
+            assert blocks
+            assert date == ""
+        else:
+            assert date == ""
+            assert blocks == ""
+    by_item = {item: (status, date, blocks) for item, status, date, blocks in rows}
+    assert by_item["claim 是一句纯文本，diff 不在 claim 阶段输出"] == ("补定", "2026-10-08", "")
+    assert by_item["一致是去掉首尾空白后的逐字相同，支撑和矛盾不另判"] == ("补定", "2026-10-08", "")
+    assert by_item["高分代表放行还是拒绝"] == ("留空", "", "把 score 当结果用")
+    assert [status for _item, status, _date, _blocks in rows].count("留空") == 1
     for closed in (
         "没有一句规定提示词删掉这两段，还是留着但禁止使用。",
         "没有一句规定 rewrite 阶段各写一份，还是共用一份。",
@@ -74,11 +105,20 @@ def test_gap_note_lists_sentences_that_block_prompt_and_verifier():
         "没有一句规定提示词只根据给定 T1 chunk 改写，还是先按检索模式取 chunk 再改写。",
         "没有一句规定提示词要求模型在无法修改时输出的标记。",
         "没有一句规定分数的范围、高分是否更该放行，或没有分数时如何排序。",
+        "没有一句定义 claim 与 `before_text` 的差别",
+        "没有一句定义 diff 相对 `after_text` 的形状。",
+        "没有一句把「不过」写成可执行谓词。",
+        "没有一句规定一致是子串包含、同一数字，还是别的关系。",
+        "没有一句说自动核验复用这两句，也没有一句说不复用。",
+        "claim 相对 `before_text` 是什么，diff 相对 `after_text` 是什么。未定。",
+        "「一致」「支撑」「矛盾」怎么比。未定。",
+        "高分代表放行还是拒绝。未定。",
         "输出是 JSON、纯文本还是 diff。",
         "T 的证据是请求里现成的还是提示词里再检索。",
         "无法修改时模型回什么。",
         "`score` 的范围和方向。",
         "仍然空着的六句",
+        "不规定一致、支撑、矛盾的算法。",
     ):
         assert closed not in text
     assert "你是修改核对员" not in text
