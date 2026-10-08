@@ -1,6 +1,6 @@
 """正式 n=30 四臂入口。
 
-默认不跑。显式 ``--formal`` 时，若正式生成器或自动核验器还不存在，只报告缺口并退出。
+默认不跑。显式 ``--formal`` 时，若正式生成器还不存在或温度未锁定，只报告缺口并退出。
 样本来自 ``SPLIT-pe-v2.json`` 的 n=30。不调用 ``load_formal_ids``，不读 pilot。
 算分交给已有的 ``compare_primary`` 与 ``ablation_intervals``。
 """
@@ -46,14 +46,6 @@ _GAP_GENERATOR = (
     "看过 llm.LLMClient.chat、eval/x1_drafts/generate.py、eval/runner.py、runner.py，"
     "它们都不是这四臂的生成实现。"
 )
-_GAP_VERIFIER = (
-    "没有可调用的自动核验器。"
-    "核验回调要返回 ok、score、reason。"
-    "看过 patch_events_repro._fake_verifier、evidence_bound.confirm_patch、"
-    "evidence_bound.single_claim_reverify、patch_events_metrics._reverify_ok。"
-    "前一个是 dry-run，后三个不返回这三项。"
-    "放行规则仍在 run_arms 与 run_ablations，不另写判定。"
-)
 _GAP_TEMPERATURE = (
     "default_llm 没有登记 temperature。"
     "预注册写明温度缺省则该次生成作废。"
@@ -74,7 +66,7 @@ def _utf8_stdio() -> None:
 
 def live_gaps() -> tuple[str, ...]:
     """正式开跑还缺的可调用实现。有缺口时显式入口不得发请求。"""
-    gaps = [_GAP_GENERATOR, _GAP_VERIFIER]
+    gaps = [_GAP_GENERATOR]
     entry = MODEL_REGISTRY["default_llm"]
     if entry.model != DEFAULT_MODEL or entry.temperature is None:
         gaps.append(_GAP_TEMPERATURE)
