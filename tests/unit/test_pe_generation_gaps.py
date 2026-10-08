@@ -76,7 +76,8 @@ def test_gap_note_lists_sentences_that_block_prompt_and_verifier():
         "逐字相同则过，不同则不过，只多了首尾空白仍过。",
         "`score` 为空。",
         "不新编任务、角色或评分规则。",
-        "不写 B2 的 diff 段提示词。",
+        "补定 draft，不是预注册原文",
+        "根据下面给出的 before_text、上一阶段的 claim_text，以及请求里已经有的 evidence_text，改写一句纯文本。这一句是 after_text。claim_text 不是 after_text。不要输出 diff 标记。提示词不再检索。",
         "不规定分数刻度。",
         "四臂生成用的模型温度是 0。补定，2026-10-08。不是预注册原文。",
         "根据下面给出的 before_text，改写一句纯文本。补定，2026-10-09。不是预注册原文。",
@@ -90,6 +91,8 @@ def test_gap_note_lists_sentences_that_block_prompt_and_verifier():
         if status == "补定":
             if item == "根据下面给出的 before_text，改写一句纯文本。":
                 assert date == "2026-10-09"
+            elif item == "B2 diff 段提示词":
+                assert date == "draft"
             else:
                 assert date == "2026-10-08"
             assert blocks == ""
@@ -111,7 +114,6 @@ def test_gap_note_lists_sentences_that_block_prompt_and_verifier():
     assert by_item["根据下面给出的 before_text，改写一句纯文本。"] == ("补定", "2026-10-09", "")
     assert {item: blocks for item, status, _date, blocks in rows if status == "留空"} == {
         "高分代表放行还是拒绝": "把 score 当结果用",
-        "B2 diff 段提示词": "B2 的 diff 阶段提示词",
     }
     for closed in (
         "没有一句规定提示词删掉这两段，还是留着但禁止使用。",

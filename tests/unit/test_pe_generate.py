@@ -33,6 +33,14 @@ def _request(arm: str, phase: str) -> dict:
 
 
 def test_build_prompt_splices_only_locked_fields(monkeypatch):
+    frozen = {
+        path: path.read_bytes()
+        for path in (
+            _ROOT / "docs" / "evidence" / "patch-events" / "PREREG.md",
+            _ROOT / "docs" / "evidence" / "patch-events" / "RESULT.md",
+            _ROOT / "docs" / "evidence" / "patch-events" / "formal-generations.jsonl",
+        )
+    }
     for key in _SECRET_ENV:
         monkeypatch.delenv(key, raising=False)
     seen: list[str] = []
@@ -91,8 +99,22 @@ def test_build_prompt_splices_only_locked_fields(monkeypatch):
         "evidence_text：\n证据乙\n" + tail
     )
     assert claim["output_field"] == "claim_text"
-    assert diff["prompt"] == ""
-    assert "output_field" not in diff
+    draft = (
+        "补定 draft，不是预注册原文。\n"
+        "根据下面给出的 before_text、上一阶段的 claim_text，以及请求里已经有的 evidence_text，改写一句纯文本。"
+        "这一句是 after_text。claim_text 不是 after_text。不要输出 diff 标记。提示词不再检索。\n"
+        "before_text：\n原文甲\n"
+        "claim_text：\n不该进提示词\n"
+        "evidence_text：\n证据乙\n" + tail
+    )
+    assert diff["prompt"] == draft
+    assert "补定 draft，不是预注册原文" in diff["prompt"]
+    assert diff["prompt"].count("预注册原文") == 1
+    assert diff["output_field"] == "after_text"
+    assert "after_text" not in diff
+    assert diff["prompt"].index("before_text：\n原文甲") < diff["prompt"].index(
+        "claim_text：\n不该进提示词"
+    ) < diff["prompt"].index("evidence_text：\n证据乙")
 
     for result in (c_prompt, t_prompt, b1_prompt, claim, diff):
         assert result["model"] == DEFAULT_MODEL
@@ -106,7 +128,8 @@ def test_build_prompt_splices_only_locked_fields(monkeypatch):
         assert "请输出" not in blob
         assert "hybrid+rerank" not in blob
         assert "doc#a@T1" not in blob
-        assert "不该进提示词" not in blob
+        if result is not diff:
+            assert "不该进提示词" not in blob
         assert "0.7" not in blob
         assert "retrieval_mode" not in blob
         assert "evidence_id" not in blob
@@ -126,6 +149,9 @@ def test_build_prompt_splices_only_locked_fields(monkeypatch):
     assert MODEL_REGISTRY["judge_kimi"].temperature == 0.6
     for key in _SECRET_ENV:
         assert key not in seen
+
+    for path, blob in frozen.items():
+        assert path.read_bytes() == blob
 
     source = _GENERATE.read_text(encoding="utf-8")
     for banned in (
