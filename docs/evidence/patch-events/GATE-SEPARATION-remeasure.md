@@ -38,7 +38,7 @@
 | 生成文本 | `docs/evidence/patch-events/formal-generations.jsonl`（sha256 `36b79124f2102e7d033a65aedf9b3f7ce54d6c9ade2291b15c60a72ac764093b`，150 行） |
 | 回放入口 | `_saved_generator` + `run_arms`（#469 同 after）→ 同一次 `compare_primary`（R）；入口 `python -m freshlatch.eval.patch_events_gate_retest` |
 | 模型调用 | **无** |
-| 代码针 | pending-commit（#469 tip ecfa796 + #437 R 4c972c8 + 本票复测缝） |
+| 代码针 | 70ae3d312d521c763bff7d515addb2cd13ac36d9 |
 | 基线 | cursor/469-tb1-same-after-a9d3（#469）+ cherry-pick #437 R |
 | 样本框说明 | 旧 n=30 不得作冲甲主证据；此处仅仓外可扔冒烟 |
 
