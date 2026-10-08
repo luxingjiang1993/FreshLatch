@@ -44,12 +44,12 @@
 - notes: 新旁路模块 + 只读复用 verify；不改主缝。
 
 ### Evidence *(after Matt `/implement`)*
-- typecheck:
-- tests:
-- paths:
+- typecheck: `python -m compileall -q src` → exit 0
+- tests: `pytest tests/unit/test_pe_alt_natural.py -q` → 6 passed, exit 0
+- paths: ok · `src/freshlatch/eval/patch_events_alt.py` · `tests/unit/test_pe_alt_natural.py`（未触 Do-not-touch）
 
 ## Handoff
-`2026-10-08 | ALT-01 | ready | /before-implement ALT-01 后新会话 /implement`
+`2026-10-08 | ALT-01 | implemented | 旁路同文四闸+compare_alt_natural 已交；Watch 待 Ronin 代理人/编排器收口 #450`
 
 ## Blocked by
 None (can start immediately).
