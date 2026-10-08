@@ -1,0 +1,888 @@
+{
+  "conformal_reserve": "未做",
+  "counts": {
+    "n100": 2,
+    "n30": 2,
+    "pilot": 4,
+    "shortfalls": 136
+  },
+  "gaps": {
+    "n100": 98,
+    "n30": 28,
+    "pilot": 11
+  },
+  "n100": [
+    {
+      "claim_id": "c7",
+      "construction_gold": "正确",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "c9",
+      "construction_gold": "正确",
+      "edit_type": "数值"
+    }
+  ],
+  "n30": [
+    {
+      "claim_id": "c7",
+      "construction_gold": "正确",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "c9",
+      "construction_gold": "正确",
+      "edit_type": "数值"
+    }
+  ],
+  "pilot": [
+    {
+      "claim_id": "c1",
+      "construction_gold": "坏",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "c10",
+      "construction_gold": "正确",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "c11",
+      "construction_gold": "坏",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "c3",
+      "construction_gold": "正确",
+      "edit_type": "数值"
+    }
+  ],
+  "quotas_target": {
+    "n100": 100,
+    "n30": 30,
+    "pilot": 15
+  },
+  "sha256": "d4537c76eaa2c6395bbf0e7dd89cb80b825f82aaf707ec172f317c86d1064671",
+  "shortfalls": [
+    {
+      "claim_id": "c12",
+      "edit_type": "数值",
+      "operator": null,
+      "reason": "没有可配对的数值"
+    },
+    {
+      "claim_id": "c2",
+      "edit_type": "数值",
+      "operator": null,
+      "reason": "没有可配对的数值"
+    },
+    {
+      "claim_id": "c4",
+      "edit_type": "数值",
+      "operator": 2,
+      "reason": "没有可配对的数值"
+    },
+    {
+      "claim_id": "c5",
+      "edit_type": "数值",
+      "operator": 2,
+      "reason": "没有可配对的数值"
+    },
+    {
+      "claim_id": "c6",
+      "edit_type": "数值",
+      "operator": 2,
+      "reason": "没有可配对的数值"
+    },
+    {
+      "claim_id": "c7",
+      "edit_type": "数值",
+      "operator": 2,
+      "reason": "chunk 里少于两个不同数字"
+    },
+    {
+      "claim_id": "c8",
+      "edit_type": "数值",
+      "operator": 2,
+      "reason": "没有可配对的数值"
+    },
+    {
+      "claim_id": "c9",
+      "edit_type": "数值",
+      "operator": 2,
+      "reason": "chunk 里少于两个不同数字"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "数值",
+      "operator": 2,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "c9",
+      "edit_type": "数值",
+      "operator": 2,
+      "reason": "chunk 里少于两个不同数字"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "数值",
+      "operator": 2,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "数值",
+      "operator": 2,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "数值",
+      "operator": null,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "数值",
+      "operator": 2,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "数值",
+      "operator": null,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "数值",
+      "operator": 2,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "数值",
+      "operator": null,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "数值",
+      "operator": 2,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "数值",
+      "operator": null,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "数值",
+      "operator": 2,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "数值",
+      "operator": null,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "数值",
+      "operator": 2,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "数值",
+      "operator": null,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "数值",
+      "operator": 2,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "数值",
+      "operator": null,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "数值",
+      "operator": 2,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "数值",
+      "operator": null,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "数值",
+      "operator": 2,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "数值",
+      "operator": null,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "数值",
+      "operator": 2,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "数值",
+      "operator": null,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "数值",
+      "operator": 2,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "c12",
+      "edit_type": "日期",
+      "operator": 0,
+      "reason": "没有可配对的日期"
+    },
+    {
+      "claim_id": "c2",
+      "edit_type": "日期",
+      "operator": 0,
+      "reason": "没有可配对的日期"
+    },
+    {
+      "claim_id": "c4",
+      "edit_type": "日期",
+      "operator": 0,
+      "reason": "没有可配对的日期"
+    },
+    {
+      "claim_id": "c5",
+      "edit_type": "日期",
+      "operator": 0,
+      "reason": "没有可配对的日期"
+    },
+    {
+      "claim_id": "c6",
+      "edit_type": "日期",
+      "operator": 0,
+      "reason": "没有可配对的日期"
+    },
+    {
+      "claim_id": "c8",
+      "edit_type": "日期",
+      "operator": 0,
+      "reason": "没有可配对的日期"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "日期",
+      "operator": 0,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "日期",
+      "operator": null,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "日期",
+      "operator": 0,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "日期",
+      "operator": null,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "日期",
+      "operator": 0,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "日期",
+      "operator": null,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "日期",
+      "operator": 0,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "日期",
+      "operator": null,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "日期",
+      "operator": 0,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "日期",
+      "operator": null,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "日期",
+      "operator": 0,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "日期",
+      "operator": null,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "日期",
+      "operator": 0,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "日期",
+      "operator": null,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "日期",
+      "operator": 0,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "日期",
+      "operator": null,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "日期",
+      "operator": 0,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "日期",
+      "operator": null,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "日期",
+      "operator": 0,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "日期",
+      "operator": null,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "日期",
+      "operator": 0,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "日期",
+      "operator": null,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "日期",
+      "operator": 0,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "日期",
+      "operator": null,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "日期",
+      "operator": 0,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "日期",
+      "operator": null,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "日期",
+      "operator": 0,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "日期",
+      "operator": null,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "日期",
+      "operator": 0,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "c12",
+      "edit_type": "条款替换",
+      "operator": 0,
+      "reason": "没有可配对的条款"
+    },
+    {
+      "claim_id": "c2",
+      "edit_type": "条款替换",
+      "operator": 0,
+      "reason": "没有可配对的条款"
+    },
+    {
+      "claim_id": "c4",
+      "edit_type": "条款替换",
+      "operator": 0,
+      "reason": "没有可配对的条款"
+    },
+    {
+      "claim_id": "c5",
+      "edit_type": "条款替换",
+      "operator": 0,
+      "reason": "没有可配对的条款"
+    },
+    {
+      "claim_id": "c6",
+      "edit_type": "条款替换",
+      "operator": 0,
+      "reason": "没有可配对的条款"
+    },
+    {
+      "claim_id": "c8",
+      "edit_type": "条款替换",
+      "operator": 0,
+      "reason": "没有可配对的条款"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "条款替换",
+      "operator": 0,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "条款替换",
+      "operator": null,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "条款替换",
+      "operator": 0,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "条款替换",
+      "operator": null,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "条款替换",
+      "operator": 0,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "条款替换",
+      "operator": null,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "条款替换",
+      "operator": 0,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "条款替换",
+      "operator": null,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "条款替换",
+      "operator": 0,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "条款替换",
+      "operator": null,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "条款替换",
+      "operator": 0,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "条款替换",
+      "operator": null,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "条款替换",
+      "operator": 0,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "条款替换",
+      "operator": null,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "条款替换",
+      "operator": 0,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "条款替换",
+      "operator": null,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "条款替换",
+      "operator": 0,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "条款替换",
+      "operator": null,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "条款替换",
+      "operator": 0,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "条款替换",
+      "operator": null,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "条款替换",
+      "operator": 0,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "条款替换",
+      "operator": null,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "条款替换",
+      "operator": 0,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "条款替换",
+      "operator": null,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "条款替换",
+      "operator": 0,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "条款替换",
+      "operator": null,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "条款替换",
+      "operator": 0,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "条款替换",
+      "operator": null,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "条款替换",
+      "operator": 0,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "c12",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有可删除的废止限定"
+    },
+    {
+      "claim_id": "c2",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有可删除的废止限定"
+    },
+    {
+      "claim_id": "c4",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有可删除的废止限定"
+    },
+    {
+      "claim_id": "c5",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有可删除的废止限定"
+    },
+    {
+      "claim_id": "c6",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有可删除的废止限定"
+    },
+    {
+      "claim_id": "c8",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有可删除的废止限定"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "删除",
+      "operator": null,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "删除",
+      "operator": null,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "删除",
+      "operator": null,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "删除",
+      "operator": null,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "删除",
+      "operator": null,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "删除",
+      "operator": null,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "删除",
+      "operator": null,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "删除",
+      "operator": null,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "删除",
+      "operator": null,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "删除",
+      "operator": null,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "删除",
+      "operator": null,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "删除",
+      "operator": null,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "删除",
+      "operator": null,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "语料不足"
+    }
+  ],
+  "source": {
+    "corpus": "data/corpus",
+    "docket": "data/t0_docket.json"
+  }
+}
