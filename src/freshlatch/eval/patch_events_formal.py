@@ -4,6 +4,7 @@
 显式 ``--formal`` 时，用已合入的提示词正文向 ``DEFAULT_MODEL`` 发请求。
 温度只读 ``default_llm.temperature``。补定，2026-10-08。不是预注册原文。
 只发 C、T、B1 的 rewrite，以及 B2 的 claim。B2 的 diff 不发请求。
+补 diff 只走 ``append_b2_diffs``，由调用方传入 chat。``main`` 不调用它。
 每收到一条回文，立刻追加写入 ``docs/evidence/patch-events/formal-generations.jsonl``。
 同一 claim_id、arm、phase 已在文件里则跳过，不再发请求。
 样本来自 ``SPLIT-pe-v2.json`` 的 n=30。不调用 ``load_formal_ids``，不读 pilot。
@@ -38,6 +39,7 @@ from freshlatch.eval.patch_events_metrics import (
 from freshlatch.evidence_id import parse_evidence_id
 from freshlatch.eval.patch_events_generate import build_prompt
 from freshlatch.eval.patch_events_send import (
+    append_b2_diffs as send_b2_diffs,
     append_sent,
     dispatch_prompt,
     formal_requests,
@@ -64,6 +66,15 @@ def _repo_root() -> Path:
 
 def generations_path() -> Path:
     return _repo_root() / _GENERATIONS
+
+
+def append_b2_diffs(
+    rows: Sequence[Mapping[str, Any]],
+    path: Path,
+    chat: Callable[..., Any],
+) -> int:
+    """为已有 B2 claim 的 claim_id 补 diff。不读密钥，不从 ``main`` 调用。"""
+    return send_b2_diffs(rows, path, chat)
 
 
 def _utf8_stdio() -> None:
