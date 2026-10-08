@@ -267,3 +267,15 @@ _Avoid_: 已开源数据集、数据已释放(仅因 C4 存在)、多垂类数�
 **对抗套件目录 (Adversarial Catalog)**:
 假绿/对抗用例的版本化索引(`docs/research/adversarial/`,`catalog_version` semver,条目 `ATK-<FAMILY>-NN`)。Batch 5 仅为骨架(ADR-0022);目录存在 ≠ 仪器已过;禁报统计通过率、禁 pass_rate 列;与金标/预登记/ATK-CS 只指针。
 _Avoid_: 对抗已通过证书、套件通过率表(本批)、仪器已过(仅因目录有行)
+
+**patch_events 路线 B**:
+放行闸冲甲改走**新预注册**（`docs/evidence/patch-events/PREREG-B.md`）；旧 `PREREG.md` 与现 n=30 主证据链不得当冲甲主证据（可作动机附录）。禁止回写旧页凑甲，禁止复活已废路线 A 票。操作定义与门闩见 ADR-0034 与 `docs/research/patch_events-路线B冲甲可识别选取设计评估.md`。
+_Avoid_: 继续旧 PREREG→n=100 冒充冲甲、把旧 RESULT 抄进新主表成立格、设计冲甲写成将得到甲
+
+**固定 k 自然放行选取 (R)**:
+固定放行率主比较的臂间选取：k 为 T 的自然放行数；各臂从其自然放行集取 k（m≥k 时集内 `claim_id` 升序；m<k 则该臂固定 k 误放率无定义）。不是空分后按全体候选 `claim_id` top-k，也不是本期启用的臂分 top-k（S）。
+_Avoid_: 空分同集 top-k、金标/评委进 score、把 R 写成已证明甲
+
+**仓外试分离门闩**:
+锁冲甲正式主跑之前的可扔冒烟层：须见 T 相对 B1 与相对 B2 的固定 k 误放差方向均为正，且 T 的 k 达到预注册 k 下限，才允许激活 `PREREG-B` 正式主跑与正式生成。门闩未过 ≠ 协议未锁；协议可锁而正式页未激活。
+_Avoid_: 门闩报告当主表、未过门激活正式生成、仓外一次差称作甲成立
