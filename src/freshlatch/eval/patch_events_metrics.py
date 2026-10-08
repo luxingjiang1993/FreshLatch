@@ -415,6 +415,64 @@ def compare_primary(
     return {"k": k, "arms": arms, "comparisons": comparisons}
 
 
+_PRIMARY_NAMES = ("T-C", "T-B1", "T-B2")
+_PRIMARY_LABELS = ("T 对 C", "T 对 B1", "T 对 B2")
+
+
+def write_primary_false_accept(
+    text: str,
+    report: Mapping[str, Any] | None,
+    *,
+    b2_count: int,
+) -> str:
+    """把同一次 ``compare_primary`` 的误放率抄进结果表。
+
+    只写 T-C、T-B1、T-B2 三行的点估计、95% 区间、成立，以及固定放行数 k。
+    B2 记录数不是 30，或比较名顺序不是这三名，则整表不动。
+    k 为 0 时误放率无定义，这三格保持原样，不写成 0。
+    """
+    if report is None or b2_count != 30:
+        return text
+    comparisons = report.get("comparisons")
+    if not isinstance(comparisons, Sequence) or isinstance(comparisons, (str, bytes)):
+        return text
+    if len(comparisons) != 3:
+        return text
+    if [item.get("name") for item in comparisons] != list(_PRIMARY_NAMES):
+        return text
+    k = report.get("k")
+    if type(k) is not int or k <= 0:
+        return text
+    rendered = {
+        label: (
+            f"| {label} | false-accept rate | {format_rate(item['point'])} | "
+            f"{format_rate(item['ci95_low'])} | {format_rate(item['ci95_high'])} | "
+            f"{'成立' if item.get('established') is True else '不成立'} |"
+        )
+        for item, label in zip(comparisons, _PRIMARY_LABELS)
+    }
+    k_line = f"| 固定放行数 k | {k} |"
+    lines = text.splitlines()
+    rewritten: list[str] = []
+    for line in lines:
+        cells = (
+            [cell.strip() for cell in line.strip().strip("|").split("|")]
+            if line.startswith("|")
+            else []
+        )
+        if len(cells) >= 2 and cells[1] == "false-accept rate" and cells[0] in rendered:
+            rewritten.append(rendered[cells[0]])
+            continue
+        if cells and cells[0] == "固定放行数 k":
+            rewritten.append(k_line)
+            continue
+        rewritten.append(line)
+    body = "\n".join(rewritten)
+    if text.endswith("\n"):
+        body += "\n"
+    return body
+
+
 def _bootstrap_natural(
     metric: str,
     left: _Col,

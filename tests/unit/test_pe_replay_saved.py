@@ -141,8 +141,6 @@ def _result_cells() -> None:
         assert row[-3:] == ["未填", "未填", "未填"]
         assert "0" not in row[-3:]
     assert [row[0] for row in false_accept] == ["T 对 C", "T 对 B1", "T 对 B2"]
-    for row in false_accept:
-        assert row[2:] == ["未填", "未填", "未填", "未填"]
 
 
 def test_saved_file_hash_rejects_any_edited_line():

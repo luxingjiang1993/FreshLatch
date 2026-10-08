@@ -1,10 +1,10 @@
 # patch_events 结果
 
-这是结果表。口径在 `PREREG.md`。本页不回写预注册。n=30 的 Cohen's κ 与 Fleiss' κ 按仓库 `agreement` 写入。共形预留 false-accept rate 上界是「未做」。语料缺额是 0。其余该填数字的格子仍是「未填」。这里没有四臂估计，没有 pilot 数字，没有逐条评委标签，没有抽检答案。
+这是结果表。口径在 `PREREG.md`。本页不回写预注册。n=30 的 Cohen's κ 与 Fleiss' κ 按仓库 `agreement` 写入。共形预留 false-accept rate 上界是「未做」。语料缺额是 0。除三条主比较的 false-accept rate 和固定放行数 k 以外，其余该填数字的格子仍是「未填」。这里没有四臂估计，没有 pilot 数字，没有逐条评委标签，没有抽检答案。
 
 主指标是固定放行率下的 false-accept rate。预注册里的名字是误放率。误拒率同时留格。错改率、可复验率、延迟、成本留格，不参与「成立」。
 
-四条臂是 C、T（fail-closed）、B1、B2。主比较顺序是 T 对 C、T 对 B1、T 对 B2。配对差 = 对照的 false-accept rate − T 的 false-accept rate。这些格子不填。
+四条臂是 C、T（fail-closed）、B1、B2。主比较顺序是 T 对 C、T 对 B1、T 对 B2。配对差 = 对照的 false-accept rate − T 的 false-accept rate。三行 false-accept rate 的点估计、95% 区间、成立，以及固定放行数 k，只抄同一次 `compare_primary`。
 
 消融只在 T 上，放在三条主比较之后，不改主比较的判决。检索消融把脚本里的检索臂换成 BM25，并另记一列 hybrid+rerank。生产检索仍是 hybrid+rerank。本页不改这一赋值。
 
@@ -19,7 +19,7 @@
 
 | 项目 | 值 |
 |---|---|
-| 固定放行数 k | 未填 |
+| 固定放行数 k | 3 |
 | 共形预留 false-accept rate 上界 | 未做 |
 | 语料缺额 | 0 |
 
@@ -27,15 +27,15 @@
 
 | 比较 | 指标 | 点估计 | 95% 区间下界 | 95% 区间上界 | 成立 |
 |---|---|---|---|---|---|
-| T 对 C | false-accept rate | 未填 | 未填 | 未填 | 未填 |
+| T 对 C | false-accept rate | 0.3333333333333334 | -1 | 1 | 不成立 |
 | T 对 C | 误拒率 | 未填 | 未填 | 未填 | 未填 |
 | T 对 C | 错改率 | 未填 | 未填 | 未填 | 未填 |
 | T 对 C | 可复验率 | 未填 | 未填 | 未填 | 未填 |
-| T 对 B1 | false-accept rate | 未填 | 未填 | 未填 | 未填 |
+| T 对 B1 | false-accept rate | 0 | 0 | 0 | 不成立 |
 | T 对 B1 | 误拒率 | 未填 | 未填 | 未填 | 未填 |
 | T 对 B1 | 错改率 | 未填 | 未填 | 未填 | 未填 |
 | T 对 B1 | 可复验率 | 未填 | 未填 | 未填 | 未填 |
-| T 对 B2 | false-accept rate | 未填 | 未填 | 未填 | 未填 |
+| T 对 B2 | false-accept rate | 0 | 0 | 0 | 不成立 |
 | T 对 B2 | 误拒率 | 未填 | 未填 | 未填 | 未填 |
 | T 对 B2 | 错改率 | 未填 | 未填 | 未填 | 未填 |
 | T 对 B2 | 可复验率 | 未填 | 未填 | 未填 | 未填 |
