@@ -155,6 +155,59 @@ def _drop_unrecorded(record: Mapping[str, Any], saved: Mapping[str, Any] | None)
     return cleaned
 
 
+def _saved_generator(
+    generations: Sequence[Mapping[str, Any]],
+) -> Callable[[Mapping[str, Any]], dict[str, Any]]:
+    saved = _saved_index(generations)
+
+    def generator(request: Mapping[str, Any]) -> dict[str, Any]:
+        item = saved.get((str(request["claim_id"]), str(request["arm"]), str(request["phase"])))
+        if item is None:
+            return {"void": True}
+        return _from_saved(item, request)
+
+    return generator
+
+
+def _b2_after_count(arms: Mapping[str, Any]) -> int:
+    count = 0
+    for record in arms["B2"]:
+        after = record.get("after_text")
+        if isinstance(after, str) and after != "":
+            count += 1
+    return count
+
+
+def saved_primary_report(
+    candidates: Sequence[object],
+    generations: Sequence[Mapping[str, Any]],
+    *,
+    decoding: Decoding | None = None,
+) -> dict[str, Any]:
+    """对保存的行调用一次 ``compare_primary``。不写结果表，不发请求。"""
+    chosen = decoding if decoding is not None else Decoding(temperature=0, seed=SEED)
+    generator = _saved_generator(generations)
+    rows = list(candidates)
+    ingested = ingested_t1(rows)
+    arms = run_arms(
+        rows,
+        generator=generator,
+        verifier=verify_edit,
+        decoding=chosen,
+        ingested_t1=ingested,
+    )
+    report = None
+    try:
+        report = compare_primary(
+            primary_comparison_rows(arms),
+            ingested_t1=ingested,
+            streams=named_streams(),
+        )
+    except ValueError:
+        report = None
+    return {"report": report, "b2_count": _b2_after_count(arms)}
+
+
 def replay_saved_generations(
     candidates: Sequence[object],
     generations: Sequence[Mapping[str, Any]],
@@ -169,13 +222,7 @@ def replay_saved_generations(
     """
     chosen = decoding if decoding is not None else Decoding(temperature=0, seed=SEED)
     saved = _saved_index(generations)
-
-    def generator(request: Mapping[str, Any]) -> dict[str, Any]:
-        item = saved.get((str(request["claim_id"]), str(request["arm"]), str(request["phase"])))
-        if item is None:
-            return {"void": True}
-        return _from_saved(item, request)
-
+    generator = _saved_generator(generations)
     rows = list(candidates)
     ingested = ingested_t1(rows)
     arms = run_arms(

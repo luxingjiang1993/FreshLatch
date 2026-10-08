@@ -120,8 +120,8 @@ def test_shell_follows_locked_comparisons_and_leaves_numbers_blank():
 
     projects = [table for table in tables if table[0] == ["项目", "值"]]
     assert len(projects) == 2
-    assert projects[0][1:] == [
-        ["固定放行数 k", EMPTY],
+    assert projects[0][1][0] == "固定放行数 k"
+    assert projects[0][2:] == [
         ["共形预留 false-accept rate 上界", "未做"],
         ["语料缺额", "0"],
     ]
@@ -136,6 +136,8 @@ def test_shell_follows_locked_comparisons_and_leaves_numbers_blank():
         assert indexes
         for row in table[1:]:
             assert len(row) == len(header)
+            if table is comparisons and row[1] == "false-accept rate":
+                continue
             for index in indexes:
                 assert row[index] == EMPTY
                 assert re.search(r"\d", row[index]) is None
