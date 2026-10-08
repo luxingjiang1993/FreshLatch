@@ -29,17 +29,21 @@ C、T、B1 的 rewrite 与 B2 的 claim 各有一段可发送正文，只重述�
 | C、T、B1 的 rewrite 与 B2 的 claim 有可发送正文 | 补定 | 2026-10-08 | |
 | 根据下面给出的 before_text，改写一句纯文本。 | 补定 | 2026-10-09 | |
 | B2 diff 段提示词 | 补定 | draft | |
+| T/B1 同 after 再分叉（共用一次 rewrite，闸分叉） | 补定 | 2026-10-08 | |
+| 若 after_text 要对齐所绑 evidence_text，输出必须与 evidence_text 去掉首尾空白后逐字相同 | 补定 | 2026-10-08 | |
 
 ## 已写明、这次不改
 
 - 生成请求的模型字段只读 `DEFAULT_MODEL`。本页不写模型名字面量。
 - C、T、B1 的生成阶段是 `rewrite`。B2 的顺序是先 `claim` 再 `diff`，实现在 `run_arms._generate_edit`，它只调用注入的 generator。
+- **T 与 B1 同 after 再分叉**（补定，2026-10-08，#466/#467）：`run_arms` 只发一次 rewrite（请求形态 `arm=T`），T 与 B1 共用同一份 `after_text`，再分叉闸判。提示词壳仍分四臂存档；运行时 B1 不再单独 rewrite。不是放松核验。
 - C 不调用核验，生成成功即放行，记录里的 evidence id 写成空。
 - T 在核验之前先做 chunk 绑定：evidence id 必须能解析，且属于本次已入库 T1。绑定失败则拒绝，理由是「证据未绑定已入库 T1」。核验不过则 hard reject。
-- B1 在生成之后核验，不过则拒绝。这次拒绝的臂是 B1，不是 T。
+- B1 在（共享）生成之后核验，不过则拒绝。这次拒绝的臂是 B1，不是 T。
 - B2 核验不过不因此 hard reject。核验结果记在 `reverify_ok`，决定仍是放行。
 - 消融只在 T 上：拿掉 chunk 绑定、拿掉自动核验、hard reject 换成 soft warning、检索臂换成 BM25。`hybrid+rerank` 另记一列，不进主比较。
 - 核验回调的返回键是 `ok`、`score`、`reason`。非数字的 `score` 记成空。C 没有验证分数。
+- L1（补定，2026-10-08）：T/B1 提示词增加「若 after_text 要对齐所绑 evidence_text，输出必须与 evidence_text 去掉首尾空白后逐字相同。」目标是降正确样核验假阴性；不放松 hard reject / 绑定 / 逐字闸。
 
 这些开关已经在 `patch_events_arms.py` 和 `patch_events_ablation.py`。这次不改判定。
 
@@ -74,6 +78,8 @@ C、T、B1 的 rewrite 与 B2 的 claim 各有一段可发送正文，只重述�
 6. 四臂生成用的模型温度是 0。补定，2026-10-08。不是预注册原文。
 7. C、T、B1 的 rewrite 与 B2 的 claim 各有一段可发送正文。正文只重述已经锁定的句子。补定，2026-10-08。不是预注册原文。B2 的 diff 段提示词是补定 draft，不是预注册原文。
 8. 根据下面给出的 before_text，改写一句纯文本。补定，2026-10-09。不是预注册原文。
+9. T/B1 同 after 再分叉：共用一次 rewrite 产物，仅闸分叉。补定，2026-10-08。不是预注册原文。
+10. 若 after_text 要对齐所绑 evidence_text，输出必须与 evidence_text 去掉首尾空白后逐字相同。补定，2026-10-08。不是预注册原文。
 
 这些补定不是预注册原文。可发送正文只重述已经锁定的句子，不新编任务、角色或评分规则。一致那句由 `verify_edit` 实现，`score` 为空。支撑和矛盾不另判。温度登记仍在 `models.py` 的 `default_llm.temperature`。
 

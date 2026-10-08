@@ -110,6 +110,10 @@ def test_gap_note_lists_sentences_that_block_prompt_and_verifier():
     assert by_item["四臂生成温度是 0"] == ("补定", "2026-10-08", "")
     assert by_item["C、T、B1 的 rewrite 与 B2 的 claim 有可发送正文"] == ("补定", "2026-10-08", "")
     assert by_item["根据下面给出的 before_text，改写一句纯文本。"] == ("补定", "2026-10-09", "")
+    assert by_item["T/B1 同 after 再分叉（共用一次 rewrite，闸分叉）"] == ("补定", "2026-10-08", "")
+    assert by_item[
+        "若 after_text 要对齐所绑 evidence_text，输出必须与 evidence_text 去掉首尾空白后逐字相同"
+    ] == ("补定", "2026-10-08", "")
     assert {item: blocks for item, status, _date, blocks in rows if status == "留空"} == {}
     for closed in (
         "没有一句规定提示词删掉这两段，还是留着但禁止使用。",

@@ -18,6 +18,7 @@ before_text 写进 C、T、B1 和 B2 的 claim 提示词。
 补定，2026-10-09。不是预注册原文。
 根据下面给出的 before_text，改写一句纯文本。
 T 的证据只用请求里已经有的 evidence_text，提示词不再检索。
+补定，2026-10-08。不是预注册原文。若 after_text 要对齐所绑 evidence_text，输出必须与 evidence_text 去掉首尾空白后逐字相同。
 模型输出是纯文本。
 生成模型只读 DEFAULT_MODEL。
 温度只读 default_llm.temperature：0

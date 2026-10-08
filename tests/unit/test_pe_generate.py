@@ -81,11 +81,21 @@ def test_build_prompt_splices_only_locked_fields(monkeypatch):
 
     assert c_prompt["prompt"] == mark + "C 的提示词里不放 evidence。\n" + tail
     assert c_prompt["output_field"] == "after_text"
+    align = (
+        "补定，2026-10-08。不是预注册原文。"
+        "若 after_text 要对齐所绑 evidence_text，输出必须与 evidence_text 去掉首尾空白后逐字相同。\n"
+    )
     assert t_prompt["prompt"] == (
-        mark + "T 的证据只用请求里已经有的 evidence_text，提示词不再检索。\nevidence_text：\n证据乙\n" + tail
+        mark
+        + "T 的证据只用请求里已经有的 evidence_text，提示词不再检索。\nevidence_text：\n证据乙\n"
+        + align
+        + tail
     )
     assert b1_prompt["prompt"] == (
-        mark + "B1 带上请求里已经有的 evidence_text。\nevidence_text：\n证据乙\n" + tail
+        mark
+        + "B1 带上请求里已经有的 evidence_text。\nevidence_text：\n证据乙\n"
+        + align
+        + tail
     )
     assert t_prompt["output_field"] == b1_prompt["output_field"] == "after_text"
     assert claim["prompt"] == (

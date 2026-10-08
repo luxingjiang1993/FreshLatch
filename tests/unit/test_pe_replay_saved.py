@@ -224,10 +224,16 @@ def test_replay_saved_rows_keep_b2_diff_text(monkeypatch):
         b2_saved[item["claim_id"]] for item in played_b2
     ]
     assert report["voids"] == []
-    for arm in ("C", "T", "B1"):
+    # D1：T/B1 同 after——回放只消费 T 的 rewrite；B1 记录与 T 逐字相同。
+    for arm in ("C", "T"):
         played = report["arms"][arm]
         assert len(played) == 30
         assert [item["after_text"] for item in played] == [saved[arm][item["claim_id"]] for item in played]
+    played_b1 = report["arms"]["B1"]
+    assert len(played_b1) == 30
+    assert [item["after_text"] for item in played_b1] == [
+        saved["T"][item["claim_id"]] for item in played_b1
+    ]
     _assert_unrecorded(report)
     _result_cells()
 

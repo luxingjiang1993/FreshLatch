@@ -11,6 +11,10 @@ _MARK = "补定，2026-10-08。不是预注册原文。"
 _TASK_MARK = "补定，2026-10-09。不是预注册原文。"
 _TASK = "根据下面给出的 before_text，改写一句纯文本。"
 _BEFORE = "before_text 写进 C、T、B1 和 B2 的 claim 提示词。"
+_ALIGN = (
+    "补定，2026-10-08。不是预注册原文。"
+    "若 after_text 要对齐所绑 evidence_text，输出必须与 evidence_text 去掉首尾空白后逐字相同。"
+)
 _OUTPUT = "模型输出是纯文本。"
 _MODEL = "生成模型只读 DEFAULT_MODEL。"
 _DIFF_MARK = "补定 draft，不是预注册原文。"
@@ -88,6 +92,7 @@ def build_prompt(request: Mapping[str, Any]) -> dict[str, Any]:
                     "T 的证据只用请求里已经有的 evidence_text，提示词不再检索。",
                     "evidence_text：",
                     str(request["evidence_text"]),
+                    _ALIGN,
                 ]
             )
         elif arm == "B1":
@@ -96,6 +101,7 @@ def build_prompt(request: Mapping[str, Any]) -> dict[str, Any]:
                     "B1 带上请求里已经有的 evidence_text。",
                     "evidence_text：",
                     str(request["evidence_text"]),
+                    _ALIGN,
                 ]
             )
         lines.extend(tail)
