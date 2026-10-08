@@ -74,9 +74,7 @@ def live_gaps() -> tuple[str, ...]:
     """正式开跑还缺的可调用实现。有缺口时显式入口不得发请求。"""
     gaps = [_GAP_GENERATOR, _GAP_VERIFIER]
     entry = MODEL_REGISTRY["default_llm"]
-    if entry.model != "qwen-flash":
-        gaps.append("生成模型不是预注册锁定的 qwen-flash。正式入口不换模型。")
-    if entry.temperature is None:
+    if entry.model != DEFAULT_MODEL or entry.temperature is None:
         gaps.append(_GAP_TEMPERATURE)
     return tuple(gaps)
 
