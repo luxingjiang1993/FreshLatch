@@ -88,7 +88,7 @@ def _unset_keys(monkeypatch):
 
 def test_rubric_is_prereg_verbatim_and_models_are_locked():
     assert judges.RUBRIC == _prereg_rubric()
-    assert judges.JUDGES["qwen"].model == "qwen2.5-72b-instruct"
+    assert judges.JUDGES["qwen"].model == "qwen3-235b-a22b-instruct-2507"
     assert judges.JUDGES["deepseek"].model == "deepseek-flash"
     assert judges.JUDGES["deepseek"].temperature == 0
     assert judges.JUDGES["kimi"].model == "kimi-k2.6"
@@ -114,10 +114,10 @@ def test_rubric_is_prereg_verbatim_and_models_are_locked():
 
 
 def test_qwen_request_has_locked_model_and_only_four_user_fields(tmp_path):
-    transport = Scripted([_ok("qwen2.5-72b-instruct")])
+    transport = Scripted([_ok("qwen3-235b-a22b-instruct-2507")])
     judges.run_judges([_item()], transport=transport, logs_dir=tmp_path, judge_ids=("qwen",))
     call = transport.calls[0]
-    assert call["model"] == "qwen2.5-72b-instruct"
+    assert call["model"] == "qwen3-235b-a22b-instruct-2507"
     assert call["temperature"] == 0
     assert "thinking" not in call or call["thinking"] is None
     assert call["messages"][0] == {"role": "system", "content": judges.RUBRIC}
@@ -194,13 +194,13 @@ def test_echo_voids_when_model_or_temperature_differs_from_registry(tmp_path):
 def test_bad_echo_voids_the_judge_and_does_not_change_temperature(tmp_path):
     cases = [
         _ok("qwen-plus"),
-        _ok("qwen2.5-72b-instruct", temperature=0.6),
-        _ok("qwen2.5-72b-instruct", refused="temperature", content=""),
-        _ok("qwen2.5-72b-instruct", refused="thinking", content=""),
+        _ok("qwen3-235b-a22b-instruct-2507", temperature=0.6),
+        _ok("qwen3-235b-a22b-instruct-2507", refused="temperature", content=""),
+        _ok("qwen3-235b-a22b-instruct-2507", refused="thinking", content=""),
         RuntimeError("server rejected temperature=0"),
     ]
     for response in cases:
-        transport = Scripted([response, _ok("qwen2.5-72b-instruct", temperature=1)])
+        transport = Scripted([response, _ok("qwen3-235b-a22b-instruct-2507", temperature=1)])
         result = judges.run_judges(
             [_item(claim_id="c1"), _item(claim_id="c2")],
             transport=transport,
@@ -211,14 +211,14 @@ def test_bad_echo_voids_the_judge_and_does_not_change_temperature(tmp_path):
         assert result["judges"]["qwen"]["labels"] == {}
         assert len(transport.calls) == 1
         assert transport.calls[0]["temperature"] == 0
-        assert transport.calls[0]["model"] == "qwen2.5-72b-instruct"
+        assert transport.calls[0]["model"] == "qwen3-235b-a22b-instruct-2507"
 
 
 def test_parse_failure_retries_once_then_records_missing(tmp_path):
     transport = Scripted(
         [
-            _ok("qwen2.5-72b-instruct", content="不是 JSON"),
-            _ok("qwen2.5-72b-instruct", content="还是不行"),
+            _ok("qwen3-235b-a22b-instruct-2507", content="不是 JSON"),
+            _ok("qwen3-235b-a22b-instruct-2507", content="还是不行"),
             _ok("deepseek-flash", content='{"A":"是","B":"否"}'),
             _ok("kimi-k2.6", temperature=0.6, content='{"A":"是","B":"否"}'),
         ]
@@ -228,7 +228,7 @@ def test_parse_failure_retries_once_then_records_missing(tmp_path):
     assert transport.calls[0]["messages"] == transport.calls[1]["messages"]
     assert transport.calls[0]["temperature"] == 0
     assert transport.calls[1]["temperature"] == 0
-    assert transport.calls[0]["model"] == transport.calls[1]["model"] == "qwen2.5-72b-instruct"
+    assert transport.calls[0]["model"] == transport.calls[1]["model"] == "qwen3-235b-a22b-instruct-2507"
     label = result["judges"]["qwen"]["labels"]["c1"]
     assert label == {"A": None, "B": None}
     assert label["A"] != "否"
@@ -243,8 +243,8 @@ def test_parse_failure_retries_once_then_records_missing(tmp_path):
 def test_second_parse_attempt_can_succeed(tmp_path):
     transport = Scripted(
         [
-            _ok("qwen2.5-72b-instruct", content="废话"),
-            _ok("qwen2.5-72b-instruct", content='{"A":"否","B":"是"}'),
+            _ok("qwen3-235b-a22b-instruct-2507", content="废话"),
+            _ok("qwen3-235b-a22b-instruct-2507", content='{"A":"否","B":"是"}'),
         ]
     )
     result = judges.run_judges(
@@ -351,7 +351,7 @@ def test_logs_have_required_fields_and_no_secrets(tmp_path, monkeypatch):
         monkeypatch.setenv(key, value)
     transport = Scripted(
         [
-            _ok("qwen2.5-72b-instruct"),
+            _ok("qwen3-235b-a22b-instruct-2507"),
             _ok("deepseek-flash"),
             _ok("kimi-k2.6", temperature=0.6),
         ]
@@ -361,7 +361,7 @@ def test_logs_have_required_fields_and_no_secrets(tmp_path, monkeypatch):
     for value in sentinels.values():
         assert value not in blob
     for judge_id, model, temperature in (
-        ("qwen", "qwen2.5-72b-instruct", 0),
+        ("qwen", "qwen3-235b-a22b-instruct-2507", 0),
         ("deepseek", "deepseek-flash", 0),
         ("kimi", "kimi-k2.6", 0.6),
     ):
@@ -437,7 +437,7 @@ def test_real_transport_uses_fake_sdk_and_keeps_the_key_out_of_logs(tmp_path, mo
     assert captured["api_key"] == "SENTINEL_DASHSCOPE"
     assert captured["max_retries"] == 0
     assert captured["base_url"] == "https://dashscope.aliyuncs.com/compatible-mode/v1"
-    assert captured["kwargs"]["model"] == "qwen2.5-72b-instruct"
+    assert captured["kwargs"]["model"] == "qwen3-235b-a22b-instruct-2507"
     assert captured["kwargs"]["temperature"] == 0
     assert "extra_body" not in captured["kwargs"]
     log = (tmp_path / "qwen.jsonl").read_text(encoding="utf-8")
@@ -503,7 +503,7 @@ def test_nonrefusal_errors_are_logged_then_propagate(tmp_path, monkeypatch):
     failed = json.loads((tmp_path / "forbidden" / "qwen.jsonl").read_text(encoding="utf-8"))
     for key in _LOG_KEYS:
         assert key in failed
-    assert failed["请求的 model"] == "qwen2.5-72b-instruct"
+    assert failed["请求的 model"] == "qwen3-235b-a22b-instruct-2507"
     assert failed["请求的 temperature"] == 0
     assert failed["响应回显的 model"] is None
     assert failed["原始输出"] == ""
@@ -515,7 +515,7 @@ def test_nonrefusal_errors_are_logged_then_propagate(tmp_path, monkeypatch):
     _assert_no_secret((tmp_path / "forbidden" / "qwen.jsonl").read_text(encoding="utf-8"))
     assert not (tmp_path / "forbidden" / "deepseek.jsonl").exists()
 
-    dropped = Scripted([_TransientError(), _ok("qwen2.5-72b-instruct")])
+    dropped = Scripted([_TransientError(), _ok("qwen3-235b-a22b-instruct-2507")])
     with pytest.raises(_TransientError):
         judges.run_judges(
             [_item(claim_id="c1"), _item(claim_id="c2")],
@@ -527,7 +527,7 @@ def test_nonrefusal_errors_are_logged_then_propagate(tmp_path, monkeypatch):
     transient = json.loads((tmp_path / "dropped" / "qwen.jsonl").read_text(encoding="utf-8"))
     assert transient["错误类型"] == "_TransientError"
     assert transient["状态码"] is None
-    assert transient["请求的 model"] == "qwen2.5-72b-instruct"
+    assert transient["请求的 model"] == "qwen3-235b-a22b-instruct-2507"
     assert transient["请求的 temperature"] == 0
     _assert_no_secret((tmp_path / "dropped" / "qwen.jsonl").read_text(encoding="utf-8"))
 
@@ -577,8 +577,8 @@ def test_real_transport_logs_sdk_status_error_without_retry(tmp_path, monkeypatc
 def test_parse_retry_logs_both_attempts(tmp_path):
     transport = Scripted(
         [
-            _ok("qwen2.5-72b-instruct", content="不是 JSON"),
-            _ok("qwen2.5-72b-instruct", content='{"A":"是","B":"否"}'),
+            _ok("qwen3-235b-a22b-instruct-2507", content="不是 JSON"),
+            _ok("qwen3-235b-a22b-instruct-2507", content='{"A":"是","B":"否"}'),
         ]
     )
     judges.run_judges([_item()], transport=transport, logs_dir=tmp_path, judge_ids=("qwen",))
@@ -590,3 +590,34 @@ def test_parse_retry_logs_both_attempts(tmp_path):
     assert first["请求的 temperature"] == second["请求的 temperature"] == 0
     assert "错误类型" not in first
     assert "错误类型" not in second
+
+
+def test_amendment_3_keeps_prior_sentences_and_missing_temperature_echo(tmp_path):
+    prereg = Path("docs/evidence/patch-events/PREREG.md").read_text(encoding="utf-8")
+    assert "| Qwen2.5-72B | `qwen2.5-72b-instruct` |" in prereg
+    assert "4. Qwen2.5-72B 的 model 字符串与 temperature=0 不变。" in prereg
+    assert prereg.index("`qwen2.5-72b-instruct`") < prereg.index("## 修订记录 Amendment 3")
+    assert "本修订取代 Amendment 1 第 4 条中的 Qwen 模型名。" in prereg
+    assert "`qwen3-235b-a22b-instruct-2507`" in prereg.split("## 修订记录 Amendment 3", 1)[1]
+    decision = Path("docs/evidence/patch-events/DECISION-LOG.md").read_text(encoding="utf-8")
+    section = decision.split("## 跑数据前偏离 · Amendment 3", 1)[1]
+    assert "决定人：用户" in section
+    assert "转述人：Ronin 代理人" in section
+    assert "都不回传 temperature" in section
+    assert "reasoning_tokens=1" in section
+    transport = Scripted([_ok("qwen3-235b-a22b-instruct-2507", temperature=None)])
+    result = judges.run_judges(
+        [_item()],
+        transport=transport,
+        logs_dir=tmp_path,
+        judge_ids=("qwen",),
+    )
+    assert result["judges"]["qwen"]["void"] is False
+    assert result["judges"]["qwen"]["labels"]["c1"] == {"A": "是", "B": "否"}
+    assert judges.JUDGES["qwen"].thinking is None
+    assert judges.JUDGES["qwen"].temperature == 0
+    assert judges.JUDGES["qwen"].env_key == "DASHSCOPE_API_KEY"
+    assert judges.JUDGES["deepseek"].model == "deepseek-flash"
+    assert judges.JUDGES["deepseek"].temperature == 0
+    assert judges.JUDGES["kimi"].model == "kimi-k2.6"
+    assert judges.JUDGES["kimi"].temperature == 0.6
