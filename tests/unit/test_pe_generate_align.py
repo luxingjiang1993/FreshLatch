@@ -69,5 +69,6 @@ def test_verify_edit_surface_unchanged_and_still_exact_match():
         }
     )["ok"] is False
     src = _GENERATE.read_text(encoding="utf-8")
-    assert "verify_edit" not in src
+    assert "patch_events_verify" not in src
     assert "after.strip" not in src
+    assert "LLMClient(" not in src
