@@ -97,8 +97,8 @@
 | 组 | 做法 |
 |---|---|
 | C | 无证据改写。不绑定 chunk，不跑自动核验，不 hard reject。生成成功即自然放行。 |
-| T | attested patch，fail-closed。修改必须绑定 chunk 级证据，且 evidence id 属于本次已入库 T1；自动核验不过则 hard reject，不写回。 |
-| B1 | post-hoc verify。先改后验，RARR 式。核验发生在修改生成之后。核验不过则拒绝。不得把这种拒绝记成 T。 |
+| T | attested patch，fail-closed。修改必须绑定 chunk 级证据，且 evidence id 属于本次已入库 T1；自动核验不过则 hard reject，不写回。与 B1 **同 after 再分叉**（共用一次 rewrite 产物后再过闸）。 |
+| B1 | post-hoc verify。先改后验，RARR 式。与 T 共用同一份 `after_text`，核验发生在共享生成之后。核验不过则拒绝。不得把这种拒绝记成 T。不跑 T 的入库绑定闸。 |
 | B2 | KPR 式 claim → diff。先从主张得到 claim，再生成 diff。核验不过不自动 hard reject。 |
 
 主实验里 T 的检索只读生产常量：`PRODUCTION_RETRIEVAL_MODE = "hybrid+rerank"`。本实验不改这一行。
@@ -174,7 +174,9 @@
 
 ## 仓外试分离门闩（当前未过）
 
-门闩报告不进主表，可扔。规则必须与本页 R 一致。路径建议：`docs/evidence/patch-events/GATE-SEPARATION.md`（可扔；实现/探针票写）。
+门闩报告不进主表，可扔。规则必须与本页 R 一致。路径建议：`docs/evidence/patch-events/GATE-SEPARATION.md`（可扔；实现/探针票写）。报告缝：`src/freshlatch/eval/patch_events_gate_retest.py`（默认零 LLM）。
+
+复测序（激活前修订锁定）：**夹具 → 只读旧生成冒烟 →（可选）人授小探针**；均不进主表。夹具可识别 ≠ 过门。
 
 过门（同时满足）后才允许写激活批注：
 
@@ -184,7 +186,7 @@
 
 未过门：保持文首「未激活」。  
 T-B1 分不开：改 T/B1 机制或改冲乙；禁止金标/评委打分硬拆。  
-k 长期 < 10：禁止激活；先改 T 或降级目标。
+k 长期 < 10：禁止激活；先改 T 或降级目标（L1：降正确样核验假阴性，不放松闸）。
 
 ## 反 HARKing
 
@@ -243,6 +245,14 @@ k 长期 < 10：禁止激活；先改 T 或降级目标。
 - Conformal Abstention、UniCR、Conformal-RAG
 
 知识编辑只保留一句：那一类方法改的是模型参数里的事实；本实验决定的是文档上的一处修改放不放行。
+
+## 修订记录（激活前）
+
+| 日期 | 决议 | 修订内容 | 未改 |
+|---|---|---|---|
+| 2026-10-08 | [#466](https://github.com/luxingjiang1993/FreshLatch/issues/466) / ADR-0036 | 实验组 T/B1 可执行定义改为 **同 after 再分叉**（共用 rewrite 产物，闸分叉；B1 核验不过仍拒绝）。复测序：夹具 → 只读旧生成冒烟 →（可选）人授小探针；均不进主表。抬 k 杠杆 = L1（降正确假阴性），不放松 hard reject/绑定。 | 文首仍未激活；选取 R；成立定义；k 下限 10；止损句；禁止金标进 score |
+
+本页文首状态在过门并写激活批注之前保持「未激活」。激活前修订 ≠ 激活。
 
 ## 激活批注（空 · 门闩过后再写）
 
