@@ -83,11 +83,13 @@
 
 ### 票序（本增量）
 
+父索引：[\#468](https://github.com/luxingjiang1993/FreshLatch/issues/468)
+
 | 序 | 票 | 挡否 |
 |---|---|---|
-| 1b | T/B1 同 after 再分叉 + 复测夹具 | 挡复测报告与后续抬差叙事 |
-| 2' | 仓外门闩复测报告（可扔） | 挡激活 / #440 |
-| 1c | 抬 k：降正确假阴性（生成侧） | 挡「k≥10」求验路径；可与 2' 并行准备，但松闸禁止 |
+| 1b | [\#469](https://github.com/luxingjiang1993/FreshLatch/issues/469) T/B1 同 after 再分叉 + 复测夹具 | 挡复测报告与后续抬差叙事 |
+| 2' | [\#470](https://github.com/luxingjiang1993/FreshLatch/issues/470) 仓外门闩复测报告（可扔） | 挡激活 / #440 |
+| 1c | [\#471](https://github.com/luxingjiang1993/FreshLatch/issues/471) 抬 k：降正确假阴性（生成侧） | 挡「k≥10」求验路径；可与 2' 并行准备，但松闸禁止 |
 | （既有） | #439 名单 · #440 生成 · … | #440 仍须门闩过 + 激活 |
 
 ### 与平行轨 / 选取缝防火墙
