@@ -73,10 +73,15 @@ def test_decoding_pin_explicit():
 
 
 def test_default_main_awaits_auth_zero_llm(monkeypatch, tmp_path, capsys):
-    """默认入口：零 LLM、gate_passed=false、等待授权。"""
+    """默认入口：零 LLM、无旁路生成时 gate_passed=false、等待授权。"""
     monkeypatch.setattr(
         "freshlatch.llm.LLMClient",
         lambda *_a, **_k: (_ for _ in ()).throw(AssertionError("不得发请求")),
+    )
+    # 隔离：不读仓库内已落盘的旁路探针生成（夹具绿 ≠ 过门）
+    monkeypatch.setattr(
+        "freshlatch.eval.patch_events_gate_k_probe._PROBE_GENERATIONS_REL",
+        Path("__test_absent_gate_k_probe_generations__.jsonl"),
     )
     out = tmp_path / "GATE-K-PROBE.md"
     assert main(["--out", str(out), "--code-pin", "unit-test"]) == 0
@@ -94,6 +99,10 @@ def test_no_write_does_not_send(monkeypatch, capsys):
     monkeypatch.setattr(
         "freshlatch.llm.LLMClient",
         lambda *_a, **_k: (_ for _ in ()).throw(AssertionError("不得发请求")),
+    )
+    monkeypatch.setattr(
+        "freshlatch.eval.patch_events_gate_k_probe._PROBE_GENERATIONS_REL",
+        Path("__test_absent_gate_k_probe_generations__.jsonl"),
     )
     assert main(["--no-write"]) == 0
     out = capsys.readouterr().out
@@ -215,6 +224,11 @@ def test_write_report_default_does_not_touch_formal_jsonl(monkeypatch, tmp_path)
         "freshlatch.llm.LLMClient",
         lambda *_a, **_k: (_ for _ in ()).throw(AssertionError("不得发请求")),
     )
+    # 隔离：无旁路生成 ⇒ awaiting；不得误读仓库内已发送的探针 jsonl
+    monkeypatch.setattr(
+        "freshlatch.eval.patch_events_gate_k_probe._PROBE_GENERATIONS_REL",
+        Path("__test_absent_gate_k_probe_generations__.jsonl"),
+    )
     formal = generations_path()
     before = formal.read_bytes()
     out = tmp_path / "GATE-K-PROBE.md"
@@ -228,7 +242,8 @@ def test_write_report_default_does_not_touch_formal_jsonl(monkeypatch, tmp_path)
     assert pack["awaiting"] is True
     assert pack["gate"]["passed"] is False
     assert formal.read_bytes() == before
-    assert not (Path("docs/evidence/patch-events") / "gate-k-probe-generations.jsonl").exists() or True
-    # 旁路相对路径常量仍指向旁路而非 formal
-    assert _PROBE_GENERATIONS_REL.name == "gate-k-probe-generations.jsonl"
-    assert "formal-generations" not in _PROBE_GENERATIONS_REL.name
+    # 旁路相对路径常量（未 monkeypatch 前）仍指向旁路而非 formal
+    assert Path("docs/evidence/patch-events/gate-k-probe-generations.jsonl").name == (
+        "gate-k-probe-generations.jsonl"
+    )
+    assert "formal-generations" not in "gate-k-probe-generations.jsonl"
