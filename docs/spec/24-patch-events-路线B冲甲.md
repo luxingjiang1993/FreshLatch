@@ -1,10 +1,12 @@
 # patch_events 路线 B · 冲甲可识别（to-spec）
 
 > 来源：决议 [#432](https://github.com/luxingjiang1993/FreshLatch/issues/432) · 地图 [#431](https://github.com/luxingjiang1993/FreshLatch/issues/431) · ADR-0034 · `/to-spec`  
-> 评估：`docs/research/patch_events-路线B冲甲可识别选取设计评估.md`  
-> 协议页：`docs/evidence/patch-events/PREREG-B.md`（协议已锁 · **正式主跑未激活**）  
+> 增量决议：[#466](https://github.com/luxingjiang1993/FreshLatch/issues/466) · 地图 [#465](https://github.com/luxingjiang1993/FreshLatch/issues/465) · ADR-0035  
+> 评估：`docs/research/patch_events-路线B冲甲可识别选取设计评估.md` · `docs/research/patch_events-路线B-T与B1可执行差与抬k设计评估.md`  
+> 协议页：`docs/evidence/patch-events/PREREG-B.md`（协议已锁 · **激活前修订已记** · **正式主跑未激活**）  
 > 基线：`main` `a5e424c`（#416）；旧 `PREREG.md` + n=30 `RESULT.md` 不得当冲甲主证据  
 > **测试主缝（预锁）**：`compare_primary` 的固定 k 选取边界（R = 各臂自然放行集内取 k）  
+> **下一工程主缝（#466 后）**：T/B1 同 after 再分叉 + 门闩复测夹具（见票序 1b）  
 > 语言：中文。技术词保留 English 原词。  
 > 本页不是论文，不激活正式主跑，不发模型，不回写旧 `PREREG.md`，不填旧 `RESULT.md` 成立格。
 
@@ -66,14 +68,17 @@
 | 1. 选取仍是空分 top-k | 主路径改为 R | 夹具：T/B1/B2 自然放行集不同 → 固定 k 集合可以不同；主比较不因同集结构锁死差=0 |
 | 2. 旧病仍可被主路径触发 | 主路径拒绝旧选取；负例测试可调用 legacy | 再现「空分+全体 claim_id 取 k」时，要么主路径不再适用该选取，要么显式拒绝将其用于路线 B |
 | 3. PREREG-B 继承未齐 | `/to-spec` 已抄入样本/配额/算子/评委等 | `PREREG-B.md` 无「待抄入」占位；文首仍未激活 |
-| 4. 门闩未过 | 激活批注空；生成票默认禁发 | 未激活时正式生成入口不得写入主表/RESULT-B 成立格 |
+| 4. 门闩未过（#438） | 激活批注空；生成票默认禁发；须按 #466 复测协议重跑 | 未激活时正式生成入口不得写入主表/RESULT-B 成立格 |
 | 5. 结果表壳 | 新建 `RESULT-B.md` 空壳（抄表票） | 旧 `RESULT.md` 零回写成立格 |
 | 6. 产物路径 | `formal-generations-b.jsonl` + `data/exp/patch-events-b/` | 不追加旧 formal-generations 冻结行 |
+| 7. T/B1 可执行同构（#438 根因） | 同 after 再分叉（ADR-0035）；抬 k=降正确假阴性 | 同 after 上 T/B1 自然放行集可不同；B1 核验不过仍 reject；不放松 T hard reject |
 
 ### 票序（依赖方向固定）
 
-1. **硬门**：`compare_primary` R 选取缝（本规格主缝）  
-2. **仓外试分离报告**（可与 1 后紧挨；不进主表；过门前不可激活）  
+1. **硬门**：`compare_primary` R 选取缝（本规格主缝；#437）  
+1b. **下一张工程票（#466 后第一张）**：T/B1 同 after 再分叉 + 门闩复测夹具与报告格式（Acceptance：同 after 或同候选上 T/B1 自然放行集可不同；复测报告与 PREREG-B R 一致；默认不发模型；不激活）  
+1c. **抬 k（可同波次第二张）**：正确样生成质量 / 假阴性路径（禁止松闸凑 k）  
+2. **仓外试分离报告复测**（机制后必重跑；不进主表；过门前不可激活）  
 3. 样本名单/构造（n=100，按 PREREG-B）  
 4. 生成入口（默认不发；仅人授；须门闩过且激活后才可进主表）  
 5. 回放 + 抄表（只抄函数；`RESULT-B.md`）  
@@ -114,3 +119,5 @@
 ## Further Notes
 
 仓外门闩报告即使方向为正，也只授权**写激活批注**；激活后仍只有一次正式主跑。甲未成立前，对外口径不得称 T 更好。
+
+**#466 后**：可以再开 `/to-spec` 增量（或直接按本页 1b Acceptance 拆工程票）。**不可以**把「设计冲甲」写成「将得到甲」。未过复测门闩不得开 #440 正式生成进主表。
