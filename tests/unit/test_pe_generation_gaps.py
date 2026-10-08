@@ -70,9 +70,7 @@ def test_gap_note_lists_sentences_that_block_prompt_and_verifier():
         "支撑和矛盾不另判。",
         "不是预注册原文。",
         "2026-10-08",
-        "高分代表放行还是拒绝。留空。",
-        "没有一句规定高分代表放行还是拒绝。",
-        "挡住把 `score` 当结果用。",
+        "高分不代表放行，也不代表拒绝。score 继续为空，不把 score 当结果。放行只使用已经写好的 decision。",
         "逐字相同则过，不同则不过，只多了首尾空白仍过。",
         "`score` 为空。",
         "不新编任务、角色或评分规则。",
@@ -91,7 +89,7 @@ def test_gap_note_lists_sentences_that_block_prompt_and_verifier():
         if status == "补定":
             if item == "根据下面给出的 before_text，改写一句纯文本。":
                 assert date == "2026-10-09"
-            elif item == "B2 diff 段提示词":
+            elif item in {"B2 diff 段提示词", "高分代表放行还是拒绝"}:
                 assert date == "draft"
             else:
                 assert date == "2026-10-08"
@@ -105,16 +103,14 @@ def test_gap_note_lists_sentences_that_block_prompt_and_verifier():
     by_item = {item: (status, date, blocks) for item, status, date, blocks in rows}
     assert by_item["claim 是一句纯文本，diff 不在 claim 阶段输出"] == ("补定", "2026-10-08", "")
     assert by_item["一致是去掉首尾空白后的逐字相同，支撑和矛盾不另判"] == ("补定", "2026-10-08", "")
-    assert by_item["高分代表放行还是拒绝"] == ("留空", "", "把 score 当结果用")
+    assert by_item["高分代表放行还是拒绝"] == ("补定", "draft", "")
     assert by_item["before_text 写进 C、T、B1 和 B2 的 claim 提示词"] == ("补定", "2026-10-08", "")
     assert by_item["B1 带上请求里已经有的 evidence_text"] == ("补定", "2026-10-08", "")
     assert by_item["B2 的 claim 也带上这份 evidence_text"] == ("补定", "2026-10-08", "")
     assert by_item["四臂生成温度是 0"] == ("补定", "2026-10-08", "")
     assert by_item["C、T、B1 的 rewrite 与 B2 的 claim 有可发送正文"] == ("补定", "2026-10-08", "")
     assert by_item["根据下面给出的 before_text，改写一句纯文本。"] == ("补定", "2026-10-09", "")
-    assert {item: blocks for item, status, _date, blocks in rows if status == "留空"} == {
-        "高分代表放行还是拒绝": "把 score 当结果用",
-    }
+    assert {item: blocks for item, status, _date, blocks in rows if status == "留空"} == {}
     for closed in (
         "没有一句规定提示词删掉这两段，还是留着但禁止使用。",
         "没有一句规定 rewrite 阶段各写一份，还是共用一份。",
@@ -131,6 +127,9 @@ def test_gap_note_lists_sentences_that_block_prompt_and_verifier():
         "claim 相对 `before_text` 是什么，diff 相对 `after_text` 是什么。未定。",
         "「一致」「支撑」「矛盾」怎么比。未定。",
         "高分代表放行还是拒绝。未定。",
+        "高分代表放行还是拒绝。留空。",
+        "没有一句规定高分代表放行还是拒绝。",
+        "高分代表放行还是拒绝仍留空",
         "输出是 JSON、纯文本还是 diff。",
         "T 的证据是请求里现成的还是提示词里再检索。",
         "无法修改时模型回什么。",
