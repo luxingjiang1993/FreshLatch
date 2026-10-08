@@ -110,8 +110,14 @@ def _sha256(path: Path) -> str:
 
 
 def _corpus_sha256(root: Path) -> str:
+    """论文语料锁只覆盖 t0 与 t1。pe_v2 与论文树并列，不进入本摘要。"""
     digest = hashlib.sha256()
-    for path in sorted(root.rglob("*.md")):
+    paths: list[Path] = []
+    for name in ("t0", "t1"):
+        directory = root / name
+        if directory.is_dir():
+            paths.extend(directory.rglob("*.md"))
+    for path in sorted(paths):
         digest.update(path.relative_to(root).as_posix().encode())
         digest.update(b"\0")
         digest.update(_normalize_bytes(path.read_bytes()))
