@@ -98,7 +98,14 @@ def test_gap_note_lists_sentences_that_block_prompt_and_verifier():
     assert by_item["claim 是一句纯文本，diff 不在 claim 阶段输出"] == ("补定", "2026-10-08", "")
     assert by_item["一致是去掉首尾空白后的逐字相同，支撑和矛盾不另判"] == ("补定", "2026-10-08", "")
     assert by_item["高分代表放行还是拒绝"] == ("留空", "", "把 score 当结果用")
-    assert [status for _item, status, _date, _blocks in rows].count("留空") == 1
+    assert {item: blocks for item, status, _date, blocks in rows if status == "留空"} == {
+        "高分代表放行还是拒绝": "把 score 当结果用",
+        "指示正文": "C、T、B1 与 B2 claim 的提示词正文",
+        "before_text 段": "把待改原文写进 C、T、B1 与 B2 claim 的提示词",
+        "B1 证据段": "写完 B1 提示词",
+        "B2 claim 证据段": "写完 B2 的 claim 提示词",
+        "B2 diff 段提示词": "B2 的 diff 阶段提示词",
+    }
     for closed in (
         "没有一句规定提示词删掉这两段，还是留着但禁止使用。",
         "没有一句规定 rewrite 阶段各写一份，还是共用一份。",
