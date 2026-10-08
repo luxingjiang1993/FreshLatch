@@ -417,9 +417,10 @@ def test_real_transport_uses_fake_sdk_and_keeps_the_key_out_of_logs(tmp_path, mo
         completions = _Completions()
 
     class _Client:
-        def __init__(self, *, api_key, base_url):
+        def __init__(self, *, api_key, base_url, max_retries=2):
             captured["api_key"] = api_key
             captured["base_url"] = base_url
+            captured["max_retries"] = max_retries
 
         chat = _Chat()
 
@@ -434,6 +435,7 @@ def test_real_transport_uses_fake_sdk_and_keeps_the_key_out_of_logs(tmp_path, mo
         judge_ids=("qwen",),
     )
     assert captured["api_key"] == "SENTINEL_DASHSCOPE"
+    assert captured["max_retries"] == 0
     assert captured["base_url"] == "https://dashscope.aliyuncs.com/compatible-mode/v1"
     assert captured["kwargs"]["model"] == "qwen2.5-72b-instruct"
     assert captured["kwargs"]["temperature"] == 0
@@ -467,3 +469,124 @@ def test_real_transport_uses_fake_sdk_and_keeps_the_key_out_of_logs(tmp_path, mo
     assert captured["base_url"] == "https://api.moonshot.cn/v1"
     assert captured["kwargs"]["extra_body"] == {"thinking": {"type": "disabled"}}
     assert "SENTINEL_MOONSHOT" not in (tmp_path / "kimi.jsonl").read_text(encoding="utf-8")
+
+
+class _StatusError(Exception):
+    def __init__(self, status_code: int) -> None:
+        super().__init__("Bearer SENTINEL_DASHSCOPE Authorization HEADER_SENTINEL")
+        self.status_code = status_code
+        self.headers = {"Authorization": "HEADER_SENTINEL"}
+
+
+class _TransientError(Exception):
+    def __init__(self) -> None:
+        super().__init__("connection reset SENTINEL_DASHSCOPE")
+
+
+def _assert_no_secret(blob: str) -> None:
+    for token in ("SENTINEL_DASHSCOPE", "HEADER_SENTINEL", "Authorization", "headers"):
+        assert token not in blob
+
+
+def test_nonrefusal_errors_are_logged_then_propagate(tmp_path, monkeypatch):
+    """继续口径未在预注册写明。这里只锁住先记日志再原样抛出。"""
+    monkeypatch.setenv("DASHSCOPE_API_KEY", "SENTINEL_DASHSCOPE")
+    forbidden = Scripted([_StatusError(403), _ok("deepseek-flash")])
+    with pytest.raises(_StatusError):
+        judges.run_judges(
+            [_item()],
+            transport=forbidden,
+            logs_dir=tmp_path / "forbidden",
+            judge_ids=("qwen", "deepseek"),
+        )
+    assert len(forbidden.calls) == 1
+    failed = json.loads((tmp_path / "forbidden" / "qwen.jsonl").read_text(encoding="utf-8"))
+    for key in _LOG_KEYS:
+        assert key in failed
+    assert failed["请求的 model"] == "qwen2.5-72b-instruct"
+    assert failed["请求的 temperature"] == 0
+    assert failed["响应回显的 model"] is None
+    assert failed["原始输出"] == ""
+    assert failed["解析结果"] is None
+    assert failed["错误类型"] == "_StatusError"
+    assert failed["状态码"] == 403
+    assert isinstance(failed["延迟"], (int, float)) and not isinstance(failed["延迟"], bool)
+    assert failed["延迟"] >= 0
+    _assert_no_secret((tmp_path / "forbidden" / "qwen.jsonl").read_text(encoding="utf-8"))
+    assert not (tmp_path / "forbidden" / "deepseek.jsonl").exists()
+
+    dropped = Scripted([_TransientError(), _ok("qwen2.5-72b-instruct")])
+    with pytest.raises(_TransientError):
+        judges.run_judges(
+            [_item(claim_id="c1"), _item(claim_id="c2")],
+            transport=dropped,
+            logs_dir=tmp_path / "dropped",
+            judge_ids=("qwen",),
+        )
+    assert len(dropped.calls) == 1
+    transient = json.loads((tmp_path / "dropped" / "qwen.jsonl").read_text(encoding="utf-8"))
+    assert transient["错误类型"] == "_TransientError"
+    assert transient["状态码"] is None
+    assert transient["请求的 model"] == "qwen2.5-72b-instruct"
+    assert transient["请求的 temperature"] == 0
+    _assert_no_secret((tmp_path / "dropped" / "qwen.jsonl").read_text(encoding="utf-8"))
+
+
+def test_real_transport_logs_sdk_status_error_without_retry(tmp_path, monkeypatch):
+    monkeypatch.setenv("DASHSCOPE_API_KEY", "SENTINEL_DASHSCOPE")
+    captured = {"creates": 0}
+
+    class _Completions:
+        def create(self, **kwargs):
+            captured["creates"] += 1
+            captured["kwargs"] = kwargs
+            raise _StatusError(403)
+
+    class _Chat:
+        completions = _Completions()
+
+    class _Client:
+        def __init__(self, *, api_key, base_url, max_retries=2):
+            captured["max_retries"] = max_retries
+            captured["api_key"] = api_key
+
+        chat = _Chat()
+
+    monkeypatch.setattr("dotenv.load_dotenv", lambda *args, **kwargs: None)
+    monkeypatch.setattr("dotenv.find_dotenv", lambda *args, **kwargs: "")
+    monkeypatch.setattr("openai.OpenAI", _Client)
+
+    with pytest.raises(_StatusError):
+        judges.run_judges(
+            [_item()],
+            transport=judges.real_transport,
+            logs_dir=tmp_path,
+            judge_ids=("qwen",),
+        )
+    assert captured["creates"] == 1
+    assert captured["max_retries"] == 0
+    assert captured["api_key"] == "SENTINEL_DASHSCOPE"
+    log = (tmp_path / "qwen.jsonl").read_text(encoding="utf-8")
+    record = json.loads(log)
+    assert record["错误类型"] == "_StatusError"
+    assert record["状态码"] == 403
+    assert record["请求的 temperature"] == 0
+    _assert_no_secret(log)
+
+
+def test_parse_retry_logs_both_attempts(tmp_path):
+    transport = Scripted(
+        [
+            _ok("qwen2.5-72b-instruct", content="不是 JSON"),
+            _ok("qwen2.5-72b-instruct", content='{"A":"是","B":"否"}'),
+        ]
+    )
+    judges.run_judges([_item()], transport=transport, logs_dir=tmp_path, judge_ids=("qwen",))
+    lines = (tmp_path / "qwen.jsonl").read_text(encoding="utf-8").splitlines()
+    assert len(lines) == 2
+    first, second = (json.loads(line) for line in lines)
+    assert first["解析结果"] is None
+    assert second["解析结果"] == {"A": "是", "B": "否"}
+    assert first["请求的 temperature"] == second["请求的 temperature"] == 0
+    assert "错误类型" not in first
+    assert "错误类型" not in second

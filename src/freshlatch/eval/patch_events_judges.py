@@ -11,6 +11,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import time
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -215,7 +216,7 @@ def real_transport(request: Mapping[str, Any]) -> dict[str, Any]:
     key = os.getenv(str(request["env_key"]), "")
     if not key:
         raise MissingAPIKey(str(request["env_key"]))
-    client = OpenAI(api_key=key, base_url=str(request["base_url"]))
+    client = OpenAI(api_key=key, base_url=str(request["base_url"]), max_retries=0)
     kwargs: dict[str, Any] = {
         "model": request["model"],
         "messages": request["messages"],
@@ -256,6 +257,44 @@ def real_transport(request: Mapping[str, Any]) -> dict[str, Any]:
         "usage": usage_dict,
         "refused": None,
     }
+
+
+def _status_code(exc: BaseException) -> int | None:
+    """只留整数状态码。不读异常正文，也不读 headers。"""
+    code = getattr(exc, "status_code", None)
+    if type(code) is int:
+        return code
+    return None
+
+
+def _call_record(
+    spec: JudgeSpec,
+    digest: str,
+    elapsed: float,
+    *,
+    response_model: object,
+    usage: object,
+    content: str,
+    parsed: dict[str, str] | None,
+    error_type: str | None = None,
+    status_code: int | None = None,
+) -> dict[str, Any]:
+    record: dict[str, Any] = {
+        "时间": datetime.now(timezone.utc).isoformat(),
+        "请求的 model": spec.model,
+        "响应回显的 model": response_model,
+        "请求的 temperature": spec.temperature,
+        "思考开关": spec.thinking,
+        "usage": usage,
+        "提示的 sha256": digest,
+        "原始输出": content,
+        "解析结果": parsed,
+        "延迟": elapsed,
+    }
+    if error_type is not None:
+        record["错误类型"] = error_type
+        record["状态码"] = status_code
+    return record
 
 
 def _append_log(logs_dir: Path, judge_id: str, record: Mapping[str, Any]) -> None:
@@ -395,23 +434,41 @@ def run_judges(
             digest = _prompt_sha256(user)
             parsed: dict[str, str] | None = None
             for _attempt in range(2):
-                result = _invoke(transport, request)
+                started = time.perf_counter()
+                try:
+                    result = _invoke(transport, request)
+                except Exception as exc:
+                    _append_log(
+                        directory,
+                        judge_id,
+                        _call_record(
+                            spec,
+                            digest,
+                            time.perf_counter() - started,
+                            response_model=None,
+                            usage=None,
+                            content="",
+                            parsed=None,
+                            error_type=type(exc).__name__,
+                            status_code=_status_code(exc),
+                        ),
+                    )
+                    raise
+                elapsed = time.perf_counter() - started
                 reason = _void_reason(spec, result)
                 parsed = None if reason else parse_labels(str(result.get("content") or ""))
                 _append_log(
                     directory,
                     judge_id,
-                    {
-                        "时间": datetime.now(timezone.utc).isoformat(),
-                        "请求的 model": spec.model,
-                        "响应回显的 model": result.get("model"),
-                        "请求的 temperature": spec.temperature,
-                        "思考开关": spec.thinking,
-                        "usage": result.get("usage"),
-                        "提示的 sha256": digest,
-                        "原始输出": result.get("content") or "",
-                        "解析结果": parsed,
-                    },
+                    _call_record(
+                        spec,
+                        digest,
+                        elapsed,
+                        response_model=result.get("model"),
+                        usage=result.get("usage"),
+                        content=str(result.get("content") or ""),
+                        parsed=parsed,
+                    ),
                 )
                 if reason:
                     void = True
