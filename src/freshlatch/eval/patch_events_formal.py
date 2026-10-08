@@ -40,17 +40,19 @@ _FORMAL_N = 30
 
 _GAP_GENERATOR = (
     "没有可调用的正式生成器。"
-    "run_arms 与 run_ablations 只接受注入的 generator。"
-    "仓库里没有函数把生成请求交给已锁定的生成模型并返回 after_text，"
-    "也没有 B2 先 claim 再 diff 的实现。"
-    "LLMClient.chat 是通用传输，不是这四臂的生成实现。"
+    "run_arms._generate_edit 已有 B2 先 claim 再 diff 的调用顺序，"
+    "但它只把请求交给注入的 generator。"
+    "仓库里没有函数把该请求交给 DEFAULT_MODEL 并返回 after_text 或 claim_text。"
+    "看过 llm.LLMClient.chat、eval/x1_drafts/generate.py、eval/runner.py、runner.py，"
+    "它们都不是这四臂的生成实现。"
 )
 _GAP_VERIFIER = (
     "没有可调用的自动核验器。"
     "核验回调要返回 ok、score、reason。"
-    "仓库里没有这样的函数。"
-    "放行、hard reject、soft warning、拿掉 chunk 绑定、拿掉自动核验"
-    "这些开关在 run_arms 与 run_ablations 里，它们消费注入的核验结果，不另写判定。"
+    "看过 patch_events_repro._fake_verifier、evidence_bound.confirm_patch、"
+    "evidence_bound.single_claim_reverify、patch_events_metrics._reverify_ok。"
+    "前一个是 dry-run，后三个不返回这三项。"
+    "放行规则仍在 run_arms 与 run_ablations，不另写判定。"
 )
 _GAP_TEMPERATURE = (
     "default_llm 没有登记 temperature。"
