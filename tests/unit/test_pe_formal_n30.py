@@ -80,6 +80,10 @@ def test_formal_flag_stops_on_missing_callables(monkeypatch, capsys):
     assert "没有可调用的正式生成器" in text
     assert "没有可调用的自动核验器" in text
     assert "不把温度补成 0" in text
+    assert "_generate_edit" in text
+    source = Path(formal.__file__).read_text(encoding="utf-8")
+    assert "LLMClient(" not in source
+    assert "chat.completions" not in source
     assert DEFAULT_MODEL == "qwen-flash"
     assert MODEL_REGISTRY["default_llm"].model == "qwen-flash"
     assert MODEL_REGISTRY["default_llm"].temperature is None
@@ -145,6 +149,8 @@ def test_loader_and_run_use_formal_n30_not_pilot(monkeypatch):
     assert all(call["arm"] != "C" or call["phase"] == "rewrite" for call in seen)
     source = Path(formal.__file__).read_text(encoding="utf-8")
     assert "load_formal_ids(" not in source
+    assert "LLMClient(" not in source
+    assert "chat.completions" not in source
     assert "load_dotenv" not in source
     assert "getenv" not in source
     assert "RESULT.md" not in source
