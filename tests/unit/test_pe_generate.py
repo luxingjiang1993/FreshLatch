@@ -58,15 +58,32 @@ def test_build_prompt_splices_only_locked_fields(monkeypatch):
     b1_prompt = build_prompt(_request("B1", "rewrite"))
     claim = build_prompt(_request("B2", "claim"))
     diff = build_prompt(_request("B2", "diff"))
+    tail = (
+        "模型输出是纯文本。\n"
+        "生成模型只读 DEFAULT_MODEL。\n"
+        "温度只读 default_llm.temperature：0"
+    )
+    mark = "补定，2026-10-08。不是预注册原文。\nbefore_text 写进 C、T、B1 和 B2 的 claim 提示词。\nbefore_text：\n原文甲\n"
 
-    assert c_prompt["prompt"] == {"before_text": "原文甲"}
+    assert c_prompt["prompt"] == mark + "C 的提示词里不放 evidence。\n" + tail
     assert c_prompt["output_field"] == "after_text"
-    assert t_prompt["prompt"] == {"before_text": "原文甲", "evidence_text": "证据乙"}
-    assert b1_prompt["prompt"] == {"before_text": "原文甲", "evidence_text": "证据乙"}
+    assert t_prompt["prompt"] == (
+        mark + "T 的证据只用请求里已经有的 evidence_text，提示词不再检索。\nevidence_text：\n证据乙\n" + tail
+    )
+    assert b1_prompt["prompt"] == (
+        mark + "B1 带上请求里已经有的 evidence_text。\nevidence_text：\n证据乙\n" + tail
+    )
     assert t_prompt["output_field"] == b1_prompt["output_field"] == "after_text"
-    assert claim["prompt"] == {"before_text": "原文甲", "evidence_text": "证据乙"}
+    assert claim["prompt"] == (
+        "补定，2026-10-08。不是预注册原文。\n"
+        "claim 是一句纯文本，diff 是后面的阶段。\n"
+        "before_text 写进 C、T、B1 和 B2 的 claim 提示词。\n"
+        "before_text：\n原文甲\n"
+        "B2 的 claim 也带上这份 evidence_text。\n"
+        "evidence_text：\n证据乙\n" + tail
+    )
     assert claim["output_field"] == "claim_text"
-    assert diff["prompt"] == {}
+    assert diff["prompt"] == ""
     assert "output_field" not in diff
 
     for result in (c_prompt, t_prompt, b1_prompt, claim, diff):
@@ -82,12 +99,12 @@ def test_build_prompt_splices_only_locked_fields(monkeypatch):
         assert "hybrid+rerank" not in blob
         assert "doc#a@T1" not in blob
         assert "不该进提示词" not in blob
-        assert "temperature" not in result["prompt"]
-        assert "retrieval_mode" not in result["prompt"]
-        assert "evidence_id" not in result["prompt"]
+        assert "0.7" not in blob
+        assert "retrieval_mode" not in blob
+        assert "evidence_id" not in blob
 
-    assert "evidence" not in str(c_prompt["prompt"])
-    assert "diff" not in claim["prompt"]
+    assert "证据乙" not in c_prompt["prompt"]
+    assert "evidence_text" not in c_prompt["prompt"]
     assert "after_text" not in claim["prompt"]
     assert MODEL_REGISTRY["judge_qwen"].temperature == 0
     assert MODEL_REGISTRY["judge_deepseek"].temperature == 0

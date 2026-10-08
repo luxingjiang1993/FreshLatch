@@ -54,7 +54,7 @@ def _status_rows(text: str) -> list[tuple[str, str, str, str]]:
 
 def test_gap_note_lists_sentences_that_block_prompt_and_verifier():
     text = GAPS.read_text(encoding="utf-8")
-    assert "状态：正文未写" in text
+    assert "状态：C、T、B1 的 rewrite 与 B2 的 claim 已有可发送正文。" in text
     for sentence in (
         "C 的提示词不放证据。预注册写的是无证据改写。",
         "四臂各一份提示词，不共用一份再加约束。做法表是把四臂分开的。",
@@ -75,7 +75,8 @@ def test_gap_note_lists_sentences_that_block_prompt_and_verifier():
         "挡住把 `score` 当结果用。",
         "逐字相同则过，不同则不过，只多了首尾空白仍过。",
         "`score` 为空。",
-        "不写四臂提示词正文。",
+        "不新编任务、角色或评分规则。",
+        "不写 B2 的 diff 段提示词。",
         "不规定分数刻度。",
         "四臂生成用的模型温度是 0。补定，2026-10-08。不是预注册原文。",
         "不把 2026-10-08 的补定写成预注册原文。",
@@ -102,6 +103,7 @@ def test_gap_note_lists_sentences_that_block_prompt_and_verifier():
     assert by_item["B1 带上请求里已经有的 evidence_text"] == ("补定", "2026-10-08", "")
     assert by_item["B2 的 claim 也带上这份 evidence_text"] == ("补定", "2026-10-08", "")
     assert by_item["四臂生成温度是 0"] == ("补定", "2026-10-08", "")
+    assert by_item["C、T、B1 的 rewrite 与 B2 的 claim 有可发送正文"] == ("补定", "2026-10-08", "")
     assert {item: blocks for item, status, _date, blocks in rows if status == "留空"} == {
         "高分代表放行还是拒绝": "把 score 当结果用",
         "B2 diff 段提示词": "B2 的 diff 阶段提示词",
@@ -135,6 +137,11 @@ def test_gap_note_lists_sentences_that_block_prompt_and_verifier():
         "不把生成温度写成 0，也不写成已锁定。",
         "正式入口不把温度补成 0。",
         "`default_llm.temperature` 为空",
+        "不写四臂提示词正文。",
+        "状态：正文未写",
+        "指示正文仍留空",
+        "提示词正文这次不写",
+        "不是可发送的提示词正文。",
     ):
         assert closed not in text
     assert "你是修改核对员" not in text

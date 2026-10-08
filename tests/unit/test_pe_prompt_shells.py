@@ -1,4 +1,4 @@
-"""四臂提示词空壳只含已定字段。未锁定的段落留空，不发请求。"""
+"""四臂提示词正文只重述已锁定的句子。B2 的 diff 段不写提示词，不发请求。"""
 
 from __future__ import annotations
 
@@ -7,12 +7,15 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 PROMPTS = ROOT / "docs" / "evidence" / "patch-events" / "prompts"
 _SHARED = (
-    "不是可发送的提示词正文。",
+    "可发送的提示词正文。",
+    "补定，2026-10-08。不是预注册原文。",
     "不要求模型输出 JSON 或 diff。",
     "不设专门失败令牌。",
     "不让模型打分。",
-    "补定，2026-10-08。不是预注册原文。",
     "before_text 写进 C、T、B1 和 B2 的 claim 提示词。",
+    "模型输出是纯文本。",
+    "生成模型只读 DEFAULT_MODEL。",
+    "温度只读 default_llm.temperature：0",
 )
 
 
@@ -20,7 +23,7 @@ def _text(name: str) -> str:
     return (PROMPTS / name).read_text(encoding="utf-8")
 
 
-def test_four_shells_stay_separate_and_unsent():
+def test_four_prompt_bodies_stay_separate():
     names = sorted(path.name for path in PROMPTS.glob("*.md"))
     assert names == ["B1.md", "B2.md", "C.md", "T.md"]
     assert not list(PROMPTS.glob("*.py"))
@@ -31,9 +34,10 @@ def test_four_shells_stay_separate_and_unsent():
             assert sentence in body
         assert "高分" not in body
         assert "score" not in body.lower()
-        assert "temperature" not in body.lower()
+        assert "0.6" not in body
         assert "你是" not in body
         assert "请输出" not in body
+        assert "不是可发送的提示词正文。" not in body
         assert "挡住把待改原文写进" not in body
         assert "留空。挡住 C、T、B1 与 B2 claim 的提示词正文。" not in body
     formal = (ROOT / "src" / "freshlatch" / "eval" / "patch_events_formal.py").read_text(encoding="utf-8")
