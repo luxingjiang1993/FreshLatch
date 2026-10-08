@@ -19,6 +19,9 @@ _DIFF_TASK = (
     "改写一句纯文本。这一句是 after_text。claim_text 不是 after_text。不要输出 diff 标记。提示词不再检索。"
 )
 _REWRITE = ("C", "T", "B1")
+# #471 L1：生成侧要求 after 对齐 evidence，降正确假阴性；不改 verify_edit。
+_ALIGN_T = "T 的 after_text 去掉首尾空白后须与 evidence_text 逐字相同。"
+_ALIGN_B1 = "B1 的 after_text 去掉首尾空白后须与 evidence_text 逐字相同。"
 
 
 def _temperature_line() -> str:
@@ -88,6 +91,7 @@ def build_prompt(request: Mapping[str, Any]) -> dict[str, Any]:
                     "T 的证据只用请求里已经有的 evidence_text，提示词不再检索。",
                     "evidence_text：",
                     str(request["evidence_text"]),
+                    _ALIGN_T,
                 ]
             )
         elif arm == "B1":
@@ -96,6 +100,7 @@ def build_prompt(request: Mapping[str, Any]) -> dict[str, Any]:
                     "B1 带上请求里已经有的 evidence_text。",
                     "evidence_text：",
                     str(request["evidence_text"]),
+                    _ALIGN_B1,
                 ]
             )
         lines.extend(tail)
