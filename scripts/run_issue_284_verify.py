@@ -489,7 +489,14 @@ def _render_result(payload: dict[str, Any]) -> str:
 
 def main() -> int:
     if PRODUCTION_RETRIEVAL_MODE != "bm25":
+        # 历史锁：#284 落盘时生产默认是 bm25。常量后来改为 hybrid+rerank。
+        # 拒绝重跑是为了不覆盖当时的记录，不是在声明现在仍应使用 bm25。
         print("生产默认臂不是 bm25", file=sys.stderr)
+        print(
+            "这是 #284 落盘时的历史锁。现在的生产默认是 hybrid+rerank。"
+            "见 docs/evidence/当前可说口径.md。",
+            file=sys.stderr,
+        )
         return 1
     before = PRODUCTION_RETRIEVAL_MODE
     questions_path = ROOT / "data/exp/x1/questions.json"
