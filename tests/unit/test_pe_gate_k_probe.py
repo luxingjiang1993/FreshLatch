@@ -219,6 +219,52 @@ def test_recompute_from_synthetic_probe_generations(tmp_path, monkeypatch):
     )["ok"] is False
 
 
+def test_recompute_render_does_not_claim_awaiting(tmp_path):
+    """旁路生成已在盘时，复算渲染不得改写为「等待授权」。"""
+    gen = tmp_path / "probe.jsonl"
+    gen.write_text("{}\n", encoding="utf-8")  # 仅测渲染分支；status 由 pack 注入
+    md = render_gate_k_probe_markdown(
+        code_pin="test",
+        baseline_note="test",
+        authorize_send=False,
+        send_result=None,
+        probe_pack={
+            "status": "recomputed",
+            "gate": {
+                "passed": False,
+                "k": 0,
+                "k_ok": False,
+                "t_b1_positive": False,
+                "t_b2_positive": False,
+                "comparisons": {},
+            },
+            "arms": {"T": [], "B1": [], "B2": [], "C": []},
+            "primary": None,
+            "generations_path": gen,
+            "generations_n": 1,
+            "generations_sha256": "abc",
+            "table": [
+                {
+                    "rows": [
+                        {"臂": "T", "自然放行": 0, "自然误放": 0, "固定k误放": None},
+                        {"臂": "B1", "自然放行": 0, "自然误放": 0, "固定k误放": None},
+                        {"臂": "B2", "自然放行": 0, "自然误放": 0, "固定k误放": None},
+                        {"臂": "C", "自然放行": 0, "自然误放": 0, "固定k误放": None},
+                    ],
+                    "k": 0,
+                    "T-B1": None,
+                    "T-B2": None,
+                    "gate_passed": False,
+                }
+            ],
+        },
+        readonly_pack=None,
+    )
+    assert "旁路探针生成已存在" in md
+    assert _AWAITING not in md
+    assert "不得激活 PREREG-B" in md
+
+
 def test_write_report_default_does_not_touch_formal_jsonl(monkeypatch, tmp_path):
     monkeypatch.setattr(
         "freshlatch.llm.LLMClient",

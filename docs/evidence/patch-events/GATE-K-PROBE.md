@@ -39,15 +39,17 @@
 
 ## 基线与代码针
 
-- **代码针**：602f007
+- **代码针**：d6bcc03
 - **基线**：cursor/gate-k-probe-46c3（#458+#476+#474；R + T/B1 同 after + 生成对齐）
 - 机制缝：#458（R）+ #476（同 after）+ #474（生成对齐）已合入本分支
 
 ## 发送状态
 
-- **本会话未获明文「授权发模型」** → 停在可发送边界。
-- 状态：**等待授权发模型**
-- 入口已搭好：见文末「复算 / 发送入口」。
+- 本会话已按明文授权执行 `--authorize-send`：sent=90；b2_diff_added=30。
+- 旁路路径：`docs/evidence/patch-events/gate-k-probe-generations.jsonl`（n_lines=120）。
+- sha256=`e5fa6b9b4572390239bb49df1d74ca3422c53af7a03266d9180042379bf8f893`
+- `formal-generations.jsonl` sha256 未变：`36b79124f2102e7d033a65aedf9b3f7ce54d6c9ade2291b15c60a72ac764093b`（未污染）。
+- 本页表数字由旁路生成复算得出；代码针对齐时仅 `--recompute-only`（零 LLM）。
 
 ## 探针主表（旁路生成）
 

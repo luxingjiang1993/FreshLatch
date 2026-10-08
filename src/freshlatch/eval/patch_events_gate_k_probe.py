@@ -377,12 +377,13 @@ def render_gate_k_probe_markdown(
             "",
         ]
     )
-    if not authorize_send:
+    if live_ran:
         lines.extend(
             [
-                f"- **本会话未获明文「授权发模型」** → 停在可发送边界。",
-                f"- 状态：**{_AWAITING}**",
-                "- 入口已搭好：见文末「复算 / 发送入口」。",
+                "- 已按授权向旁路路径发送探针生成。",
+                f"- sent={send_result.get('sent')!r}；"
+                f"b2_diff_added={send_result.get('b2_diff_added')!r}",
+                f"- path=`{send_result.get('path')}`",
                 "",
             ]
         )
@@ -394,18 +395,30 @@ def render_gate_k_probe_markdown(
                 "",
             ]
         )
-    elif live_ran:
+    elif recomputed:
+        # 旁路生成已在盘：复算路径不得改写为「等待授权」
+        gens_path = probe_pack.get("generations_path") if probe_pack else None
+        gens_n = probe_pack.get("generations_n") if probe_pack else None
+        gens_sha = probe_pack.get("generations_sha256") if probe_pack else None
         lines.extend(
             [
-                "- 已按授权向旁路路径发送探针生成。",
-                f"- sent={send_result.get('sent')!r}；"
-                f"b2_diff_added={send_result.get('b2_diff_added')!r}",
-                f"- path=`{send_result.get('path')}`",
+                "- 旁路探针生成已存在；本次为复算（零 LLM），未再发送。",
+                f"- path=`{gens_path}`；n_lines={gens_n!r}",
+                f"- sha256=`{gens_sha}`",
                 "",
             ]
         )
-    else:
+    elif authorize_send:
         lines.extend(["- 授权标志已开，但本次未执行发送或无新发送。", ""])
+    else:
+        lines.extend(
+            [
+                "- **本会话未获明文「授权发模型」** → 停在可发送边界。",
+                f"- 状态：**{_AWAITING}**",
+                "- 入口已搭好：见文末「复算 / 发送入口」。",
+                "",
+            ]
+        )
 
     lines.extend(_md_table_block(probe_pack if recomputed else None, title="探针主表（旁路生成）"))
 
@@ -483,7 +496,8 @@ def render_gate_k_probe_markdown(
                 "",
             ]
         )
-        if not authorize_send:
+        # 仅「无旁路生成且未授权」时写等待句；复算已有生成不得改写
+        if not authorize_send and not recomputed:
             lines.append(f"- 本会话：**{_AWAITING}**（入口见下）。")
             lines.append("")
 
