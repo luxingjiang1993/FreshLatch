@@ -65,27 +65,27 @@ def test_default_command_does_not_construct_or_read_keys(monkeypatch, capsys):
         assert key not in seen
 
 
-def test_formal_flag_stops_on_missing_callables(monkeypatch, capsys):
+def test_formal_source_does_not_send(monkeypatch, capsys):
     def blocked(*_args, **_kwargs):
         raise AssertionError("缺实现时不得构造样本或跑臂")
 
     def must_not_verify(_request):
-        raise AssertionError("生成器还没有时正式入口不得调用自动核验")
+        raise AssertionError("这次不得调用自动核验")
 
     monkeypatch.setattr("freshlatch.eval.patch_events_verify.verify_edit", must_not_verify)
     monkeypatch.setattr(formal, "construct_samples", blocked)
     monkeypatch.setattr(formal, "run_arms", blocked)
     monkeypatch.setattr(formal, "run_ablations", blocked)
     monkeypatch.setattr(formal, "compare_primary", blocked)
-    assert formal.main(["--formal"]) == 2
+    assert formal.main([]) == 0
     captured = capsys.readouterr()
     assert captured.out == ""
-    text = captured.err
-    assert "没有可调用的正式生成器" in text
-    assert "没有可调用的自动核验器" not in text
-    assert "不把温度补成 0" not in text
-    assert "default_llm.temperature 不是 0" not in text
-    assert "_generate_edit" in text
+    assert captured.err == ""
+    gaps = "\n".join(formal.live_gaps())
+    assert "不发请求" in gaps
+    assert "四臂这次不跑" in gaps
+    assert "没有可调用的正式生成器" not in gaps
+    assert "没有可调用的自动核验器" not in gaps
     source = Path(formal.__file__).read_text(encoding="utf-8")
     assert "LLMClient(" not in source
     assert "chat.completions" not in source
