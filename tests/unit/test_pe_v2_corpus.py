@@ -18,6 +18,23 @@ def _lf(path: Path) -> bytes:
     return path.read_bytes().replace(b"\r\n", b"\n")
 
 
+def test_pe_v2_decision_is_confirmed_after_amendment_3():
+    log = _lf(_ROOT / "docs" / "evidence" / "patch-events" / "DECISION-LOG.md").decode("utf-8")
+    draft = _ROOT / "docs" / "evidence" / "patch-events" / "DECISION-LOG-pe-v2-DRAFT.md"
+    assert not draft.exists()
+    amendment = log.index("## 跑数据前偏离 · Amendment 3")
+    missing = log.index("## 跑数据前偏离 · 非拒绝类错误记缺失")
+    confirmed = log.index("## 跑数据前偏离 · 扩充公开语料")
+    assert amendment < missing < confirmed
+    section = log[confirmed:]
+    assert "决定人：用户（Oriental Ronin，2026-10-08 13:32 UTC+8）" in section
+    assert "转录人：Ronin 代理人" in section
+    assert "此时尚无 pilot，也尚无正式评委数据" in section
+    assert "不改 `PREREG.md`" in section
+    assert "日期与条款替换大多取自同一现行文本的两段，而不是新旧版本。" in section
+    assert "删除层存在算子伪影：修饰词表含「约」，会从「约定」里删字。" in section
+
+
 def test_pe_v2_fills_quotas_and_keeps_margin():
     result = construct_samples(_DOCKET, _CORPUS)
     manifest = json.loads(_lf(_MANIFEST).decode("utf-8"))
