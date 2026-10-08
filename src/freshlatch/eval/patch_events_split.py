@@ -103,8 +103,12 @@ def _read_split(root: Path) -> dict[str, Any]:
     return json.loads((root / _SPLIT).read_text(encoding="utf-8"))
 
 
-def load_pilot_ids(root: Path) -> list[str]:
-    payload = _read_split(Path(root))
+def load_pilot_ids(root: Path, *, split: Path | None = None) -> list[str]:
+    """只返回 pilot 的 claim_id。split 默认是论文清单。不打开正式集闸。"""
+    base = Path(root)
+    relative = _SPLIT if split is None else Path(split)
+    path = relative if relative.is_absolute() else base / relative
+    payload = json.loads(path.read_text(encoding="utf-8"))
     return [str(row["claim_id"]) for row in payload["pilot"]]
 
 

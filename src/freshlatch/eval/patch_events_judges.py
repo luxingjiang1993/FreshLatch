@@ -4,13 +4,18 @@
 temperature 按评委登记。服务端拒绝该参数、回显温度与登记值不一致、回显 model 与锁定字符串不一致，
 或拒绝关闭思考，则该评委整次运行作废，不改温度、不换模型。
 密钥只在真实传输里从环境变量读取，不写入日志。
+
+`python -m freshlatch.eval.patch_events_judges` 的 `--live` 默认关闭。
+关闭时不读密钥、不发请求。打开时才用 real_transport 评 pe_v2 的 pilot。
 """
 
 from __future__ import annotations
 
+import argparse
 import hashlib
 import json
 import os
+import sys
 import time
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
@@ -424,11 +429,15 @@ def run_judges(
     transport: Callable[[Mapping[str, Any]], Mapping[str, Any]],
     logs_dir: Path,
     judge_ids: Sequence[str] = JUDGE_IDS,
+    live: bool = False,
 ) -> dict[str, Any]:
     """逐评委、逐条调用。解析失败只再请求一次。回声作废则丢掉该评委已有标签。
 
     非拒绝类传输错误只把该条记缺失，不重试，同一评委的下一条和其他评委继续。
+    live 默认关闭，使用调用方传入的 transport。打开时忽略该传输，改用 real_transport。
     """
+    if live:
+        transport = real_transport
     directory = Path(logs_dir)
     directory.mkdir(parents=True, exist_ok=True)
     seen: set[str] = set()
@@ -532,3 +541,68 @@ def run_judges(
                 row[judge_id] = {"A": stored.get("A"), "B": stored.get("B")}
         rows.append(row)
     return {"judges": judges_out, "kappa": agreement(rows)}
+
+
+_PE_V2_SPLIT = Path("docs/evidence/patch-events/SPLIT-pe-v2.json")
+_PE_V2_DOCKET = Path("data/pe_v2_docket.json")
+_PE_V2_CORPUS = Path("data/corpus/pe_v2")
+
+
+def _repo_root() -> Path:
+    return Path(__file__).resolve().parents[3]
+
+
+def load_pe_v2_pilot_items(root: Path | None = None) -> list[dict[str, Any]]:
+    """只取 pe_v2 清单里的 pilot。不调用正式集闸。"""
+    from freshlatch.eval.patch_events_construct import construct_samples
+    from freshlatch.eval.patch_events_split import load_pilot_ids
+
+    base = _repo_root() if root is None else Path(root)
+    ids = load_pilot_ids(base, split=_PE_V2_SPLIT)
+    built = construct_samples(base / _PE_V2_DOCKET, base / _PE_V2_CORPUS)
+    by_id = {str(row.record["claim_id"]): row.record for row in built.pilot}
+    missing = [claim_id for claim_id in ids if claim_id not in by_id]
+    if missing:
+        raise RuntimeError("pilot 划分里的主张没有构造结果")
+    return [by_id[claim_id] for claim_id in ids]
+
+
+def _utf8_stdio() -> None:
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if callable(reconfigure):
+            reconfigure(encoding="utf-8")
+
+
+def _judge_report(result: Mapping[str, Any]) -> dict[str, Any]:
+    return {
+        judge_id: {
+            "labels": block["labels"],
+            "missing_rate": block["missing_rate"],
+        }
+        for judge_id, block in result["judges"].items()
+    }
+
+
+def main(argv: list[str] | None = None) -> int:
+    """默认关闭。只有 --live 才读 pe_v2 pilot 并调用 real_transport。"""
+    _utf8_stdio()
+    parser = argparse.ArgumentParser(prog="python -m freshlatch.eval.patch_events_judges")
+    parser.add_argument("--live", action="store_true")
+    parser.add_argument("--logs-dir", default=None)
+    args = parser.parse_args(argv)
+    if not args.live:
+        return 0
+    logs = Path(args.logs_dir) if args.logs_dir else default_log_dir()
+    result = run_judges(
+        load_pe_v2_pilot_items(_repo_root()),
+        transport=real_transport,
+        logs_dir=logs,
+        live=True,
+    )
+    sys.stdout.write(json.dumps(_judge_report(result), ensure_ascii=False) + "\n")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
