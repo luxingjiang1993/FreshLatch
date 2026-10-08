@@ -41,12 +41,12 @@
 - notes: 新夹具测；依赖 ALT-01。
 
 ### Evidence *(after Matt `/implement`)*
-- typecheck:
-- tests:
-- paths:
+- typecheck: `python -m compileall -q src` → exit 0
+- tests: `pytest tests/unit/test_pe_alt_fixtures.py tests/unit/test_pe_alt_natural.py -q` → 10 passed, exit 0
+- paths: ok · `tests/unit/test_pe_alt_fixtures.py`（未触 Do-not-touch）
 
 ## Handoff
-`2026-10-08 | ALT-02 | ready | 依赖 ALT-01；/before-implement ALT-02 后新会话 /implement`
+`2026-10-08 | ALT-02 | implemented | 夹具可分开断言已交；Watch 待 Ronin 代理人/编排器收口 #451`
 
 ## Blocked by
 ALT-01
