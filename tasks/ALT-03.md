@@ -37,12 +37,12 @@
 - notes: 附录旁路；依赖 ALT-01。
 
 ### Evidence *(after Matt `/implement`)*
-- typecheck:
-- tests:
-- paths:
+- typecheck: `python -m compileall -q src` → exit 0
+- tests: `pytest tests/unit/test_pe_alt_appendix.py -q` → 4 passed, exit 0
+- paths: ok · `src/freshlatch/eval/patch_events_alt.py` · `tests/unit/test_pe_alt_appendix.py`
 
 ## Handoff
-`2026-10-08 | ALT-03 | ready | 依赖 ALT-01；可与 ALT-02 并行（若 ALT-01 已合）`
+`2026-10-08 | ALT-03 | implemented | 附录固定 k + upgrade_tier 拒附录已交；Watch 待 Ronin 代理人/编排器收口 #452`
 
 ## Blocked by
 ALT-01

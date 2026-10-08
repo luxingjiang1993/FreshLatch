@@ -1,10 +1,13 @@
-"""平行轨旁路：同文四闸 + ``compare_alt_natural``。
+"""平行轨旁路：同文四闸 + ``compare_alt_natural`` + 附录固定 k。
 
 层身份：设计探针 / 冒烟（平行轨）。不报方差；不作统计显著；
 可分开 ≠ 甲；本轨数字不得填冲甲 RESULT。
 
 只读复用 ``verify_edit`` 与 T1 绑定语义；不改 ``compare_primary``，
 不写 ``docs/evidence/patch-events/PREREG.md`` / 主 ``RESULT.md``。
+
+固定 k 误放仅 ``compare_alt_fixed_k_appendix``（附录 only），
+不得进 ``upgrade_tier`` / 升级闸。
 """
 
 from __future__ import annotations
@@ -225,6 +228,21 @@ def _arm_natural(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
     }
 
 
+def _group_arms(
+    rows: Sequence[Mapping[str, Any]],
+) -> dict[str, list[Mapping[str, Any]]]:
+    grouped: dict[str, list[Mapping[str, Any]]] = {arm: [] for arm in ARMS}
+    for row in rows:
+        arm = row.get("arm")
+        if arm not in grouped:
+            raise ValueError(f"arm 非法: {arm!r}")
+        grouped[str(arm)].append(row)
+    missing = [arm for arm, items in grouped.items() if not items]
+    if missing:
+        raise ValueError(f"旁路比较缺臂: {', '.join(missing)}")
+    return grouped
+
+
 def compare_alt_natural(
     rows: Sequence[Mapping[str, Any]],
 ) -> dict[str, Any]:
@@ -232,17 +250,7 @@ def compare_alt_natural(
 
     放行数为 0 时自然误放率为 ``None``（无定义），禁止写成 ``0.0``。
     """
-    grouped: dict[str, list[Mapping[str, Any]]] = {arm: [] for arm in ARMS}
-    for row in rows:
-        arm = row.get("arm")
-        if arm not in grouped:
-            raise ValueError(f"arm 非法: {arm!r}")
-        grouped[str(arm)].append(row)
-
-    missing = [arm for arm, items in grouped.items() if not items]
-    if missing:
-        raise ValueError(f"旁路比较缺臂: {', '.join(missing)}")
-
+    grouped = _group_arms(rows)
     arms = {arm: _arm_natural(items) for arm, items in grouped.items()}
     t_rate = arms["T"]["自然误放率"]
     contrasts: list[dict[str, Any]] = []
@@ -259,3 +267,131 @@ def compare_alt_natural(
             }
         )
     return {"arms": arms, "contrasts": contrasts}
+
+
+def _select_fixed_k_positions(rows: Sequence[Mapping[str, Any]], k: int) -> list[int]:
+    """固定 k 选取：分数高优先；缺分置后；同分 ``claim_id`` 字典序。
+
+    思想对齐主链固定 k / 路线 B 的 R（用自然放行集定 k），
+    实现留在旁路模块，不跨模块 import 主缝比较。
+    """
+    n = len(rows)
+    if k <= 0:
+        return []
+    if k >= n:
+        return list(range(n))
+
+    def sort_key(pos: int) -> tuple[bool, float, str, int]:
+        score = rows[pos].get("score")
+        missing = score is None
+        return (
+            missing,
+            -(float(score) if score is not None else 0.0),
+            str(rows[pos]["claim_id"]),
+            pos,
+        )
+
+    return sorted(range(n), key=sort_key)[:k]
+
+
+def _arm_fixed_k(rows: Sequence[Mapping[str, Any]], k: int) -> dict[str, Any]:
+    selected = _select_fixed_k_positions(rows, k)
+    release_n = len(selected)
+    if release_n == 0:
+        false_rate: float | None = None
+    else:
+        false_n = sum(
+            1 for pos in selected if rows[pos].get("construction_gold") == "坏"
+        )
+        false_rate = false_n / release_n
+    return {
+        "固定k放行数": release_n,
+        "固定k误放率": false_rate,
+        "候选数": len(rows),
+    }
+
+
+def compare_alt_fixed_k_appendix(
+    rows: Sequence[Mapping[str, Any]],
+    *,
+    k: int | None = None,
+) -> dict[str, Any]:
+    """附录 only：固定 k 误放。默认 k = T 臂自然放行数。
+
+    返回带 ``appendix_only=True`` / ``feeds_upgrade=False`` 标记；
+    **不含**升级闸「成立」字段。``upgrade_tier`` 不得消费本输出。
+    """
+    grouped = _group_arms(rows)
+    t_natural = _arm_natural(grouped["T"])
+    k_eff = int(t_natural["自然放行数"] if k is None else k)
+    if k_eff < 0:
+        raise ValueError(f"k 非法: {k_eff}")
+
+    arms = {arm: _arm_fixed_k(items, k_eff) for arm, items in grouped.items()}
+    t_rate = arms["T"]["固定k误放率"]
+    contrasts: list[dict[str, Any]] = []
+    for contrast in CONTRASTS:
+        right = arms[contrast]["固定k误放率"]
+        if t_rate is None or right is None:
+            delta: float | None = None
+        else:
+            delta = right - t_rate
+        contrasts.append(
+            {
+                "name": f"T-{contrast}",
+                "fixed_k_false_accept_delta": delta,
+            }
+        )
+    return {
+        "appendix_only": True,
+        "feeds_upgrade": False,
+        "k": k_eff,
+        "arms": arms,
+        "contrasts": contrasts,
+    }
+
+
+def upgrade_tier(report: Mapping[str, Any]) -> str:
+    """升级档（冒烟层）：只吃 ``compare_alt_natural`` 主表。
+
+    附录（``appendix_only`` / ``feeds_upgrade=False``）显式拒绝，
+    不得因固定 k 读数硬通过「可分开」。
+    """
+    if report.get("appendix_only") is True:
+        raise ValueError("附录固定 k 不得进升级闸（upgrade_tier 拒绝 appendix_only）")
+    if report.get("feeds_upgrade") is False:
+        raise ValueError("feeds_upgrade=False 的报告不得进升级闸")
+
+    arms = report.get("arms")
+    contrasts = report.get("contrasts")
+    if not isinstance(arms, Mapping):
+        raise ValueError("upgrade_tier 只接受 compare_alt_natural 主表结构")
+    t = arms.get("T")
+    if not isinstance(t, Mapping) or "自然放行数" not in t or "自然放行率" not in t:
+        raise ValueError("upgrade_tier 需要自然率主表字段（自然放行数/自然放行率）")
+    if not isinstance(contrasts, Sequence) or isinstance(contrasts, (str, bytes)):
+        raise ValueError("upgrade_tier 需要自然率 contrasts")
+
+    n = int(t["候选数"])
+    if n <= 0:
+        raise ValueError("候选数为 0")
+    release_n = int(t["自然放行数"])
+    release_rate = float(t["自然放行率"])
+    deltas: dict[str, Any] = {}
+    for item in contrasts:
+        if not isinstance(item, Mapping):
+            continue
+        name = item.get("name")
+        if name in ("T-B1", "T-B2"):
+            deltas[str(name)] = item.get("natural_false_accept_delta")
+
+    floor_ok = release_n >= 1 and release_rate >= max(1 / n, 0.05)
+    delta_ok = (
+        deltas.get("T-B1") is not None
+        and deltas["T-B1"] > 0
+        and deltas.get("T-B2") is not None
+        and deltas["T-B2"] > 0
+    )
+    if floor_ok and delta_ok:
+        return "可分开"
+    return "分不开"
