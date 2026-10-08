@@ -43,23 +43,35 @@ def test_gap_note_lists_sentences_that_block_prompt_and_verifier():
     text = GAPS.read_text(encoding="utf-8")
     assert "状态：正文未写" in text
     for sentence in (
+        "C 的提示词不放证据。预注册写的是无证据改写。",
+        "四臂各一份提示词，不共用一份再加约束。做法表是把四臂分开的。",
+        "核验函数只看现在已经传入的臂、`claim_id`、`after_text`、`evidence_id`、`evidence_text`。",
+        "入库检查已经在核验前面做完。",
+        "输出是 JSON、纯文本还是 diff。",
+        "T 的证据是请求里现成的还是提示词里再检索。",
+        "claim 和 diff 各是什么。",
+        "无法修改时模型回什么。",
+        "「一致」「支撑」「矛盾」怎么比。",
+        "`score` 的范围和方向。",
         "没有一句规定模型看到的是一行 JSON、纯文本，还是 diff。",
-        "没有一句规定提示词删掉这两段，还是留着但禁止使用。",
         "没有一句规定提示词只根据给定 T1 chunk 改写，还是先按检索模式取 chunk 再改写。",
         "没有一句定义 claim 与 `before_text` 的差别",
-        "没有一句规定 rewrite 阶段各写一份，还是共用一份。",
-        "没有一句列出生成提示词可以出现主张、证据、修改类型或检索模式中的哪些。",
         "没有一句规定提示词要求模型在无法修改时输出的标记。",
         "没有一句把「不过」写成可执行谓词。",
         "没有一句规定一致是子串包含、同一数字，还是别的关系。",
         "没有一句说自动核验复用这两句，也没有一句说不复用。",
         "没有一句规定分数的范围、高分是否更该放行，或没有分数时如何排序。",
-        "没有一句规定自动核验在这道闸之外还要看什么。",
         "这次不锁这类例子。",
         "不写四臂提示词正文。",
         "不规定分数刻度。",
         "不把生成温度写成 0，也不写成已锁定。",
     ):
         assert sentence in text
+    for closed in (
+        "没有一句规定提示词删掉这两段，还是留着但禁止使用。",
+        "没有一句规定 rewrite 阶段各写一份，还是共用一份。",
+        "没有一句规定自动核验在这道闸之外还要看什么。",
+    ):
+        assert closed not in text
     assert "你是修改核对员" not in text
     assert not (ROOT / "src" / "freshlatch" / "eval" / "patch_events_verify.py").exists()
