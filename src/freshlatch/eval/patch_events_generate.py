@@ -8,6 +8,8 @@ from typing import Any
 from freshlatch.models import DEFAULT_MODEL, MODEL_REGISTRY
 
 _MARK = "补定，2026-10-08。不是预注册原文。"
+_TASK_MARK = "补定，2026-10-09。不是预注册原文。"
+_TASK = "根据下面给出的 before_text，改写一句纯文本。"
 _BEFORE = "before_text 写进 C、T、B1 和 B2 的 claim 提示词。"
 _OUTPUT = "模型输出是纯文本。"
 _MODEL = "生成模型只读 DEFAULT_MODEL。"
@@ -20,6 +22,10 @@ def _temperature_line() -> str:
 
 def _join(lines: list[str]) -> str:
     return "\n".join(lines)
+
+
+def _given_before(before_text: object) -> list[str]:
+    return [_TASK_MARK, _TASK, "before_text：", str(before_text)]
 
 
 def build_prompt(request: Mapping[str, Any]) -> dict[str, Any]:
@@ -44,8 +50,7 @@ def build_prompt(request: Mapping[str, Any]) -> dict[str, Any]:
                 _MARK,
                 "claim 是一句纯文本，diff 是后面的阶段。",
                 _BEFORE,
-                "before_text：",
-                str(request["before_text"]),
+                *_given_before(request["before_text"]),
                 "B2 的 claim 也带上这份 evidence_text。",
                 "evidence_text：",
                 str(request["evidence_text"]),
@@ -55,7 +60,7 @@ def build_prompt(request: Mapping[str, Any]) -> dict[str, Any]:
         return result
     if arm in _REWRITE and phase == "rewrite":
         result["output_field"] = "after_text"
-        lines = [_MARK, _BEFORE, "before_text：", str(request["before_text"])]
+        lines = [_MARK, _BEFORE, *_given_before(request["before_text"])]
         if arm == "C":
             lines.append("C 的提示词里不放 evidence。")
         elif arm == "T":
