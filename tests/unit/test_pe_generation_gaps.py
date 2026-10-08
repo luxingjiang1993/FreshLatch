@@ -79,15 +79,19 @@ def test_gap_note_lists_sentences_that_block_prompt_and_verifier():
         "不写 B2 的 diff 段提示词。",
         "不规定分数刻度。",
         "四臂生成用的模型温度是 0。补定，2026-10-08。不是预注册原文。",
+        "根据下面给出的 before_text，改写一句纯文本。补定，2026-10-09。不是预注册原文。",
         "不把 2026-10-08 的补定写成预注册原文。",
     ):
         assert sentence in text
     rows = _status_rows(text)
     assert rows
-    for _item, status, date, blocks in rows:
+    for item, status, date, blocks in rows:
         assert status in {"已定", "补定", "留空"}
         if status == "补定":
-            assert date == "2026-10-08"
+            if item == "根据下面给出的 before_text，改写一句纯文本。":
+                assert date == "2026-10-09"
+            else:
+                assert date == "2026-10-08"
             assert blocks == ""
         elif status == "留空":
             assert blocks
@@ -104,6 +108,7 @@ def test_gap_note_lists_sentences_that_block_prompt_and_verifier():
     assert by_item["B2 的 claim 也带上这份 evidence_text"] == ("补定", "2026-10-08", "")
     assert by_item["四臂生成温度是 0"] == ("补定", "2026-10-08", "")
     assert by_item["C、T、B1 的 rewrite 与 B2 的 claim 有可发送正文"] == ("补定", "2026-10-08", "")
+    assert by_item["根据下面给出的 before_text，改写一句纯文本。"] == ("补定", "2026-10-09", "")
     assert {item: blocks for item, status, _date, blocks in rows if status == "留空"} == {
         "高分代表放行还是拒绝": "把 score 当结果用",
         "B2 diff 段提示词": "B2 的 diff 阶段提示词",

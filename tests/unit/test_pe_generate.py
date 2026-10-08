@@ -63,7 +63,13 @@ def test_build_prompt_splices_only_locked_fields(monkeypatch):
         "生成模型只读 DEFAULT_MODEL。\n"
         "温度只读 default_llm.temperature：0"
     )
-    mark = "补定，2026-10-08。不是预注册原文。\nbefore_text 写进 C、T、B1 和 B2 的 claim 提示词。\nbefore_text：\n原文甲\n"
+    mark = (
+        "补定，2026-10-08。不是预注册原文。\n"
+        "before_text 写进 C、T、B1 和 B2 的 claim 提示词。\n"
+        "补定，2026-10-09。不是预注册原文。\n"
+        "根据下面给出的 before_text，改写一句纯文本。\n"
+        "before_text：\n原文甲\n"
+    )
 
     assert c_prompt["prompt"] == mark + "C 的提示词里不放 evidence。\n" + tail
     assert c_prompt["output_field"] == "after_text"
@@ -78,6 +84,8 @@ def test_build_prompt_splices_only_locked_fields(monkeypatch):
         "补定，2026-10-08。不是预注册原文。\n"
         "claim 是一句纯文本，diff 是后面的阶段。\n"
         "before_text 写进 C、T、B1 和 B2 的 claim 提示词。\n"
+        "补定，2026-10-09。不是预注册原文。\n"
+        "根据下面给出的 before_text，改写一句纯文本。\n"
         "before_text：\n原文甲\n"
         "B2 的 claim 也带上这份 evidence_text。\n"
         "evidence_text：\n证据乙\n" + tail
@@ -106,6 +114,13 @@ def test_build_prompt_splices_only_locked_fields(monkeypatch):
     assert "证据乙" not in c_prompt["prompt"]
     assert "evidence_text" not in c_prompt["prompt"]
     assert "after_text" not in claim["prompt"]
+    task = "根据下面给出的 before_text，改写一句纯文本。"
+    for result in (c_prompt, t_prompt, b1_prompt, claim):
+        assert task in result["prompt"]
+        assert result["prompt"].index(task) < result["prompt"].index("before_text：\n原文甲")
+    for result in (t_prompt, b1_prompt, claim):
+        assert result["prompt"].index(task) < result["prompt"].index("evidence_text：\n证据乙")
+    assert task not in diff["prompt"]
     assert MODEL_REGISTRY["judge_qwen"].temperature == 0
     assert MODEL_REGISTRY["judge_deepseek"].temperature == 0
     assert MODEL_REGISTRY["judge_kimi"].temperature == 0.6

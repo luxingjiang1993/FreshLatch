@@ -9,6 +9,8 @@ PROMPTS = ROOT / "docs" / "evidence" / "patch-events" / "prompts"
 _SHARED = (
     "可发送的提示词正文。",
     "补定，2026-10-08。不是预注册原文。",
+    "补定，2026-10-09。不是预注册原文。",
+    "根据下面给出的 before_text，改写一句纯文本。",
     "不要求模型输出 JSON 或 diff。",
     "不设专门失败令牌。",
     "不让模型打分。",
