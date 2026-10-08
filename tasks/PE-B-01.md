@@ -26,9 +26,9 @@
 - notes: ADR-0034 / PREREG-B
 
 ### Evidence *(after Matt `/implement`)*
-- typecheck:
-- tests:
-- paths:
+- typecheck: `python -m compileall -q src` exit 0
+- tests: `pytest tests/unit/test_pe_fixed_k_r.py tests/unit/test_pe05_risk_coverage.py …` 40+ green
+- paths: `src/freshlatch/eval/patch_events_metrics.py`；`tests/unit/test_pe_fixed_k_r.py` 等 ok
 
 ## Handoff
-`pending | PE-B-01 | blocked-on-before-implement | next=/before-implement 437`
+`done | PE-B-01 | next=human Watch acceptance on #437`
