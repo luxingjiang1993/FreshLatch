@@ -85,7 +85,7 @@ def test_inventory_ids_gaps_and_disjoint_sets():
     assert pilot_ids.isdisjoint(n100_ids)
     assert n30_ids <= n100_ids
     assert load_pilot_ids(ROOT) == [row[0] for row in pilot]
-    assert not NOTE.is_file()
+    assert NOTE.is_file()
 
 
 def test_formal_ids_stay_unread_until_pilot_note(tmp_path: Path):
@@ -103,11 +103,6 @@ def test_formal_ids_stay_unread_until_pilot_note(tmp_path: Path):
         load_formal_ids(tmp_path)
     assert "c7" not in str(corrupt.value)
     assert "c9" not in str(corrupt.value)
-
-    with pytest.raises(RuntimeError, match="pilot 未结束，不得读取正式集") as live:
-        load_formal_ids(ROOT)
-    assert "c7" not in str(live.value)
-    assert "c9" not in str(live.value)
 
     (folder / "PILOT-NOTE.md").write_text("流程已走完\n", encoding="utf-8")
     (folder / "SPLIT.json").write_text(

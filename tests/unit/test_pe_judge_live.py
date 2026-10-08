@@ -113,7 +113,7 @@ def test_live_flag_uses_real_transport_not_the_injected_one(monkeypatch, tmp_pat
 
 
 def test_live_command_scores_only_pe_v2_pilot(monkeypatch, tmp_path, capsys):
-    from freshlatch.eval.patch_events_split import load_formal_ids, load_pilot_ids
+    from freshlatch.eval.patch_events_split import load_pilot_ids
 
     calls: list[dict] = []
 
@@ -159,9 +159,6 @@ def test_live_command_scores_only_pe_v2_pilot(monkeypatch, tmp_path, capsys):
         for secret in ("sentinel-dash", "sentinel-deep", "sentinel-moon"):
             assert secret not in log_text
             assert secret not in rendered
-    assert not (ROOT / "docs" / "evidence" / "patch-events" / "PILOT-NOTE.md").is_file()
-    with pytest.raises(RuntimeError, match="pilot 未结束，不得读取正式集"):
-        load_formal_ids(ROOT)
 
 
 def test_live_loader_source_does_not_name_the_formal_gate():
