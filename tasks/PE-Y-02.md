@@ -2,7 +2,7 @@
 
 ## Parent
 
-规格卷 27 · ADR-0037 · PR #493
+规格卷 27 · ADR-0037 · PR [#493](https://github.com/luxingjiang1993/FreshLatch/pull/493)
 
 ## Destination
 
@@ -10,18 +10,50 @@
 
 ## Acceptance criteria
 
-- [ ] `GATE-Y-PROBE.md` 含三条件判定表（过门两条 + B1/B2 报告行）与层身份「可扔」
-- [ ] 夹具绿不得单独令 `gate_passed=true` 用于激活建议（须真数据路径或显式层标注）
-- [ ] 禁止升格 `#479` / GATE-C-FIXTURE 为已过门
-- [ ] 默认不发模型；`--authorize-send` 仅在人授探针令后
-- [ ] 相关 pytest 绿；不改 B/C 归档
+- [ ] Given 合成/夹具输入可分别构造「过/不过」，When 跑 gate-y 判定，Then `gate_passed` 仅当 k≥10 且 T−C 点估计>0；T−B1/T−B2 出现在报告但不改变 `gate_passed`
+- [ ] `docs/evidence/patch-events/GATE-Y-PROBE.md` 文首含「可扔 · 非乙成立 · 不进主表」；含判定表、代码针、是否发模型字段
+- [ ] 默认 `PYTHONPATH=src python -m freshlatch.eval.patch_events_gate_y_probe` **不**发模型；无探针人令时 `--authorize-send` 拒绝
+- [ ] 单测断言：不得把 `#479`/`GATE-K-PROBE`/`GATE-C-FIXTURE` 路径当作本页已过门依据
+- [ ] `python -m compileall -q src` 退出 0；`pytest tests/unit/test_pe_gate_y_probe.py` 绿
 
 ## Agent Guards
 
-- **ID**: PE-Y-02 · **Trust**: Watch · **Blast**: none  
-- **Paths**: `src/freshlatch/eval/patch_events_gate_y_probe.py`；`docs/evidence/patch-events/GATE-Y-PROBE.md`；单测  
-- **Do-not-touch**: RESULT-Y 成立格；B/C 门闩页升格；甲三条件过门  
+- **ID**: PE-Y-02
+- **Title**: `feat(eval): GATE-Y-PROBE 过门判定（可扔）`
+- **Trust**: Watch
+- **Blast**: none
+- **Paths**:
+  - `src/freshlatch/eval/patch_events_gate_y_probe.py`（new · adapt）
+  - `docs/evidence/patch-events/GATE-Y-PROBE.md`（new · adapt 报告形态）
+  - `docs/evidence/patch-events/gate-y-probe-generations.jsonl`（旁路产物；可空壳）
+  - `tests/unit/test_pe_gate_y_probe.py`（new）
+- **Provenance**:
+  - Kind: adapt
+  - Source: `src/freshlatch/eval/patch_events_gate_k_probe.py` + `docs/evidence/patch-events/GATE-K-PROBE.md` @ B tip
+  - Pin: `4ec045b96aa23a19acd2822accdac52658366958`
+  - URL: https://github.com/luxingjiang1993/FreshLatch/blob/4ec045b96aa23a19acd2822accdac52658366958/src/freshlatch/eval/patch_events_gate_k_probe.py
+  - What changed: 过门条件由「k≥10∧T−B1>0∧T−B2>0」改为「k≥10∧T−C>0」；B1/B2 降为报告行；产物/报告改 Y 路径
+  - Why not copy as-is: 冲乙门闩必须对齐求验目标，不能继续用冲甲三条件
+  - License note: 同仓代码
+- **Tests**: added
+- **Do-not-touch**: `RESULT-Y` 成立格；B/C 门闩页内容升格；甲三条件过门；正式 `formal-generations-y` 主跑
+- **Rollback**: 删除 gate-y 模块/报告/单测
+
+### Provenance status
+
+- result: pass
+- notes: adapt 自 GATE-K-PROBE 管线；SHA 钉死；过门语义差异写明
+
+### Evidence *(after Matt `/implement`)*
+
+- typecheck:
+- tests:
+- paths:
 
 ## Blocked by
 
-PE-Y-01 旁路可并行起步；真数据发送须人授探针令。
+可与 PE-Y-01 同波次并行。真数据 `--authorize-send` 另需人授探针令：「授权路线 Y 仓外探针发模型；不得激活。」
+
+## Handoff
+
+`enrich done | PE-Y-02 | ready | next: before-implement PE-Y-02`
