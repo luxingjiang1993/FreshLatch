@@ -70,8 +70,8 @@
 
 | ID | 指标 | 定义 | 层 | 采集点 | 频率 | 起步 |
 |----|------|------|----|--------|------|------|
-| C1 | 用户作废率 | 人对 Agent 绿灯/主张作废比例 | 观测（北星之一） | latch discard | 周 | 上线观测 |
-| C2 | Override rate | 人推翻机器判定比率（派生标签） | 观测 | `latch_log.override` | 周 | 看分权健康；**≠模型变好** |
+| C1 | 用户作废率 | 人对 Agent 绿灯/主张作废比例 | 观测（北星之一） | latch discard | 周 | 上线观测；聚合见 `scripts/slo_c1_c2_latch_rates.py`（SLO-06） |
+| C2 | Override rate | 人推翻机器判定比率（派生标签） | 观测 | `latch_log.override` | 周 | 看分权健康；**≠模型变好**；**不作验收绿灯**；聚合见同脚本 |
 | C3 | 续命带证率 | renew 带新 T1 id | 硬闸 | renew 受理 | 连续 | **100%** |
 | C4 | 补丁确认耗时 | 人确认 minutes | 观测 | `patch_events.minutes` | 周 | 字段有；运营弱 |
 | C5 | 无人自动转绿次数 | Agent 自红变绿 | 硬闸 | 状态机 / 审计 | 连续 | **目标=0** |
@@ -139,7 +139,7 @@
 - A3/A4 抽检：样本 n、改对、严重错改  
 - A6 再验失败率  
 - B2/B3 成对（或「本周样本不足」诚实句）  
-- C1 作废率 · C2 override rate · C4 中位 minutes  
+- C1 作废率 · C2 override rate · C4 中位 minutes（C1/C2 可机填：`python scripts/slo_c1_c2_latch_rates.py --db <库>`；输出头声明 override 不作模型变好/不作验收绿灯）  
 - D4 包结论分布  
 - D1/D5：若本周跑了离线评测则抄 multi-run；否则写「未跑」  
 - **禁止**填写 RESULT-Y 成立格或「接近乙」句  
