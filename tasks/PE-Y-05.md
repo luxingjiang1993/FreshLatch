@@ -18,12 +18,12 @@
 
 ## Acceptance criteria
 
-- [ ] Given 会话**无**正式人令，When 试图激活或 `--authorize-send`，Then 拒绝；`PREREG-Y` 保持未激活；成立格未填
-- [ ] Given 正式人令 + `GATE-Y-PROBE` 真数据 `gate_passed=true`，When 执行本票，Then：文首已激活；激活批注含日期/仓库针/GATE-Y 路径；恰好一次写入 `formal-generations-y.jsonl`
-- [ ] RESULT-Y 三行 false-accept 与 k 只抄同一次 `compare_primary`；分层按 PE-Y-04 口径；文面不得称甲
-- [ ] 产物禁止写入 `formal-generations-b.jsonl` / `formal-generations-c.jsonl` / 旧 `formal-generations.jsonl`
-- [ ] Evidence 三行齐：`python -m compileall -q src` · 相关 pytest · paths ok
-- [ ] 未改 `PREREG-B`/`RESULT-B`/`formal-generations-b` 与 C 对应冻结页
+- [x] Given 会话**无**正式人令，When 试图激活或 `--authorize-send`，Then 拒绝；`PREREG-Y` 保持未激活；成立格未填（守卫单测；激活前已满足）
+- [x] Given 正式人令 + `GATE-Y-PROBE` 真数据 `gate_passed=true`，When 执行本票，Then：文首已激活；激活批注含日期/仓库针/GATE-Y 路径；恰好一次写入 `formal-generations-y.jsonl`（中断后续跑同一主跑·written_keys；d030 平台安检拒回记作废针）
+- [x] RESULT-Y 三行 false-accept 与 k 只抄同一次 `compare_primary`；分层按 PE-Y-04 口径；文面不得称甲（结果丙）
+- [x] 产物禁止写入 `formal-generations-b.jsonl` / `formal-generations-c.jsonl` / 旧 `formal-generations.jsonl`
+- [x] Evidence 三行齐：`python -m compileall -q src` · 相关 pytest · paths ok
+- [x] 未改 `PREREG-B`/`RESULT-B`/`formal-generations-b` 与 C 对应冻结页
 
 ## Agent Guards
 
@@ -56,17 +56,17 @@
 
 ### Evidence *(after Matt `/implement`)*
 
-- typecheck:
-- tests:
-- paths:
+- typecheck: `python -m compileall -q src` → 0
+- tests: `pytest tests/unit/test_pe_formal_y.py tests/unit/test_pe_result_y.py tests/unit/test_pe_v2_corpus.py tests/unit/test_pe_gate_y_probe.py` → 绿；`--recompute-only --no-write` → tier=丙 k=206
+- paths: `PREREG-Y.md`（已激活）· `formal-generations-y.jsonl`（1599 行）· `RESULT-Y.md`（结果丙）· 未改 B/C 冻结
 
 ## Blocked by
 
-- PE-Y-01…04 Acceptance 绿
-- **PE-Y-CORPUS-01/#500 + PE-Y-CORPUS-02/#501** Acceptance 绿（正式 n=400 可加载；ADR-0038）
-- `GATE-Y-PROBE` 真数据 `gate_passed=true`
-- 会话出现正式人令原文
+- ~~PE-Y-01…04 Acceptance 绿~~
+- ~~**PE-Y-CORPUS-01/#500 + PE-Y-CORPUS-02/#501** Acceptance 绿~~
+- ~~`GATE-Y-PROBE` 真数据 `gate_passed=true`~~
+- ~~会话出现正式人令原文~~
 
 ## Handoff
 
-`enrich done | PE-Y-05 | blocked (Gate·人令·过门) | next: 勿 before-implement 直至闸齐`
+`implement done | PE-Y-05 | Gate · 结果丙 · 不得称甲 | next: 人审 RESULT-Y；禁止同页二跑`

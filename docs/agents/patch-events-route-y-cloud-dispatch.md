@@ -31,7 +31,7 @@ grill-with-docs → 四件套(#493) → to-spec(卷27) → to-tickets → enrich
 | — | **缺额解锁决议** | **DONE** · ADR-0038 · 评估 `docs/research/patch_events-路线Y正式n与语料缺额设计评估.md` · 拍板 **A 扩语料 + C 停泊**；B 改 n 本窗否 |
 | 5a | 扩 pe_v2 · **PE-Y-CORPUS-01** | **DONE** · Issue [#500](https://github.com/luxingjiang1993/FreshLatch/issues/500) CLOSED · PR [#503](https://github.com/luxingjiang1993/FreshLatch/pull/503) · claims=670 · [agent](https://cursor.com/agents/bc-41bfcf46-42cf-54ad-b6fb-401545208718) |
 | 5b | 重针 route-y · **PE-Y-CORPUS-02** | **DONE** · Issue [#501](https://github.com/luxingjiang1993/FreshLatch/issues/501) CLOSED · PR [#504](https://github.com/luxingjiang1993/FreshLatch/pull/504) · status=`名单已齐·可加载` · n400=400（仍未激活 · 仍不派 PE-Y-05）· [agent](https://cursor.com/agents/bc-d2f75ac2-4cc3-5370-b557-358e523c847d) |
-| 6 | 激活 + 一次正式主跑 · PE-Y-05 | **不派** · 语料闸已解除；仍阻塞：真数据 `GATE-Y-PROBE` 过门 + 正式人令 |
+| 6 | 激活 + 一次正式主跑 · PE-Y-05 | **DONE** · Draft [#507](https://github.com/luxingjiang1993/FreshLatch/pull/507) · 结果丙 · k=206 · 不得称甲 · 禁止同页二跑 |
 
 | 7 | 消融/抽检（可选）· PE-Y-06 | 未开票 |
 
@@ -46,7 +46,7 @@ grill-with-docs → 四件套(#493) → to-spec(卷27) → to-tickets → enrich
 - [x] 正式 n 可执行：#500+#501 Acceptance 绿（claims=670；route-y `名单已齐·可加载` n400=400；配额表仍 400）
 - [x] #494–#497 及 CORPUS PR #503/#504 已对齐可复现 tip · Draft [#505](https://github.com/luxingjiang1993/FreshLatch/pull/505) · 分支 `cursor/pe-y-merge-corpus-eng-be80`（**仍未**合入 `main` / 父 #493 未关）
 - [x] `GATE-Y-PROBE` **真数据** `gate_passed=true`（探针令已执行 · Draft [#506](https://github.com/luxingjiang1993/FreshLatch/pull/506) · 分支 `cursor/pe-y-gate-y-probe-send-be80` · 代码针 `5d7cd17` · k=11 · T−C>0 · **仍未激活**）
-- [ ] 人令原文：「批准激活 PREREG-Y 并正式主跑一次。」
+- [x] 人令原文：「批准激活 PREREG-Y 并正式主跑一次。」→ 已执行（#507）
 
 **合入提示（语料链）**：#503 → #504（或 squash 进同一 tip）→ 再与 #494–#497 / 父 #493 对齐；可加载 ≠ 已激活。
 
@@ -94,3 +94,11 @@ before-implement #500 → /implement PE-Y-CORPUS-01
 
 > 你是路线 Y 正式主跑 Agent。只做 `tasks/PE-Y-05.md` / 对应 Issue。须同时满足：route-y 可加载 400（#501 已齐）· `GATE-Y-PROBE` 真数据 `gate_passed=true` · 会话出现逐字人令「批准激活 PREREG-Y 并正式主跑一次。」缺任一则停。禁止称甲；禁止用探针令冒充正式令。
 
+
+
+## PE-Y-05 正式主跑收口（2026-10-09）
+
+- 人令：「批准激活 PREREG-Y 并正式主跑一次。」已执行。
+- `PREREG-Y` 已激活；`formal-generations-y.jsonl` 1599 行；`RESULT-Y` **结果丙**（k=206；T−C 点≈0.063、下界≤0）。
+- d030 平台 `data_inspection_failed` 记作废针（不作假放行）；B/C 冻结未改。
+- **禁止**同页二次正式主跑；不得称甲。

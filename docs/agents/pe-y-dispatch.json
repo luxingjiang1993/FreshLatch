@@ -5,7 +5,7 @@
   "corpus_tickets_branch": "cursor/pe-y-corpus-tickets-860d",
   "prereg_y": {
     "path": "docs/evidence/patch-events/PREREG-Y.md",
-    "activated": false,
+    "activated": true,
     "formal_n": 400,
     "quota_table_locked": true
   },
@@ -23,7 +23,7 @@
     "split_status": "名单已齐·可加载",
     "n400": 400,
     "activation_ready": true,
-    "prereg_y_activated": false,
+    "prereg_y_activated": true,
     "corpus_01_pr": 503,
     "corpus_02_pr": 504,
     "corpus_01_branch": "cursor/pe-y-corpus-01-expand-860d",
@@ -97,8 +97,20 @@
       "note": "n400=400; status=名单已齐·可加载; PREREG-Y仍未激活"
     },
     "PE-Y-05": {
-      "status": "BLOCKED_AWAIT_FORMAL_AUTH",
-      "note": "真数据过门已齐；仍缺逐字正式令；编排不派"
+      "status": "DONE",
+      "pr": 507,
+      "branch": "cursor/pe-y-05-formal-main-1df2",
+      "code_pin": "86f38cd",
+      "tier": "丙",
+      "k": 206,
+      "b2_count": 399,
+      "generations": "docs/evidence/patch-events/formal-generations-y.jsonl",
+      "generations_n": 1599,
+      "generations_sha256": "d09283d9a0e24a441b4fc7ac2b46cb9d92adcd5495c5fc324ca6be7b4fddca64",
+      "platform_void": [
+        "d030"
+      ],
+      "note": "正式主跑一次完成；结果丙；不得称甲；禁止同页二跑"
     },
     "PE-Y-06": {
       "status": "UNOPENED"
@@ -126,7 +138,7 @@
       504
     ],
     "load_pe_v2_formal_n400": 400,
-    "prereg_y_activated": false,
+    "prereg_y_activated": true,
     "quota_n": 400,
     "note": "可加载≠过门≠已激活；仍不派 PE-Y-05",
     "pr": 505,
@@ -136,19 +148,22 @@
     500,
     501
   ],
-  "next_window_opener": "GATE-Y 真数据 gate_passed=true（仍未激活）。勿派 PE-Y-05，除非会话出现逐字人令「批准激活 PREREG-Y 并正式主跑一次。」探针令≠正式令；过门≠乙成立。",
+  "next_window_opener": "PE-Y-05 已完成：RESULT-Y 结果丙（k=206；T−C 点>0.05 但下界≤0）。禁止同页二跑；不得称甲。",
   "orchestration": {
-    "mode": "probe_true_data_passed_await_formal_auth",
+    "mode": "pe_y_05_formal_done_bing",
     "active_issue": null,
     "active_agent": null,
     "queued": [],
     "done": [
       500,
-      501
+      501,
+      "PE-Y-05"
     ],
-    "forbid_PE_Y_05": true,
+    "forbid_PE_Y_05": false,
+    "forbid_second_formal_y": true,
     "corpus_wave": "COMPLETE",
-    "eng_wave": "MERGED_TO_TIP"
+    "eng_wave": "MERGED_TO_TIP",
+    "formal_y": "DONE_BING"
   },
   "gate_y_probe": {
     "true_data": true,
@@ -157,7 +172,7 @@
     "report": "docs/evidence/patch-events/GATE-Y-PROBE.md",
     "generations": "docs/evidence/patch-events/gate-y-probe-generations.jsonl",
     "auth_phrase": "授权路线 Y 仓外探针发模型；不得激活。",
-    "prereg_y_activated": false,
+    "prereg_y_activated": true,
     "pr": 506
   }
 }
