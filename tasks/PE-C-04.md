@@ -20,10 +20,21 @@ Part of #484（spec）· #490 · 地图 #482 · 决议 #483 · 前置壳 #488 / 
 
 - [x] 会话含上述正式人令原文；否则不得改 `PREREG-C` 激活态、不得 `--authorize-send`、不得填 RESULT-C 成立格
 - [x] `PREREG-C` 文首改为已激活；激活批注登记日期、仓库针、GATE-C 依据（不得升格 #479）
-- [ ] 仅一次正式主跑写入 `formal-generations-c.jsonl`；禁止写 `*-b.jsonl` / 旧 `formal-generations.jsonl`
-- [ ] RESULT-C 三行 false-accept 与 k **只抄**同一次主比较；成立格不得手填、不得抄 GATE/B 数字
-- [ ] Evidence 三行：typecheck · tests · paths
-- [ ] 未改 `PREREG-B` / `RESULT-B` / `formal-generations-b`；未复活 A；ALT 不进主表
+- [x] 仅一次正式主跑写入 `formal-generations-c.jsonl`；禁止写 `*-b.jsonl` / 旧 `formal-generations.jsonl`
+- [x] RESULT-C 三行 false-accept 与 k **只抄**同一次主比较；成立格不得手填、不得抄 GATE/B 数字
+- [x] Evidence 三行：typecheck · tests · paths
+- [x] 未改 `PREREG-B` / `RESULT-B` / `formal-generations-b`；未复活 A；ALT 不进主表
+
+## Evidence
+
+- typecheck: `python -m compileall -q src` · 0
+- tests: `pytest tests/unit/test_pe_formal_c.py tests/unit/test_pe_result_c_shell.py tests/unit/test_pe_gate_c.py tests/unit/test_pe_copy_constrained_c.py` · 28 passed
+- paths: `PREREG-C.md` · `RESULT-C.md` · `formal-generations-c.jsonl`(400) · `patch_events_formal_c.py`
+
+## 主跑抄表（同一次 · 不得称甲）
+
+- sent=300 · b2_diff_added=100 · k=93 · **结果丙**
+- T−C / T−B1 / T−B2：点估计均 >0，95% 下界均 =0 → 不成立
 
 ## Agent Guards
 
@@ -33,4 +44,4 @@ Part of #484（spec）· #490 · 地图 #482 · 决议 #483 · 前置壳 #488 / 
 
 ## Blocked by
 
-人令已到（2026-10-09 会话）。门闩依据诚实登记为 `GATE-C-FIXTURE`（fixture 层）；#479 未升格。
+无（人令已执行完毕）。
