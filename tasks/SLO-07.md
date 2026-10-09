@@ -32,9 +32,9 @@ SLO-01, SLO-02
 - notes: adapt eval/disposition；gold 只读
 
 ### Evidence *(after Matt /implement)*
-- typecheck:
-- tests:
-- paths:
+- typecheck: `python -m compileall -q src` exit 0
+- tests: `pytest tests/unit/test_slo_d1_d4_observability.py` 9 passed；`ruff check` 目标文件 All checks passed；CLI `--runs 3` exit 0
+- paths: `src/freshlatch/slo_d1_d4_observability.py` · `scripts/slo_d1_d4_observability.py` · `tests/unit/test_slo_d1_d4_observability.py` · `docs/ops/生产补丁放行SLO.md` §9 · `reports/slo/d1_d4_week.md`；`data/eval/gold.json` 只读未改
 
 ## Handoff
-`2026-10-09 | SLO-07 | ready | blocked by SLO-01, SLO-02`
+`2026-10-09 | SLO-07 | implemented | D1 离线 multi-run + 金标门 · D3→SLO-02 同出口 · D4 三值分布 · 生产路径金标防火墙；branch cursor/slo-07-d1-d4-observability-857a`
