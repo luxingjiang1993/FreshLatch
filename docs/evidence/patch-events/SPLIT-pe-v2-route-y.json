@@ -1,0 +1,213 @@
+{
+  "status": "不可激活",
+  "reason": "语料缺额：当前 pe_v2（data/pe_v2_docket.json，claims=178）不足以支撑 PREREG-Y 正式 n=400（四层各 100，层内 50/50）及共形预留；本针记缺额，不静默改小 PREREG-Y 配额表；禁止当作已可激活正式主跑。",
+  "note": "路线 Y 正式名单针（PE-Y-03）。n400 成员为空表示未凑满，不是把配额改成 0。loader 在缺额状态下必须失败并明示不可激活，不得返回不足 400 条冒充正式集。pilot 仍隔离；不改写 SPLIT-pe-v2.json 已发布键。",
+  "conformal_reserve": "未做",
+  "quotas_target": {
+    "n400": {
+      "数值": {
+        "total": 100,
+        "correct": 50,
+        "bad": 50
+      },
+      "日期": {
+        "total": 100,
+        "correct": 50,
+        "bad": 50
+      },
+      "条款替换": {
+        "total": 100,
+        "correct": 50,
+        "bad": 50
+      },
+      "删除": {
+        "total": 100,
+        "correct": 50,
+        "bad": 50
+      }
+    },
+    "total": 400,
+    "remainder_rule": "correct=floor(layer/2); bad=ceil(layer/2)"
+  },
+  "counts": {
+    "n400": 0,
+    "pilot": 15,
+    "claims_pool": 178,
+    "target_n400": 400
+  },
+  "gaps": {
+    "n400": 400,
+    "by_stratum": {
+      "数值": {
+        "target": 100,
+        "inventory_claims": 45,
+        "pilot_in_stratum": 4,
+        "non_pilot_ceiling": 41,
+        "built": 0,
+        "gap": 100,
+        "gap_vs_ceiling": 59
+      },
+      "日期": {
+        "target": 100,
+        "inventory_claims": 45,
+        "pilot_in_stratum": 4,
+        "non_pilot_ceiling": 41,
+        "built": 0,
+        "gap": 100,
+        "gap_vs_ceiling": 59
+      },
+      "条款替换": {
+        "target": 100,
+        "inventory_claims": 45,
+        "pilot_in_stratum": 4,
+        "non_pilot_ceiling": 41,
+        "built": 0,
+        "gap": 100,
+        "gap_vs_ceiling": 59
+      },
+      "删除": {
+        "target": 100,
+        "inventory_claims": 43,
+        "pilot_in_stratum": 3,
+        "non_pilot_ceiling": 40,
+        "built": 0,
+        "gap": 100,
+        "gap_vs_ceiling": 60
+      }
+    }
+  },
+  "by_stratum": {
+    "n400": {
+      "数值": {
+        "built": 0,
+        "target": 100,
+        "gap": 100,
+        "correct": 0,
+        "bad": 0,
+        "correct_target": 50,
+        "bad_target": 50
+      },
+      "日期": {
+        "built": 0,
+        "target": 100,
+        "gap": 100,
+        "correct": 0,
+        "bad": 0,
+        "correct_target": 50,
+        "bad_target": 50
+      },
+      "条款替换": {
+        "built": 0,
+        "target": 100,
+        "gap": 100,
+        "correct": 0,
+        "bad": 0,
+        "correct_target": 50,
+        "bad_target": 50
+      },
+      "删除": {
+        "built": 0,
+        "target": 100,
+        "gap": 100,
+        "correct": 0,
+        "bad": 0,
+        "correct_target": 50,
+        "bad_target": 50
+      }
+    }
+  },
+  "n400": [],
+  "pilot": [
+    {
+      "claim_id": "a001",
+      "construction_gold": "坏",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a002",
+      "construction_gold": "正确",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a003",
+      "construction_gold": "坏",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a004",
+      "construction_gold": "正确",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "b001",
+      "construction_gold": "坏",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b002",
+      "construction_gold": "正确",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b003",
+      "construction_gold": "坏",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b004",
+      "construction_gold": "正确",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "c001",
+      "construction_gold": "坏",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c002",
+      "construction_gold": "正确",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c003",
+      "construction_gold": "坏",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c004",
+      "construction_gold": "正确",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "d001",
+      "construction_gold": "坏",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d002",
+      "construction_gold": "正确",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d003",
+      "construction_gold": "坏",
+      "edit_type": "删除"
+    }
+  ],
+  "source": {
+    "split_pe_v2": "docs/evidence/patch-events/SPLIT-pe-v2.json",
+    "split_pe_v2_sha256": "ae20dd46aa0a43a4572e9f2e895d1273578bbd49bf7240f5d151063d2119168d",
+    "corpus": "data/corpus/pe_v2",
+    "docket": "data/pe_v2_docket.json",
+    "prereg": "docs/evidence/patch-events/PREREG-Y.md"
+  },
+  "activation": {
+    "ready": false,
+    "label": "不可激活",
+    "blocks": [
+      "n400 未凑满 400 条互异 claim_id",
+      "四层 gap 均为 100（相对配额目标）",
+      "pe_v2 单层 inventory.claims < 100"
+    ]
+  }
+}

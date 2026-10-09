@@ -123,10 +123,12 @@ def test_decoding_pin_matches_prereg():
     assert pin["api_seed"] is None
 
 
-def test_n400_loader_is_stub():
-    """n=400 留给 PE-Y-03；不得假装已有名单。"""
-    with pytest.raises(NotImplementedError, match="PE-Y-03"):
+def test_n400_loader_wired_to_route_y_pin():
+    """PE-Y-03：loader 已接名单针；当前 pe_v2 缺额 → 显式不可激活（非 NotImplemented 桩）。"""
+    with pytest.raises(RuntimeError, match="不可激活.*语料缺额") as exc:
         load_pe_v2_formal_n400()
+    assert "不得静默改小" in str(exc.value)
+    assert not isinstance(exc.value, NotImplementedError)
 
 
 def test_send_refuses_when_path_is_forbidden(monkeypatch, tmp_path):
