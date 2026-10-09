@@ -267,3 +267,11 @@ _Avoid_: 已开源数据集、数据已释放(仅因 C4 存在)、多垂类数�
 **对抗套件目录 (Adversarial Catalog)**:
 假绿/对抗用例的版本化索引(`docs/research/adversarial/`,`catalog_version` semver,条目 `ATK-<FAMILY>-NN`)。Batch 5 仅为骨架(ADR-0022);目录存在 ≠ 仪器已过;禁报统计通过率、禁 pass_rate 列;与金标/预登记/ATK-CS 只指针。
 _Avoid_: 对抗已通过证书、套件通过率表(本批)、仪器已过(仅因目录有行)
+
+**patch_events 路线 Y**:
+在 B/C 丙归档之后旁路**只冲乙**的新预注册产品轨：协议页 `docs/evidence/patch-events/PREREG-Y.md`；产物 `RESULT-Y` / `formal-generations-y`；机制继承 B 软对齐与选取 R / 同 after；**不以** C 强制抄句为主路径。操作契约见 ADR-0037。协议可锁 ≠ 已激活正式主跑。
+_Avoid_: 设计冲乙写成将得到乙、称甲或 soft-甲、回写 B/C 凑乙、把门闩/夹具称作乙成立、以抄句当 Y 主路径
+
+**PREREG-Y**:
+路线 Y 的预注册协议页文件名/载体。激活前可锁协议；激活后同一页只许一次正式主跑。成立加严细则与止损频率见协议页与评估文档，不在本词表展开。
+_Avoid_: 未激活当已跑、同页二跑、把 PREREG-Y 写成冲甲页
