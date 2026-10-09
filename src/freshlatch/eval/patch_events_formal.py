@@ -219,6 +219,9 @@ def replay_saved_generations(
     温度 0 和种子 20261007 只用来不触发「种子缺省则作废」。
     保存的那次请求没有发出种子。
     保存行里没有的延迟和成本不补成 0。
+
+    自 #469 起 ``run_arms`` 对 T/B1 只以 T 臂取一次 rewrite；B1 记录与 T 共用该
+    after。旧 formal-generations 里 B1 独立行不再驱动 B1 的 after_text（文件本身不改）。
     """
     chosen = decoding if decoding is not None else Decoding(temperature=0, seed=SEED)
     saved = _saved_index(generations)

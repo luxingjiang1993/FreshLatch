@@ -268,6 +268,26 @@ _Avoid_: 已开源数据集、数据已释放(仅因 C4 存在)、多垂类数�
 假绿/对抗用例的版本化索引(`docs/research/adversarial/`,`catalog_version` semver,条目 `ATK-<FAMILY>-NN`)。Batch 5 仅为骨架(ADR-0022);目录存在 ≠ 仪器已过;禁报统计通过率、禁 pass_rate 列;与金标/预登记/ATK-CS 只指针。
 _Avoid_: 对抗已通过证书、套件通过率表(本批)、仪器已过(仅因目录有行)
 
+**patch_events 路线 B**:
+放行闸冲甲改走**新预注册**（`docs/evidence/patch-events/PREREG-B.md`）；旧 `PREREG.md` 与现 n=30 主证据链不得当冲甲主证据（可作动机附录）。禁止回写旧页凑甲，禁止复活已废路线 A 票。操作定义与门闩见 ADR-0034 与 `docs/research/patch_events-路线B冲甲可识别选取设计评估.md`。
+_Avoid_: 继续旧 PREREG→n=100 冒充冲甲、把旧 RESULT 抄进新主表成立格、设计冲甲写成将得到甲
+
+**固定 k 自然放行选取 (R)**:
+固定放行率主比较的臂间选取：k 为 T 的自然放行数；各臂从其自然放行集取 k（m≥k 时集内 `claim_id` 升序；m<k 则该臂固定 k 误放率无定义）。不是空分后按全体候选 `claim_id` top-k，也不是本期启用的臂分 top-k（S）。
+_Avoid_: 空分同集 top-k、金标/评委进 score、把 R 写成已证明甲
+
+**仓外试分离门闩**:
+锁冲甲正式主跑之前的可扔冒烟层：须见 T 相对 B1 与相对 B2 的固定 k 误放差方向均为正，且 T 的 k 达到预注册 k 下限，才允许激活 `PREREG-B` 正式主跑与正式生成。门闩未过 ≠ 协议未锁；协议可锁而正式页未激活。
+_Avoid_: 门闩报告当主表、未过门激活正式生成、仓外一次差称作甲成立
+
+**同 after 再分叉**:
+路线 B 下 T 与 B1 对同一 `claim_id` 消费同一份 rewrite `after_text`，再分叉决策闸：T 须已入库 T1 绑定且核验通过才放行；B1 不跑绑定闸、仅核验通过才放行；两边核验不过均为 hard reject。用于让绑定缝成为可观测对照，而不是比分臂生成噪声。操作定义见 ADR-0035 与 `docs/research/patch_events-路线B-T与B1可执行差与抬k设计评估.md`。
+_Avoid_: B1 核验失败仍放行凑差、分臂各改一稿冒充对照、把同 after 写成已证明甲
+
+**PREREG-B 激活前修订**:
+在 `PREREG-B.md` 文首仍为未激活时，允许以修订记录写入可执行定义（如 T/B1 同 after 再分叉），且不得改选取 R 或成立定义；激活后改判据或选取 = 本预注册作废。不等于另开 PREREG-B2，也不等于已激活正式主跑。
+_Avoid_: 悄悄改成立定义、未过门当已激活、用修订记录复活路线 A
+
 **patch_events 路线 Y**:
 在 B/C 丙归档之后旁路**只冲乙**的新预注册产品轨：协议页 `docs/evidence/patch-events/PREREG-Y.md`；产物 `RESULT-Y` / `formal-generations-y`；机制继承 B 软对齐与选取 R / 同 after；**不以** C 强制抄句为主路径。操作契约见 ADR-0037。协议可锁 ≠ 已激活正式主跑。
 _Avoid_: 设计冲乙写成将得到乙、称甲或 soft-甲、回写 B/C 凑乙、把门闩/夹具称作乙成立、以抄句当 Y 主路径
