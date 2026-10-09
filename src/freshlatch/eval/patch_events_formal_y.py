@@ -241,36 +241,65 @@ def decoding_pin() -> dict[str, Any]:
     }
 
 
-def outcome_tier(primary: Mapping[str, Any] | None) -> str:
-    """占位分层（PE-Y-04 将改为仅 T−C∧点>0.05；永不甲）。
+# Y 成立地板：点估计须严格大于该值（与 compare_primary.established 的 point>0 不同）。
+_Y_POINT_FLOOR = 0.05
 
-    本票骨架沿用 B 的甲/乙/丙启发式，供 recompute 空跑；正式成立尺见 PE-Y-04。
+_BC_APPENDIX = (
+    "> 路线 B（#480）：k=42；T−C≈0.1190476；ci95_low≈−0.05556 → 丙。  \n"
+    "> 路线 C：k=93；T−C≈0.032258；下界=0 → 丙；非 Y 主路径。"
+)
+
+
+def tc_established_y(item: Mapping[str, Any] | None) -> bool:
+    """Y 成立尺：仅 T−C · 点>0.05 且 95% 下界>0。
+
+    只读 ``point`` / ``ci95_low``；不读写、不改写 ``established`` 布尔。
+    """
+    if not item:
+        return False
+    point = item.get("point")
+    low = item.get("ci95_low")
+    return (
+        isinstance(point, (int, float))
+        and isinstance(low, (int, float))
+        and point > _Y_POINT_FLOOR
+        and low > 0
+    )
+
+
+def outcome_tier(primary: Mapping[str, Any] | None) -> str:
+    """乙 / 丙：仅 T−C 按 Y 尺；B1/B2 不参与；永不甲。
+
+    止损：点≤0.05 或下界≤0（含无定义）→ 丙。
     """
     if primary is None:
         return "丙"
     by_name = {item["name"]: item for item in primary.get("comparisons") or []}
     t_c = by_name.get("T-C") or {}
-    t_b1 = by_name.get("T-B1") or {}
-    t_b2 = by_name.get("T-B2") or {}
-    c_ok = t_c.get("established") is True
-    b1_ok = t_b1.get("established") is True
-    b2_ok = t_b2.get("established") is True
-    if c_ok and b1_ok and b2_ok:
-        return "甲"
-    if c_ok:
+    if tc_established_y(t_c):
         return "乙"
     return "丙"
 
 
+# 验收/对外别名（与 outcome_tier 同义）。
+outcome_tier_y = outcome_tier
+
+
 def verdict_sentence(tier: str, primary: Mapping[str, Any] | None) -> str:
-    """据实判定句占位。正式 Y 口径（永不甲）由 PE-Y-04 替换。"""
+    """据实判定句。Y 口径：永不判甲；B1/B2 报告-only。"""
+    # 防火墙：任何误传「甲」均降为丙文案。
+    if tier == "甲":
+        tier = "丙"
     if primary is None:
-        return "判定：结果丙。主比较无定义或未产出；不得称甲。"
+        return "判定：结果丙。主比较无定义或未产出；不得判甲。"
     by_name = {item["name"]: item for item in primary.get("comparisons") or []}
 
     def _one(name: str) -> str:
         item = by_name.get(name) or {}
-        est = "成立" if item.get("established") is True else "不成立"
+        if name == "T-C":
+            est = "成立" if tc_established_y(item) else "不成立"
+        else:
+            est = "报告-only"
         return (
             f"{name} 点估计={format_rate(item.get('point'))} "
             f"95%下界={format_rate(item.get('ci95_low'))} → {est}"
@@ -278,19 +307,16 @@ def verdict_sentence(tier: str, primary: Mapping[str, Any] | None) -> str:
 
     detail = "；".join(_one(n) for n in ("T-C", "T-B1", "T-B2"))
     k = primary.get("k")
-    if tier == "甲":
-        return (
-            f"判定：结果甲（骨架占位，PE-Y-04 将禁止甲）。k={k!r}。"
-            f"（{detail}）。"
-        )
     if tier == "乙":
         return (
-            f"判定：结果乙。k={k!r}。仅第一主比较（T-C）成立"
-            f"（{detail}）。不得称甲。"
+            f"判定：结果乙。k={k!r}。仅 T−C 按 Y 尺成立"
+            f"（点>{_Y_POINT_FLOOR} 且下界>0）（{detail}）。"
+            "不得判甲；T−B1/T−B2 报告-only。"
         )
     return (
-        f"判定：结果丙。k={k!r}。第一主比较（T-C）不成立或无定义"
-        f"（{detail}）。不得称甲；不得把主实验写成成功。"
+        f"判定：结果丙。k={k!r}。T−C 未过 Y 尺或无定义"
+        f"（点≤{_Y_POINT_FLOOR} 或下界≤0）（{detail}）。"
+        "不得判甲；不得把主实验写成成功。"
     )
 
 
@@ -318,7 +344,7 @@ def run_formal_y_primary(
             "b2_count": 0,
             "n": 0,
             "tier": "丙",
-            "verdict": "判定：结果丙。尚无 formal-generations-y；不得称甲。",
+            "verdict": "判定：结果丙。尚无 formal-generations-y；不得判甲。",
             "decoding": decoding_pin(),
         }
     generations = [
@@ -404,24 +430,38 @@ def send_formal_y(
     }
 
 
+def _y_est_cell(name: str, item: Mapping[str, Any] | None, *, filled: bool) -> str:
+    """成立（Y 口径）列：仅 T−C 可判；B1/B2 恒报告-only。"""
+    if name in ("T-B1", "T-B2"):
+        return "报告-only（不参与成立）"
+    if not filled:
+        return "未填"
+    return "成立" if tc_established_y(item) else "不成立"
+
+
 def render_result_y(
     pack: Mapping[str, Any],
     *,
     code_pin: str,
     activated_note: str,
 ) -> str:
-    """渲染 RESULT-Y 壳（成立尺细节归 PE-Y-04）。只抄同一次 primary。"""
+    """渲染 RESULT-Y：三行主比较 + k + 乙/丙分层。只抄同一次 primary。
+
+    B1/B2 报告-only；成立格只认 T−C（点>0.05∧下界>0）；永不判甲。
+    """
     primary = pack.get("primary")
     comparisons = list((primary or {}).get("comparisons") or [])
     by_name = {item.get("name"): item for item in comparisons}
     labels = (("T-C", "T 对 C"), ("T-B1", "T 对 B1"), ("T-B2", "T 对 B2"))
+    filled = primary is not None and pack.get("b2_count") == _FORMAL_N
     lines: list[str] = [
         "# patch_events 路线 Y · 正式结果（RESULT-Y）",
         "",
         "> 口径：`docs/evidence/patch-events/PREREG-Y.md`。",
         "> 三行 false-accept 与 k **只抄**同一次 `compare_primary`（选取 R）。",
-        "> 禁止把 GATE-Y-PROBE / B/C 数字抄进成立格。",
-        "> 成立尺（仅 T−C∧点>0.05；永不甲）见 PE-Y-04。",
+        "> **成立格只认 T−C**：点估计 >0.05 且 95% 下界 >0；T−B1 / T−B2 为报告-only。",
+        "> 禁止把 GATE-Y-PROBE / 夹具 / RESULT-B / RESULT-C / ALT 抄进成立格。",
+        "> 不得判甲；放弃甲防火墙见 `PREREG-Y`。",
         "",
         "## 跑针",
         "",
@@ -440,39 +480,57 @@ def render_result_y(
         "",
         "## 主比较（同一次 compare_primary · R）",
         "",
-        "| 比较 | 指标 | 点估计 | 95% 区间下界 | 95% 区间上界 | 成立 |",
+        "| 比较 | 指标 | 点估计 | 95% 区间下界 | 95% 区间上界 | 成立（Y 口径） |",
         "|---|---|---|---|---|---|",
     ]
-    if primary is None or pack.get("b2_count") != _FORMAL_N:
-        for _name, label in labels:
+    if not filled:
+        for name, label in labels:
+            est = _y_est_cell(name, None, filled=False)
             lines.append(
-                f"| {label} | false-accept rate | 未填 | 未填 | 未填 | 未填 |"
+                f"| {label} | false-accept rate | 未填 | 未填 | 未填 | {est} |"
             )
         k_disp = "未填"
+        tier_disp = pack.get("tier")
+        if tier_disp in (None, "", "未跑"):
+            tier_line = "- **分层**：未跑"
+        else:
+            tier_line = f"- **分层**：结果{tier_disp}"
+        verdict_line = pack.get("verdict") or (
+            f"- 判定规则预锁：仅当 T−C 点>{_Y_POINT_FLOOR} 且下界>0 → **结果乙**；"
+            "否则（含止损触发）→ **结果丙**。本页**不得**判甲。"
+        )
+        if not str(verdict_line).startswith("-"):
+            verdict_line = f"- {verdict_line}"
     else:
         for name, label in labels:
             item = by_name.get(name) or {}
-            est = "成立" if item.get("established") is True else "不成立"
+            est = _y_est_cell(name, item, filled=True)
             lines.append(
                 f"| {label} | false-accept rate | {format_rate(item.get('point'))} | "
                 f"{format_rate(item.get('ci95_low'))} | "
                 f"{format_rate(item.get('ci95_high'))} | {est} |"
             )
         k_disp = repr(primary.get("k"))
+        tier_line = f"- **分层**：结果{pack.get('tier')}"
+        verdict_line = f"- {pack.get('verdict')}"
     lines.extend(
         [
             "",
             f"- **固定放行数 k** = {k_disp}",
             "",
-            "## 分层判定（壳）",
+            "## 甲 / 乙 / 丙判定",
             "",
-            f"- **分层**：结果{pack.get('tier')}",
-            f"- {pack.get('verdict')}",
+            tier_line,
+            verdict_line,
+            "",
+            "## B / C 负结果附录（动机 · 非本页成立格）",
+            "",
+            _BC_APPENDIX,
             "",
             "## 边界",
             "",
-            "- 不保证乙；不称甲；不以 C 抄句为主路径。",
-            "- 不回写 RESULT-B / RESULT-C / 旧 RESULT。",
+            "- 不保证乙；不得判甲；不复活路线 A；不改 B/C 归档。",
+            "- 乙成立也不许称优于 RARR·KPR。",
             "- 同一预注册禁止第二次正式主跑充数。",
             "",
         ]

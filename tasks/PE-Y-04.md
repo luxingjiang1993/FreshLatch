@@ -10,11 +10,11 @@
 
 ## Acceptance criteria
 
-- [ ] Given 伪造 `compare_primary` 报告：T−C 点=0.04 且下界>0，且 T−B1/T−B2 均点>0 且下界>0，When `outcome_tier_y`（或等价），Then 返回 **丙**（非乙、非甲）
-- [ ] Given 仅 T−C 点=0.06 且下界>0，B1/B2 下界≤0，When 分层，Then 返回 **乙**；渲染文面不含「结果甲」/「称甲」
-- [ ] 抄表函数只消费同一次 primary dict；单测禁止手填成立格路径；禁止从 GATE/B/C 路径读数写入成立格
-- [ ] `RESULT-Y.md` 保留 B/C 负结果附录句；未主跑时成立格保持「未填」
-- [ ] `python -m compileall -q src` 退出 0；`pytest tests/unit/test_pe_result_y.py`（或同名）绿
+- [x] Given 伪造 `compare_primary` 报告：T−C 点=0.04 且下界>0，且 T−B1/T−B2 均点>0 且下界>0，When `outcome_tier_y`（或等价），Then 返回 **丙**（非乙、非甲）
+- [x] Given 仅 T−C 点=0.06 且下界>0，B1/B2 下界≤0，When 分层，Then 返回 **乙**；渲染文面不含「结果甲」/「称甲」
+- [x] 抄表函数只消费同一次 primary dict；单测禁止手填成立格路径；禁止从 GATE/B/C 路径读数写入成立格
+- [x] `RESULT-Y.md` 保留 B/C 负结果附录句；未主跑时成立格保持「未填」
+- [x] `python -m compileall -q src` 退出 0；`pytest tests/unit/test_pe_result_y.py`（或同名）绿
 
 ## Agent Guards
 
@@ -46,9 +46,9 @@
 
 ### Evidence *(after Matt `/implement`)*
 
-- typecheck:
-- tests:
-- paths:
+- typecheck: `python -m compileall -q src` → 0
+- tests: `pytest tests/unit/test_pe_result_y.py` → 5 passed（含 formal_y 回归共 15）
+- paths: `src/freshlatch/eval/patch_events_formal_y.py` · `tests/unit/test_pe_result_y.py` · `docs/evidence/patch-events/RESULT-Y.md`（壳未填真数）
 
 ## Blocked by
 
