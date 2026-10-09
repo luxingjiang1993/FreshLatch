@@ -267,3 +267,23 @@ _Avoid_: 已开源数据集、数据已释放(仅因 C4 存在)、多垂类数�
 **对抗套件目录 (Adversarial Catalog)**:
 假绿/对抗用例的版本化索引(`docs/research/adversarial/`,`catalog_version` semver,条目 `ATK-<FAMILY>-NN`)。Batch 5 仅为骨架(ADR-0022);目录存在 ≠ 仪器已过;禁报统计通过率、禁 pass_rate 列;与金标/预登记/ATK-CS 只指针。
 _Avoid_: 对抗已通过证书、套件通过率表(本批)、仪器已过(仅因目录有行)
+
+**patch_events 路线 B（丙归档）**:
+放行闸冲甲曾走新预注册 `PREREG-B`（选取 R · k≥10 · 门闩 · T/B1 同 after · 对齐提示）。#480 正式主跑 **结果丙**（点估计>0、CI 下界均≤0；k=42）后全套**冻结丙归档**；禁止同页二跑、禁止改成立格翻盘。操作定义见 ADR-0034/0035（随 B 归档合入）与 #480。
+_Avoid_: 把 B 丙写成甲、同页再跑 B、把探针绿称作甲
+
+**固定 k 自然放行选取 (R)**:
+固定放行率主比较的臂间选取：k 为 T 的自然放行数；各臂从其自然放行集取 k（m≥k 时集内 `claim_id` 升序；m<k 则该臂固定 k 误放率无定义）。不是空分后按全体候选 `claim_id` top-k，也不是本期启用的臂分 top-k（S）。
+_Avoid_: 空分同集 top-k、金标/评委进 score、把 R 写成已证明甲
+
+**同 after 再分叉**:
+T 与 B1 对同一 `claim_id` 消费同一份 `after_text`，再分叉决策闸：T 须已入库 T1 绑定且核验通过才放行；B1 不跑绑定闸、仅核验通过才放行；两边核验不过均为 hard reject。路线 B 钉死并被路线 C 继承。
+_Avoid_: B1 核验失败仍放行凑差、分臂各改一稿冒充对照、把同 after 写成已证明甲
+
+**patch_events 路线 C**:
+在 B 丙归档旁路再冲甲：新预注册 `docs/evidence/patch-events/PREREG-C.md`；继承 R / 同 after / 门闩；增量 = **强制抄句（copy-constrained）**；产物 `RESULT-C` / `formal-generations-c`。成功才升主叙事；失败关 C、删 C 分支；不删改 A/B/ALT 归档。ADR-0036。
+_Avoid_: 设计冲甲写成将得到甲、未过门激活、改 B 归档凑 C、ALT 并主表追甲
+
+**强制抄句 / copy-constrained**:
+路线 C 下 T 的 `after_text` 由硬契约产出，去空白后与请求内 `evidence_text` 逐字相同；正确构造槽须保证可抄。不是 B 的软提示对齐。对外叙事收窄为 attested/copy-constrained，不装自由 rewrite SOTA。
+_Avoid_: 软提示冒充硬契约、放松 hard reject 凑 k、称优于 RARR·KPR

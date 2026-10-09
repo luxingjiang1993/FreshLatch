@@ -4,6 +4,12 @@
 
 这一页记录投稿和范围。它不是预注册。改这一页不改变 `PREREG.md` 里的比较、指标、配额、算子、种子和评委。`PREREG.md` 跑数后不得修改；要改口径只能另写新文件，并声明旧页作废。
 
+## 旁路索引（2026-10-09）
+
+- **路线 B**：新预注册冲甲 → #480 **结果丙**（k=42；CI 下界均≤0）→ **冻结丙归档**。禁止同页二跑。评估/ADR 随 B 分支合入。
+- **路线 C**：[#482](https://github.com/luxingjiang1993/FreshLatch/issues/482)/[#483](https://github.com/luxingjiang1993/FreshLatch/issues/483) · `PREREG-C.md` · ADR-0036 · 评估 `docs/research/patch_events-路线C强制抄句冲甲设计评估.md`。强制抄句增量；**未激活**。失败则关 C、删 C 分支；不删改 A/B/ALT。
+- **ALT**：平行轨夹具可分开、升级暂缓；不进 C 主表。
+
 ## 已锁进预注册的决定
 
 下面各项的可执行定义在 `docs/evidence/patch-events/PREREG.md`。这里只留索引。
