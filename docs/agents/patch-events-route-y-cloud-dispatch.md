@@ -22,11 +22,11 @@ grill-with-docs → 四件套(#493) → to-spec(卷27) → to-tickets → enrich
 
 | 序 | 票 | 状态 |
 |---|---|---|
-| 1 | formal-y 旁路 · PE-Y-01 | **enriched** · Watch · Prov pass · 可 before-implement |
-| 2 | GATE-Y-PROBE · PE-Y-02 | **enriched** · Watch · Prov pass · 可 before-implement |
-| 3 | n=400 名单 · PE-Y-03 | **enriched** · Watch · Prov pass · 可 before-implement |
-| 4 | RESULT-Y 口径 · PE-Y-04 | **enriched** · Watch · Prov pass · 可 before-implement |
-| 5 | 激活 + 一次正式主跑 · PE-Y-05 | **enriched** · **Gate** · **Blocked**（过门+人令） |
+| 1 | formal-y 旁路 · PE-Y-01 | **云端派工中** · [agent](https://cursor.com/agents/bc-5a2978df-d5a8-5696-88cc-5a2d80343cf0) |
+| 2 | GATE-Y-PROBE · PE-Y-02 | **云端派工中** · [agent](https://cursor.com/agents/bc-e1bba9e6-7fa1-5f6f-ab30-1cf841c76882) |
+| 3 | n=400 名单 · PE-Y-03 | enriched · **等 Wave1(PE-Y-01) 完成再派** |
+| 4 | RESULT-Y 口径 · PE-Y-04 | enriched · **等 Wave1(PE-Y-01) 完成再派** |
+| 5 | 激活 + 一次正式主跑 · PE-Y-05 | **Gate · 不派**（过门+人令） |
 | 6 | 消融/抽检（可选）· PE-Y-06 | 未开票 |
 
 ## 人令闸
