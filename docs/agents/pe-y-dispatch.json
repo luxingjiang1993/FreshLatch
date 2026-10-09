@@ -1,0 +1,46 @@
+{
+  "updated_at": "2026-10-09",
+  "parent_pr": 493,
+  "parent_branch": "cursor/prereg-y-tc-only-99f3",
+  "prereg_y": {
+    "path": "docs/evidence/patch-events/PREREG-Y.md",
+    "activated": false,
+    "formal_n": 400,
+    "quota_table_locked": true
+  },
+  "corpus": {
+    "source": "data/pe_v2_docket.json",
+    "claims_pool": 178,
+    "gap_vs_n400": 222,
+    "split_route_y": "docs/evidence/patch-events/SPLIT-pe-v2-route-y.json",
+    "split_status": "不可激活"
+  },
+  "decision_corpus_n": {
+    "status": "DONE",
+    "adr": "docs/adr/0038-patch-events-route-y-corpus-n-unblock.md",
+    "eval": "docs/research/patch_events-路线Y正式n与语料缺额设计评估.md",
+    "board": {
+      "A_expand_pe_v2": "拍板·主解锁",
+      "B_revise_formal_n": "本窗否（须另决议）",
+      "C_park": "拍板·操作态直至A完成"
+    },
+    "forbid": [
+      "activate_PREREG-Y",
+      "open_PE-Y-05",
+      "send_formal_model",
+      "silently_shrink_PREREG-Y_quota",
+      "table_400_feed_lt_400"
+    ]
+  },
+  "tickets": {
+    "PE-Y-01": {"status": "DONE", "pr": 494},
+    "PE-Y-02": {"status": "DONE", "pr": 495},
+    "PE-Y-03": {"status": "DONE", "pr": 497, "note": "缺额不可激活"},
+    "PE-Y-04": {"status": "DONE", "pr": 496},
+    "PE-Y-CORPUS": {"status": "NEXT", "note": "扩pe_v2·未开票"},
+    "PE-Y-05": {"status": "BLOCKED_PARK", "note": "语料+过门+人令"},
+    "PE-Y-06": {"status": "UNOPENED"}
+  },
+  "merge_order_hint": [494, 495, 496, 497, 493],
+  "next_window_opener": "你是路线 Y 语料/规格 Agent。ADR-0038 已拍板：主解锁=扩 pe_v2；PE-Y-05 停泊；禁改小 PREREG-Y 配额。本窗任务：开 PE-Y-CORPUS-* 把 claims 扩到可满 n=400+共形预留并重针 SPLIT-pe-v2-route-y.json；禁止激活、发正式模型、开 PE-Y-05、改配额表。先读 ADR-0038、缺额评估、PREREG-Y、#497、#371。"
+}

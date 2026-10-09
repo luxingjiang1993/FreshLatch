@@ -37,7 +37,7 @@
 | 21 | [21-文档口径对齐与onboarding修订.md](21-文档口径对齐与onboarding修订.md) | 文档回填：README/路线图/早期规格与 ADR+代码对齐（不改臂、无新决议） |
 | 22 | [22-工程卫生与可维护性整改.md](22-工程卫生与可维护性整改.md) | Hygiene：HYG-01…05。不改现行 hybrid+rerank / bge-reranker-base / fastembed 0.8.1，不改 gold 与评测口径 |
 | 23 | [23-正式论文开工闸.md](23-正式论文开工闸.md) | 旧 n=30 开工闸（路线 A 链已废；档案保留） |
-| 27 | [27-patch-events-路线Y只冲乙.md](27-patch-events-路线Y只冲乙.md) | 路线 Y 只冲乙：继承 B 软对齐；成立仅锁 T−C；n=400；ADR-0037；`PREREG-Y` 未激活；[#493](https://github.com/luxingjiang1993/FreshLatch/pull/493) |
+| 27 | [27-patch-events-路线Y只冲乙.md](27-patch-events-路线Y只冲乙.md) | 路线 Y 只冲乙：继承 B 软对齐；成立仅锁 T−C；n=400；ADR-0037；缺额解锁 ADR-0038（扩 pe_v2 · 停泊）；`PREREG-Y` 未激活；[#493](https://github.com/luxingjiang1993/FreshLatch/pull/493) |
 
 > 卷 24–26（路线 B/同 after/C）若尚未合入 `main`，以对应 Draft PR 为准；卷号避撞见卷 27 文首。
 
@@ -61,3 +61,4 @@
 | 立项依据(冲突以切片为准) | — | `docs/product/FreshLatch-立项切片.md` |
 | 双判一致;Auditor 在场 = 闸层不变量(废止 Lead `spawn_auditor`) | #20,#25,#48 | ADR-0009、ADR-0010;规格回填见 `03-工具表与白名单.md` §3.6 |
 | patch_events 路线 Y 只冲乙（仅锁 T−C） | grill · [#493](https://github.com/luxingjiang1993/FreshLatch/pull/493) | ADR-0037、《patch_events-路线Y只冲乙仅锁T-C设计评估.md》、卷 27 |
+| patch_events 路线 Y 正式 n 缺额解锁 | grill · 监督窗 | ADR-0038、《patch_events-路线Y正式n与语料缺额设计评估.md》、卷 27 Y7 |
