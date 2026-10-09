@@ -3,7 +3,7 @@
 ## Ticket
 - **ID**: SLO-06
 - **Title**: `feat(slo): 人审作废率与 override rate 周报（C1/C2）`
-- **Paths**: `src/freshlatch/store/sqlite_store.py`, `src/freshlatch/gates/human_latch.py`, `src/freshlatch/claim_ledger.py`, `docs/ops/生产补丁放行SLO.md`, `scripts/` 或 `reports/`
+- **Paths**: `scripts/slo_c1_c2_latch_rates.py`, `tests/unit/test_slo_c1_c2_latch_rates.py`, `docs/ops/生产补丁放行SLO.md`（互指）；只读参考 `src/freshlatch/store/sqlite_store.py`, `gates/human_latch.py`, `claim_ledger.py`
 
 ## What to build
 从 latch_log / 作废名单只读聚合用户作废率与 override rate，输出周报字段。override ≠ 模型变好（ADR-0023）。不新增 HumanLatch 动词。
@@ -31,9 +31,9 @@ SLO-01
 - notes: adapt latch_log；遵守 ADR-0023
 
 ### Evidence *(after Matt /implement)*
-- typecheck:
-- tests:
-- paths:
+- typecheck: `python -m compileall -q src scripts/slo_c1_c2_latch_rates.py` → exit 0
+- tests: `pytest tests/unit/test_slo_c1_c2_latch_rates.py -q` → 6 passed
+- paths: `scripts/slo_c1_c2_latch_rates.py` · `tests/unit/test_slo_c1_c2_latch_rates.py` · `docs/ops/生产补丁放行SLO.md`
 
 ## Handoff
-`2026-10-09 | SLO-06 | ready | blocked by SLO-01`
+`2026-10-09 | SLO-06 | done | C1/C2 只读聚合脚本+测试；ADR-0023 声明；ops §3.3/§6 互指`
