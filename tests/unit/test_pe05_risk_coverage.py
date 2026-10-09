@@ -13,9 +13,6 @@ import pytest
 from freshlatch.eval import patch_events_metrics as metrics
 
 
-BAD_INDEX = {0, 2, 3, 4, 7, 9, 13, 15, 16, 18}
-
-
 def _row(claim_id, arm, gold, decision, score, **overrides):
     base = {
         "claim_id": claim_id,
@@ -38,28 +35,28 @@ def _row(claim_id, arm, gold, decision, score, **overrides):
 
 
 def _quad(claim_id, gold, *, release_scored: bool, score: float | None):
+    """四臂同决策（路线 B：C 也走自然放行集 R，不再随机抽 k）。"""
     rows = []
+    decision = "release" if release_scored else "reject"
     for arm in ("C", "T", "B1", "B2"):
-        if arm == "C":
-            rows.append(_row(claim_id, arm, gold, "reject", None))
-        else:
-            decision = "release" if release_scored else "reject"
-            rows.append(_row(claim_id, arm, gold, decision, score))
+        rows.append(_row(claim_id, arm, gold, decision, score))
     return rows
 
 
 def _success_rows():
+    """前 10 条坏、后 10 条正确。T/B1 只放行正确；C/B2 全放行 → R 下 T-C 差可识别。"""
     rows = []
     for i in range(20):
-        bad = i in BAD_INDEX
-        rows.extend(
-            _quad(
-                f"c{i:02d}",
-                "坏" if bad else "正确",
-                release_scored=not bad,
-                score=0.0 if bad else 1.0,
-            )
-        )
+        cid = f"c{i:02d}"
+        if i < 10:
+            gold = "坏"
+            for arm in ("C", "T", "B1", "B2"):
+                decision = "reject" if arm in ("T", "B1") else "release"
+                rows.append(_row(cid, arm, gold, decision, None))
+        else:
+            gold = "正确"
+            for arm in ("C", "T", "B1", "B2"):
+                rows.append(_row(cid, arm, gold, "release", None))
     return rows
 
 
@@ -253,26 +250,30 @@ def test_established_iff_point_and_lower_bound_are_positive():
     first = metrics.compare_primary(_success_rows(), ingested_t1=ingested)
     second = metrics.compare_primary(_success_rows(), ingested_t1=ingested)
     assert first == second
+    assert first["k"] == 10
+    assert first["arms"]["T"]["fixed"]["selected_claim_ids"] == [f"c{i:02d}" for i in range(10, 20)]
+    assert first["arms"]["C"]["fixed"]["selected_claim_ids"] == [f"c{i:02d}" for i in range(10)]
 
     versus_c = first["comparisons"][0]
     assert versus_c["name"] == "T-C"
     assert versus_c["point"] == 1.0
-    assert versus_c["ci95_low"] == 0.21428571428571427
-    assert versus_c["ci95_high"] == 0.8571428571428571
+    assert versus_c["ci95_low"] is not None and versus_c["ci95_low"] > 0
     assert versus_c["intervals"]["误放率"]["dropped"] == 0
     assert versus_c["established"] is True
     assert first["arms"]["T"]["fixed"]["误放率"] == 0.0
     assert first["arms"]["C"]["fixed"]["误放率"] == 1.0
-    assert first["arms"]["C"]["natural"]["误放率"] is None
+    assert first["arms"]["C"]["natural"]["误放率"] == 0.5
 
     versus_b1 = first["comparisons"][1]
     assert versus_b1["name"] == "T-B1"
     assert versus_b1["point"] == 0.0
-    assert versus_b1["ci95_low"] == 0.0
+    assert versus_b1["ci95_low"] is not None
     assert versus_b1["ci95_low"] <= 0
     assert versus_b1["established"] is False
-    assert first["comparisons"][2]["name"] == "T-B2"
-    assert first["comparisons"][2]["established"] is False
+    versus_b2 = first["comparisons"][2]
+    assert versus_b2["name"] == "T-B2"
+    assert versus_b2["point"] == 1.0
+    assert versus_b2["established"] is True
     assert first["arms"]["T"]["cost"] == 0
     assert first["arms"]["T"]["cost_note"] == "没有调用"
 

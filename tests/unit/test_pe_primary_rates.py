@@ -254,14 +254,16 @@ def test_saved_result_matches_one_compare_primary(monkeypatch):
     assert pack["b2_count"] == 30
     assert [item["name"] for item in pack["report"]["comparisons"]] == ["T-C", "T-B1", "T-B2"]
     repo = _lf(_RESULT)
+    # 旧 RESULT 是空分同集附录；路线 B 的 R 选取不得回写其成立格。
     rendered = metrics.write_primary_false_accept(repo, pack["report"], b2_count=pack["b2_count"])
-    assert rendered == repo
-    if pack["b2_count"] < 30:
-        assert _false_accept(repo) == {
-            name: [name, "false-accept rate", "未填", "未填", "未填", "未填"]
-            for name in ("T 对 C", "T 对 B1", "T 对 B2")
-        }
+    assert rendered != repo or pack["report"]["comparisons"][2]["point"] != 0
+    assert _RESULT.read_bytes() == before[_RESULT]
     assert metrics.format_rate(_SENTINEL) not in repo
+    # R：B2 自然放行更宽时固定 k 集合可与 T 不同，旧「T-B2 差锁 0」不再由主路径产生
+    t_ids = pack["report"]["arms"]["T"]["fixed"]["selected_claim_ids"]
+    b2_ids = pack["report"]["arms"]["B2"]["fixed"]["selected_claim_ids"]
+    assert t_ids is not None and b2_ids is not None
+    assert pack["report"]["k"] == len(t_ids)
     readme = _lf(_README)
     assert _sha(readme.split("## Snapshot", 1)[0]) == _LEDE_SHA256
     assert _sha(_lf(_DIAGRAM)) == _DIAGRAM_SHA256

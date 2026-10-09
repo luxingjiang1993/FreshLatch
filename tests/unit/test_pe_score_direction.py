@@ -196,7 +196,7 @@ def test_empty_score_keeps_release_and_reject():
     assert {item["reason"] for item in failed["voids"]} == {"生成失败"}
 
 
-def test_fixed_k_order_is_unchanged_and_c_uses_coverage(monkeypatch):
+def test_legacy_score_order_helper_unchanged_and_primary_uses_r(monkeypatch):
     rows = [
         {"claim_id": "b", "score": 2},
         {"claim_id": "a", "score": 2},
@@ -205,14 +205,20 @@ def test_fixed_k_order_is_unchanged_and_c_uses_coverage(monkeypatch):
     ]
     assert select_scored_positions(rows, 3) == [1, 0, 2]
     assert 3 not in select_scored_positions(rows, 3)
-    seen = []
-    real = metrics._sample_positions
+    sample_calls = []
+    real_sample = metrics._sample_positions
 
-    def wrapped(n, k, rng):
-        seen.append(rng)
-        return real(n, k, rng)
+    def sample_wrapped(n, k, rng):
+        sample_calls.append(rng)
+        return real_sample(n, k, rng)
 
-    monkeypatch.setattr(metrics, "_sample_positions", wrapped)
+    monkeypatch.setattr(metrics, "_sample_positions", sample_wrapped)
     streams = named_streams()
-    compare_primary(primary_comparison_rows(_run(None)), streams=streams)
-    assert streams["coverage_c"] in seen
+    coverage_before = streams["coverage_c"].getstate()
+    report = compare_primary(primary_comparison_rows(_run(None)), streams=streams)
+    assert sample_calls == []
+    assert streams["coverage_c"].getstate() == coverage_before
+    for arm in ("C", "T", "B1", "B2"):
+        selected = report["arms"][arm]["fixed"]["selected_claim_ids"]
+        if selected is not None:
+            assert selected == sorted(selected)

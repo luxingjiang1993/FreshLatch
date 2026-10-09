@@ -10,11 +10,11 @@
 
 ## Acceptance criteria
 
-- [ ] Given 名单针已落盘，When 调用 formal-y 的 n=400 loader，Then 返回恰好 400 条互异 `claim_id`
-- [ ] loader 结果与 pilot 名单无交集（单测）
-- [ ] 层配额：数值/日期/条款替换/删除各 100，且层内正确/坏 = 50/50（余数规则）
-- [ ] 若语料不够：记缺额并失败或显式「不可激活」，**不得**静默改小 `PREREG-Y` 配额表
-- [ ] `python -m compileall -q src` 退出 0；相关 pytest 绿（可挂在 `test_pe_formal_y.py` 或 `test_pe_split_y.py`）
+- [x] Given 名单针已落盘，When 调用 formal-y 的 n=400 loader，Then 返回恰好 400 条互异 `claim_id`（当前 pe_v2 不够 → 走缺额不可激活，loader 拒绝返回不足 400）
+- [x] loader 结果与 pilot 名单无交集（单测；针内 n400∩pilot=∅）
+- [x] 层配额：数值/日期/条款替换/删除各 100，且层内正确/坏 = 50/50（余数规则；钉在 `quotas_target`）
+- [x] 若语料不够：记缺额并失败或显式「不可激活」，**不得**静默改小 `PREREG-Y` 配额表
+- [x] `python -m compileall -q src` 退出 0；相关 pytest 绿（可挂在 `test_pe_formal_y.py` 或 `test_pe_split_y.py`）
 
 ## Agent Guards
 
@@ -41,13 +41,13 @@
 ### Provenance status
 
 - result: pass
-- notes: adapt 仓内 SPLIT；无外链；实现时补 sha256 pin
+- notes: adapt 仓内 SPLIT；无外链；`SPLIT-pe-v2.json` sha256=`ae20dd46aa0a43a4572e9f2e895d1273578bbd49bf7240f5d151063d2119168d`（写入 route-y `source.split_pe_v2_sha256`）
 
 ### Evidence *(after Matt `/implement`)*
 
-- typecheck:
-- tests:
-- paths:
+- typecheck: `python -m compileall -q src` → 0
+- tests: `pytest tests/unit/test_pe_split_y.py tests/unit/test_pe_formal_y.py` → 17 passed（缺额不可激活收口；未凑满 400）
+- paths: `docs/evidence/patch-events/SPLIT-pe-v2-route-y.json` · `src/freshlatch/eval/patch_events_formal_y.py` · `tests/unit/test_pe_split_y.py`
 
 ## Blocked by
 
