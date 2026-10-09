@@ -25,7 +25,7 @@ grill-with-docs → 四件套(#493) → to-spec(卷27) → to-tickets → enrich
 | 1 | formal-y 旁路 · PE-Y-01 | **DONE** · PR [#494](https://github.com/luxingjiang1993/FreshLatch/pull/494) · [agent](https://cursor.com/agents/bc-5a2978df-d5a8-5696-88cc-5a2d80343cf0) |
 | 2 | GATE-Y-PROBE · PE-Y-02 | **DONE** · PR [#495](https://github.com/luxingjiang1993/FreshLatch/pull/495) · [agent](https://cursor.com/agents/bc-e1bba9e6-7fa1-5f6f-ab30-1cf841c76882) |
 | 3 | n=400 名单 · PE-Y-03 | **云端派工中** · [agent](https://cursor.com/agents/bc-a6bec02d-5347-5236-8a03-f5645a506912) |
-| 4 | RESULT-Y 口径 · PE-Y-04 | **云端派工中** · [agent](https://cursor.com/agents/bc-acb51ccd-10ae-5a03-862c-c9177bfb35d4) |
+| 4 | RESULT-Y 口径 · PE-Y-04 | **DONE** · PR [#496](https://github.com/luxingjiang1993/FreshLatch/pull/496) · [agent](https://cursor.com/agents/bc-acb51ccd-10ae-5a03-862c-c9177bfb35d4) |
 | 5 | 激活 + 一次正式主跑 · PE-Y-05 | **Gate · 不派**（过门+人令） |
 | 6 | 消融/抽检（可选）· PE-Y-06 | 未开票 |
 
