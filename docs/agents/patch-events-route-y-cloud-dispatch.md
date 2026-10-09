@@ -45,12 +45,14 @@ grill-with-docs → 四件套(#493) → to-spec(卷27) → to-tickets → enrich
 
 - [x] 正式 n 可执行：#500+#501 Acceptance 绿（claims=670；route-y `名单已齐·可加载` n400=400；配额表仍 400）
 - [x] #494–#497 及 CORPUS PR #503/#504 已对齐可复现 tip · Draft [#505](https://github.com/luxingjiang1993/FreshLatch/pull/505) · 分支 `cursor/pe-y-merge-corpus-eng-be80`（**仍未**合入 `main` / 父 #493 未关）
-- [ ] `GATE-Y-PROBE` **真数据** `gate_passed=true`
+- [x] `GATE-Y-PROBE` **真数据** `gate_passed=true`（探针令已执行 · 分支 `cursor/pe-y-gate-y-probe-send-be80` · 代码针 `5d7cd17` · k=11 · T−C>0 · **仍未激活**）
 - [ ] 人令原文：「批准激活 PREREG-Y 并正式主跑一次。」
 
 **合入提示（语料链）**：#503 → #504（或 squash 进同一 tip）→ 再与 #494–#497 / 父 #493 对齐；可加载 ≠ 已激活。
 
 **合入 tip（本窗）**：Draft [#505](https://github.com/luxingjiang1993/FreshLatch/pull/505) · `cursor/pe-y-merge-corpus-eng-be80` 已含 #503+#504+#494+#495+#496+#497+#493 祖先；`load_pe_v2_formal_n400()`=400；`PREREG-Y` 文首仍「未激活」；配额表仍 n=400。**禁止**据此派 PE-Y-05。
+
+**探针 tip（本窗）**：已按逐字探针令跑真数据 `GATE-Y-PROBE`（sent=90 · b2_diff=30 · `gate_passed=true`）。可扔 · 非乙成立 · **不**激活 · **不**派 PE-Y-05（仍缺正式令）。
 
 
 ## 人令闸
@@ -80,9 +82,15 @@ before-implement #500 → /implement PE-Y-CORPUS-01
 ## CORPUS 收口（2026-10-09）
 
 - #500/#501 均 CLOSED；实现 PR Draft：[#503](https://github.com/luxingjiang1993/FreshLatch/pull/503)、[#504](https://github.com/luxingjiang1993/FreshLatch/pull/504)。
-- `PREREG-Y` **仍未激活**；PE-Y-05 **仍不派**，直至真数据过门 + 正式人令。
-- 下一动作（人授前）：合入语料/名单链；可选人授探针令跑 `GATE-Y-PROBE`（**不得**当作正式令）。
+- `PREREG-Y` **仍未激活**；PE-Y-05 **仍不派**，直至正式人令（真数据过门已齐）。
+
+## GATE-Y 真数据探针收口（2026-10-09）
+
+- 人令：「授权路线 Y 仓外探针发模型；不得激活。」已执行。
+- 旁路：`docs/evidence/patch-events/gate-y-probe-generations.jsonl`（120 行）· 报告：`GATE-Y-PROBE.md` · `gate_passed=true` · k=11 · T−C 点估计>0。
+- **仍未**激活 `PREREG-Y`；**仍不**派 PE-Y-05；探针令 ≠ 正式令；过门 ≠ 乙成立。
 
 ## 下一窗开场白（复制 · 仅当人授正式令后派 PE-Y-05）
 
 > 你是路线 Y 正式主跑 Agent。只做 `tasks/PE-Y-05.md` / 对应 Issue。须同时满足：route-y 可加载 400（#501 已齐）· `GATE-Y-PROBE` 真数据 `gate_passed=true` · 会话出现逐字人令「批准激活 PREREG-Y 并正式主跑一次。」缺任一则停。禁止称甲；禁止用探针令冒充正式令。
+

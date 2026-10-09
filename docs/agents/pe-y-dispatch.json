@@ -53,7 +53,19 @@
     },
     "PE-Y-02": {
       "status": "DONE",
-      "pr": 495
+      "pr": 495,
+      "probe_send": {
+        "status": "DONE",
+        "branch": "cursor/pe-y-gate-y-probe-send-be80",
+        "code_pin": "5d7cd17",
+        "gate_passed": true,
+        "k": 11,
+        "sent": 90,
+        "b2_diff_added": 30,
+        "layer": "真数据探针层",
+        "prereg_y_activated": false,
+        "note": "可扔·非乙成立·不得激活·不得派PE-Y-05"
+      }
     },
     "PE-Y-03": {
       "status": "DONE",
@@ -83,8 +95,8 @@
       "note": "n400=400; status=名单已齐·可加载; PREREG-Y仍未激活"
     },
     "PE-Y-05": {
-      "status": "BLOCKED_PARK",
-      "note": "语料闸已解除；仍需真数据过门+正式人令；编排不派"
+      "status": "BLOCKED_AWAIT_FORMAL_AUTH",
+      "note": "真数据过门已齐；仍缺逐字正式令；编排不派"
     },
     "PE-Y-06": {
       "status": "UNOPENED"
@@ -122,9 +134,9 @@
     500,
     501
   ],
-  "next_window_opener": "语料/工程 tip 已对齐（cursor/pe-y-merge-corpus-eng-be80）。勿派 PE-Y-05，除非：GATE-Y-PROBE 真数据 gate_passed=true 且会话出现逐字人令「批准激活 PREREG-Y 并正式主跑一次。」可加载≠已激活。",
+  "next_window_opener": "GATE-Y 真数据 gate_passed=true（仍未激活）。勿派 PE-Y-05，除非会话出现逐字人令「批准激活 PREREG-Y 并正式主跑一次。」探针令≠正式令；过门≠乙成立。",
   "orchestration": {
-    "mode": "merge_tip_aligned",
+    "mode": "probe_true_data_passed_await_formal_auth",
     "active_issue": null,
     "active_agent": null,
     "queued": [],
@@ -135,5 +147,14 @@
     "forbid_PE_Y_05": true,
     "corpus_wave": "COMPLETE",
     "eng_wave": "MERGED_TO_TIP"
+  },
+  "gate_y_probe": {
+    "true_data": true,
+    "gate_passed": true,
+    "k": 11,
+    "report": "docs/evidence/patch-events/GATE-Y-PROBE.md",
+    "generations": "docs/evidence/patch-events/gate-y-probe-generations.jsonl",
+    "auth_phrase": "授权路线 Y 仓外探针发模型；不得激活。",
+    "prereg_y_activated": false
   }
 }

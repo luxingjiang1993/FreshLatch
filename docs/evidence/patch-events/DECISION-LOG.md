@@ -16,6 +16,10 @@ B/C 正式主跑均为丙归档后，旁路**只冲乙**：新预注册 `PREREG-
 
 盘点：`pe_v2` claims≈178 < 正式 n=400；PE-Y-03 标不可激活。拍板（ADR-0038）：**主解锁=扩 pe_v2**（同样本框、#371 级 provenance）；操作态**停泊** PE-Y-05；**禁止**静默改小 `PREREG-Y` 配额；改正式 n 须另开透明决议（本窗否）。评估见 `docs/research/patch_events-路线Y正式n与语料缺额设计评估.md`。本条不改比较、成立尺、选取、门闩过门条件。
 
+## 路线 Y · GATE-Y 真数据探针（2026-10-09 · 过门 · 未激活）
+
+人令：「授权路线 Y 仓外探针发模型；不得激活。」已执行。旁路 `GATE-Y-PROBE.md` / `gate-y-probe-generations.jsonl`：`gate_passed=true`（k=11 · T−C>0）。**可扔 · 非乙成立**；`PREREG-Y` **仍未激活**；PE-Y-05 **仍不派**（须另授正式令）。探针令 ≠ 正式令。
+
 ## 路线 Y · CORPUS 波次完成（2026-10-09 · 可加载 · 未激活）
 
 - PE-Y-CORPUS-01 [#500](https://github.com/luxingjiang1993/FreshLatch/issues/500) CLOSED · PR [#503](https://github.com/luxingjiang1993/FreshLatch/pull/503) · claims=670
