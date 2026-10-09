@@ -298,7 +298,7 @@ def merge_post_into_result_c(text: str, pack: Mapping[str, Any]) -> str:
     else:
         anchor = "## B 负结果附录"
         if anchor in text:
-            merged = text.replace(anchor, section + anchor, 1)
+            merged = text.replace(anchor, section.rstrip() + "\n\n" + anchor, 1)
         else:
             merged = text.rstrip() + "\n\n" + section
     after = extract_primary_fingerprint(merged)
