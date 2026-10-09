@@ -1,8 +1,8 @@
 {
-  "status": "不可激活",
-  "reason": "语料缺额：当前 pe_v2（data/pe_v2_docket.json，claims=178）不足以支撑 PREREG-Y 正式 n=400（四层各 100，层内 50/50）及共形预留；本针记缺额，不静默改小 PREREG-Y 配额表；禁止当作已可激活正式主跑。",
-  "note": "路线 Y 正式名单针（PE-Y-03）。n400 成员为空表示未凑满，不是把配额改成 0。loader 在缺额状态下必须失败并明示不可激活，不得返回不足 400 条冒充正式集。pilot 仍隔离；不改写 SPLIT-pe-v2.json 已发布键。",
-  "conformal_reserve": "未做",
+  "status": "名单已齐·可加载",
+  "reason": "PE-Y-CORPUS-02：pe_v2 claims=670 已可满 PREREG-Y 正式 n=400（四层各 100，层内 50/50）；本针写出恰好 400 条互异 claim_id，与 pilot 无交。可加载 ≠ 已激活 PREREG-Y ≠ 过门 ≠ 乙成立；禁止据此派 PE-Y-05 或发正式模型。",
+  "note": "路线 Y 正式名单针（PE-Y-03 缺额针 → PE-Y-CORPUS-02 满额重针）。loader 在 status≠不可激活 且 activation.ready 时可返回恰好 400 条；人为缺额针仍须 fail-closed。pilot 仍隔离；不改写 SPLIT-pe-v2.json 已发布键。quotas_target.total 仍钉 400，禁止静默改小。",
+  "conformal_reserve": "规划已记 leftover；正式共形抽样未做",
   "quotas_target": {
     "n400": {
       "数值": {
@@ -30,93 +30,2102 @@
     "remainder_rule": "correct=floor(layer/2); bad=ceil(layer/2)"
   },
   "counts": {
-    "n400": 0,
+    "n400": 400,
     "pilot": 15,
-    "claims_pool": 178,
+    "claims_pool": 670,
     "target_n400": 400
   },
   "gaps": {
-    "n400": 400,
+    "n400": 0,
     "by_stratum": {
       "数值": {
         "target": 100,
-        "inventory_claims": 45,
+        "inventory_claims": 150,
         "pilot_in_stratum": 4,
-        "non_pilot_ceiling": 41,
-        "built": 0,
-        "gap": 100,
-        "gap_vs_ceiling": 59
+        "non_pilot_ceiling": 146,
+        "built": 100,
+        "gap": 0,
+        "gap_vs_ceiling": 0,
+        "leftover_after_n400": 46
       },
       "日期": {
         "target": 100,
-        "inventory_claims": 45,
+        "inventory_claims": 150,
         "pilot_in_stratum": 4,
-        "non_pilot_ceiling": 41,
-        "built": 0,
-        "gap": 100,
-        "gap_vs_ceiling": 59
+        "non_pilot_ceiling": 146,
+        "built": 100,
+        "gap": 0,
+        "gap_vs_ceiling": 0,
+        "leftover_after_n400": 46
       },
       "条款替换": {
         "target": 100,
-        "inventory_claims": 45,
+        "inventory_claims": 150,
         "pilot_in_stratum": 4,
-        "non_pilot_ceiling": 41,
-        "built": 0,
-        "gap": 100,
-        "gap_vs_ceiling": 59
+        "non_pilot_ceiling": 146,
+        "built": 100,
+        "gap": 0,
+        "gap_vs_ceiling": 0,
+        "leftover_after_n400": 46
       },
       "删除": {
         "target": 100,
-        "inventory_claims": 43,
+        "inventory_claims": 220,
         "pilot_in_stratum": 3,
-        "non_pilot_ceiling": 40,
-        "built": 0,
-        "gap": 100,
-        "gap_vs_ceiling": 60
+        "non_pilot_ceiling": 217,
+        "built": 100,
+        "gap": 0,
+        "gap_vs_ceiling": 0,
+        "leftover_after_n400": 117
       }
     }
   },
   "by_stratum": {
     "n400": {
       "数值": {
-        "built": 0,
+        "built": 100,
         "target": 100,
-        "gap": 100,
-        "correct": 0,
-        "bad": 0,
+        "gap": 0,
+        "correct": 50,
+        "bad": 50,
         "correct_target": 50,
-        "bad_target": 50
+        "bad_target": 50,
+        "leftover_non_pilot": 46
       },
       "日期": {
-        "built": 0,
+        "built": 100,
         "target": 100,
-        "gap": 100,
-        "correct": 0,
-        "bad": 0,
+        "gap": 0,
+        "correct": 50,
+        "bad": 50,
         "correct_target": 50,
-        "bad_target": 50
+        "bad_target": 50,
+        "leftover_non_pilot": 46
       },
       "条款替换": {
-        "built": 0,
+        "built": 100,
         "target": 100,
-        "gap": 100,
-        "correct": 0,
-        "bad": 0,
+        "gap": 0,
+        "correct": 50,
+        "bad": 50,
         "correct_target": 50,
-        "bad_target": 50
+        "bad_target": 50,
+        "leftover_non_pilot": 46
       },
       "删除": {
-        "built": 0,
+        "built": 100,
         "target": 100,
-        "gap": 100,
-        "correct": 0,
-        "bad": 0,
+        "gap": 0,
+        "correct": 50,
+        "bad": 50,
         "correct_target": 50,
-        "bad_target": 50
+        "bad_target": 50,
+        "leftover_non_pilot": 117
       }
     }
   },
-  "n400": [],
+  "n400": [
+    {
+      "claim_id": "a005",
+      "construction_gold": "坏",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a006",
+      "construction_gold": "正确",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a007",
+      "construction_gold": "坏",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a008",
+      "construction_gold": "正确",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a009",
+      "construction_gold": "坏",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a010",
+      "construction_gold": "正确",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a011",
+      "construction_gold": "坏",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a012",
+      "construction_gold": "正确",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a013",
+      "construction_gold": "坏",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a014",
+      "construction_gold": "正确",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a015",
+      "construction_gold": "坏",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a016",
+      "construction_gold": "正确",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a017",
+      "construction_gold": "坏",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a018",
+      "construction_gold": "正确",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a019",
+      "construction_gold": "坏",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a020",
+      "construction_gold": "正确",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a021",
+      "construction_gold": "坏",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a022",
+      "construction_gold": "正确",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a023",
+      "construction_gold": "坏",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a024",
+      "construction_gold": "正确",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a025",
+      "construction_gold": "坏",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a026",
+      "construction_gold": "正确",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a027",
+      "construction_gold": "坏",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a028",
+      "construction_gold": "正确",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a029",
+      "construction_gold": "坏",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a030",
+      "construction_gold": "正确",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a031",
+      "construction_gold": "坏",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a032",
+      "construction_gold": "正确",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a033",
+      "construction_gold": "坏",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a034",
+      "construction_gold": "正确",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a035",
+      "construction_gold": "坏",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a036",
+      "construction_gold": "正确",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a037",
+      "construction_gold": "坏",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a038",
+      "construction_gold": "正确",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a039",
+      "construction_gold": "坏",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a040",
+      "construction_gold": "正确",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a041",
+      "construction_gold": "坏",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a042",
+      "construction_gold": "正确",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a043",
+      "construction_gold": "坏",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a044",
+      "construction_gold": "正确",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a045",
+      "construction_gold": "坏",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a046",
+      "construction_gold": "正确",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a047",
+      "construction_gold": "坏",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a048",
+      "construction_gold": "正确",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a049",
+      "construction_gold": "坏",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a050",
+      "construction_gold": "正确",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a051",
+      "construction_gold": "坏",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a052",
+      "construction_gold": "正确",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a053",
+      "construction_gold": "坏",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a054",
+      "construction_gold": "正确",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a055",
+      "construction_gold": "坏",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a056",
+      "construction_gold": "正确",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a057",
+      "construction_gold": "坏",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a058",
+      "construction_gold": "正确",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a059",
+      "construction_gold": "坏",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a060",
+      "construction_gold": "正确",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a061",
+      "construction_gold": "坏",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a062",
+      "construction_gold": "正确",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a063",
+      "construction_gold": "坏",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a064",
+      "construction_gold": "正确",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a065",
+      "construction_gold": "坏",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a066",
+      "construction_gold": "正确",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a067",
+      "construction_gold": "坏",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a068",
+      "construction_gold": "正确",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a069",
+      "construction_gold": "坏",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a070",
+      "construction_gold": "正确",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a071",
+      "construction_gold": "坏",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a072",
+      "construction_gold": "正确",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a073",
+      "construction_gold": "坏",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a074",
+      "construction_gold": "正确",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a075",
+      "construction_gold": "坏",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a076",
+      "construction_gold": "正确",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a077",
+      "construction_gold": "坏",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a078",
+      "construction_gold": "正确",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a079",
+      "construction_gold": "坏",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a080",
+      "construction_gold": "正确",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a081",
+      "construction_gold": "坏",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a082",
+      "construction_gold": "正确",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a083",
+      "construction_gold": "坏",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a084",
+      "construction_gold": "正确",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a085",
+      "construction_gold": "坏",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a086",
+      "construction_gold": "正确",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a087",
+      "construction_gold": "坏",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a088",
+      "construction_gold": "正确",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a089",
+      "construction_gold": "坏",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a090",
+      "construction_gold": "正确",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a091",
+      "construction_gold": "坏",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a092",
+      "construction_gold": "正确",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a093",
+      "construction_gold": "坏",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a094",
+      "construction_gold": "正确",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a095",
+      "construction_gold": "坏",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a096",
+      "construction_gold": "正确",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a097",
+      "construction_gold": "坏",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a098",
+      "construction_gold": "正确",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a099",
+      "construction_gold": "坏",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a100",
+      "construction_gold": "正确",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a101",
+      "construction_gold": "坏",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a102",
+      "construction_gold": "正确",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a103",
+      "construction_gold": "坏",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "a104",
+      "construction_gold": "正确",
+      "edit_type": "数值"
+    },
+    {
+      "claim_id": "b005",
+      "construction_gold": "坏",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b006",
+      "construction_gold": "正确",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b007",
+      "construction_gold": "坏",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b008",
+      "construction_gold": "正确",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b009",
+      "construction_gold": "坏",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b010",
+      "construction_gold": "正确",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b011",
+      "construction_gold": "坏",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b012",
+      "construction_gold": "正确",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b013",
+      "construction_gold": "坏",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b014",
+      "construction_gold": "正确",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b015",
+      "construction_gold": "坏",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b016",
+      "construction_gold": "正确",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b017",
+      "construction_gold": "坏",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b018",
+      "construction_gold": "正确",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b019",
+      "construction_gold": "坏",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b020",
+      "construction_gold": "正确",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b021",
+      "construction_gold": "坏",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b022",
+      "construction_gold": "正确",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b023",
+      "construction_gold": "坏",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b024",
+      "construction_gold": "正确",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b025",
+      "construction_gold": "坏",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b026",
+      "construction_gold": "正确",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b027",
+      "construction_gold": "坏",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b028",
+      "construction_gold": "正确",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b029",
+      "construction_gold": "坏",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b030",
+      "construction_gold": "正确",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b031",
+      "construction_gold": "坏",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b032",
+      "construction_gold": "正确",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b033",
+      "construction_gold": "坏",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b034",
+      "construction_gold": "正确",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b035",
+      "construction_gold": "坏",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b036",
+      "construction_gold": "正确",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b037",
+      "construction_gold": "坏",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b038",
+      "construction_gold": "正确",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b039",
+      "construction_gold": "坏",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b040",
+      "construction_gold": "正确",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b041",
+      "construction_gold": "坏",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b042",
+      "construction_gold": "正确",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b043",
+      "construction_gold": "坏",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b044",
+      "construction_gold": "正确",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b045",
+      "construction_gold": "坏",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b046",
+      "construction_gold": "正确",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b047",
+      "construction_gold": "坏",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b048",
+      "construction_gold": "正确",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b049",
+      "construction_gold": "坏",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b050",
+      "construction_gold": "正确",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b051",
+      "construction_gold": "坏",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b052",
+      "construction_gold": "正确",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b053",
+      "construction_gold": "坏",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b054",
+      "construction_gold": "正确",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b055",
+      "construction_gold": "坏",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b056",
+      "construction_gold": "正确",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b057",
+      "construction_gold": "坏",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b058",
+      "construction_gold": "正确",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b059",
+      "construction_gold": "坏",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b060",
+      "construction_gold": "正确",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b061",
+      "construction_gold": "坏",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b062",
+      "construction_gold": "正确",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b063",
+      "construction_gold": "坏",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b064",
+      "construction_gold": "正确",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b065",
+      "construction_gold": "坏",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b066",
+      "construction_gold": "正确",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b067",
+      "construction_gold": "坏",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b068",
+      "construction_gold": "正确",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b069",
+      "construction_gold": "坏",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b070",
+      "construction_gold": "正确",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b071",
+      "construction_gold": "坏",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b072",
+      "construction_gold": "正确",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b073",
+      "construction_gold": "坏",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b074",
+      "construction_gold": "正确",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b075",
+      "construction_gold": "坏",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b076",
+      "construction_gold": "正确",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b077",
+      "construction_gold": "坏",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b078",
+      "construction_gold": "正确",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b079",
+      "construction_gold": "坏",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b080",
+      "construction_gold": "正确",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b081",
+      "construction_gold": "坏",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b082",
+      "construction_gold": "正确",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b083",
+      "construction_gold": "坏",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b084",
+      "construction_gold": "正确",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b085",
+      "construction_gold": "坏",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b086",
+      "construction_gold": "正确",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b087",
+      "construction_gold": "坏",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b088",
+      "construction_gold": "正确",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b089",
+      "construction_gold": "坏",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b090",
+      "construction_gold": "正确",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b091",
+      "construction_gold": "坏",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b092",
+      "construction_gold": "正确",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b093",
+      "construction_gold": "坏",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b094",
+      "construction_gold": "正确",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b095",
+      "construction_gold": "坏",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b096",
+      "construction_gold": "正确",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b097",
+      "construction_gold": "坏",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b098",
+      "construction_gold": "正确",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b099",
+      "construction_gold": "坏",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b100",
+      "construction_gold": "正确",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b101",
+      "construction_gold": "坏",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b102",
+      "construction_gold": "正确",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b103",
+      "construction_gold": "坏",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "b104",
+      "construction_gold": "正确",
+      "edit_type": "日期"
+    },
+    {
+      "claim_id": "c005",
+      "construction_gold": "坏",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c006",
+      "construction_gold": "正确",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c007",
+      "construction_gold": "坏",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c008",
+      "construction_gold": "正确",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c009",
+      "construction_gold": "坏",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c010",
+      "construction_gold": "正确",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c011",
+      "construction_gold": "坏",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c012",
+      "construction_gold": "正确",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c013",
+      "construction_gold": "坏",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c014",
+      "construction_gold": "正确",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c015",
+      "construction_gold": "坏",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c016",
+      "construction_gold": "正确",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c017",
+      "construction_gold": "坏",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c018",
+      "construction_gold": "正确",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c019",
+      "construction_gold": "坏",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c020",
+      "construction_gold": "正确",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c021",
+      "construction_gold": "坏",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c022",
+      "construction_gold": "正确",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c023",
+      "construction_gold": "坏",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c024",
+      "construction_gold": "正确",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c025",
+      "construction_gold": "坏",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c026",
+      "construction_gold": "正确",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c027",
+      "construction_gold": "坏",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c028",
+      "construction_gold": "正确",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c029",
+      "construction_gold": "坏",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c030",
+      "construction_gold": "正确",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c031",
+      "construction_gold": "坏",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c032",
+      "construction_gold": "正确",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c033",
+      "construction_gold": "坏",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c034",
+      "construction_gold": "正确",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c035",
+      "construction_gold": "坏",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c036",
+      "construction_gold": "正确",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c037",
+      "construction_gold": "坏",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c038",
+      "construction_gold": "正确",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c039",
+      "construction_gold": "坏",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c040",
+      "construction_gold": "正确",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c041",
+      "construction_gold": "坏",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c042",
+      "construction_gold": "正确",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c043",
+      "construction_gold": "坏",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c044",
+      "construction_gold": "正确",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c045",
+      "construction_gold": "坏",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c046",
+      "construction_gold": "正确",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c047",
+      "construction_gold": "坏",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c048",
+      "construction_gold": "正确",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c049",
+      "construction_gold": "坏",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c050",
+      "construction_gold": "正确",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c051",
+      "construction_gold": "坏",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c052",
+      "construction_gold": "正确",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c053",
+      "construction_gold": "坏",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c054",
+      "construction_gold": "正确",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c055",
+      "construction_gold": "坏",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c056",
+      "construction_gold": "正确",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c057",
+      "construction_gold": "坏",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c058",
+      "construction_gold": "正确",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c059",
+      "construction_gold": "坏",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c060",
+      "construction_gold": "正确",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c061",
+      "construction_gold": "坏",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c062",
+      "construction_gold": "正确",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c063",
+      "construction_gold": "坏",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c064",
+      "construction_gold": "正确",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c065",
+      "construction_gold": "坏",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c066",
+      "construction_gold": "正确",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c067",
+      "construction_gold": "坏",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c068",
+      "construction_gold": "正确",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c069",
+      "construction_gold": "坏",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c070",
+      "construction_gold": "正确",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c071",
+      "construction_gold": "坏",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c072",
+      "construction_gold": "正确",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c073",
+      "construction_gold": "坏",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c074",
+      "construction_gold": "正确",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c075",
+      "construction_gold": "坏",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c076",
+      "construction_gold": "正确",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c077",
+      "construction_gold": "坏",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c078",
+      "construction_gold": "正确",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c079",
+      "construction_gold": "坏",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c080",
+      "construction_gold": "正确",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c081",
+      "construction_gold": "坏",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c082",
+      "construction_gold": "正确",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c083",
+      "construction_gold": "坏",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c084",
+      "construction_gold": "正确",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c085",
+      "construction_gold": "坏",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c086",
+      "construction_gold": "正确",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c087",
+      "construction_gold": "坏",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c088",
+      "construction_gold": "正确",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c089",
+      "construction_gold": "坏",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c090",
+      "construction_gold": "正确",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c091",
+      "construction_gold": "坏",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c092",
+      "construction_gold": "正确",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c093",
+      "construction_gold": "坏",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c094",
+      "construction_gold": "正确",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c095",
+      "construction_gold": "坏",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c096",
+      "construction_gold": "正确",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c097",
+      "construction_gold": "坏",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c098",
+      "construction_gold": "正确",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c099",
+      "construction_gold": "坏",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c100",
+      "construction_gold": "正确",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c101",
+      "construction_gold": "坏",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c102",
+      "construction_gold": "正确",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c103",
+      "construction_gold": "坏",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "c104",
+      "construction_gold": "正确",
+      "edit_type": "条款替换"
+    },
+    {
+      "claim_id": "d008",
+      "construction_gold": "坏",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d005",
+      "construction_gold": "正确",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d153",
+      "construction_gold": "坏",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d007",
+      "construction_gold": "正确",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d009",
+      "construction_gold": "坏",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d011",
+      "construction_gold": "正确",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d006",
+      "construction_gold": "坏",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d012",
+      "construction_gold": "正确",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d016",
+      "construction_gold": "坏",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d013",
+      "construction_gold": "正确",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d160",
+      "construction_gold": "坏",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d015",
+      "construction_gold": "正确",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d017",
+      "construction_gold": "坏",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d019",
+      "construction_gold": "正确",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d014",
+      "construction_gold": "坏",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d020",
+      "construction_gold": "正确",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d151",
+      "construction_gold": "坏",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d021",
+      "construction_gold": "正确",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d168",
+      "construction_gold": "坏",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d023",
+      "construction_gold": "正确",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d025",
+      "construction_gold": "坏",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d027",
+      "construction_gold": "正确",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d022",
+      "construction_gold": "坏",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d028",
+      "construction_gold": "正确",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d004",
+      "construction_gold": "坏",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d029",
+      "construction_gold": "正确",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d170",
+      "construction_gold": "坏",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d030",
+      "construction_gold": "正确",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d031",
+      "construction_gold": "坏",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d032",
+      "construction_gold": "正确",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d049",
+      "construction_gold": "坏",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d033",
+      "construction_gold": "正确",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d024",
+      "construction_gold": "坏",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d034",
+      "construction_gold": "正确",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d176",
+      "construction_gold": "坏",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d035",
+      "construction_gold": "正确",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d036",
+      "construction_gold": "坏",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d037",
+      "construction_gold": "正确",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d057",
+      "construction_gold": "坏",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d038",
+      "construction_gold": "正确",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d158",
+      "construction_gold": "坏",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d039",
+      "construction_gold": "正确",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d178",
+      "construction_gold": "坏",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d040",
+      "construction_gold": "正确",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d041",
+      "construction_gold": "坏",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d042",
+      "construction_gold": "正确",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d065",
+      "construction_gold": "坏",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d043",
+      "construction_gold": "正确",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d166",
+      "construction_gold": "坏",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d044",
+      "construction_gold": "正确",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d179",
+      "construction_gold": "坏",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d045",
+      "construction_gold": "正确",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d046",
+      "construction_gold": "坏",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d047",
+      "construction_gold": "正确",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d191",
+      "construction_gold": "坏",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d048",
+      "construction_gold": "正确",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d174",
+      "construction_gold": "坏",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d050",
+      "construction_gold": "正确",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d181",
+      "construction_gold": "坏",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d051",
+      "construction_gold": "正确",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d052",
+      "construction_gold": "坏",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d053",
+      "construction_gold": "正确",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d199",
+      "construction_gold": "坏",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d054",
+      "construction_gold": "正确",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d010",
+      "construction_gold": "坏",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d055",
+      "construction_gold": "正确",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d183",
+      "construction_gold": "坏",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d056",
+      "construction_gold": "正确",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d058",
+      "construction_gold": "坏",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d059",
+      "construction_gold": "正确",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d207",
+      "construction_gold": "坏",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d060",
+      "construction_gold": "正确",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d018",
+      "construction_gold": "坏",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d061",
+      "construction_gold": "正确",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d185",
+      "construction_gold": "坏",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d062",
+      "construction_gold": "正确",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d063",
+      "construction_gold": "坏",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d064",
+      "construction_gold": "正确",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d214",
+      "construction_gold": "坏",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d066",
+      "construction_gold": "正确",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d026",
+      "construction_gold": "坏",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d067",
+      "construction_gold": "正确",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d188",
+      "construction_gold": "坏",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d068",
+      "construction_gold": "正确",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d069",
+      "construction_gold": "坏",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d070",
+      "construction_gold": "正确",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d218",
+      "construction_gold": "坏",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d071",
+      "construction_gold": "正确",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d154",
+      "construction_gold": "坏",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d072",
+      "construction_gold": "正确",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d193",
+      "construction_gold": "坏",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d073",
+      "construction_gold": "正确",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d074",
+      "construction_gold": "坏",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d075",
+      "construction_gold": "正确",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d220",
+      "construction_gold": "坏",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d076",
+      "construction_gold": "正确",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d162",
+      "construction_gold": "坏",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d077",
+      "construction_gold": "正确",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d195",
+      "construction_gold": "坏",
+      "edit_type": "删除"
+    },
+    {
+      "claim_id": "d078",
+      "construction_gold": "正确",
+      "edit_type": "删除"
+    }
+  ],
   "pilot": [
     {
       "claim_id": "a001",
@@ -199,15 +2208,20 @@
     "split_pe_v2_sha256": "ae20dd46aa0a43a4572e9f2e895d1273578bbd49bf7240f5d151063d2119168d",
     "corpus": "data/corpus/pe_v2",
     "docket": "data/pe_v2_docket.json",
+    "docket_sha256": "10b351677518ac9432796ded23a58998c118e09569bcf3d6fe5eaf921621addb",
+    "docket_claims": 670,
     "prereg": "docs/evidence/patch-events/PREREG-Y.md"
   },
   "activation": {
-    "ready": false,
-    "label": "不可激活",
-    "blocks": [
-      "n400 未凑满 400 条互异 claim_id",
-      "四层 gap 均为 100（相对配额目标）",
-      "pe_v2 单层 inventory.claims < 100"
-    ]
+    "ready": true,
+    "label": "名单可加载·协议未激活",
+    "blocks": [],
+    "note": "ready 仅表示名单针可被 load_pe_v2_formal_n400 加载；不表示 PREREG-Y 已激活或可派 PE-Y-05。"
+  },
+  "leftover_non_pilot": {
+    "数值": 46,
+    "日期": 46,
+    "条款替换": 46,
+    "删除": 117
   }
 }

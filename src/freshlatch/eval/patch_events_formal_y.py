@@ -21,7 +21,11 @@ from typing import Any
 
 from freshlatch.eval.patch_events_ablation import primary_comparison_rows
 from freshlatch.eval.patch_events_arms import Decoding, run_arms
-from freshlatch.eval.patch_events_construct import STRATA, construct_samples
+from freshlatch.eval.patch_events_construct import (
+    ConstructError,
+    STRATA,
+    construct_from_pins,
+)
 from freshlatch.eval.patch_events_formal import (
     ingested_t1,
     live_gaps,
@@ -119,7 +123,10 @@ def n400_quota_targets() -> dict[str, tuple[int, int]]:
 
 
 def route_y_n400_ready(root: Path | None = None) -> bool:
-    """名单针是否已凑满 400 且标明可激活。缺额时 False。"""
+    """名单针是否已凑满 400 且 activation.ready（可加载）。缺额时 False。
+
+    注意：ready ≠ PREREG-Y 已激活 ≠ 过门 ≠ 乙成立。
+    """
     payload = load_route_y_split(root)
     if payload.get("status") == _SHORTFALL_MARK:
         return False
@@ -139,10 +146,11 @@ def _refuse_n400_shortfall(payload: Mapping[str, Any], *, built: int) -> None:
 
 
 def load_pe_v2_formal_n400(root: Path | None = None) -> list[dict[str, Any]]:
-    """正式 n=400 名单（PE-Y-03）。
+    """正式 n=400 名单（PE-Y-03 / PE-Y-CORPUS-02）。
 
-    接 ``SPLIT-pe-v2-route-y.json``。凑满则返回恰好 400 条互异记录且与 pilot 无交；
+    接 ``SPLIT-pe-v2-route-y.json``。凑满则按针构造恰好 400 条互异记录且与 pilot 无交；
     缺额则显式 ``不可激活`` / 语料缺额失败，**禁止**返回不足 400 条冒充正式集。
+    可加载 ≠ 已激活 ``PREREG-Y`` ≠ 过门 ≠ 乙成立。
     """
     base = _repo_root() if root is None else Path(root)
     payload = load_route_y_split(base)
@@ -186,19 +194,23 @@ def load_pe_v2_formal_n400(root: Path | None = None) -> list[dict[str, Any]]:
                 f"目标 ({correct_t},{bad_t})；不得静默改小 PREREG-Y 配额"
             )
 
-    built = construct_samples(base / _PE_V2_DOCKET, base / _PE_V2_CORPUS)
-    by_id = {
-        str(row.record["claim_id"]): row.record
-        for bucket in (built.pilot, built.n30, built.n100)
-        for row in bucket
-    }
-    missing = [claim_id for claim_id in ids if claim_id not in by_id]
-    if missing:
+    try:
+        records = construct_from_pins(
+            base / _PE_V2_DOCKET,
+            base / _PE_V2_CORPUS,
+            rows,
+        )
+    except ConstructError as exc:
         raise RuntimeError(
             f"{_SHORTFALL_MARK}：n=400 划分里有主张无构造结果 "
-            f"（缺 {len(missing)} 条）；不得静默改小配额"
+            f"（{exc.reason}）；不得静默改小配额"
+        ) from exc
+    if len(records) != _FORMAL_N:
+        raise RuntimeError(
+            f"{_SHORTFALL_MARK}：n=400 构造条数 {len(records)}≠{_FORMAL_N}；"
+            "不得静默改小配额"
         )
-    return [dict(by_id[claim_id]) for claim_id in ids]
+    return records
 
 
 def formal_y_requests(rows: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:

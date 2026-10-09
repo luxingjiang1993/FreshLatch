@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import os
 import subprocess
 import sys
@@ -123,10 +124,36 @@ def test_decoding_pin_matches_prereg():
     assert pin["api_seed"] is None
 
 
-def test_n400_loader_wired_to_route_y_pin():
-    """PE-Y-03：loader 已接名单针；当前 pe_v2 缺额 → 显式不可激活（非 NotImplemented 桩）。"""
+def test_n400_loader_wired_to_route_y_pin_full():
+    """PE-Y-CORPUS-02：loader 接满额名单针，返回恰好 400（非 NotImplemented 桩）。"""
+    rows = load_pe_v2_formal_n400()
+    assert len(rows) == 400
+    assert len({row["claim_id"] for row in rows}) == 400
+    assert not isinstance(rows, type(None))
+
+
+def test_n400_loader_still_refuses_artificial_shortfall(tmp_path, monkeypatch):
+    """缺额 fail-closed 语义保留：人为缺额针仍拒 <400。"""
+    path = tmp_path / "SPLIT-pe-v2-route-y.json"
+    path.write_text(
+        json.dumps(
+            {
+                "status": "不可激活",
+                "activation": {"ready": False},
+                "gaps": {"n400": 400},
+                "n400": [],
+                "pilot": [],
+            },
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(
+        "freshlatch.eval.patch_events_formal_y.route_y_split_path",
+        lambda root=None: path,
+    )
     with pytest.raises(RuntimeError, match="不可激活.*语料缺额") as exc:
-        load_pe_v2_formal_n400()
+        load_pe_v2_formal_n400(tmp_path)
     assert "不得静默改小" in str(exc.value)
     assert not isinstance(exc.value, NotImplementedError)
 
