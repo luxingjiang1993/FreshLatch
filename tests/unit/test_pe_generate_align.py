@@ -47,8 +47,10 @@ def test_c_rewrite_has_no_evidence_align_instruction():
 
 
 def test_verify_edit_surface_unchanged_and_still_exact_match():
-    digest = hashlib.sha256(_VERIFY.read_bytes()).hexdigest()
+    # 针按 LF 语义；Windows checkout CRLF 不得误伤表面锁
+    digest = hashlib.sha256(_VERIFY.read_bytes().replace(b"\r\n", b"\n")).hexdigest()
     assert digest == _VERIFY_SHA256
+
     assert verify_edit(
         {
             "arm": "T",

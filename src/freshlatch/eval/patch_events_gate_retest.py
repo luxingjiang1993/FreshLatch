@@ -186,7 +186,9 @@ def _load_generation_rows(path: Path) -> list[dict[str, Any]]:
 
 
 def _sha256_file(path: Path) -> str:
-    return hashlib.sha256(path.read_bytes()).hexdigest()
+    # 针按 LF 语义；Windows checkout CRLF 不得改写内容针
+    return hashlib.sha256(path.read_bytes().replace(b"\r\n", b"\n")).hexdigest()
+
 
 
 def _reject_reason_counts(rows: Sequence[Mapping[str, Any]]) -> dict[str, int]:

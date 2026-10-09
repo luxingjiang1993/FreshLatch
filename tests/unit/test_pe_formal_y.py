@@ -55,10 +55,14 @@ def test_authorize_send_module_cli_refuses_and_skips_write(tmp_path):
         env=env,
         capture_output=True,
         text=True,
+        encoding="utf-8",
+        errors="replace",
         check=False,
     )
     assert proc.returncode != 0
-    assert "未激活" in proc.stderr or "未激活" in proc.stdout
+    combined = (proc.stderr or "") + (proc.stdout or "")
+    assert "未激活" in combined
+
     if existed:
         assert target.read_bytes() == before
     else:

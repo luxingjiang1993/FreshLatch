@@ -26,7 +26,13 @@ _PREREG_Y = _ROOT / "docs" / "evidence" / "patch-events" / "PREREG-Y.md"
 _DOCKET = _ROOT / "data" / "pe_v2_docket.json"
 
 
+def _sha256_lf(path: Path) -> str:
+    """内容针按 LF 语义（与 Windows checkout CRLF 解耦）。"""
+    return hashlib.sha256(path.read_bytes().replace(b"\r\n", b"\n")).hexdigest()
+
+
 def test_route_y_pin_file_exists_and_targets_prereg_y_quotas():
+
     """Acceptance: 名单针落盘；四层各 100 且 50/50；合计目标 400。"""
     assert route_y_split_path() == _ROUTE_Y
     assert _ROUTE_Y.is_file()
@@ -124,12 +130,13 @@ def test_prereg_y_quota_table_numbers_unchanged():
 def test_source_pin_matches_split_pe_v2_and_docket_blob():
     """Provenance: route-y 登记 SPLIT-pe-v2 与扩容后 docket sha256。"""
     payload = load_route_y_split()
-    digest = hashlib.sha256(_SPLIT.read_bytes()).hexdigest()
+    digest = _sha256_lf(_SPLIT)
     assert payload["source"]["split_pe_v2_sha256"] == digest
     assert payload["source"]["split_pe_v2"] == "docs/evidence/patch-events/SPLIT-pe-v2.json"
-    docket_digest = hashlib.sha256(_DOCKET.read_bytes()).hexdigest()
+    docket_digest = _sha256_lf(_DOCKET)
     assert payload["source"]["docket_sha256"] == docket_digest
     assert payload["source"]["docket_claims"] == 670
+
 
 
 def test_loader_refuses_artificial_shortfall_pin(tmp_path, monkeypatch):
