@@ -102,6 +102,8 @@ B1′ / 同文四闸 / `compare_alt_*` **仅附录**，不进本页主表，不�
 
 ## 日志与产物路径
 
+- 正式入口：`python -m freshlatch.eval.patch_events_formal_c`（**默认不发**；须激活 + `--authorize-send`）  
+- 名单针：`docs/evidence/patch-events/SPLIT-pe-v2.json` 的 `n100`（与 `load_formal_c_n100` / 路线 B 同针）  
 - 正式生成：`docs/evidence/patch-events/formal-generations-c.jsonl`（或 `docs/evidence/patch-events-c/` 下实现票写死路径）  
 - **禁止**写入 `formal-generations-b.jsonl`、旧 `formal-generations.jsonl`  
 - 评委日志：`data/exp/patch-events-c/judge-logs/`（密钥不入库）  
