@@ -152,3 +152,15 @@
 - 大屏产品 UI（本期）  
 - 把评测加严阈值写入 `CONTEXT.md`  
 - 本决议会话写业务代码（须 before-implement 后另开）
+
+---
+
+## 8. 计数出口指针（SLO-02 · 硬闸 B6/B7/C5/D3/C3）
+
+可执行违例计数/清单（只读挂接既有闸，不改谓词、不放宽 fail-closed）:
+
+- 库: `src/freshlatch/slo_hard_gate_violations.py`（`run_acceptance_probes` / `week_fields`）
+- CLI: `python scripts/slo_hard_gate_violations.py`（可选 `--json`）
+- 回归: `tests/unit/test_slo_hard_gate_violations.py`
+
+周报「硬闸违例计数」填 `hard_gate_violation_counts`（期望全 0）；B6/C3 拒拦可观察量见同出口 `hard_gate_block_counts`。

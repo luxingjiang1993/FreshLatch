@@ -32,9 +32,9 @@ SLO-01
 - notes: adapt 既有闸；Source 已钉
 
 ### Evidence *(after Matt /implement)*
-- typecheck:
-- tests:
-- paths:
+- typecheck: `python -m compileall -q src` exit 0
+- tests: `pytest tests/unit/test_slo_hard_gate_violations.py` 7 passed；`python scripts/slo_hard_gate_violations.py` exit 0；`ruff check` exit 0
+- paths: `src/freshlatch/slo_hard_gate_violations.py` · `scripts/slo_hard_gate_violations.py` · `tests/unit/test_slo_hard_gate_violations.py` · ops §8 计数出口指针
 
 ## Handoff
-`2026-10-09 | SLO-02 | ready | blocked by SLO-01`
+`2026-10-09 | SLO-02 | implement-done | gates-pass→implement-done | B6/B7/C5/D3/C3 违例计数清单可执行`
