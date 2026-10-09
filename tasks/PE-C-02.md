@@ -10,11 +10,17 @@ Part of #484（spec）· #486 · 地图 #482 · 决议 #483
 
 ## Acceptance criteria
 
-- [ ] 报告模板含：各臂自然放行/自然误放、固定 k 误放、T−B1/T−B2 差与方向、k、三条件判定、激活建议、代码针、是否发模型
-- [ ] 路径建议 `docs/evidence/patch-events/GATE-C-*.md`；文首标明可扔·非甲·不进主表
-- [ ] 夹具可驱动「过/不过」两种结论分支（测绿即可；不冒充真数据过门）
-- [ ] 明确禁止把 #479 GATE-K-PROBE 升格为 C 已过门
-- [ ] 未激活 `PREREG-C`；未写 RESULT-C 成立格
+- [x] 报告模板含：各臂自然放行/自然误放、固定 k 误放、T−B1/T−B2 差与方向、k、三条件判定、激活建议、代码针、是否发模型
+- [x] 路径建议 `docs/evidence/patch-events/GATE-C-*.md`；文首标明可扔·非甲·不进主表
+- [x] 夹具可驱动「过/不过」两种结论分支（测绿即可；不冒充真数据过门）
+- [x] 明确禁止把 #479 GATE-K-PROBE 升格为 C 已过门
+- [x] 未激活 `PREREG-C`；未写 RESULT-C 成立格
+
+## Evidence
+
+- typecheck: `python -m compileall -q src` · 0
+- tests: `pytest tests/unit/test_pe_gate_c.py` · 6 passed
+- paths: `patch_events_gate_c.py` · `GATE-C-FIXTURE.md` · `test_pe_gate_c.py`
 
 ## Agent Guards
 
