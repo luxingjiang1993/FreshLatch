@@ -33,13 +33,22 @@ PARQUET_DIR = Path("/tmp/pe_v2_src")
 CORPUS = ROOT / "data" / "corpus" / "pe_v2"
 DOCKET = ROOT / "data" / "pe_v2_docket.json"
 FETCH_TIME = "2026-10-08T05:18:00Z"
+# 路线 Y / ADR-0038 续扩抓取时间（既有条保留 FETCH_TIME）
+EXPAND_FETCH_TIME = "2026-10-09T10:00:00Z"
 DATASET_URL = "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations"
+DATASET_SNAPSHOT = "2026-08-26"
+DATASET_REVISION = "11be732f1a529a46e02e8c1530bae3b84f967bc3"
 SOURCE_URL = "https://flk.npc.gov.cn/"
 LICENSE = (
     "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。"
     "正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。"
     "国家法律法规数据库网站使用条款未逐页核验。"
 )
+# 每层显式目标：可满 PREREG-Y n=400（100/层）+ pilot + 共形≥5 + ~1.3×跳过缓冲
+TARGET_PER_STRATUM = 150
+# 删除层另抬：坏槽算子 0/1/3 稀缺，需额外配对/邻近/修饰窗口才能配齐 50 坏
+TARGET_DELETION = 220
+_MOD_WORDS = ("大约", "约", "显著", "明显", "初步", "大致", "基本")
 
 _CYCLE = re.compile(r"(-?\d+(?:\.\d+)?)\s*(个百分点|万元|元|%)")
 _OB = re.compile(r"应当|不得")
@@ -113,7 +122,14 @@ def _isolated(kind: str, statement: str, t1_bodies: list[str], t0_bodies: list[s
 
 def _load_docs() -> list[dict]:
     docs: list[dict] = []
-    for path in sorted(PARQUET_DIR.glob("*.parquet")):
+    paths = sorted(PARQUET_DIR.glob("*.parquet"))
+    if not paths:
+        paths = sorted(PARQUET_DIR.rglob("*.parquet"))
+        # 优先整篇 documents；若仅有 articles 也可用
+        docs_only = [p for p in paths if "documents" in p.parts]
+        if docs_only:
+            paths = docs_only
+    for path in paths:
         table = pq.read_table(
             path,
             columns=[
@@ -182,9 +198,11 @@ def _usable_number_sentence(sent: str) -> bool:
     return len(ints) >= 1
 
 
-def _pick_numeric(docs: list[dict], limit: int) -> list[dict]:
+def _pick_numeric(
+    docs: list[dict], limit: int, *, exclude: set[str] | None = None
+) -> list[dict]:
     picked: list[dict] = []
-    seen: set[str] = set()
+    seen: set[str] = set(exclude or ())
     grouped: dict[str, list[dict]] = {}
     for doc in docs:
         grouped.setdefault(doc["title"], []).append(doc)
@@ -296,9 +314,11 @@ def _date_ok(sent: str) -> bool:
     return day is None or 1 <= day <= 28
 
 
-def _pick_dates(docs: list[dict], limit: int) -> list[dict]:
+def _pick_dates(
+    docs: list[dict], limit: int, *, exclude: set[str] | None = None
+) -> list[dict]:
     picked: list[dict] = []
-    seen: set[str] = set()
+    seen: set[str] = set(exclude or ())
     for doc in docs:
         if len(picked) >= limit:
             break
@@ -349,9 +369,11 @@ def _clause_sentence(sent: str) -> bool:
     return True
 
 
-def _pick_clauses(docs: list[dict], limit: int) -> list[dict]:
+def _pick_clauses(
+    docs: list[dict], limit: int, *, exclude: set[str] | None = None
+) -> list[dict]:
     picked: list[dict] = []
-    seen: set[str] = set()
+    seen: set[str] = set(exclude or ())
     for doc in docs:
         if len(picked) >= limit:
             break
@@ -413,7 +435,13 @@ def _caps(statement: str, t1: str) -> set[object]:
     return found
 
 
-def _pick_deletions(docs: list[dict]) -> list[dict]:
+def _pick_deletions(
+    docs: list[dict],
+    limit: int = TARGET_DELETION,
+    *,
+    exclude: set[str] | None = None,
+) -> list[dict]:
+    """抽取删除层主张。limit 为显式目标条数（路线 Y 验收数字，不得「能捡多少算多少」）。"""
     abol: dict[str, tuple[str, dict]] = {}
     aff: dict[str, tuple[str, dict]] = {}
     for doc in docs:
@@ -425,14 +453,38 @@ def _pick_deletions(docs: list[dict]) -> list[dict]:
                 continue
             if any(marker in sent for marker in _ABOL):
                 for span in spans:
-                    if len(span) >= 8 and span not in abol:
+                    if len(span) >= 6 and span not in abol:
                         abol[span] = (sent, doc)
             elif any(marker in sent for marker in _AFF):
                 for span in spans:
                     if span not in aff:
                         aff[span] = (sent, doc)
     items: list[dict] = []
-    seen: set[str] = set()
+    seen: set[str] = set(exclude or ())
+
+    def _add(
+        statement: str,
+        t1_bodies: list[str],
+        t0_src: dict,
+        t1_src: list[dict],
+        caps: set[object],
+    ) -> None:
+        if statement in seen:
+            return
+        seen.add(statement)
+        items.append(
+            {
+                "stratum": "删除",
+                "statement": statement,
+                "t0_bodies": [statement],
+                "t1_bodies": t1_bodies,
+                "t0_src": t0_src,
+                "t1_src": t1_src,
+                "caps": caps,
+            }
+        )
+
+    # Path A：同一全文窗内同时出现废止限定与仍肯定限定（撑 op0）
     for doc in docs:
         text = doc["text"]
         for sa, (abol_sent, abol_doc) in abol.items():
@@ -443,11 +495,11 @@ def _pick_deletions(docs: list[dict]) -> list[dict]:
                 if sa == sb:
                     continue
                 ib = text.find(sb)
-                if ib < 0 or abs(ia - ib) > 2500:
+                if ib < 0 or abs(ia - ib) > 8000:
                     continue
                 lo, hi = min(ia, ib), max(ia + len(sa), ib + len(sb))
                 window = text[lo:hi]
-                if window in seen or len(window) > 2500:
+                if window in seen or len(window) > 8000:
                     continue
                 if _find_dates(window) or _find_numbers(window):
                     continue
@@ -457,30 +509,80 @@ def _pick_deletions(docs: list[dict]) -> list[dict]:
                 caps = _caps(window, t1)
                 if "C" not in caps:
                     continue
-                seen.add(window)
-                items.append(
-                    {
-                        "stratum": "删除",
-                        "statement": window,
-                        "t0_bodies": [window],
-                        "t1_bodies": [t1],
-                        "t0_src": _meta(doc, window),
-                        "t1_src": [_meta(abol_doc, abol_sent), _meta(aff_doc, aff_sent)],
-                        "caps": caps,
-                    }
+                _add(
+                    window,
+                    [t1],
+                    _meta(doc, window),
+                    [_meta(abol_doc, abol_sent), _meta(aff_doc, aff_sent)],
+                    caps,
                 )
-    plain = 0
+
+    # Path N：废止限定邻近另一限定语（撑 op1：删未废止的那条）
     for doc in docs:
-        op3_only = sum(1 for item in items if 3 in item["caps"] and 1 not in item["caps"])
-        if plain >= 40 and op3_only >= 8:
+        text = doc["text"]
+        for sa, (abol_sent, abol_doc) in abol.items():
+            ia = text.find(sa)
+            if ia < 0:
+                continue
+            lo, hi = max(0, ia - 4000), min(len(text), ia + len(sa) + 4000)
+            region = text[lo:hi]
+            for sp in _qual_spans(region):
+                if sp == sa or len(sp) < 4:
+                    continue
+                ib = text.find(sp, lo, hi)
+                if ib < 0:
+                    continue
+                wlo, whi = min(ia, ib), max(ia + len(sa), ib + len(sp))
+                window = text[wlo:whi]
+                if window in seen or len(window) > 5000:
+                    continue
+                if _OB.search(window):
+                    continue
+                t1 = abol_sent + "。"
+                if _OB.search(t1) or not _isolated("删除", window, [t1], [window]):
+                    continue
+                caps = _caps(window, t1)
+                if "C" not in caps:
+                    continue
+                if 1 not in caps and 0 not in caps:
+                    continue
+                _add(window, [t1], _meta(doc, window), [_meta(abol_doc, abol_sent)], caps)
+
+    # Path M：废止限定邻域含修饰词（撑 op3，尽量避开已占 0/1 的窗）
+    for doc in docs:
+        text = doc["text"]
+        for sa, (abol_sent, abol_doc) in abol.items():
+            ia = text.find(sa)
+            if ia < 0:
+                continue
+            for pad in (80, 200, 400, 800, 1600):
+                lo, hi = max(0, ia - pad), min(len(text), ia + len(sa) + pad)
+                window = text[lo:hi]
+                if window in seen or len(window) > 2500:
+                    continue
+                if _OB.search(window):
+                    continue
+                if not any(word in window for word in _MOD_WORDS):
+                    continue
+                t1 = abol_sent + "。"
+                if _OB.search(t1) or not _isolated("删除", window, [t1], [window]):
+                    continue
+                caps = _caps(window, t1)
+                if "C" not in caps or 3 not in caps:
+                    continue
+                _add(window, [t1], _meta(doc, window), [_meta(abol_doc, abol_sent)], caps)
+
+    # Path B：单句含废止限定（量大，多撑正确/op2）
+    harvest_cap = max(limit * 2, limit + 40)
+    for doc in docs:
+        if len(items) >= harvest_cap:
             break
         for sent in _sentences(doc["text"]):
+            if len(items) >= harvest_cap:
+                break
             if sent in seen or len(sent) > 240:
                 continue
             if _find_dates(sent) or _find_numbers(sent) or _OB.search(sent):
-                continue
-            has_modifier = any(word in sent for word in ("大约", "约", "显著", "明显", "初步", "大致", "基本"))
-            if plain >= 40 and not has_modifier:
                 continue
             hits = [span for span in abol if span in sent]
             if not hits:
@@ -493,20 +595,16 @@ def _pick_deletions(docs: list[dict]) -> list[dict]:
             caps = _caps(sent, t1)
             if "C" not in caps:
                 continue
-            seen.add(sent)
-            plain += 1
-            items.append(
-                {
-                    "stratum": "删除",
-                    "statement": sent,
-                    "t0_bodies": [sent],
-                    "t1_bodies": [t1],
-                    "t0_src": _meta(doc, sent),
-                    "t1_src": [_meta(abol_doc, abol_sent)],
-                    "caps": caps,
-                }
-            )
-    return _order_deletions(items)
+            _add(sent, [t1], _meta(doc, sent), [_meta(abol_doc, abol_sent)], caps)
+    # 稀缺算子优先进入 ordered 前段，便于 route-y 50 坏配齐
+    items.sort(
+        key=lambda item: (
+            -sum(1 for op in (0, 1, 3) if op in item["caps"]),
+            0 if 1 in item["caps"] else 1,
+            0 if 0 in item["caps"] else 1,
+        )
+    )
+    return _order_deletions(items, limit=limit)
 
 
 def _slot_plan(edit_type: str) -> list[tuple[str, int | None, str | None]]:
@@ -522,9 +620,19 @@ def _slot_plan(edit_type: str) -> list[tuple[str, int | None, str | None]]:
     return plan
 
 
-def _order_deletions(items: list[dict]) -> list[dict]:
+def _order_deletions(items: list[dict], *, limit: int = TARGET_PER_STRATUM) -> list[dict]:
+    """按 B 档槽位优先配齐算子，再续填至 limit（路线 Y 显式目标）。"""
     plan = _slot_plan("删除")
-    extra = [("正确", None, None)] * 15
+    # 槽位计划之后继续按 坏/正确 交替填到 limit
+    remaining = max(0, limit - len(plan))
+    pad: list[tuple[str, int | None, str | None]] = []
+    bad_index = sum(1 for gold, _, _ in plan if gold == "坏")
+    for i in range(remaining):
+        if i % 2 == 0:
+            pad.append(("坏", bad_index % 4, _sign(bad_index)))
+            bad_index += 1
+        else:
+            pad.append(("正确", None, None))
     reserved: dict[int, list[int]] = {0: [], 1: [], 3: []}
     taken: set[int] = set()
 
@@ -537,12 +645,14 @@ def _order_deletions(items: list[dict]) -> list[dict]:
             reserved[op].append(index)
             taken.add(index)
 
-    reserve(1, 4)
-    reserve(0, 4)
-    reserve(3, 3)
+    reserve(1, max(4, limit // 20))
+    reserve(0, max(4, limit // 20))
+    reserve(3, max(3, limit // 25))
     used: set[int] = set()
     ordered: list[dict] = []
-    for gold, operator, _sign in plan + extra:
+    for gold, operator, _sign_name in plan + pad:
+        if len(ordered) >= limit:
+            break
         best: int | None = None
         if gold == "坏" and operator in reserved and reserved[operator]:
             best = reserved[operator].pop(0)
@@ -564,6 +674,21 @@ def _order_deletions(items: list[dict]) -> list[dict]:
                     if "C" in item["caps"]:
                         best = index
                         break
+            if best is None and gold == "坏" and operator is not None:
+                for index, item in enumerate(items):
+                    if index in used or index in taken:
+                        continue
+                    if operator in item["caps"]:
+                        best = index
+                        break
+        if best is None:
+            # 续扩：无法配齐特定坏算子时，退回任意仍含 C 的候选，避免「能捡多少算多少」无验收数字
+            for index, item in enumerate(items):
+                if index in used or index in taken:
+                    continue
+                if "C" in item["caps"]:
+                    best = index
+                    break
         if best is None:
             break
         used.add(best)
@@ -577,6 +702,7 @@ def _order_deletions(items: list[dict]) -> list[dict]:
             "op3": sum(1 for item in items if 3 in item["caps"]),
             "correct": sum(1 for item in items if "C" in item["caps"]),
             "ordered": len(ordered),
+            "limit": limit,
         },
     )
     return ordered
@@ -601,8 +727,8 @@ def _write_markdown(path: Path, doc_id: str, as_of: str, title: str, bodies: lis
     return _sha256(data)
 
 
-def _write(items: list[dict]) -> None:
-    if CORPUS.exists():
+def _write(items: list[dict], *, wipe: bool = True, fetch_time: str = FETCH_TIME) -> None:
+    if wipe and CORPUS.exists():
         for path in CORPUS.rglob("*"):
             if path.is_file():
                 path.unlink()
@@ -634,9 +760,10 @@ def _write(items: list[dict]) -> None:
             {
                 "claim_id": claim_id,
                 "stratum": item["stratum"],
-                "fetch_time": FETCH_TIME,
+                "fetch_time": fetch_time,
                 "license": LICENSE,
                 "dataset_url": DATASET_URL,
+                "dataset_revision": DATASET_REVISION,
                 "t0_file": f"data/corpus/pe_v2/t0/{claim_id}.md",
                 "t1_file": f"data/corpus/pe_v2/t1/{claim_id}.md",
                 "t0_sha256": t0_hash,
@@ -658,11 +785,13 @@ def _write(items: list[dict]) -> None:
         encoding="utf-8",
     )
     payload = {
-        "fetch_time": FETCH_TIME,
+        "fetch_time": fetch_time,
         "dataset_url": DATASET_URL,
-        "dataset_snapshot": "2026-08-26",
+        "dataset_snapshot": DATASET_SNAPSHOT,
+        "dataset_revision": DATASET_REVISION,
         "source_url": SOURCE_URL,
         "license": LICENSE,
+        "target_per_stratum": TARGET_PER_STRATUM,
         "built_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "claims": provenance,
     }
@@ -672,19 +801,136 @@ def _write(items: list[dict]) -> None:
     )
 
 
+def _append_write(new_items: list[dict]) -> dict[str, int]:
+    """续扩：保留既有 claim_id / 文件，只追加新主张（冻结 SPLIT-pe-v2 pilot/n100 成员）。"""
+    docket = json.loads(DOCKET.read_text(encoding="utf-8"))
+    prov_path = CORPUS / "PROVENANCE.json"
+    provenance = json.loads(prov_path.read_text(encoding="utf-8"))
+    claims: list[dict] = list(docket.get("claims") or [])
+    prov_claims: list[dict] = list(provenance.get("claims") or [])
+    prefixes = {"数值": "a", "日期": "b", "条款替换": "c", "删除": "d"}
+    counts = {name: 0 for name in prefixes}
+    for row in claims:
+        dim = row["dimension"]
+        counts[dim] = max(counts[dim], int(row["claim_id"][1:]))
+    (CORPUS / "t0").mkdir(parents=True, exist_ok=True)
+    (CORPUS / "t1").mkdir(parents=True, exist_ok=True)
+    for item in new_items:
+        counts[item["stratum"]] += 1
+        claim_id = f"{prefixes[item['stratum']]}{counts[item['stratum']]:03d}"
+        title = item["t0_src"]["title"]
+        t0_hash = _write_markdown(
+            CORPUS / "t0" / f"{claim_id}.md", claim_id, "T0", title, item["t0_bodies"]
+        )
+        t1_hash = _write_markdown(
+            CORPUS / "t1" / f"{claim_id}.md", claim_id, "T1", title, item["t1_bodies"]
+        )
+        claims.append(
+            {
+                "claim_id": claim_id,
+                "statement": item["statement"],
+                "t0_evidence_ids": [f"{claim_id}#p1"],
+                "dimension": item["stratum"],
+            }
+        )
+        prov_claims.append(
+            {
+                "claim_id": claim_id,
+                "stratum": item["stratum"],
+                "fetch_time": EXPAND_FETCH_TIME,
+                "license": LICENSE,
+                "dataset_url": DATASET_URL,
+                "dataset_revision": DATASET_REVISION,
+                "t0_file": f"data/corpus/pe_v2/t0/{claim_id}.md",
+                "t1_file": f"data/corpus/pe_v2/t1/{claim_id}.md",
+                "t0_sha256": t0_hash,
+                "t1_sha256": t1_hash,
+                "t0_source": item["t0_src"],
+                "t1_source": item["t1_src"],
+            }
+        )
+    DOCKET.write_text(
+        json.dumps(
+            {
+                "question": docket.get("question") or "公开法规的旧表述是否应按新文本更新",
+                "claims": claims,
+            },
+            ensure_ascii=False,
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    provenance.update(
+        {
+            "dataset_url": DATASET_URL,
+            "dataset_snapshot": DATASET_SNAPSHOT,
+            "dataset_revision": DATASET_REVISION,
+            "source_url": SOURCE_URL,
+            "license": LICENSE,
+            "target_per_stratum": TARGET_PER_STRATUM,
+            "target_deletion": TARGET_DELETION,
+            "expand_fetch_time": EXPAND_FETCH_TIME,
+            "built_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "claims": prov_claims,
+        }
+    )
+    prov_path.write_text(
+        json.dumps(provenance, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    from collections import Counter
+
+    return dict(Counter(row["dimension"] for row in claims))
+
+
 def main() -> None:
+    """默认续扩至 TARGET_PER_STRATUM/层；保留既有 178 条不动（SPLIT-pe-v2 成员冻结）。"""
     docs = _load_docs()
     print(f"docs {len(docs)}")
-    numeric = _pick_numeric(docs, 45)
-    print(f"numeric {len(numeric)}")
-    dates = _pick_dates(docs, 45)
-    print(f"dates {len(dates)}")
-    clauses = _pick_clauses(docs, 45)
-    print(f"clauses {len(clauses)}")
-    deletions = _pick_deletions(docs)
-    print(f"deletions {len(deletions)}")
-    _write(numeric + dates + clauses + deletions)
-    print(f"wrote {DOCKET}")
+    docket = json.loads(DOCKET.read_text(encoding="utf-8")) if DOCKET.exists() else {"claims": []}
+    existing_claims = list(docket.get("claims") or [])
+    exclude = {row["statement"] for row in existing_claims}
+    by_dim: dict[str, int] = {"数值": 0, "日期": 0, "条款替换": 0, "删除": 0}
+    for row in existing_claims:
+        by_dim[row["dimension"]] = by_dim.get(row["dimension"], 0) + 1
+    print(f"existing {by_dim} exclude_statements={len(exclude)}")
+
+    targets = {
+        "数值": TARGET_PER_STRATUM,
+        "日期": TARGET_PER_STRATUM,
+        "条款替换": TARGET_PER_STRATUM,
+        "删除": TARGET_DELETION,
+    }
+    need = {name: max(0, targets[name] - by_dim.get(name, 0)) for name in by_dim}
+    print(f"need {need} targets={targets}")
+
+    numeric = _pick_numeric(docs, need["数值"], exclude=exclude) if need["数值"] else []
+    print(f"numeric +{len(numeric)}")
+    dates = _pick_dates(docs, need["日期"], exclude=exclude) if need["日期"] else []
+    print(f"dates +{len(dates)}")
+    clauses = _pick_clauses(docs, need["条款替换"], exclude=exclude) if need["条款替换"] else []
+    print(f"clauses +{len(clauses)}")
+    deletions = (
+        _pick_deletions(docs, limit=need["删除"], exclude=exclude) if need["删除"] else []
+    )
+    print(f"deletions +{len(deletions)}")
+
+    short = {
+        "数值": len(numeric),
+        "日期": len(dates),
+        "条款替换": len(clauses),
+        "删除": len(deletions),
+    }
+    for name, got in short.items():
+        if got < need[name]:
+            raise SystemExit(
+                f"语料不足：{name} 目标续扩 {need[name]} 实得 {got} "
+                f"（层合计目标 {targets[name]}）"
+            )
+
+    totals = _append_write(numeric + dates + clauses + deletions)
+    print(f"wrote {DOCKET} totals={totals}")
 
 
 if __name__ == "__main__":
