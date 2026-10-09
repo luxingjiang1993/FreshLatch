@@ -31,9 +31,9 @@ SLO-01, SLO-03
 - notes: 新文档；实验尺只读引用
 
 ### Evidence *(after Matt /implement)*
-- typecheck:
-- tests:
-- paths:
+- typecheck: n/a（无 src；未改 `src/`）
+- tests: waived（documentation）
+- paths: 新建 `docs/ops/抽检-放行误放误拒.md`；`docs/ops/生产补丁放行SLO.md` §3.2 最小互指；未碰 PREREG-Y/RESULT-Y/compare_primary/`src/`
 
 ## Handoff
-`2026-10-09 | SLO-05 | ready | blocked by SLO-01, SLO-03`
+`2026-10-09 | SLO-05 | implement-done | B2/B3 成对观测协议 + ops 互指 | Watch·禁单独放行率成功·实验尺分轨只读`
