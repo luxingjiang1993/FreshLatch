@@ -60,3 +60,4 @@
 | 领域词表 | — | `CONTEXT.md` |
 | 立项依据(冲突以切片为准) | — | `docs/product/FreshLatch-立项切片.md` |
 | 双判一致;Auditor 在场 = 闸层不变量(废止 Lead `spawn_auditor`) | #20,#25,#48 | ADR-0009、ADR-0010;规格回填见 `03-工具表与白名单.md` §3.6 |
+| patch_events 路线 Y 只冲乙（仅锁 T−C） | grill · [#493](https://github.com/luxingjiang1993/FreshLatch/pull/493) | ADR-0037、《patch_events-路线Y只冲乙仅锁T-C设计评估.md》、卷 27 |
