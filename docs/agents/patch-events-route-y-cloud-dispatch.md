@@ -45,14 +45,14 @@ grill-with-docs → 四件套(#493) → to-spec(卷27) → to-tickets → enrich
 
 - [x] 正式 n 可执行：#500+#501 Acceptance 绿（claims=670；route-y `名单已齐·可加载` n400=400；配额表仍 400）
 - [x] #494–#497 及 CORPUS PR #503/#504 已对齐可复现 tip · Draft [#505](https://github.com/luxingjiang1993/FreshLatch/pull/505) · 分支 `cursor/pe-y-merge-corpus-eng-be80`（**仍未**合入 `main` / 父 #493 未关）
-- [x] `GATE-Y-PROBE` **真数据** `gate_passed=true`（探针令已执行 · 分支 `cursor/pe-y-gate-y-probe-send-be80` · 代码针 `5d7cd17` · k=11 · T−C>0 · **仍未激活**）
+- [x] `GATE-Y-PROBE` **真数据** `gate_passed=true`（探针令已执行 · Draft [#506](https://github.com/luxingjiang1993/FreshLatch/pull/506) · 分支 `cursor/pe-y-gate-y-probe-send-be80` · 代码针 `5d7cd17` · k=11 · T−C>0 · **仍未激活**）
 - [ ] 人令原文：「批准激活 PREREG-Y 并正式主跑一次。」
 
 **合入提示（语料链）**：#503 → #504（或 squash 进同一 tip）→ 再与 #494–#497 / 父 #493 对齐；可加载 ≠ 已激活。
 
 **合入 tip（本窗）**：Draft [#505](https://github.com/luxingjiang1993/FreshLatch/pull/505) · `cursor/pe-y-merge-corpus-eng-be80` 已含 #503+#504+#494+#495+#496+#497+#493 祖先；`load_pe_v2_formal_n400()`=400；`PREREG-Y` 文首仍「未激活」；配额表仍 n=400。**禁止**据此派 PE-Y-05。
 
-**探针 tip（本窗）**：已按逐字探针令跑真数据 `GATE-Y-PROBE`（sent=90 · b2_diff=30 · `gate_passed=true`）。可扔 · 非乙成立 · **不**激活 · **不**派 PE-Y-05（仍缺正式令）。
+**探针 tip（本窗）**：Draft [#506](https://github.com/luxingjiang1993/FreshLatch/pull/506) 已按逐字探针令跑真数据 `GATE-Y-PROBE`（sent=90 · b2_diff=30 · `gate_passed=true`）。可扔 · 非乙成立 · **不**激活 · **不**派 PE-Y-05（仍缺正式令）。
 
 
 ## 人令闸
