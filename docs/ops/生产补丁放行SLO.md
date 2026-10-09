@@ -164,3 +164,23 @@
 - 回归: `tests/unit/test_slo_hard_gate_violations.py`
 
 周报「硬闸违例计数」填 `hard_gate_violation_counts`（期望全 0）；B6/C3 拒拦可观察量见同出口 `hard_gate_block_counts`。
+
+---
+
+## 9. 复验主业观测指针（SLO-07 · D1 / D3 / D4）
+
+离线评测 + 观测周报出口（**金标不得进生产 score / 在线放行**）:
+
+- 库: `src/freshlatch/slo_d1_d4_observability.py`
+- CLI（n 写死默认 3）: `python scripts/slo_d1_d4_observability.py --runs 3`
+- 可选从既有金标报告提取 D1: `--from-gold-report reports/<gold_run>.json`
+- 回归: `tests/unit/test_slo_d1_d4_observability.py`
+- 人读样例: `reports/slo/d1_d4_week.md`（由 CLI `--write-report` 生成）
+
+| ID | 出口要点 |
+|----|----------|
+| D1 | 文首标明**离线评测层**；must_stale multi-run 命中汇总；**不得低于当前金标门**（每遍全命中）；n 小时**不报总体方差** |
+| D3 | 无 T1 绿灯违例目标=0；**引用 §8 / SLO-02 同一出口**（`slo_hard_gate_violations`），勿另造冲突语义 |
+| D4 | 包结论三值分布周报：可发 / 需补丁 / 勿发（只读聚合 `disposition`） |
+
+完整 LLM 金标对账（手动/里程碑，不进 CI）: `python -m freshlatch.eval run --gold data/eval/gold.json --runs 3`；结果仍属离线评测轨，可经 `--from-gold-report` 挂入本出口。
