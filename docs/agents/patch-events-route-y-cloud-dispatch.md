@@ -29,8 +29,8 @@ grill-with-docs → 四件套(#493) → to-spec(卷27) → to-tickets → enrich
 | 3 | n=400 名单 · PE-Y-03 | **DONE** · PR [#497](https://github.com/luxingjiang1993/FreshLatch/pull/497) · pe_v2≈178→**缺额不可激活**（未改小配额）· [agent](https://cursor.com/agents/bc-a6bec02d-5347-5236-8a03-f5645a506912) |
 | 4 | RESULT-Y 口径 · PE-Y-04 | **DONE** · PR [#496](https://github.com/luxingjiang1993/FreshLatch/pull/496) · [agent](https://cursor.com/agents/bc-acb51ccd-10ae-5a03-862c-c9177bfb35d4) |
 | — | **缺额解锁决议** | **DONE** · ADR-0038 · 评估 `docs/research/patch_events-路线Y正式n与语料缺额设计评估.md` · 拍板 **A 扩语料 + C 停泊**；B 改 n 本窗否 |
-| 5a | 扩 pe_v2 · **PE-Y-CORPUS-01** | **DISPATCHED** · Issue [#500](https://github.com/luxingjiang1993/FreshLatch/issues/500) · `tasks/PE-Y-CORPUS-01.md` · [cloud agent](https://cursor.com/agents/bc-41bfcf46-42cf-54ad-b6fb-401545208718) |
-| 5b | 重针 route-y · **PE-Y-CORPUS-02** | **QUEUED** · Issue [#501](https://github.com/luxingjiang1993/FreshLatch/issues/501) · blocked-by #500 · 待 #500 绿再派 |
+| 5a | 扩 pe_v2 · **PE-Y-CORPUS-01** | **DONE** · Issue [#500](https://github.com/luxingjiang1993/FreshLatch/issues/500) CLOSED · PR [#503](https://github.com/luxingjiang1993/FreshLatch/pull/503) · claims=670 · [agent](https://cursor.com/agents/bc-41bfcf46-42cf-54ad-b6fb-401545208718) |
+| 5b | 重针 route-y · **PE-Y-CORPUS-02** | **DISPATCHED** · Issue [#501](https://github.com/luxingjiang1993/FreshLatch/issues/501) · `tasks/PE-Y-CORPUS-02.md` · [cloud agent](https://cursor.com/agents/bc-d2f75ac2-4cc3-5370-b557-358e523c847d) |
 | 6 | 激活 + 一次正式主跑 · PE-Y-05 | **不派** · 阻塞：#500+#501 绿 + 真数据过门 + 人令 |
 | 7 | 消融/抽检（可选）· PE-Y-06 | 未开票 |
 

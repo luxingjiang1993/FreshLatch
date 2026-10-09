@@ -11,11 +11,18 @@
   },
   "corpus": {
     "source": "data/pe_v2_docket.json",
-    "claims_pool": 178,
-    "gap_vs_n400": 222,
+    "claims_pool": 670,
+    "gap_vs_n400": 0,
+    "by_stratum": {
+      "数值": 150,
+      "日期": 150,
+      "条款替换": 150,
+      "删除": 220
+    },
     "split_route_y": "docs/evidence/patch-events/SPLIT-pe-v2-route-y.json",
-    "split_status": "不可激活",
-    "target_pool_hint": ">=560 (per-stratum ~142; verify via construct_samples)"
+    "split_status": "不可激活→待#501重针",
+    "corpus_01_pr": 503,
+    "corpus_01_branch": "cursor/pe-y-corpus-01-expand-860d"
   },
   "decision_corpus_n": {
     "status": "DONE",
@@ -53,22 +60,23 @@
       "pr": 496
     },
     "PE-Y-CORPUS-01": {
-      "status": "DISPATCHED",
+      "status": "DONE",
       "issue": 500,
+      "pr": 503,
       "task": "tasks/PE-Y-CORPUS-01.md",
-      "note": "cloud implement in flight",
       "agent_bcId": "bc-41bfcf46-42cf-54ad-b6fb-401545208718",
-      "agent_url": "https://cursor.com/agents/bc-41bfcf46-42cf-54ad-b6fb-401545208718"
+      "agent_url": "https://cursor.com/agents/bc-41bfcf46-42cf-54ad-b6fb-401545208718",
+      "note": "claims=670; route-y未重针"
     },
     "PE-Y-CORPUS-02": {
-      "status": "QUEUED",
+      "status": "DISPATCHED",
       "issue": 501,
       "task": "tasks/PE-Y-CORPUS-02.md",
-      "blocked_by": [
-        "PE-Y-CORPUS-01",
-        500
-      ],
-      "note": "wait #500 green then dispatch"
+      "blocked_by": [],
+      "note": "cloud implement in flight",
+      "agent_bcId": "bc-d2f75ac2-4cc3-5370-b557-358e523c847d",
+      "base_hint": "merge pe-y-03 into pe-y-corpus-01-expand-860d",
+      "agent_url": "https://cursor.com/agents/bc-d2f75ac2-4cc3-5370-b557-358e523c847d"
     },
     "PE-Y-05": {
       "status": "BLOCKED_PARK",
@@ -92,11 +100,12 @@
   "next_window_opener": "你是路线 Y 语料实现 Agent。只做 GitHub Issue #500（PE-Y-CORPUS-01；读全文含 Agent Guards）。ADR-0038：扩 pe_v2 至可满 n=400+共形预留。禁止激活、发正式模型、开 PE-Y-05、改 PREREG-Y 配额表、改写 SPLIT-pe-v2.json 已发布成员、做第二领域。先读 ADR-0038、缺额评估、PREREG-Y、#371、#500。重针 route-y 留给 #501。",
   "orchestration": {
     "mode": "dispatch_only",
-    "active_issue": 500,
-    "queued": [
-      501
-    ],
+    "active_issue": 501,
+    "queued": [],
     "forbid_PE_Y_05": true,
-    "active_agent": "bc-41bfcf46-42cf-54ad-b6fb-401545208718"
+    "done": [
+      500
+    ],
+    "active_agent": "bc-d2f75ac2-4cc3-5370-b557-358e523c847d"
   }
 }
