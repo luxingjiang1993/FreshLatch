@@ -18,13 +18,13 @@ ADR-0038 · 缺额评估 `docs/research/patch_events-路线Y正式n与语料缺�
 
 ## Acceptance criteria
 
-- [ ] Given 扩容后的 pe_v2 docket+corpus，When 跑 `construct_samples(data/pe_v2_docket.json, data/corpus/pe_v2)`（或本仓等价构造入口），Then 四层在「可供 route-y 正式 100/层」意义上**无语料不足**（各层可达 100 槽，层内正确/坏可按余数规则 50/50 配齐）；缺额不得靠改小 `PREREG-Y` 表解决
-- [ ] 每层未使用主张在满 n=400 规划后仍力争 leftover ≥5（共形预留）；若不够 → 写「未做」，**不得**从 400 主配额挖条
-- [ ] 每条主张可在对应 T0 全文逐字定位；`PROVENANCE.json` 含 URL、抓取时间、许可、sha256；文件 sha256 与 LF 内容一致
-- [ ] `scripts/build_pe_v2_corpus.py`（或等价）目标从 45/层抬到足以满足上两条；删除层须显式目标条数（不得仍停留在「能捡多少算多少」而无验收数字）
-- [ ] `docs/evidence/patch-events/DECISION-LOG.md` 增「跑数据前偏离 · pe_v2 再扩充（路线 Y / ADR-0038）」指针行（不改比较/成立尺/配额数字）
-- [ ] 未设置三个评委密钥时：`pytest` 点名本票相关单测 + `python -m compileall -q src` 退出码 0
-- [ ] **边界**：未改 `PREREG-Y` 配额表；文首仍未激活；未开/未派 PE-Y-05；未发正式模型；未碰第二领域 / KPR / 医疗 / thesis-1 合成主路径；未改写 `SPLIT-pe-v2.json` 的 pilot/n30/n100 成员列表
+- [x] Given 扩容后的 pe_v2 docket+corpus，When 跑 `construct_samples(data/pe_v2_docket.json, data/corpus/pe_v2)`（或本仓等价构造入口），Then 四层在「可供 route-y 正式 100/层」意义上**无语料不足**（各层可达 100 槽，层内正确/坏可按余数规则 50/50 配齐）；缺额不得靠改小 `PREREG-Y` 表解决
+- [x] 每层未使用主张在满 n=400 规划后仍力争 leftover ≥5（共形预留）；若不够 → 写「未做」，**不得**从 400 主配额挖条
+- [x] 每条主张可在对应 T0 全文逐字定位；`PROVENANCE.json` 含 URL、抓取时间、许可、sha256；文件 sha256 与 LF 内容一致
+- [x] `scripts/build_pe_v2_corpus.py`（或等价）目标从 45/层抬到足以满足上两条；删除层须显式目标条数（不得仍停留在「能捡多少算多少」而无验收数字）
+- [x] `docs/evidence/patch-events/DECISION-LOG.md` 增「跑数据前偏离 · pe_v2 再扩充（路线 Y / ADR-0038）」指针行（不改比较/成立尺/配额数字）
+- [x] 未设置三个评委密钥时：`pytest` 点名本票相关单测 + `python -m compileall -q src` 退出码 0
+- [x] **边界**：未改 `PREREG-Y` 配额表；文首仍未激活；未开/未派 PE-Y-05；未发正式模型；未碰第二领域 / KPR / 医疗 / thesis-1 合成主路径；未改写 `SPLIT-pe-v2.json` 的 pilot/n30/n100 成员列表
 
 ## Agent Guards
 
@@ -56,9 +56,9 @@ ADR-0038 · 缺额评估 `docs/research/patch_events-路线Y正式n与语料缺�
 
 ### Evidence *(after Matt `/implement`)*
 
-- typecheck:
-- tests:
-- paths:
+- typecheck: `python -m compileall -q src` → 0
+- tests: `pytest tests/unit/test_pe_v2_corpus.py` → 5 passed
+- paths: `data/pe_v2_docket.json`（670=150/150/150/220）· `data/corpus/pe_v2/` · `scripts/build_pe_v2_corpus.py` · `DECISION-LOG.md` · `tests/unit/test_pe_v2_corpus.py`
 
 ## Blocked by
 
