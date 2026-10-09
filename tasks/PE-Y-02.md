@@ -10,11 +10,11 @@
 
 ## Acceptance criteria
 
-- [ ] Given 合成/夹具输入可分别构造「过/不过」，When 跑 gate-y 判定，Then `gate_passed` 仅当 k≥10 且 T−C 点估计>0；T−B1/T−B2 出现在报告但不改变 `gate_passed`
-- [ ] `docs/evidence/patch-events/GATE-Y-PROBE.md` 文首含「可扔 · 非乙成立 · 不进主表」；含判定表、代码针、是否发模型字段
-- [ ] 默认 `PYTHONPATH=src python -m freshlatch.eval.patch_events_gate_y_probe` **不**发模型；无探针人令时 `--authorize-send` 拒绝
-- [ ] 单测断言：不得把 `#479`/`GATE-K-PROBE`/`GATE-C-FIXTURE` 路径当作本页已过门依据
-- [ ] `python -m compileall -q src` 退出 0；`pytest tests/unit/test_pe_gate_y_probe.py` 绿
+- [x] Given 合成/夹具输入可分别构造「过/不过」，When 跑 gate-y 判定，Then `gate_passed` 仅当 k≥10 且 T−C 点估计>0；T−B1/T−B2 出现在报告但不改变 `gate_passed`
+- [x] `docs/evidence/patch-events/GATE-Y-PROBE.md` 文首含「可扔 · 非乙成立 · 不进主表」；含判定表、代码针、是否发模型字段
+- [x] 默认 `PYTHONPATH=src python -m freshlatch.eval.patch_events_gate_y_probe` **不**发模型；无探针人令时 `--authorize-send` 拒绝
+- [x] 单测断言：不得把 `#479`/`GATE-K-PROBE`/`GATE-C-FIXTURE` 路径当作本页已过门依据
+- [x] `python -m compileall -q src` 退出 0；`pytest tests/unit/test_pe_gate_y_probe.py` 绿
 
 ## Agent Guards
 
@@ -46,9 +46,9 @@
 
 ### Evidence *(after Matt `/implement`)*
 
-- typecheck:
-- tests:
-- paths:
+- typecheck: `python -m compileall -q src` → 0
+- tests: `pytest tests/unit/test_pe_gate_y_probe.py` → 12 passed
+- paths: `src/freshlatch/eval/patch_events_gate_y_probe.py` · `docs/evidence/patch-events/GATE-Y-PROBE.md` · `docs/evidence/patch-events/gate-y-probe-generations.jsonl` · `tests/unit/test_pe_gate_y_probe.py`
 
 ## Blocked by
 
