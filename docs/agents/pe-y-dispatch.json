@@ -91,19 +91,30 @@
     }
   },
   "merge_order_hint": [
+    503,
+    504,
     494,
     495,
     496,
     497,
     493
   ],
+  "merge_tip": {
+    "branch": "cursor/pe-y-merge-corpus-eng-be80",
+    "status": "ALIGNED",
+    "contains": [493, 494, 495, 496, 497, 503, 504],
+    "load_pe_v2_formal_n400": 400,
+    "prereg_y_activated": false,
+    "quota_n": 400,
+    "note": "可加载≠过门≠已激活；仍不派 PE-Y-05"
+  },
   "corpus_implement_order": [
     500,
     501
   ],
-  "next_window_opener": "CORPUS 波次完成（#500/#501）。勿派 PE-Y-05，除非：GATE-Y-PROBE 真数据 gate_passed=true 且会话出现逐字人令「批准激活 PREREG-Y 并正式主跑一次。」可加载≠已激活。",
+  "next_window_opener": "语料/工程 tip 已对齐（cursor/pe-y-merge-corpus-eng-be80）。勿派 PE-Y-05，除非：GATE-Y-PROBE 真数据 gate_passed=true 且会话出现逐字人令「批准激活 PREREG-Y 并正式主跑一次。」可加载≠已激活。",
   "orchestration": {
-    "mode": "dispatch_only",
+    "mode": "merge_tip_aligned",
     "active_issue": null,
     "active_agent": null,
     "queued": [],
@@ -112,6 +123,8 @@
       501
     ],
     "forbid_PE_Y_05": true,
-    "corpus_wave": "COMPLETE"
+    "corpus_wave": "COMPLETE",
+    "eng_wave": "MERGED_TO_TIP"
   }
 }
+
