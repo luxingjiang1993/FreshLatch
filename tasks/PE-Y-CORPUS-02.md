@@ -12,14 +12,14 @@ ADR-0038 · PE-Y-03 / PR [#497](https://github.com/luxingjiang1993/FreshLatch/pu
 
 ## Acceptance criteria
 
-- [ ] Given CORPUS-01 后的 pe_v2，When 生成/刷新 `SPLIT-pe-v2-route-y.json`，Then `counts.n400==400` 且 `gaps.n400==0`；四层 `by_stratum.n400.*.gap==0`；层内 correct/bad 各 50
-- [ ] `n400` 与 pilot（镜像自 `SPLIT-pe-v2.json`）`claim_id` 无交集；400 条互异
-- [ ] `status` ≠ `不可激活`；`activation.ready`（或等价字段）允许 loader 成功；**但** `PREREG-Y.md` 文首仍为未激活（本票不得写激活批注）
-- [ ] `load_pe_v2_formal_n400()` 返回恰好 400 条；缺额 `RuntimeError(不可激活…)` 路径保留给将来再次缺额，不得删除 fail-closed 语义
-- [ ] 共形：针内记录 leftover≥5/层 **或** `conformal_reserve: 未做`；不得为共形改小 `quotas_target`（仍钉 total=400）
-- [ ] 单测：`pytest tests/unit/test_pe_split_y.py tests/unit/test_pe_formal_y.py` 绿；缺额用例改为「人为制造缺额针」或保留对称负例，**不得**删掉「禁静默改小」断言
-- [ ] `python -m compileall -q src` 退出 0
-- [ ] **边界**：未激活 PREREG-Y；未发模型；未开 PE-Y-05；未改 `PREREG-Y` 配额表；未改写 `SPLIT-pe-v2.json` 已发布键成员
+- [x] Given CORPUS-01 后的 pe_v2，When 生成/刷新 `SPLIT-pe-v2-route-y.json`，Then `counts.n400==400` 且 `gaps.n400==0`；四层 `by_stratum.n400.*.gap==0`；层内 correct/bad 各 50
+- [x] `n400` 与 pilot（镜像自 `SPLIT-pe-v2.json`）`claim_id` 无交集；400 条互异
+- [x] `status` ≠ `不可激活`；`activation.ready`（或等价字段）允许 loader 成功；**但** `PREREG-Y.md` 文首仍为未激活（本票不得写激活批注）
+- [x] `load_pe_v2_formal_n400()` 返回恰好 400 条；缺额 `RuntimeError(不可激活…)` 路径保留给将来再次缺额，不得删除 fail-closed 语义
+- [x] 共形：针内记录 leftover≥5/层 **或** `conformal_reserve: 未做`；不得为共形改小 `quotas_target`（仍钉 total=400）
+- [x] 单测：`pytest tests/unit/test_pe_split_y.py tests/unit/test_pe_formal_y.py` 绿；缺额用例改为「人为制造缺额针」或保留对称负例，**不得**删掉「禁静默改小」断言
+- [x] `python -m compileall -q src` 退出 0
+- [x] **边界**：未激活 PREREG-Y；未发模型；未开 PE-Y-05；未改 `PREREG-Y` 配额表；未改写 `SPLIT-pe-v2.json` 已发布键成员
 
 ## Agent Guards
 
@@ -51,9 +51,9 @@ ADR-0038 · PE-Y-03 / PR [#497](https://github.com/luxingjiang1993/FreshLatch/pu
 
 ### Evidence *(after Matt `/implement`)*
 
-- typecheck:
-- tests:
-- paths:
+- typecheck: `python -m compileall -q src` → 0
+- tests: `pytest tests/unit/test_pe_split_y.py tests/unit/test_pe_formal_y.py` → 20 passed
+- paths: ok · `SPLIT-pe-v2-route-y.json` status=`名单已齐·可加载` · n400=400 · docket_sha256=`10b351677518ac9432796ded23a58998c118e09569bcf3d6fe5eaf921621addb`
 
 ## Blocked by
 
