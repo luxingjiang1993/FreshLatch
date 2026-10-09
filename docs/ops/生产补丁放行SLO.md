@@ -1,6 +1,6 @@
 # 生产补丁 / 放行 SLO（运营与产品纪律）
 
-> **权威**：ADR-0034 · 评估 `docs/research/生产补丁放行SLO设计评估.md` · 规格 `docs/spec/24-生产补丁放行SLO.md`  
+> **权威**：ADR-0034 · 评估 `docs/research/生产补丁放行SLO设计评估.md` · 规格 `docs/spec/24-生产补丁放行SLO.md` · 词表 `CONTEXT.md`（生产补丁/放行 SLO · 实验—生产防火墙）  
 > **层身份**：运营纪律 + 观测/硬闸分层。**不是**实验乙成立格；**不是** demo 冒充总体。  
 > **冻结**：不改 `PREREG-Y` / `RESULT-Y` / `formal-generations-y`；生产变绿 ≠ 改判乙；禁同页二跑；禁称甲/软甲；金标不进生产 score。
 

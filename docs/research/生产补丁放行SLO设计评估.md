@@ -2,7 +2,7 @@
 
 > **决议会话**: grill-with-docs · 生产补丁/放行 SLO（运营与产品纪律页）  
 > **决议日期**: 2026-10-09  
-> **决议落点**: 本评估、ADR-0034、`CONTEXT.md`、`docs/ops/生产补丁放行SLO.md`、`docs/grill-prep.md` §2i、规格 `docs/spec/24-生产补丁放行SLO.md`  
+> **决议落点**: 本评估、ADR-0034、`CONTEXT.md`、`docs/ops/生产补丁放行SLO.md`、`docs/grill-prep.md` §2j、规格 `docs/spec/24-生产补丁放行SLO.md`  
 > **上游**: 立项切片北星（must_stale / 作废率）；ADR-0027/0029/0031（包结论 · Evidence-bound · 发前钩子）；ADR-0023（override 派生标签）；路线 Y 正式主跑结果**丙**（只读负结果；本页不回写）  
 > **性质**: 运营与产品纪律决议。**不是**复活 `patch_events` 冲乙；**不是**同页二跑凑绿。
 

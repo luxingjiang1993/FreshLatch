@@ -3,7 +3,7 @@
 > 规格：`docs/spec/24-生产补丁放行SLO.md`  
 > 运营真源：`docs/ops/生产补丁放行SLO.md`  
 > ADR-0034 · 评估见 `docs/research/生产补丁放行SLO设计评估.md`  
-> **Frontier：SLO-01**  
+> **Frontier：SLO-02**（SLO-01 文档闭环已 implement）  
 > 人批 `/before-implement` 之前禁止业务代码 `/implement`。
 
 | ID | Title | Blocked by | Trust | Blast | Prov | Acceptance? |

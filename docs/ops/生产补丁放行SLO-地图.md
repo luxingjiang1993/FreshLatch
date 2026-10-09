@@ -18,6 +18,7 @@
 | 2026-10-09 | 生产补丁/放行 SLO grill | **硬防火墙** + 硬闸/观测/离线/实验-only 分层 + 起步阈值预注册。评估见 `docs/research/生产补丁放行SLO设计评估.md`。ADR-0034。运营页 `docs/ops/生产补丁放行SLO.md`。规格卷 24。 |
 | 2026-10-09 | /to-spec | `docs/spec/24-生产补丁放行SLO.md` |
 | 2026-10-09 | /to-tickets + enrich | SLO-01…SLO-07；Frontier=SLO-01；清单 `tasks/SLO-*.md` |
+| 2026-10-09 | /implement SLO-01 | 文档闭环+禁词机检通过；互指 ops↔ADR-0034↔评估↔spec/24↔CONTEXT；评估见 `docs/research/生产补丁放行SLO设计评估.md`。机检 `scripts/check_slo01_doc_closure.py`。未碰 PREREG-Y/RESULT-Y/formal-generations-y。Frontier→SLO-02 |
 
 ## Out of scope
 

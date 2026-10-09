@@ -3,7 +3,7 @@
 ## Ticket
 - **ID**: SLO-01
 - **Title**: `docs(slo): 生产补丁/放行 SLO 文档闭环与禁词扫描`
-- **Paths**: `docs/ops/生产补丁放行SLO.md`, `docs/ops/生产补丁放行SLO-地图.md`, `docs/research/生产补丁放行SLO设计评估.md`, `docs/adr/0034-生产补丁放行SLO与实验防火墙.md`, `docs/spec/24-生产补丁放行SLO.md`, `CONTEXT.md`, `docs/grill-prep.md`, `docs/spec/README.md`
+- **Paths**: `docs/ops/生产补丁放行SLO.md`, `docs/ops/生产补丁放行SLO-地图.md`, `docs/research/生产补丁放行SLO设计评估.md`, `docs/adr/0034-生产补丁放行SLO与实验防火墙.md`, `docs/spec/24-生产补丁放行SLO.md`, `CONTEXT.md`, `docs/grill-prep.md`, `docs/spec/README.md`, `scripts/check_slo01_doc_closure.py`, `tasks/SLO-INDEX.md`
 
 ## What to build
 核对运营真源、评估、ADR、规格、CONTEXT、地图互指完整；文面零「接近乙/软甲/主实验成功」；零编辑 PREREG-Y/RESULT-Y/formal-generations-y。可机检链接存在与禁词。
@@ -31,9 +31,9 @@ None（can start immediately）
 - notes: Kind=new；CONTEXT/grill-prep/spec README 为词表/索引附属增量，非 adapt/port。
 
 ### Evidence *(after Matt /implement)*
-- typecheck:
-- tests:
-- paths:
+- typecheck: n/a（无 src；`python -m compileall -q src` exit 0）
+- tests: waived；机检 `python scripts/check_slo01_doc_closure.py` exit 0
+- paths: ops↔ADR-0034↔评估↔spec/24↔CONTEXT 互指齐；禁词仅禁止语境；diff 无 PREREG-Y/RESULT-Y/formal-generations-y
 
 ## Handoff
-`2026-10-09 | SLO-01 | gates-pass | Trust=Watch Blast=none Prov=pass → fresh session /implement SLO-01`
+`2026-10-09 | SLO-01 | implement-done | 文档闭环+禁词机检绿 | Frontier→SLO-02`
