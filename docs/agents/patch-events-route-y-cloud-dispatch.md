@@ -29,9 +29,10 @@ grill-with-docs → 四件套(#493) → to-spec(卷27) → to-tickets → enrich
 | 3 | n=400 名单 · PE-Y-03 | **DONE** · PR [#497](https://github.com/luxingjiang1993/FreshLatch/pull/497) · pe_v2≈178→**缺额不可激活**（未改小配额）· [agent](https://cursor.com/agents/bc-a6bec02d-5347-5236-8a03-f5645a506912) |
 | 4 | RESULT-Y 口径 · PE-Y-04 | **DONE** · PR [#496](https://github.com/luxingjiang1993/FreshLatch/pull/496) · [agent](https://cursor.com/agents/bc-acb51ccd-10ae-5a03-862c-c9177bfb35d4) |
 | — | **缺额解锁决议** | **DONE** · ADR-0038 · 评估 `docs/research/patch_events-路线Y正式n与语料缺额设计评估.md` · 拍板 **A 扩语料 + C 停泊**；B 改 n 本窗否 |
-| 5a | 扩 pe_v2 · **PE-Y-CORPUS-01** | **DONE** · Issue [#500](https://github.com/luxingjiang1993/FreshLatch/issues/500) CLOSED · PR [#503](https://github.com/luxingjiang1993/FreshLatch/pull/503) · claims=670 |
-| 5b | 重针 route-y · **PE-Y-CORPUS-02** | **DONE** · Issue [#501](https://github.com/luxingjiang1993/FreshLatch/issues/501) CLOSED · Draft PR [#504](https://github.com/luxingjiang1993/FreshLatch/pull/504) · status=`名单已齐·可加载` · n400=400（仍未激活 · 仍不派 PE-Y-05） |
-| 6 | 激活 + 一次正式主跑 · PE-Y-05 | **不派** · 阻塞：#500+#501 绿 + 真数据过门 + 人令 |
+| 5a | 扩 pe_v2 · **PE-Y-CORPUS-01** | **DONE** · Issue [#500](https://github.com/luxingjiang1993/FreshLatch/issues/500) CLOSED · PR [#503](https://github.com/luxingjiang1993/FreshLatch/pull/503) · claims=670 · [agent](https://cursor.com/agents/bc-41bfcf46-42cf-54ad-b6fb-401545208718) |
+| 5b | 重针 route-y · **PE-Y-CORPUS-02** | **DONE** · Issue [#501](https://github.com/luxingjiang1993/FreshLatch/issues/501) CLOSED · PR [#504](https://github.com/luxingjiang1993/FreshLatch/pull/504) · status=`名单已齐·可加载` · n400=400（仍未激活 · 仍不派 PE-Y-05）· [agent](https://cursor.com/agents/bc-d2f75ac2-4cc3-5370-b557-358e523c847d) |
+| 6 | 激活 + 一次正式主跑 · PE-Y-05 | **不派** · 语料闸已解除；仍阻塞：真数据 `GATE-Y-PROBE` 过门 + 正式人令 |
+
 | 7 | 消融/抽检（可选）· PE-Y-06 | 未开票 |
 
 ## Wave2 收口后监督备注
@@ -42,10 +43,12 @@ grill-with-docs → 四件套(#493) → to-spec(卷27) → to-tickets → enrich
 
 ## 激活 PE-Y-05 前置清单（齐了再派）
 
-- [ ] 正式 n 可执行：#500+#501 Acceptance 绿（语料够 400 且 route-y 可加载；**或** 新决议改 n 已锁 —— 后者未批）
-- [ ] #494–#497 已合入总分支
+- [x] 正式 n 可执行：#500+#501 Acceptance 绿（claims=670；route-y `名单已齐·可加载` n400=400；配额表仍 400）
+- [ ] #494–#497 及 CORPUS PR #503/#504 已合入总分支（合入序见下）
 - [ ] `GATE-Y-PROBE` **真数据** `gate_passed=true`
 - [ ] 人令原文：「批准激活 PREREG-Y 并正式主跑一次。」
+
+**合入提示（语料链）**：#503 → #504（或 squash 进同一 tip）→ 再与 #494–#497 / 父 #493 对齐；可加载 ≠ 已激活。
 
 ## 人令闸
 
@@ -71,6 +74,12 @@ before-implement #500 → /implement PE-Y-CORPUS-01
 
 基线建议叠：ADR-0038 针（本派工父）∪ PE-Y-03/#497（route-y 缺额针与 loader）。**禁止**未绿 #500 就开 #501；**禁止** #501 绿后自行激活。
 
-## 下一窗开场白（复制 · 实现 CORPUS-01）
+## CORPUS 收口（2026-10-09）
 
-> 你是路线 Y 语料实现 Agent。只做 GitHub Issue [#500](https://github.com/luxingjiang1993/FreshLatch/issues/500)（PE-Y-CORPUS-01；读全文含 Agent Guards）。ADR-0038：扩 `pe_v2` 至可满 n=400+共形预留。**禁止**激活、发正式模型、开 PE-Y-05、改 `PREREG-Y` 配额表、改写 `SPLIT-pe-v2.json` 已发布成员、做第二领域。先读 ADR-0038、缺额评估、`PREREG-Y`、#371、#500。重针 route-y 留给 #501。
+- #500/#501 均 CLOSED；实现 PR Draft：[#503](https://github.com/luxingjiang1993/FreshLatch/pull/503)、[#504](https://github.com/luxingjiang1993/FreshLatch/pull/504)。
+- `PREREG-Y` **仍未激活**；PE-Y-05 **仍不派**，直至真数据过门 + 正式人令。
+- 下一动作（人授前）：合入语料/名单链；可选人授探针令跑 `GATE-Y-PROBE`（**不得**当作正式令）。
+
+## 下一窗开场白（复制 · 仅当人授正式令后派 PE-Y-05）
+
+> 你是路线 Y 正式主跑 Agent。只做 `tasks/PE-Y-05.md` / 对应 Issue。须同时满足：route-y 可加载 400（#501 已齐）· `GATE-Y-PROBE` 真数据 `gate_passed=true` · 会话出现逐字人令「批准激活 PREREG-Y 并正式主跑一次。」缺任一则停。禁止称甲；禁止用探针令冒充正式令。

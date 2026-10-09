@@ -16,14 +16,22 @@ B/C 正式主跑均为丙归档后，旁路**只冲乙**：新预注册 `PREREG-
 
 盘点：`pe_v2` claims≈178 < 正式 n=400；PE-Y-03 标不可激活。拍板（ADR-0038）：**主解锁=扩 pe_v2**（同样本框、#371 级 provenance）；操作态**停泊** PE-Y-05；**禁止**静默改小 `PREREG-Y` 配额；改正式 n 须另开透明决议（本窗否）。评估见 `docs/research/patch_events-路线Y正式n与语料缺额设计评估.md`。本条不改比较、成立尺、选取、门闩过门条件。
 
+## 路线 Y · CORPUS 波次完成（2026-10-09 · 可加载 · 未激活）
+
+- PE-Y-CORPUS-01 [#500](https://github.com/luxingjiang1993/FreshLatch/issues/500) CLOSED · PR [#503](https://github.com/luxingjiang1993/FreshLatch/pull/503) · claims=670
+- PE-Y-CORPUS-02 [#501](https://github.com/luxingjiang1993/FreshLatch/issues/501) CLOSED · PR [#504](https://github.com/luxingjiang1993/FreshLatch/pull/504) · route-y `名单已齐·可加载` · n400=400
+- `PREREG-Y` **仍未激活**；PE-Y-05 **仍停泊**（真数据过门 + 正式人令）
+- 可加载 ≠ 过门 ≠ 乙成立 ≠ 已激活
+
 ## 路线 Y · CORPUS 票已开（2026-10-09 · CORPUS-01 已实装语料 · 未激活）
 
 按 ADR-0038 已开 enrich 票：
 
 - PE-Y-CORPUS-01 · [#500](https://github.com/luxingjiang1993/FreshLatch/issues/500) · 扩 `pe_v2` 库存（见下节「跑数据前偏离 · pe_v2 再扩充」）
-- PE-Y-CORPUS-02 · [#501](https://github.com/luxingjiang1993/FreshLatch/issues/501) · 重针 `SPLIT-pe-v2-route-y.json`（blocked-by #500）
+- PE-Y-CORPUS-02 · [#501](https://github.com/luxingjiang1993/FreshLatch/issues/501) · 重针 `SPLIT-pe-v2-route-y.json`（blocked-by #500 已解除 · PR #504）
 
 PE-Y-05 仍停泊。`PREREG-Y` 仍未激活；配额表 n=400 未改。
+
 
 ## 已锁进预注册的决定
 

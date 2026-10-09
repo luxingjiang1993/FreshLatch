@@ -11,11 +11,23 @@
   },
   "corpus": {
     "source": "data/pe_v2_docket.json",
-    "claims_pool": 178,
-    "gap_vs_n400": 222,
+    "claims_pool": 670,
+    "gap_vs_n400": 0,
+    "by_stratum": {
+      "数值": 150,
+      "日期": 150,
+      "条款替换": 150,
+      "删除": 220
+    },
     "split_route_y": "docs/evidence/patch-events/SPLIT-pe-v2-route-y.json",
-    "split_status": "不可激活",
-    "target_pool_hint": ">=560 (per-stratum ~142; verify via construct_samples)"
+    "split_status": "名单已齐·可加载",
+    "n400": 400,
+    "activation_ready": true,
+    "prereg_y_activated": false,
+    "corpus_01_pr": 503,
+    "corpus_02_pr": 504,
+    "corpus_01_branch": "cursor/pe-y-corpus-01-expand-860d",
+    "corpus_02_branch": "cursor/pe-y-corpus-02-repin-501-860d"
   },
   "decision_corpus_n": {
     "status": "DONE",
@@ -35,27 +47,71 @@
     ]
   },
   "tickets": {
-    "PE-Y-01": {"status": "DONE", "pr": 494},
-    "PE-Y-02": {"status": "DONE", "pr": 495},
-    "PE-Y-03": {"status": "DONE", "pr": 497, "note": "缺额不可激活"},
-    "PE-Y-04": {"status": "DONE", "pr": 496},
+    "PE-Y-01": {
+      "status": "DONE",
+      "pr": 494
+    },
+    "PE-Y-02": {
+      "status": "DONE",
+      "pr": 495
+    },
+    "PE-Y-03": {
+      "status": "DONE",
+      "pr": 497,
+      "note": "缺额不可激活"
+    },
+    "PE-Y-04": {
+      "status": "DONE",
+      "pr": 496
+    },
     "PE-Y-CORPUS-01": {
-      "status": "OPEN",
+      "status": "DONE",
       "issue": 500,
+      "pr": 503,
       "task": "tasks/PE-Y-CORPUS-01.md",
-      "note": "扩pe_v2·ready-for-agent"
+      "agent_bcId": "bc-41bfcf46-42cf-54ad-b6fb-401545208718",
+      "agent_url": "https://cursor.com/agents/bc-41bfcf46-42cf-54ad-b6fb-401545208718",
+      "note": "claims=670"
     },
     "PE-Y-CORPUS-02": {
-      "status": "OPEN",
+      "status": "DONE",
       "issue": 501,
+      "pr": 504,
       "task": "tasks/PE-Y-CORPUS-02.md",
-      "blocked_by": ["PE-Y-CORPUS-01", 500],
-      "note": "重针route-y·blocked-by#500"
+      "agent_bcId": "bc-d2f75ac2-4cc3-5370-b557-358e523c847d",
+      "agent_url": "https://cursor.com/agents/bc-d2f75ac2-4cc3-5370-b557-358e523c847d",
+      "note": "n400=400; status=名单已齐·可加载; PREREG-Y仍未激活"
     },
-    "PE-Y-05": {"status": "BLOCKED_PARK", "note": "CORPUS绿+过门+人令"},
-    "PE-Y-06": {"status": "UNOPENED"}
+    "PE-Y-05": {
+      "status": "BLOCKED_PARK",
+      "note": "语料闸已解除；仍需真数据过门+正式人令；编排不派"
+    },
+    "PE-Y-06": {
+      "status": "UNOPENED"
+    }
   },
-  "merge_order_hint": [494, 495, 496, 497, 493],
-  "corpus_implement_order": [500, 501],
-  "next_window_opener": "你是路线 Y 语料实现 Agent。只做 GitHub Issue #500（PE-Y-CORPUS-01；读全文含 Agent Guards）。ADR-0038：扩 pe_v2 至可满 n=400+共形预留。禁止激活、发正式模型、开 PE-Y-05、改 PREREG-Y 配额表、改写 SPLIT-pe-v2.json 已发布成员、做第二领域。先读 ADR-0038、缺额评估、PREREG-Y、#371、#500。重针 route-y 留给 #501。"
+  "merge_order_hint": [
+    494,
+    495,
+    496,
+    497,
+    493
+  ],
+  "corpus_implement_order": [
+    500,
+    501
+  ],
+  "next_window_opener": "CORPUS 波次完成（#500/#501）。勿派 PE-Y-05，除非：GATE-Y-PROBE 真数据 gate_passed=true 且会话出现逐字人令「批准激活 PREREG-Y 并正式主跑一次。」可加载≠已激活。",
+  "orchestration": {
+    "mode": "dispatch_only",
+    "active_issue": null,
+    "active_agent": null,
+    "queued": [],
+    "done": [
+      500,
+      501
+    ],
+    "forbid_PE_Y_05": true,
+    "corpus_wave": "COMPLETE"
+  }
 }
