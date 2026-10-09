@@ -102,11 +102,21 @@
   "merge_tip": {
     "branch": "cursor/pe-y-merge-corpus-eng-be80",
     "status": "ALIGNED",
-    "contains": [493, 494, 495, 496, 497, 503, 504],
+    "contains": [
+      493,
+      494,
+      495,
+      496,
+      497,
+      503,
+      504
+    ],
     "load_pe_v2_formal_n400": 400,
     "prereg_y_activated": false,
     "quota_n": 400,
-    "note": "可加载≠过门≠已激活；仍不派 PE-Y-05"
+    "note": "可加载≠过门≠已激活；仍不派 PE-Y-05",
+    "pr": 505,
+    "url": "https://github.com/luxingjiang1993/FreshLatch/pull/505"
   },
   "corpus_implement_order": [
     500,
@@ -127,4 +137,3 @@
     "eng_wave": "MERGED_TO_TIP"
   }
 }
-
