@@ -224,10 +224,21 @@ def test_replay_saved_rows_keep_b2_diff_text(monkeypatch):
         b2_saved[item["claim_id"]] for item in played_b2
     ]
     assert report["voids"] == []
-    for arm in ("C", "T", "B1"):
+    for arm in ("C", "T"):
         played = report["arms"][arm]
         assert len(played) == 30
-        assert [item["after_text"] for item in played] == [saved[arm][item["claim_id"]] for item in played]
+        assert [item["after_text"] for item in played] == [
+            saved[arm][item["claim_id"]] for item in played
+        ]
+    # #469：回放时 T/B1 共用以 T 请求取出的 after，不再按 B1 独立保存行分叉生成。
+    played_b1 = report["arms"]["B1"]
+    assert len(played_b1) == 30
+    assert [item["after_text"] for item in played_b1] == [
+        saved["T"][item["claim_id"]] for item in played_b1
+    ]
+    assert [item["after_text"] for item in played_b1] == [
+        item["after_text"] for item in report["arms"]["T"]
+    ]
     _assert_unrecorded(report)
     _result_cells()
 

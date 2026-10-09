@@ -192,6 +192,35 @@ def _decide(
     return "reject", reason, score, False
 
 
+def _append_arm_record(
+    records: dict[str, list[dict[str, Any]]],
+    arm: str,
+    candidate: Mapping[str, Any],
+    produced: Mapping[str, Any],
+    *,
+    verifier: Callable[[Mapping[str, Any]], Mapping[str, Any]],
+    ingested: set[str],
+    latency_ms: float,
+    cost: float,
+) -> None:
+    decision, reject_reason, score, reverify_ok = _decide(
+        arm, produced, candidate, verifier, ingested
+    )
+    records[arm].append(
+        _finish(
+            arm,
+            candidate,
+            produced,
+            decision=decision,
+            reject_reason=reject_reason,
+            score=score,
+            reverify_ok=reverify_ok,
+            latency_ms=latency_ms,
+            cost=cost,
+        )
+    )
+
+
 def run_arms(
     candidates: Sequence[object],
     *,
@@ -200,7 +229,11 @@ def run_arms(
     decoding: Decoding,
     ingested_t1: Collection[str] = (),
 ) -> dict[str, Any]:
-    """四组各写一份实验记录。作废的条目不记成放行。"""
+    """四组各写一份实验记录。作废的条目不记成放行。
+
+    T 与 B1 共用同一份 rewrite after_text（以 T 请求生成一次），再分叉决策：
+    T = 绑定∧核验；B1 = 仅核验；两边核验不过均 hard reject。C / B2 仍各自独立生成。
+    """
     ingested = set(ingested_t1)
     rows = [_candidate_record(item) for item in candidates]
     reject_duplicate_claim_ids(rows)
@@ -208,32 +241,80 @@ def run_arms(
     records: dict[str, list[dict[str, Any]]] = {arm: [] for arm in ARMS}
     voids: list[dict[str, str]] = []
     blocked = _void_reason(decoding)
-    for arm in ARMS:
-        for candidate in rows:
-            claim_id = str(candidate["claim_id"])
-            if blocked is not None:
+    for candidate in rows:
+        claim_id = str(candidate["claim_id"])
+        if blocked is not None:
+            for arm in ARMS:
                 voids.append({"claim_id": claim_id, "arm": arm, "reason": blocked})
-                continue
-            produced, failed, latency_ms, cost = _generate_edit(arm, candidate, generator, decoding)
-            if produced is None:
-                voids.append({"claim_id": claim_id, "arm": arm, "reason": failed or "生成失败"})
-                continue
-            decision, reject_reason, score, reverify_ok = _decide(
-                arm, produced, candidate, verifier, ingested
+            continue
+
+        # C：独立 rewrite，生成即放行。
+        produced_c, failed_c, latency_c, cost_c = _generate_edit(
+            "C", candidate, generator, decoding
+        )
+        if produced_c is None:
+            voids.append({"claim_id": claim_id, "arm": "C", "reason": failed_c or "生成失败"})
+        else:
+            _append_arm_record(
+                records,
+                "C",
+                candidate,
+                produced_c,
+                verifier=verifier,
+                ingested=ingested,
+                latency_ms=latency_c,
+                cost=cost_c,
             )
-            records[arm].append(
-                _finish(
-                    arm,
-                    candidate,
-                    produced,
-                    decision=decision,
-                    reject_reason=reject_reason,
-                    score=score,
-                    reverify_ok=reverify_ok,
-                    latency_ms=latency_ms,
-                    cost=cost,
-                )
+
+        # T/B1 共享 after：以 T 臂请求生成一次 rewrite（含生产检索模式），
+        # 再分别决策。禁止 B1 再独立生成，避免生成噪声盖住绑定缝。
+        produced_shared, failed_shared, latency_shared, cost_shared = _generate_edit(
+            "T", candidate, generator, decoding
+        )
+        if produced_shared is None:
+            reason = failed_shared or "生成失败"
+            voids.append({"claim_id": claim_id, "arm": "T", "reason": reason})
+            voids.append({"claim_id": claim_id, "arm": "B1", "reason": reason})
+        else:
+            _append_arm_record(
+                records,
+                "T",
+                candidate,
+                produced_shared,
+                verifier=verifier,
+                ingested=ingested,
+                latency_ms=latency_shared,
+                cost=cost_shared,
             )
+            _append_arm_record(
+                records,
+                "B1",
+                candidate,
+                produced_shared,
+                verifier=verifier,
+                ingested=ingested,
+                latency_ms=latency_shared,
+                cost=cost_shared,
+            )
+
+        # B2：独立 claim→diff；核验失败不 hard reject。
+        produced_b2, failed_b2, latency_b2, cost_b2 = _generate_edit(
+            "B2", candidate, generator, decoding
+        )
+        if produced_b2 is None:
+            voids.append({"claim_id": claim_id, "arm": "B2", "reason": failed_b2 or "生成失败"})
+        else:
+            _append_arm_record(
+                records,
+                "B2",
+                candidate,
+                produced_b2,
+                verifier=verifier,
+                ingested=ingested,
+                latency_ms=latency_b2,
+                cost=cost_b2,
+            )
+
     return {
         **records,
         "voids": voids,

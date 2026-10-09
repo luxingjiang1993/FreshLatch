@@ -10,11 +10,11 @@
 
 ## Acceptance criteria
 
-- [ ] Given `PREREG-Y` 文首为未激活，When 运行 `PYTHONPATH=src python -m freshlatch.eval.patch_events_formal_y --authorize-send`，Then 非零退出且不写 `formal-generations-y.jsonl`
-- [ ] Given 默认入口（无 `--authorize-send`），When 运行模块，Then 不发模型；`--recompute-only` 可在无生成文件时安全失败或空跑且零 LLM
-- [ ] 任意成功写盘路径不得触及 `formal-generations-b.jsonl` / `formal-generations-c.jsonl` / `formal-generations.jsonl`（单测断言路径常量）
-- [ ] `decoding_pin()`（或等价）返回 model=`qwen-flash`、temperature=`0`、Decoding.seed=`20261007`、API seed=`None`
-- [ ] `python -m compileall -q src` 退出 0；`pytest tests/unit/test_pe_formal_y.py` 绿
+- [x] Given `PREREG-Y` 文首为未激活，When 运行 `PYTHONPATH=src python -m freshlatch.eval.patch_events_formal_y --authorize-send`，Then 非零退出且不写 `formal-generations-y.jsonl`
+- [x] Given 默认入口（无 `--authorize-send`），When 运行模块，Then 不发模型；`--recompute-only` 可在无生成文件时安全失败或空跑且零 LLM
+- [x] 任意成功写盘路径不得触及 `formal-generations-b.jsonl` / `formal-generations-c.jsonl` / `formal-generations.jsonl`（单测断言路径常量）
+- [x] `decoding_pin()`（或等价）返回 model=`qwen-flash`、temperature=`0`、Decoding.seed=`20261007`、API seed=`None`
+- [x] `python -m compileall -q src` 退出 0；`pytest tests/unit/test_pe_formal_y.py` 绿
 
 ## Agent Guards
 
@@ -45,9 +45,9 @@
 
 ### Evidence *(after Matt `/implement`)*
 
-- typecheck:
-- tests:
-- paths:
+- typecheck: `python -m compileall -q src` → exit 0
+- tests: `pytest tests/unit/test_pe_formal_y.py` → 10 passed
+- paths: `src/freshlatch/eval/patch_events_formal_y.py` · `tests/unit/test_pe_formal_y.py`（未改 PREREG-Y 激活态 / B·C 归档）
 
 ## Blocked by
 
