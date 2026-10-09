@@ -1,4 +1,4 @@
-"""#487：路线 C 正式入口默认不发、n=100 针、禁写 b/旧路径、未激活拒发。"""
+"""#487/#490：路线 C 正式入口；激活后默认仍不发；禁写 b/旧路径。"""
 
 from __future__ import annotations
 
@@ -16,13 +16,14 @@ from freshlatch.eval.patch_events_formal_c import (
     main,
     n100_claim_ids,
     prereg_c_activated,
+    render_result_c,
     send_formal_c,
     status_pack,
 )
 
 
-def test_prereg_c_not_activated_on_current_tree():
-    assert prereg_c_activated() is False
+def test_prereg_c_activated_on_current_tree():
+    assert prereg_c_activated() is True
 
 
 def test_n100_pin_matches_split_excludes_pilot():
@@ -51,22 +52,30 @@ def test_default_main_is_dry_no_send(capsys):
     assert code == 0
     out = capsys.readouterr().out
     assert '"status": "dry"' in out
-    assert '"activated": false' in out
+    assert '"activated": true' in out
     assert '"n": 100' in out
     assert "formal-generations-c.jsonl" in out
     assert "formal-generations-b.jsonl" in out
-    assert "未激活" in out
     assert "默认不发" in out or "dry" in out
+    assert "须显式 --authorize-send" in out
 
 
-def test_authorize_send_refused_when_unactivated(capsys):
+def test_authorize_send_refused_when_unactivated(monkeypatch, capsys):
+    monkeypatch.setattr(
+        "freshlatch.eval.patch_events_formal_c.prereg_c_activated",
+        lambda root=None: False,
+    )
     code = main(["--authorize-send"])
     assert code == 2
     err = capsys.readouterr().err
     assert "未激活" in err
 
 
-def test_recompute_refused_when_unactivated(capsys):
+def test_recompute_refused_when_unactivated(monkeypatch, capsys):
+    monkeypatch.setattr(
+        "freshlatch.eval.patch_events_formal_c.prereg_c_activated",
+        lambda root=None: False,
+    )
     code = main(["--recompute-only"])
     assert code == 2
     assert "未激活" in capsys.readouterr().err
@@ -100,7 +109,6 @@ def test_assert_forbidden_filenames(tmp_path):
 
 
 def test_ensure_shell_creates_empty_c_file(tmp_path):
-    # 最小树：PREREG 不需要；只测壳路径在临时 root 下
     pe = tmp_path / "docs" / "evidence" / "patch-events"
     pe.mkdir(parents=True)
     path = ensure_generations_c_shell(tmp_path)
@@ -113,4 +121,25 @@ def test_status_pack_pins_split():
     pack = status_pack()
     assert pack["split"].endswith("SPLIT-pe-v2.json")
     assert pack["n"] == 100
-    assert pack["activated"] is False
+    assert pack["activated"] is True
+
+
+def test_render_result_c_keeps_b_appendix_and_refuses_empty_primary():
+    md = render_result_c(
+        {
+            "primary": None,
+            "n": 100,
+            "generations_n": 0,
+            "generations_sha256": None,
+            "b2_count": 0,
+            "tier": "丙",
+            "verdict": "判定：结果丙。",
+            "decoding": {"model": "qwen-flash", "temperature": 0, "decoding_seed": 1, "api_seed": None},
+        },
+        code_pin="t",
+        activated_note="test",
+    )
+    assert "RESULT-C" in md
+    assert "#480" in md and "效应偏小" in md
+    assert "未填" in md
+    assert "RESULT-B" not in md.split("禁止")[0] or "不得当冲甲" in md

@@ -18,8 +18,8 @@ Part of #484（spec）· #490 · 地图 #482 · 决议 #483 · 前置壳 #488 / 
 
 ## Acceptance criteria
 
-- [ ] 会话含上述正式人令原文；否则不得改 `PREREG-C` 激活态、不得 `--authorize-send`、不得填 RESULT-C 成立格
-- [ ] `PREREG-C` 文首改为已激活；激活批注登记日期、仓库针、GATE-C 依据（不得升格 #479）
+- [x] 会话含上述正式人令原文；否则不得改 `PREREG-C` 激活态、不得 `--authorize-send`、不得填 RESULT-C 成立格
+- [x] `PREREG-C` 文首改为已激活；激活批注登记日期、仓库针、GATE-C 依据（不得升格 #479）
 - [ ] 仅一次正式主跑写入 `formal-generations-c.jsonl`；禁止写 `*-b.jsonl` / 旧 `formal-generations.jsonl`
 - [ ] RESULT-C 三行 false-accept 与 k **只抄**同一次主比较；成立格不得手填、不得抄 GATE/B 数字
 - [ ] Evidence 三行：typecheck · tests · paths
@@ -33,5 +33,4 @@ Part of #484（spec）· #490 · 地图 #482 · 决议 #483 · 前置壳 #488 / 
 
 ## Blocked by
 
-1. 真人令原文（正式激活+主跑）  
-2. 建议：C 机制可扔 GATE-C 真数据探针过门（夹具绿≠过门；#479 禁升格）— 探针另票另令
+人令已到（2026-10-09 会话）。门闩依据诚实登记为 `GATE-C-FIXTURE`（fixture 层）；#479 未升格。

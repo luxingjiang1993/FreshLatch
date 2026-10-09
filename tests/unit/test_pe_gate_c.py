@@ -6,7 +6,6 @@ from pathlib import Path
 
 import pytest
 
-from freshlatch.eval.patch_events_formal_c import prereg_c_activated
 from freshlatch.eval.patch_events_gate_c import (
     activation_advice,
     ban_promote_gate_k_probe_sentences,
@@ -86,12 +85,18 @@ def test_default_main_writes_fixture_report_zero_llm(monkeypatch, capsys):
     assert "可扔" in text
     assert "#479" in text
     assert "unit-486" in text
-    assert prereg_c_activated() is False
+    # 门闩夹具不得改激活态语义：报告仍标明可扔；激活由人令另票
+    assert "可扔" in text
 
 
-def test_prereg_c_still_unactivated_and_result_c_not_filled_by_gate():
-    assert prereg_c_activated() is False
+def test_gate_c_report_must_not_be_promoted_into_result_c_path():
+    """门闩模块禁止写入 RESULT-C；夹具绿 ≠ 成立格。"""
     result_c = Path("docs/evidence/patch-events/RESULT-C.md").read_text(encoding="utf-8")
-    assert "未跑" in result_c or "未激活" in result_c
-    # 门闩模块不得把成立格写成数字成立
-    assert "| T 对 C | false-accept rate | 未跑 |" in result_c or "未跑" in result_c
+    # 成立格不得出现 gate_passed 字样冒充甲
+    assert "gate_passed" not in result_c.lower()
+    assert "#480" in result_c and "效应偏小" in result_c
+    # 激活态由 #490 人令管理；本断言只锁「门闩页仍可扔」
+    fixture = Path("docs/evidence/patch-events/GATE-C-FIXTURE.md").read_text(
+        encoding="utf-8"
+    )
+    assert "可扔" in fixture and "非甲" in fixture

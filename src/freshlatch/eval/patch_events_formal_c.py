@@ -27,7 +27,12 @@ from freshlatch.eval.patch_events_formal_b import (
     outcome_tier,
     verdict_sentence,
 )
-from freshlatch.eval.patch_events_metrics import SEED, compare_primary, named_streams
+from freshlatch.eval.patch_events_metrics import (
+    SEED,
+    compare_primary,
+    format_rate,
+    named_streams,
+)
 from freshlatch.eval.patch_events_send import (
     append_b2_diffs,
     append_sent,
@@ -272,6 +277,111 @@ def run_formal_c_primary(
     }
 
 
+_B_NEGATIVE_APPENDIX = """## B 负结果附录（动机 · 非本页成立格）
+
+> 路线 B（`PREREG-B` / `RESULT-B`，#480）在选取 R、T/B1 同 after、生成对齐提示齐备并过仓外门闩后，正式主跑一次：k=42；T−C / T−B1 / T−B2 点估计均 >0，但 95% CI 下界均 ≤0 → **结果丙**。说明「可识别 + 过门」≠ 甲；核心教训是**效应偏小**。B 全套冻结为丙归档；禁止同页二次主跑、禁止降 CI/拿掉 B1 翻盘。路线 C 另开 `PREREG-C`，增量假设为强制抄句加大可辩护 T 相对差；不保证甲。
+"""
+
+
+def render_result_c(
+    pack: Mapping[str, Any],
+    *,
+    code_pin: str,
+    activated_note: str,
+) -> str:
+    """渲染 RESULT-C：三行主比较 + k + 甲/乙/丙；只抄同一次 primary；保留 B 附录句。"""
+    primary = pack.get("primary")
+    comparisons = list((primary or {}).get("comparisons") or [])
+    by_name = {item.get("name"): item for item in comparisons}
+    labels = (("T-C", "T 对 C"), ("T-B1", "T 对 B1"), ("T-B2", "T 对 B2"))
+    lines: list[str] = [
+        "# patch_events 路线 C · 正式结果（RESULT-C）",
+        "",
+        "> 口径：`docs/evidence/patch-events/PREREG-C.md`（已激活）。",
+        "> 三行 false-accept 与 k **只抄**同一次主比较（选取 R · `run_arms_c`）。",
+        "> 禁止把 GATE-C / 探针 / B 的 RESULT-B 数字抄进成立格。",
+        "> 旧 `RESULT.md` / `RESULT-B.md` 不得当冲甲主证据。",
+        "",
+        "## 跑针",
+        "",
+        f"- **代码针**：{code_pin}",
+        f"- **激活**：{activated_note}",
+        f"- **n** = {pack.get('n')!r}（`load_formal_c_n100()` / `SPLIT-pe-v2.json` n100）",
+        f"- **生成路径**：`{_GENERATIONS_C.as_posix()}`"
+        f"（n_lines={pack.get('generations_n')!r}；"
+        f"sha256=`{pack.get('generations_sha256')}`）",
+        f"- **B2 after 条数**：{pack.get('b2_count')!r}",
+        f"- **解码**：model=`{(pack.get('decoding') or {}).get('model')}`；"
+        f"temperature=`{(pack.get('decoding') or {}).get('temperature')}`；"
+        f"Decoding.seed=`{(pack.get('decoding') or {}).get('decoding_seed')}`；"
+        f"API seed=`{(pack.get('decoding') or {}).get('api_seed')}`",
+        "",
+        "## 主比较（同一次主比较 · R · run_arms_c）",
+        "",
+        "| 比较 | 指标 | 点估计 | 95% 区间下界 | 95% 区间上界 | 成立 |",
+        "|---|---|---|---|---|---|",
+    ]
+    if primary is None or pack.get("b2_count") != _FORMAL_N:
+        for _name, label in labels:
+            lines.append(
+                f"| {label} | false-accept rate | 未填 | 未填 | 未填 | 未填 |"
+            )
+        k_disp = "未填"
+    else:
+        for name, label in labels:
+            item = by_name.get(name) or {}
+            est = "成立" if item.get("established") is True else "不成立"
+            lines.append(
+                f"| {label} | false-accept rate | {format_rate(item.get('point'))} | "
+                f"{format_rate(item.get('ci95_low'))} | "
+                f"{format_rate(item.get('ci95_high'))} | {est} |"
+            )
+        k_disp = repr(primary.get("k"))
+    lines.extend(
+        [
+            "",
+            f"- **固定放行数 k** = {k_disp}",
+            "",
+            "## 甲 / 乙 / 丙判定",
+            "",
+            f"- **分层**：结果{pack.get('tier')}",
+            f"- {pack.get('verdict')}",
+            "",
+            _B_NEGATIVE_APPENDIX.rstrip(),
+            "",
+            "## 边界",
+            "",
+            "- 不保证甲；不改甲定义；不复活路线 A；不改 B 归档。",
+            "- 不称全面 SOTA；乙也不许称优于 RARR·KPR。",
+            "- 同一预注册禁止第二次正式主跑充数。",
+            "",
+        ]
+    )
+    return "\n".join(lines)
+
+
+def write_result_c(
+    pack: Mapping[str, Any],
+    *,
+    code_pin: str,
+    activated_note: str,
+    root: Path | None = None,
+    path: Path | None = None,
+) -> Path:
+    """把同一次主比较抄入 RESULT-C；禁止手填成立格。"""
+    base = _repo_root() if root is None else Path(root)
+    out = base / _RESULT_C if path is None else Path(path)
+    if not out.is_absolute():
+        out = base / out
+    # 守卫：禁止误写到 RESULT-B
+    if out.name == "RESULT-B.md":
+        raise RuntimeError("禁止把 RESULT-C 写入 RESULT-B.md")
+    text = render_result_c(pack, code_pin=code_pin, activated_note=activated_note)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(text, encoding="utf-8")
+    return out
+
+
 def main(argv: list[str] | None = None) -> int:
     """默认不发：打印状态并确保 c 壳存在。``--authorize-send`` 须已激活。"""
     parser = argparse.ArgumentParser(
@@ -285,8 +395,14 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--recompute-only",
         action="store_true",
-        help="只复算已保存生成（零 LLM）；未激活时拒绝当作正式主跑收口",
+        help="只复算已保存生成并写 RESULT-C；不发送",
     )
+    parser.add_argument("--code-pin", default="local")
+    parser.add_argument(
+        "--activated-note",
+        default="PREREG-C 已激活；门闩依据见激活批注",
+    )
+    parser.add_argument("--no-write", action="store_true", help="只打印，不写 RESULT-C")
     parser.add_argument(
         "--status",
         action="store_true",
@@ -297,11 +413,25 @@ def main(argv: list[str] | None = None) -> int:
     if args.authorize_send and args.recompute_only:
         sys.stderr.write("--authorize-send 与 --recompute-only 互斥\n")
         return 2
+    if args.authorize_send and args.no_write:
+        sys.stderr.write("--no-write 下拒绝 --authorize-send\n")
+        return 2
+
+    # 默认 / --status：不要求激活
+    if not args.authorize_send and not args.recompute_only:
+        pack = status_pack()
+        sys.stdout.write(json.dumps(pack, ensure_ascii=False, indent=2) + "\n")
+        if pack.get("activated"):
+            sys.stdout.write("已激活但仍默认不发；须显式 --authorize-send。\n")
+        else:
+            sys.stdout.write("未激活：禁止正式主跑进主表。\n")
+        return 0
+
+    if not prereg_c_activated():
+        sys.stderr.write("PREREG-C 未激活：拒绝正式主跑进主表\n")
+        return 2
 
     if args.authorize_send:
-        if not prereg_c_activated():
-            sys.stderr.write("PREREG-C 未激活：拒绝正式主跑发送\n")
-            return 2
         try:
             send_result = send_formal_c()
         except RuntimeError as exc:
@@ -314,29 +444,23 @@ def main(argv: list[str] | None = None) -> int:
             f"sent={send_result.get('sent')!r} "
             f"b2_diff_added={send_result.get('b2_diff_added')!r}\n"
         )
-        return 0
 
-    if args.recompute_only:
-        if not prereg_c_activated():
-            sys.stderr.write("PREREG-C 未激活：拒绝把复算当作正式主跑收口\n")
-            return 2
-        pack = run_formal_c_primary()
-        primary = pack.get("primary")
-        k = None if primary is None else primary.get("k")
-        sys.stdout.write(
-            f"tier={pack.get('tier')} k={k!r} b2_count={pack.get('b2_count')!r} "
-            f"status={pack.get('status')}\n"
+    pack = run_formal_c_primary()
+    primary = pack.get("primary")
+    k = None if primary is None else primary.get("k")
+    sys.stdout.write(
+        f"tier={pack.get('tier')} k={k!r} b2_count={pack.get('b2_count')!r} "
+        f"status={pack.get('status')}\n"
+    )
+    sys.stdout.write(f"{pack.get('verdict')}\n")
+
+    if not args.no_write:
+        out = write_result_c(
+            pack,
+            code_pin=args.code_pin,
+            activated_note=args.activated_note,
         )
-        sys.stdout.write(f"{pack.get('verdict')}\n")
-        return 0
-
-    # 默认：状态 + 壳；不发
-    pack = status_pack()
-    sys.stdout.write(json.dumps(pack, ensure_ascii=False, indent=2) + "\n")
-    if pack.get("activated"):
-        sys.stdout.write("已激活但仍默认不发；须显式 --authorize-send。\n")
-    else:
-        sys.stdout.write("未激活：禁止正式主跑进主表。\n")
+        sys.stdout.write(f"wrote {out}\n")
     return 0
 
 
