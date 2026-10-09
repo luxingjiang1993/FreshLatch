@@ -431,6 +431,37 @@ BOI / GenAI 暂行办法 / 个保审计办法 — 见会话记录；适合 `regu
 
 ---
 
+## 2j. 生产补丁/放行 SLO grill（2026-10-09）
+
+> Cloud Agent 决议会话：用户任务书已给 A–H 清单与起步阈值作拍板原料；本轮按该原料认推荐并落四件套（非交互多轮问答）。**不写业务代码。**
+
+### Round 1 已钉（认任务书推荐）
+
+| # | 决策 | 拍板 |
+|---|------|------|
+| **SLO-Q1** | 页路径 | `docs/ops/生产补丁放行SLO.md`（运营真源；不挂 patch-events 实验目录） |
+| **SLO-Q2** | vs 路线 Y | 硬防火墙：不回写 PREREG-Y/RESULT-Y/formal-generations-y；生产绿≠改判乙；禁同页二跑；禁称甲/软甲 |
+| **SLO-Q3** | 指标集 | 生产=A/B/C/D（B4/B5 实验-only）；E 切开只读 |
+| **SLO-Q4** | 分层 | 硬闸 / 观测·Watch / 离线评测 / 实验-only |
+| **SLO-Q5** | 不变量 | 无证/未确认出门=0；自红转绿=0；无 T1 绿灯=0；续命带证=100% |
+| **SLO-Q6** | 严重错改 | 先观测；Watch 讨论线 &lt;5%；本波不升 Gate |
+| **SLO-Q7** | 金标 | 离线评测轨；禁止进生产 score / 在线放行器 |
+| **SLO-Q8** | ADR | 开 ADR-0034 |
+| **SLO-Q9** | 看板 | 文档化采集点+周报字段；大屏 UI 本期弃 |
+| **SLO-Q10** | 北极星 | must_stale multi-run + 作废率；不是报告好读 |
+
+**Anthropic 合入：** demo≠测量分层；must_stale multi-run；阈值预注册；评测数字不进 CONTEXT；防火墙满足 ADR 三条件。
+
+**Frontier：** 已空。  
+**共享理解:** 已确认（2026-10-09 · 任务书即拍板）。  
+
+**已落盘:**  
+`docs/research/生产补丁放行SLO设计评估.md` · `docs/adr/0034-生产补丁放行SLO与实验防火墙.md` · `docs/ops/生产补丁放行SLO.md` · CONTEXT（生产补丁/放行 SLO · 实验—生产防火墙）
+
+**下一跳:** `/to-spec` → `docs/spec/24-生产补丁放行SLO.md` → `/to-tickets` + `/enrich-tickets`；**before-implement 前人批**；不写业务代码。
+
+---
+
 ## 2b. I0 grill 已钉（2026-09-29 · Round 1 · 认推荐）
 
 | # | 决策 | 拍板 |
@@ -566,3 +597,4 @@ BOI / GenAI 暂行办法 / 个保审计办法 — 见会话记录；适合 `regu
 | 2026-10-03 | **I3 Round 1–3** 全认；共享理解确认；评估+ADR-0032+CONTEXT+roadmap 落盘；下一跳 to-spec |
 | 2026-10-03 | **I3 to-spec**：`docs/spec/20-PhaseI3-InterviewHardening.md`；[#248](https://github.com/luxingjiang1993/FreshLatch/issues/248)；下一跳 to-tickets |
 | 2026-10-03 | **I3 to-tickets + enrich**：#249–#253；Frontier #249；`.scratch/i3-tickets/INDEX.md` |
+| 2026-10-09 | **生产补丁/放行 SLO** 共享理解确认；评估+ADR-0034+ops 页+CONTEXT+§2j；下一跳 to-spec / tickets；不写业务代码；不回写 RESULT-Y |
