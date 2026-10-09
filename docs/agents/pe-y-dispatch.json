@@ -64,7 +64,9 @@
         "b2_diff_added": 30,
         "layer": "真数据探针层",
         "prereg_y_activated": false,
-        "note": "可扔·非乙成立·不得激活·不得派PE-Y-05"
+        "note": "可扔·非乙成立·不得激活·不得派PE-Y-05",
+        "pr": 506,
+        "url": "https://github.com/luxingjiang1993/FreshLatch/pull/506"
       }
     },
     "PE-Y-03": {
@@ -155,6 +157,7 @@
     "report": "docs/evidence/patch-events/GATE-Y-PROBE.md",
     "generations": "docs/evidence/patch-events/gate-y-probe-generations.jsonl",
     "auth_phrase": "授权路线 Y 仓外探针发模型；不得激活。",
-    "prereg_y_activated": false
+    "prereg_y_activated": false,
+    "pr": 506
   }
 }
