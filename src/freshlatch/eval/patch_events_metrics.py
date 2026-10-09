@@ -1,7 +1,8 @@
 """PE-05：固定放行率下的误放率，以及配对 bootstrap。
 
 四条随机流各自 ``random.Random(20261007)``：``coverage_c``、``bootstrap``、
-``bootstrap_ablation``、``spotcheck``。本模块只推进前三条。抽检流由调用方保留。
+``bootstrap_ablation``、``spotcheck``。路线 B 主比较只推进 ``bootstrap``；
+``coverage_c`` 不再参与主选取（R）。消融用 ``bootstrap_ablation``。抽检流由调用方保留。
 跨 Python 3.11 与 3.12 只使用 ``Random.random()`` 自行取下标，避免全局随机状态。
 """
 
@@ -107,7 +108,7 @@ def _top_positions(
     claim_ids: Sequence[str],
     k: int,
 ) -> list[int]:
-    """``drawn`` 是重抽样后的总体下标。返回其中应放行的位置。"""
+    """旧空分 top-k：``drawn`` 上按 score / claim_id 取 k。仅 legacy 负例使用。"""
     n = len(drawn)
     if k <= 0:
         return []
@@ -124,10 +125,46 @@ def _top_positions(
 
 
 def select_scored_positions(rows: Sequence[Mapping[str, Any]], k: int) -> list[int]:
-    """分数从高到低，同分 ``claim_id`` 字典序在前，缺分数排在最后。"""
+    """分数从高到低，同分 ``claim_id`` 字典序在前，缺分数排在最后。legacy 负例可复用。"""
     scores = [row.get("score") for row in rows]
     claim_ids = [str(row["claim_id"]) for row in rows]
     return _top_positions(list(range(len(rows))), scores, claim_ids, k)
+
+
+def legacy_select_fixed_k_empty_score_topk(
+    rows: Sequence[Mapping[str, Any]],
+    k: int,
+) -> list[int]:
+    """旧病选取：空分时全体候选按 claim_id 取 k。禁止被路线 B 主路径调用。"""
+    return select_scored_positions(rows, k)
+
+
+def _release_positions_r(
+    drawn: Sequence[int],
+    release: Sequence[bool],
+    claim_ids: Sequence[str],
+    k: int,
+) -> list[int] | None:
+    """重抽样后的自然放行集内按 claim_id 升序取 k。m<k 返回 None（固定 k 无定义）。"""
+    if k < 0:
+        raise ValueError("k 不能为负")
+    released = [pos for pos, src in enumerate(drawn) if release[src]]
+    if len(released) < k:
+        return None
+    if k == 0:
+        return []
+    released.sort(key=lambda pos: (claim_ids[drawn[pos]], pos))
+    return released[:k]
+
+
+def select_fixed_k_from_releases(
+    rows: Sequence[Mapping[str, Any]],
+    k: int,
+) -> list[int] | None:
+    """自然放行集内 claim_id 升序取 k；m<k 返回 None。"""
+    release = [row.get("decision") == "release" for row in rows]
+    claim_ids = [str(row["claim_id"]) for row in rows]
+    return _release_positions_r(list(range(len(rows))), release, claim_ids, k)
 
 
 def _reverify_ok(row: Mapping[str, Any], ingested: set[str]) -> bool:
@@ -269,10 +306,17 @@ def _side_report(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
     }
 
 
-def _arm_block(col: _Col, selected: Sequence[int], k: int) -> dict[str, Any]:
+def _arm_block(col: _Col, selected: Sequence[int] | None, k: int) -> dict[str, Any]:
     drawn = list(range(len(col)))
     natural_selected = [i for i, flag in enumerate(col.release) if flag]
-    fixed = _rates(col, drawn, selected)
+    if selected is None:
+        fixed: dict[str, Any] = {metric: None for metric in METRIC_ORDER}
+        fixed["放行数"] = None
+        fixed["放行率"] = None
+        fixed["selected_claim_ids"] = None
+    else:
+        fixed = _rates(col, drawn, selected)
+        fixed["selected_claim_ids"] = [col.claim_id[i] for i in selected]
     fixed["k"] = k
     block = _side_report(col.rows)
     block["natural"] = _rates(col, drawn, natural_selected)
@@ -285,9 +329,9 @@ def _bootstrap_fixed(
     left: _Col,
     right: _Col,
     *,
-    contrast_is_c: bool,
     rng: random.Random,
 ) -> dict[str, Any]:
+    """配对 bootstrap：每次重抽样后按 R 在各臂自然放行集上取固定 k。"""
     n = len(left)
     values: list[float] = []
     dropped = 0
@@ -297,11 +341,11 @@ def _bootstrap_fixed(
         if k == 0 and metric in RELEASE_DENOMINATOR:
             dropped += 1
             continue
-        left_selected = _top_positions(drawn, left.score, left.claim_id, k)
-        if contrast_is_c:
-            right_selected = _sample_positions(n, k, rng)
-        else:
-            right_selected = _top_positions(drawn, right.score, right.claim_id, k)
+        left_selected = _release_positions_r(drawn, left.release, left.claim_id, k)
+        right_selected = _release_positions_r(drawn, right.release, right.claim_id, k)
+        if left_selected is None or right_selected is None:
+            dropped += 1
+            continue
         left_value = _metric_on(metric, drawn, left_selected, left.bad, left.correct, left.reverify)
         right_value = _metric_on(
             metric, drawn, right_selected, right.bad, right.correct, right.reverify
@@ -353,11 +397,10 @@ def compare_primary(
     ingested_t1: Collection[str] = (),
     streams: Mapping[str, random.Random] | None = None,
 ) -> dict[str, Any]:
-    """三条主比较。成立只看固定放行率误放率的点估计和区间下界。"""
+    """三条主比较（选取 R）。成立只看固定放行率误放率的点估计和区间下界。"""
     normalized = [normalize_experiment_record(row) for row in rows]
     _reject_primary_intruders(normalized)
     rngs = streams if streams is not None else named_streams()
-    coverage = rngs["coverage_c"]
     bootstrap = rngs["bootstrap"]
     ingested = set(ingested_t1)
     columns = _aligned(normalized, ingested)
@@ -367,12 +410,10 @@ def compare_primary(
         raise ValueError("候选数为 0")
     k = sum(reference.release)
     drawn = list(range(n))
-    selected: dict[str, list[int]] = {}
-    for arm, col in columns.items():
-        if arm == "C":
-            selected[arm] = _sample_positions(n, k, coverage)
-        else:
-            selected[arm] = _top_positions(drawn, col.score, col.claim_id, k)
+    selected: dict[str, list[int] | None] = {
+        arm: _release_positions_r(drawn, col.release, col.claim_id, k)
+        for arm, col in columns.items()
+    }
     arms = {arm: _arm_block(col, selected[arm], k) for arm, col in columns.items()}
     comparisons = []
     for order, contrast in enumerate(PRIMARY_CONTRASTS, start=1):
@@ -381,7 +422,6 @@ def compare_primary(
                 metric,
                 reference,
                 columns[contrast],
-                contrast_is_c=contrast == "C",
                 rng=bootstrap,
             )
             for metric in METRIC_ORDER
