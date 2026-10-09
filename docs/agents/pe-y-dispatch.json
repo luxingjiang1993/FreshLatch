@@ -35,27 +35,68 @@
     ]
   },
   "tickets": {
-    "PE-Y-01": {"status": "DONE", "pr": 494},
-    "PE-Y-02": {"status": "DONE", "pr": 495},
-    "PE-Y-03": {"status": "DONE", "pr": 497, "note": "缺额不可激活"},
-    "PE-Y-04": {"status": "DONE", "pr": 496},
+    "PE-Y-01": {
+      "status": "DONE",
+      "pr": 494
+    },
+    "PE-Y-02": {
+      "status": "DONE",
+      "pr": 495
+    },
+    "PE-Y-03": {
+      "status": "DONE",
+      "pr": 497,
+      "note": "缺额不可激活"
+    },
+    "PE-Y-04": {
+      "status": "DONE",
+      "pr": 496
+    },
     "PE-Y-CORPUS-01": {
-      "status": "OPEN",
+      "status": "DISPATCHED",
       "issue": 500,
       "task": "tasks/PE-Y-CORPUS-01.md",
-      "note": "扩pe_v2·ready-for-agent"
+      "note": "cloud implement in flight",
+      "agent_bcId": "bc-41bfcf46-42cf-54ad-b6fb-401545208718",
+      "agent_url": "https://cursor.com/agents/bc-41bfcf46-42cf-54ad-b6fb-401545208718"
     },
     "PE-Y-CORPUS-02": {
-      "status": "OPEN",
+      "status": "QUEUED",
       "issue": 501,
       "task": "tasks/PE-Y-CORPUS-02.md",
-      "blocked_by": ["PE-Y-CORPUS-01", 500],
-      "note": "重针route-y·blocked-by#500"
+      "blocked_by": [
+        "PE-Y-CORPUS-01",
+        500
+      ],
+      "note": "wait #500 green then dispatch"
     },
-    "PE-Y-05": {"status": "BLOCKED_PARK", "note": "CORPUS绿+过门+人令"},
-    "PE-Y-06": {"status": "UNOPENED"}
+    "PE-Y-05": {
+      "status": "BLOCKED_PARK",
+      "note": "CORPUS绿+过门+人令"
+    },
+    "PE-Y-06": {
+      "status": "UNOPENED"
+    }
   },
-  "merge_order_hint": [494, 495, 496, 497, 493],
-  "corpus_implement_order": [500, 501],
-  "next_window_opener": "你是路线 Y 语料实现 Agent。只做 GitHub Issue #500（PE-Y-CORPUS-01；读全文含 Agent Guards）。ADR-0038：扩 pe_v2 至可满 n=400+共形预留。禁止激活、发正式模型、开 PE-Y-05、改 PREREG-Y 配额表、改写 SPLIT-pe-v2.json 已发布成员、做第二领域。先读 ADR-0038、缺额评估、PREREG-Y、#371、#500。重针 route-y 留给 #501。"
+  "merge_order_hint": [
+    494,
+    495,
+    496,
+    497,
+    493
+  ],
+  "corpus_implement_order": [
+    500,
+    501
+  ],
+  "next_window_opener": "你是路线 Y 语料实现 Agent。只做 GitHub Issue #500（PE-Y-CORPUS-01；读全文含 Agent Guards）。ADR-0038：扩 pe_v2 至可满 n=400+共形预留。禁止激活、发正式模型、开 PE-Y-05、改 PREREG-Y 配额表、改写 SPLIT-pe-v2.json 已发布成员、做第二领域。先读 ADR-0038、缺额评估、PREREG-Y、#371、#500。重针 route-y 留给 #501。",
+  "orchestration": {
+    "mode": "dispatch_only",
+    "active_issue": 500,
+    "queued": [
+      501
+    ],
+    "forbid_PE_Y_05": true,
+    "active_agent": "bc-41bfcf46-42cf-54ad-b6fb-401545208718"
+  }
 }
