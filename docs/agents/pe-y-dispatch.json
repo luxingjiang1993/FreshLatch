@@ -2,6 +2,7 @@
   "updated_at": "2026-10-09",
   "parent_pr": 493,
   "parent_branch": "cursor/prereg-y-tc-only-99f3",
+  "corpus_tickets_branch": "cursor/pe-y-corpus-tickets-860d",
   "prereg_y": {
     "path": "docs/evidence/patch-events/PREREG-Y.md",
     "activated": false,
@@ -13,7 +14,8 @@
     "claims_pool": 178,
     "gap_vs_n400": 222,
     "split_route_y": "docs/evidence/patch-events/SPLIT-pe-v2-route-y.json",
-    "split_status": "不可激活"
+    "split_status": "不可激活",
+    "target_pool_hint": ">=560 (per-stratum ~142; verify via construct_samples)"
   },
   "decision_corpus_n": {
     "status": "DONE",
@@ -37,10 +39,23 @@
     "PE-Y-02": {"status": "DONE", "pr": 495},
     "PE-Y-03": {"status": "DONE", "pr": 497, "note": "缺额不可激活"},
     "PE-Y-04": {"status": "DONE", "pr": 496},
-    "PE-Y-CORPUS": {"status": "NEXT", "note": "扩pe_v2·未开票"},
-    "PE-Y-05": {"status": "BLOCKED_PARK", "note": "语料+过门+人令"},
+    "PE-Y-CORPUS-01": {
+      "status": "OPEN",
+      "issue": 500,
+      "task": "tasks/PE-Y-CORPUS-01.md",
+      "note": "扩pe_v2·ready-for-agent"
+    },
+    "PE-Y-CORPUS-02": {
+      "status": "OPEN",
+      "issue": 501,
+      "task": "tasks/PE-Y-CORPUS-02.md",
+      "blocked_by": ["PE-Y-CORPUS-01", 500],
+      "note": "重针route-y·blocked-by#500"
+    },
+    "PE-Y-05": {"status": "BLOCKED_PARK", "note": "CORPUS绿+过门+人令"},
     "PE-Y-06": {"status": "UNOPENED"}
   },
   "merge_order_hint": [494, 495, 496, 497, 493],
-  "next_window_opener": "你是路线 Y 语料/规格 Agent。ADR-0038 已拍板：主解锁=扩 pe_v2；PE-Y-05 停泊；禁改小 PREREG-Y 配额。本窗任务：开 PE-Y-CORPUS-* 把 claims 扩到可满 n=400+共形预留并重针 SPLIT-pe-v2-route-y.json；禁止激活、发正式模型、开 PE-Y-05、改配额表。先读 ADR-0038、缺额评估、PREREG-Y、#497、#371。"
+  "corpus_implement_order": [500, 501],
+  "next_window_opener": "你是路线 Y 语料实现 Agent。只做 GitHub Issue #500（PE-Y-CORPUS-01；读全文含 Agent Guards）。ADR-0038：扩 pe_v2 至可满 n=400+共形预留。禁止激活、发正式模型、开 PE-Y-05、改 PREREG-Y 配额表、改写 SPLIT-pe-v2.json 已发布成员、做第二领域。先读 ADR-0038、缺额评估、PREREG-Y、#371、#500。重针 route-y 留给 #501。"
 }

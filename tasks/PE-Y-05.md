@@ -63,6 +63,7 @@
 ## Blocked by
 
 - PE-Y-01…04 Acceptance 绿
+- **PE-Y-CORPUS-01/#500 + PE-Y-CORPUS-02/#501** Acceptance 绿（正式 n=400 可加载；ADR-0038）
 - `GATE-Y-PROBE` 真数据 `gate_passed=true`
 - 会话出现正式人令原文
 

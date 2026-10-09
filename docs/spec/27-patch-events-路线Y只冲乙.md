@@ -74,7 +74,8 @@
 | 2 | PE-Y-02 | GATE-Y-PROBE 报告格式 + 过门判定（k≥10∧T−C点>0）+ 夹具/复算；可扔 | Watch |
 | 3 | PE-Y-03 | n=400 名单针（`SPLIT-pe-v2-route-y.json` 或显式超集登记） | Watch |
 | 4 | PE-Y-04 | RESULT-Y 抄表口径（仅 T−C∧点>0.05；禁甲；B/C 附录） | Watch |
-| 4b | PE-Y-CORPUS-* | **（ADR-0038）** 扩 `pe_v2` 至可满 n=400+共形预留；重针 route-y SPLIT；禁改配额表 | Watch |
+| 4b | PE-Y-CORPUS-01 [#500](https://github.com/luxingjiang1993/FreshLatch/issues/500) | **（ADR-0038）** 扩 `pe_v2` 至可满 n=400+共形预留；禁改配额表 | Watch |
+| 4c | PE-Y-CORPUS-02 [#501](https://github.com/luxingjiang1993/FreshLatch/issues/501) | **（ADR-0038）** 重针 `SPLIT-pe-v2-route-y.json` 离开不可激活；禁激活 | Watch |
 | 5 | PE-Y-05 | **（库存可执行 + 过门 + 人授后）** 激活 + 一次正式主跑 + 抄成立格 | **Gate** |
 | 6 | PE-Y-06 | （可选）消融/抽检导出；不改成立格 | Watch |
 

@@ -29,8 +29,9 @@ grill-with-docs → 四件套(#493) → to-spec(卷27) → to-tickets → enrich
 | 3 | n=400 名单 · PE-Y-03 | **DONE** · PR [#497](https://github.com/luxingjiang1993/FreshLatch/pull/497) · pe_v2≈178→**缺额不可激活**（未改小配额）· [agent](https://cursor.com/agents/bc-a6bec02d-5347-5236-8a03-f5645a506912) |
 | 4 | RESULT-Y 口径 · PE-Y-04 | **DONE** · PR [#496](https://github.com/luxingjiang1993/FreshLatch/pull/496) · [agent](https://cursor.com/agents/bc-acb51ccd-10ae-5a03-862c-c9177bfb35d4) |
 | — | **缺额解锁决议** | **DONE** · ADR-0038 · 评估 `docs/research/patch_events-路线Y正式n与语料缺额设计评估.md` · 拍板 **A 扩语料 + C 停泊**；B 改 n 本窗否 |
-| 5 | 扩 pe_v2 · `PE-Y-CORPUS-*` | **下一窗** · 未开票 · 目标：库存可满 n=400+共形预留；重针 route-y SPLIT |
-| 6 | 激活 + 一次正式主跑 · PE-Y-05 | **不派** · 阻塞：语料不足 400（待 CORPUS）+ 真数据过门 + 人令 |
+| 5a | 扩 pe_v2 · **PE-Y-CORPUS-01** | **OPEN** · Issue [#500](https://github.com/luxingjiang1993/FreshLatch/issues/500) · `tasks/PE-Y-CORPUS-01.md` · ready-for-agent |
+| 5b | 重针 route-y · **PE-Y-CORPUS-02** | **OPEN** · Issue [#501](https://github.com/luxingjiang1993/FreshLatch/issues/501) · blocked-by #500 · `tasks/PE-Y-CORPUS-02.md` |
+| 6 | 激活 + 一次正式主跑 · PE-Y-05 | **不派** · 阻塞：#500+#501 绿 + 真数据过门 + 人令 |
 | 7 | 消融/抽检（可选）· PE-Y-06 | 未开票 |
 
 ## Wave2 收口后监督备注
@@ -41,7 +42,7 @@ grill-with-docs → 四件套(#493) → to-spec(卷27) → to-tickets → enrich
 
 ## 激活 PE-Y-05 前置清单（齐了再派）
 
-- [ ] 正式 n 可执行（语料够 400 **或** 新决议改 n 已锁 —— 后者本窗未批）
+- [ ] 正式 n 可执行：#500+#501 Acceptance 绿（语料够 400 且 route-y 可加载；**或** 新决议改 n 已锁 —— 后者未批）
 - [ ] #494–#497 已合入总分支
 - [ ] `GATE-Y-PROBE` **真数据** `gate_passed=true`
 - [ ] 人令原文：「批准激活 PREREG-Y 并正式主跑一次。」
@@ -60,6 +61,16 @@ grill-with-docs → 四件套(#493) → to-spec(卷27) → to-tickets → enrich
 
 正式若丙或门闩长期无解：关 Y 实现票、可删 Y 功能分支；**保留** A/B/C/ALT 归档。语料长期无法扩至 400：回到地图另开「透明改 n」grill（B2），**不得**静默改表。
 
-## 下一窗开场白（复制）
+## CORPUS 实现序
 
-> 你是路线 Y 语料/规格 Agent。ADR-0038 已拍板：主解锁=扩 `pe_v2`；PE-Y-05 停泊；禁改小 `PREREG-Y` 配额。本窗任务：开 `PE-Y-CORPUS-*`（to-spec/enrich 或直接实现，按人令）把 claims 扩到可满 n=400+共形预留并重针 `SPLIT-pe-v2-route-y.json`；**禁止**激活、发正式模型、开 PE-Y-05、改配额表。先读 ADR-0038、缺额评估、`PREREG-Y`、#497、#371。
+```text
+before-implement #500 → /implement PE-Y-CORPUS-01
+  → before-implement #501 → /implement PE-Y-CORPUS-02
+  →（仍不派 PE-Y-05）
+```
+
+基线建议叠：ADR-0038 针（本派工父）∪ PE-Y-03/#497（route-y 缺额针与 loader）。**禁止**未绿 #500 就开 #501；**禁止** #501 绿后自行激活。
+
+## 下一窗开场白（复制 · 实现 CORPUS-01）
+
+> 你是路线 Y 语料实现 Agent。只做 GitHub Issue [#500](https://github.com/luxingjiang1993/FreshLatch/issues/500)（PE-Y-CORPUS-01；读全文含 Agent Guards）。ADR-0038：扩 `pe_v2` 至可满 n=400+共形预留。**禁止**激活、发正式模型、开 PE-Y-05、改 `PREREG-Y` 配额表、改写 `SPLIT-pe-v2.json` 已发布成员、做第二领域。先读 ADR-0038、缺额评估、`PREREG-Y`、#371、#500。重针 route-y 留给 #501。
