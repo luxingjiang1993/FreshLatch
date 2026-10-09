@@ -20,15 +20,15 @@ None（can start immediately）
   - Given `git diff --name-only` 相对本票, When 列出变更, Then 不含 `PREREG-Y`/`RESULT-Y`/`formal-generations-y`。
 - **Provenance**:
   - Kind: new
-  - Source: （新文档；纪律引用 ADR-0029/0031/DECISION-LOG）
-  - What changed: 新建运营 SLO 文档链
-  - Why not copy as-is: n/a
+  - Source: （新文档链为主；纪律引用 ADR-0029/0031/DECISION-LOG）
+  - What changed: 新建运营 SLO 文档链；并对 `CONTEXT.md` / `docs/grill-prep.md` / `docs/spec/README.md` 做词表与索引附属增量（非业务码 adapt）
+  - Why not copy as-is: n/a（Kind=new；旧文件仅为决议挂钩增量，不改业务语义）
 - **Tests**: waived（documentation-only；Acceptance 为路径/禁词机检）
 - **Do-not-touch**: `docs/evidence/patch-events/PREREG-Y.md`, `RESULT-Y.md`, `formal-generations-y*`, 业务 `src/`
 
 ### Provenance status
-- result: pass
-- notes: 纯新文档；未触旧码
+- result: warn→已澄清（人批前）
+- notes: Kind=new 成立。Paths 含既有三文件仅为词表/grill 纪要/规格索引附属增量，不是 adapt/port 旧实现；与「未触旧码」旧表述不符处已更正。
 
 ### Evidence *(after Matt /implement)*
 - typecheck:
