@@ -31,9 +31,9 @@ SLO-01
 - notes: adapt confirm/再验路径
 
 ### Evidence *(after Matt /implement)*
-- typecheck:
-- tests:
-- paths:
+- typecheck: `python -m compileall -q src` exit 0
+- tests: `pytest tests/unit/test_slo_a6.py -q` → 8 passed；`ruff check` A6 路径 All checks passed
+- paths: `src/freshlatch/slo_a6.py` · `scripts/slo_a6_reverify_fail_rate.py` · `reports/slo/` · `tests/unit/test_slo_a6.py` · `docs/ops/生产补丁放行SLO.md`（A6 互指）
 
 ## Handoff
-`2026-10-09 | SLO-04 | ready | blocked by SLO-01`
+`2026-10-09 | SLO-04 | done | A6 只读聚合可周报；空窗诚实空态；未改再验谓词/RESULT-Y`
