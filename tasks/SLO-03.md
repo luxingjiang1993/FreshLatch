@@ -31,9 +31,9 @@ SLO-01
 - notes: 新文档
 
 ### Evidence *(after Matt /implement)*
-- typecheck:
-- tests:
-- paths:
+- typecheck: n/a（无 src；未改 `src/`）
+- tests: waived（documentation）
+- paths: 新建 `docs/ops/抽检-补丁改对率.md`；`docs/ops/生产补丁放行SLO.md` §3.1 最小互指；未碰 RESULT-Y
 
 ## Handoff
-`2026-10-09 | SLO-03 | ready | blocked by SLO-01`
+`2026-10-09 | SLO-03 | implement-done | 抽检协议 A2/A3/A4 + ops 互指 | Watch·观测-only·禁金标进生产 score`
