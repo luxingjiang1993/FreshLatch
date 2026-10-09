@@ -27,8 +27,8 @@ None（can start immediately）
 - **Do-not-touch**: `docs/evidence/patch-events/PREREG-Y.md`, `RESULT-Y.md`, `formal-generations-y*`, 业务 `src/`
 
 ### Provenance status
-- result: warn→已澄清（人批前）
-- notes: Kind=new 成立。Paths 含既有三文件仅为词表/grill 纪要/规格索引附属增量，不是 adapt/port 旧实现；与「未触旧码」旧表述不符处已更正。
+- result: pass（人批 yes · 2026-10-09）
+- notes: Kind=new；CONTEXT/grill-prep/spec README 为词表/索引附属增量，非 adapt/port。
 
 ### Evidence *(after Matt /implement)*
 - typecheck:
@@ -36,4 +36,4 @@ None（can start immediately）
 - paths:
 
 ## Handoff
-`2026-10-09 | SLO-01 | ready | Frontier；人批 before-implement 后可勾 Acceptance`
+`2026-10-09 | SLO-01 | gates-pass | Trust=Watch Blast=none Prov=pass → fresh session /implement SLO-01`
