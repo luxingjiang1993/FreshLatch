@@ -68,6 +68,7 @@ def test_each_shell_keeps_only_its_locked_fields():
     assert "只用请求里已经带的 evidence_text。" in t_text
     assert "提示词里不再检索。" in t_text
     assert "输出：纯文本 after_text。" in t_text
+    assert "T 的 after_text 去掉首尾空白后须与 evidence_text 逐字相同。" in t_text
     assert "无证据改写" not in t_text
     assert "B1 带上请求里已经有的 evidence_text。" not in t_text
     assert "B2 的 claim 也带上这份 evidence_text。" not in t_text
@@ -77,6 +78,7 @@ def test_each_shell_keeps_only_its_locked_fields():
     assert "做法：改写。" in b1_text
     assert "输出：纯文本 after_text。" in b1_text
     assert "B1 带上请求里已经有的 evidence_text。" in b1_text
+    assert "B1 的 after_text 去掉首尾空白后须与 evidence_text 逐字相同。" in b1_text
     assert "无证据改写" not in b1_text
     assert "不再检索" not in b1_text
     assert "claim_text" not in b1_text
