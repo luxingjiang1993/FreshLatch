@@ -23,8 +23,9 @@ from freshlatch.eval.patch_events_formal_y import (
 )
 
 
-def test_prereg_y_not_activated_on_current_tree():
-    assert prereg_y_activated() is False
+def test_prereg_y_activated_on_current_tree():
+    """PE-Y-05：正式人令后文首须为已激活。"""
+    assert prereg_y_activated() is True
 
 
 def test_authorize_send_refuses_when_inactive(tmp_path, monkeypatch):
@@ -38,18 +39,26 @@ def test_authorize_send_refuses_when_inactive(tmp_path, monkeypatch):
     assert not y_path.exists()
 
 
-def test_authorize_send_module_cli_refuses_and_skips_write(tmp_path):
-    """Acceptance CLI：真实 PREREG-Y 未激活时模块入口非零且不新建 y jsonl。"""
-    target = Path("docs/evidence/patch-events/formal-generations-y.jsonl")
-    existed = target.exists()
-    before = target.read_bytes() if existed else None
+def test_default_entry_no_send_zero_llm(monkeypatch):
+    """Acceptance: 默认入口不发模型（已激活时亦然；须显式 --authorize-send）。"""
+    calls: list[object] = []
+
+    def _boom(*_a, **_k):
+        calls.append(1)
+        raise AssertionError("不得发模型")
+
+    monkeypatch.setattr(formal_y, "send_formal_y", _boom)
+    monkeypatch.setattr(formal_y, "live_chat", _boom)
+    assert prereg_y_activated() is True
+    code = main([])
+    assert code == 0
+    assert calls == []
     env = {**os.environ, "PYTHONPATH": "src"}
     proc = subprocess.run(
         [
             sys.executable,
             "-m",
             "freshlatch.eval.patch_events_formal_y",
-            "--authorize-send",
         ],
         cwd=Path.cwd(),
         env=env,
@@ -59,29 +68,10 @@ def test_authorize_send_module_cli_refuses_and_skips_write(tmp_path):
         errors="replace",
         check=False,
     )
-    assert proc.returncode != 0
+    assert proc.returncode == 0
     combined = (proc.stderr or "") + (proc.stdout or "")
-    assert "未激活" in combined
-
-    if existed:
-        assert target.read_bytes() == before
-    else:
-        assert not target.exists()
-
-
-def test_default_entry_no_send_zero_llm(monkeypatch):
-    """Acceptance: 默认入口不发模型。"""
-    calls: list[object] = []
-
-    def _boom(*_a, **_k):
-        calls.append(1)
-        raise AssertionError("不得发模型")
-
-    monkeypatch.setattr(formal_y, "send_formal_y", _boom)
-    monkeypatch.setattr(formal_y, "live_chat", _boom)
-    code = main([])
-    assert code == 0
-    assert calls == []
+    assert "no send" in combined
+    # CI 禁止对真树发 --authorize-send（会触达模型）。
 
 
 def test_recompute_only_empty_safe_zero_llm(monkeypatch, tmp_path):
@@ -174,6 +164,8 @@ def test_send_refuses_when_path_is_forbidden(monkeypatch, tmp_path):
         send_formal_y(chat=lambda *a, **k: "x")
 
 
-def test_send_refuses_when_inactive_api():
+def test_send_refuses_when_inactive_api(monkeypatch):
+    """API 层：未激活时 send_formal_y 拒绝（强制 monkeypatch，避免真树已激活误发）。"""
+    monkeypatch.setattr(formal_y, "prereg_y_activated", lambda root=None: False)
     with pytest.raises(RuntimeError, match="未激活"):
         send_formal_y(chat=lambda *a, **k: "x")

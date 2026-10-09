@@ -622,7 +622,8 @@ def main(argv: list[str] | None = None) -> int:
     )
     sys.stdout.write(f"{pack.get('verdict')}\n")
 
-    if not args.no_write and args.recompute_only:
+    # 与 formal_b 对齐：--authorize-send / --recompute-only 在非 --no-write 时抄 RESULT-Y。
+    if not args.no_write:
         out = write_result_y(
             pack,
             code_pin=args.code_pin,

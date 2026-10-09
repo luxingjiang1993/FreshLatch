@@ -136,16 +136,27 @@ def test_copies_only_forged_primary_never_gate_bc_paths():
     assert "0.1190476" not in table
 
 
-def test_result_y_shell_keeps_blank_and_bc_appendix():
-    """Acceptance: RESULT-Y.md 保留 B/C 负结果附录；未主跑成立格保持未填。"""
+def test_result_y_keeps_bc_appendix_and_jia_firewall():
+    """Acceptance: RESULT-Y 保留 B/C 负结果附录；文面不得称甲；B1/B2 报告-only。
+
+    PE-Y-05 主跑后成立格由同一次 compare_primary 填写；本测不再要求「未填」壳。
+    """
     text = RESULT_Y.read_text(encoding="utf-8")
-    assert "未激活" in text or "未跑" in text
-    assert "| T 对 C | false-accept rate | 未填 | 未填 | 未填 | 未填 |" in text
     assert "报告-only（不参与成立）" in text
+    assert text.count("报告-only（不参与成立）") >= 2
     assert "路线 B（#480）" in text
     assert "路线 C" in text
-    assert "不得" in text and "判甲" in text
-
+    assert "不得" in text and ("判甲" in text or "称甲" in text)
+    assert "结果甲" not in text
+    assert "称甲" not in text or "不得" in text
+    # 禁止把探针路径写进成立格区
+    before_appendix = text.split("## B / C 负结果附录")[0]
+    assert "GATE-Y-PROBE" not in before_appendix or "禁止把 GATE-Y-PROBE" in before_appendix
+    table = [line for line in text.splitlines() if line.startswith("| T 对 C |")]
+    assert table, "须有 T 对 C 主比较行"
+    # 未填壳或已填真数均可；不得把 B 负结果主数字抄进 T−C 成立格
+    assert "−0.05556" not in table[0] and "-0.05556" not in table[0]
+    assert "0.1190476" not in table[0]
 
 def test_jia_firewall_never_returns_jia():
     """即便三行经典均成立且点>0.05，分层仍不得甲。"""
