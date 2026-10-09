@@ -453,7 +453,9 @@ def render_result_y(
     comparisons = list((primary or {}).get("comparisons") or [])
     by_name = {item.get("name"): item for item in comparisons}
     labels = (("T-C", "T 对 C"), ("T-B1", "T 对 B1"), ("T-B2", "T 对 B2"))
-    filled = primary is not None and pack.get("b2_count") == _FORMAL_N
+    # 抄表门槛：名单 n=400 且同一次 primary 有定义即可。
+    # 单条平台拒回（data_inspection_failed→void）可使 b2_count < 400，不得因此留空成立格。
+    filled = primary is not None and pack.get("n") == _FORMAL_N
     lines: list[str] = [
         "# patch_events 路线 Y · 正式结果（RESULT-Y）",
         "",
