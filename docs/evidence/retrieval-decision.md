@@ -1,6 +1,6 @@
 # 检索默认方式的决策链：2026-10-07 已切到 hybrid+rerank
 
-本文给论文和面试用。它记录决策链。2026-10-07 的切换由真人拍板，不是模型代批。
+本文记录检索决策链。2026-10-07 的切换由真人拍板，不是模型代批。现在对外能念的句子在 [`当前可说口径.md`](当前可说口径.md)。不要从下面时间线里抽「当时仍是 bm25」当成现在的生产默认。
 
 生产默认现在是 hybrid+rerank。代码常量 `PRODUCTION_RETRIEVAL_MODE` 的值是 `hybrid+rerank`。精排是本地 `BAAI/bge-reranker-base`（fastembed `TextCrossEncoder`，CPU），只重排 hybrid 的 top-10。依据是 [PR #293](https://github.com/luxingjiang1993/FreshLatch/pull/293) 的 MRR@10 与 nDCG@10，切换票是 [Issue #294](https://github.com/luxingjiang1993/FreshLatch/issues/294)。一键回退 BM25 是 `set_retrieval_switch("bm25")`。只切回词重叠精排是 `set_retrieval_switch("hybrid+rerank_lexical")`。两者都不改这个常量。缺向量仍记 `bm25_fallback`。reranker 失败记 `last_rerank_mode=lexical_fallback`。切换前必须先预热 embedding 与 reranker 权重，见 `docs/ops/local-embed.md`。本文不调用阿里云 DashScope 的付费接口。下面各节里「当时仍是 bm25」或「当时精排仍是 rerank_lexical」的句子是那一天的记录。
 
