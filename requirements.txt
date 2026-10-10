@@ -17,8 +17,9 @@ onnxruntime==1.30.0
 pillow==11.3.0
 py-rust-stemmers==0.1.8
 requests==2.33.1
-# 与 transformers==4.57.6 对齐（其上限 tokenizers<=0.23.0）；0.23.2 在 CI 解析冲突
-tokenizers==0.23.0
+# 与 transformers==4.57.6 对齐（上限 tokenizers<=0.23.0）；
+# Windows CI 无 0.23.0 正式轮，钉 0.22.2（可用且入区间）。
+tokenizers==0.22.2
 tqdm==4.70.1
 python-dotenv==1.2.3
 langgraph==1.2.10
