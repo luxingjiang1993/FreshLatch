@@ -11,8 +11,8 @@ COMMANDS = (
     "--python-platform x86_64-pc-windows-msvc -o requirements.lock",
 )
 UNCHANGED = {
-    "requirements.txt": "4bce621ca55c039e3f4476172f4bfc3de224223552e3e1eb5b829f59a57f50b9",
-    "pyproject.toml": "777d422c93cfd1c205425f4a1edec97c8485d1554842a40f457772181bec38ae",
+    "requirements.txt": "083e3bba0c8264a363f4e30d46c5cf0211733d6c479a9744062c84631be95e09",
+    "pyproject.toml": "248bc0e4e773f211aaf30ca89bab39893d307aba1907153f3a630b83a509ae13",
     ".github/workflows/ci.yml": "46ff1e9b407bb2a0ab62fa979d94784fbaf6a0626e6f3a3afaea381f69d3936f",
 }
 
