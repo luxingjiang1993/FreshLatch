@@ -53,6 +53,13 @@ _Avoid_: 设计冲乙写成将得到乙、称甲或 soft-甲、回写 B/C 凑乙
 路线 Y 的预注册协议页文件名/载体。激活前可锁协议；激活后同一页只许一次正式主跑。#518 / ADR-0039 拍板：冲乙正式载体=**修订升格**本页（不另开字母页作废 Y）。成立加严细则与止损频率见协议页与评估文档，不在本词表展开。
 _Avoid_: 未激活当已跑、同页二跑、把 PREREG-Y 写成冲甲页、把 CORPUS 可加载称作已激活
 
+**支撑度核验（pe_v2 NLI 闸）**:
+冲乙仪器层：用本地多语 NLI（型号与 τ 见 ADR-0040 / 升格未激活 `PREREG-Y`）判断绑定 chunk 是否支撑 `after_text`；released 写非空支撑分、rejected 写 `−∞`，供固定 k 排序。不是评委、不是乙成立证明、不是法律域已校准证书。
+_Avoid_: score 恒空、金标/评委进 score、把仓外 XNLI Acc 或敏感性闸绿写成 RESULT 乙成立、逐字一致冒充本期主核验
+**GATE-Y 敏感性前置**:
+冲乙激活前纪律：核验敏感性闸（构造坏改+有限法域陷阱）须先通过，才允许真数据 `GATE-Y-PROBE`；n=30 冒烟可扔且不作过门。操作契约见 ADR-0041。门闩过 ≠ 乙成立。
+_Avoid_: 夹具/冒烟升格为已过门、把敏感性绿写成 RESULT 乙、跳过敏感性直接激活
+
 **Evidence-bound patch（attested patch）**:
 引用 ⊆ 本 Run 已入库 T1 的整条主张正文替换;人确认才应用;确认后强制单条再验。产品路径恒 attested(`arm=T`);对外少用 proof-carrying(ADR-0029)。
 _Avoid_: proof-carrying / PCC(对外主称)、无证自由改稿冒充 attested、首次带证据改稿
