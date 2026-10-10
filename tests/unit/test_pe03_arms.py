@@ -104,7 +104,15 @@ def test_four_arms_share_claim_ids_and_t_reads_production_mode(monkeypatch):
         assert [row["arm"] for row in records] == [arm, arm]
         assert all(row["ablation"] == "" for row in records)
         assert all(row["decision"] == "release" for row in records)
-        assert all(row["after_text"] == f"生成-{arm}-{row['claim_id']}" for row in records)
+        # T/B1 共用以 T 请求生成的 after；C/B2 仍各自独立。
+        if arm in ("T", "B1"):
+            assert all(
+                row["after_text"] == f"生成-T-{row['claim_id']}" for row in records
+            )
+        else:
+            assert all(
+                row["after_text"] == f"生成-{arm}-{row['claim_id']}" for row in records
+            )
     assert result["C"][0]["score"] is None
     assert result["C"][0]["evidence_id"] == ""
     assert result["T"][0]["score"] == 0.9
