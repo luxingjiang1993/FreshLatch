@@ -231,6 +231,18 @@ def test_saved_result_matches_one_compare_primary(monkeypatch):
         lambda *_args, **_kwargs: (_ for _ in ()).throw(AssertionError("不得发请求")),
     )
     monkeypatch.setattr(formal, "live_chat", lambda *_args, **_kwargs: (_ for _ in ()).throw(AssertionError("不得发请求")))
+    # #527：旧 RESULT 链用逐字+空分仪器写成；回放锁死旧契约，不跑新 NLI、不改冻结页
+    def _legacy_verify(request):
+        after = request.get("after_text")
+        evidence = request.get("evidence_text")
+        ok = (
+            isinstance(after, str)
+            and isinstance(evidence, str)
+            and after.strip() == evidence
+        )
+        return {"ok": ok, "score": None, "reason": "一致" if ok else "核验不过"}
+
+    monkeypatch.setattr(formal, "verify_edit", _legacy_verify)
     generations = _lf(_GENERATIONS)
     assert _sha(generations) == _GENERATIONS_SHA256
     assert _sha(_lf(_PREREG)) == _PREREG_SHA256

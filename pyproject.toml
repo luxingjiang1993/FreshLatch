@@ -26,11 +26,15 @@ dependencies = [
     "pillow==11.3.0",
     "py-rust-stemmers==0.1.8",
     "requests==2.33.1",
-    "tokenizers==0.23.2",
+    # 与 transformers==4.57.6 对齐（上限 <=0.23.0）；Windows 无 0.23.0 正式轮
+    "tokenizers==0.22.2",
     "tqdm==4.70.1",
     "python-dotenv==1.2.3",
     "langgraph==1.2.10",
     "langgraph-checkpoint-sqlite==3.1.1",
+    # #527 / ADR-0040：本地 XNLI 主核验（verify_edit）；体积大，单测 stub 推理。
+    "transformers==4.57.6",
+    "torch==2.8.0",
 ]
 
 [project.optional-dependencies]

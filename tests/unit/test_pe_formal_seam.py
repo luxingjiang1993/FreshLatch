@@ -12,6 +12,7 @@ import pytest
 from freshlatch.eval.patch_events_ablation import primary_comparison_rows
 from freshlatch.eval.patch_events_arms import Decoding, run_arms
 from freshlatch.eval.patch_events_metrics import SEED, compare_primary
+from freshlatch.eval import patch_events_verify as verify_mod
 from freshlatch.eval.patch_events_verify import verify_edit
 
 _SECRET_ENV = ("DASHSCOPE_API_KEY", "DEEPSEEK_API_KEY", "MOONSHOT_API_KEY")
@@ -64,6 +65,13 @@ def _guard(monkeypatch):
     }
     seen = _spy_env(monkeypatch)
     _block_network(monkeypatch)
+    # #527：夹具缝不测真实 NLI；stub 避免下模型
+    def _fake_nli(premise: str, hypothesis: str) -> dict[str, float]:
+        if premise == hypothesis:
+            return {"entailment": 0.91, "neutral": 0.05, "contradiction": 0.04}
+        return {"entailment": 0.05, "neutral": 0.10, "contradiction": 0.85}
+
+    monkeypatch.setattr(verify_mod, "predict_xnli_probs", _fake_nli)
     yield seen
     assert _bytes(_GENERATIONS) == before["generations"]
     assert _bytes(_RESULT) == before["result"]
