@@ -82,6 +82,18 @@ def _guard(monkeypatch):
     monkeypatch.setattr(formal, "live_chat", _refuse_client)
     monkeypatch.setattr(formal, "main", _refuse_client)
     monkeypatch.setattr(formal, "append_sent", _refuse_client)
+    # #527：旧 formal-generations 回放锁死逐字+空分，避免新 NLI 改写冻结 RESULT 数字
+    def _legacy_verify(request):
+        after = request.get("after_text")
+        evidence = request.get("evidence_text")
+        ok = (
+            isinstance(after, str)
+            and isinstance(evidence, str)
+            and after.strip() == evidence
+        )
+        return {"ok": ok, "score": None, "reason": "一致" if ok else "核验不过"}
+
+    monkeypatch.setattr(formal, "verify_edit", _legacy_verify)
     yield seen
     for path, blob in before.items():
         assert _bytes(path) == blob

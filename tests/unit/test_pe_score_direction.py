@@ -18,6 +18,7 @@ from freshlatch.eval.patch_events_metrics import (
     select_scored_positions,
 )
 from freshlatch.eval import patch_events_metrics as metrics
+from freshlatch.eval import patch_events_verify as verify_mod
 from freshlatch.eval.patch_events_verify import verify_edit
 
 _SECRET_ENV = ("DASHSCOPE_API_KEY", "DEEPSEEK_API_KEY", "MOONSHOT_API_KEY")
@@ -71,6 +72,13 @@ def _guard(monkeypatch):
         "freshlatch.llm.LLMClient",
         lambda *_args, **_kwargs: (_ for _ in ()).throw(AssertionError("不得发请求")),
     )
+    # #527：本文件不测真实 NLI；stub 概率，避免下模型 / 连网
+    def _fake_nli(premise: str, hypothesis: str) -> dict[str, float]:
+        if premise == hypothesis:
+            return {"entailment": 0.91, "neutral": 0.05, "contradiction": 0.04}
+        return {"entailment": 0.05, "neutral": 0.10, "contradiction": 0.85}
+
+    monkeypatch.setattr(verify_mod, "predict_xnli_probs", _fake_nli)
     yield seen
     for path, blob in before.items():
         assert _bytes(path) == blob

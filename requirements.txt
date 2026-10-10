@@ -22,3 +22,7 @@ tqdm==4.70.1
 python-dotenv==1.2.3
 langgraph==1.2.10
 langgraph-checkpoint-sqlite==3.1.1
+# #527 / ADR-0040：pe_v2 主核验本地 mDeBERTa-v3 XNLI（verify_edit）。
+# 体积大（含 torch）；单测 stub predict_xnli_probs，不把仓外 Acc 当过线；本票不发正式主跑。
+transformers==4.57.6
+torch==2.8.0
