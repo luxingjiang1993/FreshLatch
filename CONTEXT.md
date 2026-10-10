@@ -45,6 +45,14 @@ _Avoid_: 多源采编、自动盯梢、失败仍半写入库
 改稿对照实验与产品审计共用的事件账;V1 起以 JSONL 落 `data/patch_events/`;C vs T 对照只后台/脚本记账,不进正式发前 UX(ADR-0027)。V1.5 正式确认事件须含 `before_text`/`after_text`(ADR-0029);未确认草案不入账。
 _Avoid_: 发前 UI 上的实验臂开关、把未记账称作已开始论文实验、提案即写入正式账本
 
+**patch_events 路线 Y**:
+在 B/C 丙归档之后旁路**只冲乙**的新预注册产品轨：协议页 `docs/evidence/patch-events/PREREG-Y.md`；产物 `RESULT-Y` / `formal-generations-y`；机制继承 B 软对齐与选取 R / 同 after；**不以** C 强制抄句为主路径。操作契约见 ADR-0037；相对整合方案的载体升格见 ADR-0039。协议可锁 ≠ 已激活正式主跑。
+_Avoid_: 设计冲乙写成将得到乙、称甲或 soft-甲、回写 B/C 凑乙、把门闩/夹具称作乙成立、以抄句当 Y 主路径
+
+**PREREG-Y**:
+路线 Y 的预注册协议页文件名/载体。激活前可锁协议；激活后同一页只许一次正式主跑。#518 / ADR-0039 拍板：冲乙正式载体=**修订升格**本页（不另开字母页作废 Y）。成立加严细则与止损频率见协议页与评估文档，不在本词表展开。
+_Avoid_: 未激活当已跑、同页二跑、把 PREREG-Y 写成冲甲页、把 CORPUS 可加载称作已激活
+
 **Evidence-bound patch（attested patch）**:
 引用 ⊆ 本 Run 已入库 T1 的整条主张正文替换;人确认才应用;确认后强制单条再验。产品路径恒 attested(`arm=T`);对外少用 proof-carrying(ADR-0029)。
 _Avoid_: proof-carrying / PCC(对外主称)、无证自由改稿冒充 attested、首次带证据改稿
