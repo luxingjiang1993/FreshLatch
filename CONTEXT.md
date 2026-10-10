@@ -45,6 +45,10 @@ _Avoid_: 多源采编、自动盯梢、失败仍半写入库
 改稿对照实验与产品审计共用的事件账;V1 起以 JSONL 落 `data/patch_events/`;C vs T 对照只后台/脚本记账,不进正式发前 UX(ADR-0027)。V1.5 正式确认事件须含 `before_text`/`after_text`(ADR-0029);未确认草案不入账。
 _Avoid_: 发前 UI 上的实验臂开关、把未记账称作已开始论文实验、提案即写入正式账本
 
+**支撑度核验（pe_v2 NLI 闸）**:
+冲乙仪器层：用本地多语 NLI（型号与 τ 见 ADR-0040 / 升格未激活 `PREREG-Y`）判断绑定 chunk 是否支撑 `after_text`；released 写非空支撑分、rejected 写 `−∞`，供固定 k 排序。不是评委、不是乙成立证明、不是法律域已校准证书。
+_Avoid_: score 恒空、金标/评委进 score、把仓外 XNLI Acc 或敏感性闸绿写成 RESULT 乙成立、逐字一致冒充本期主核验
+
 **Evidence-bound patch（attested patch）**:
 引用 ⊆ 本 Run 已入库 T1 的整条主张正文替换;人确认才应用;确认后强制单条再验。产品路径恒 attested(`arm=T`);对外少用 proof-carrying(ADR-0029)。
 _Avoid_: proof-carrying / PCC(对外主称)、无证自由改稿冒充 attested、首次带证据改稿
