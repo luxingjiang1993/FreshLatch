@@ -45,6 +45,10 @@ _Avoid_: 多源采编、自动盯梢、失败仍半写入库
 改稿对照实验与产品审计共用的事件账;V1 起以 JSONL 落 `data/patch_events/`;C vs T 对照只后台/脚本记账,不进正式发前 UX(ADR-0027)。V1.5 正式确认事件须含 `before_text`/`after_text`(ADR-0029);未确认草案不入账。
 _Avoid_: 发前 UI 上的实验臂开关、把未记账称作已开始论文实验、提案即写入正式账本
 
+**GATE-Y 敏感性前置**:
+冲乙激活前纪律：核验敏感性闸（构造坏改+有限法域陷阱）须先通过，才允许真数据 `GATE-Y-PROBE`；n=30 冒烟可扔且不作过门。操作契约见 ADR-0041。门闩过 ≠ 乙成立。
+_Avoid_: 夹具/冒烟升格为已过门、把敏感性绿写成 RESULT 乙、跳过敏感性直接激活
+
 **Evidence-bound patch（attested patch）**:
 引用 ⊆ 本 Run 已入库 T1 的整条主张正文替换;人确认才应用;确认后强制单条再验。产品路径恒 attested(`arm=T`);对外少用 proof-carrying(ADR-0029)。
 _Avoid_: proof-carrying / PCC(对外主称)、无证自由改稿冒充 attested、首次带证据改稿
