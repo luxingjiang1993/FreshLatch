@@ -23,6 +23,10 @@ dist/
 .pytest_cache/
 htmlcov/
 
+# 本地虚拟环境（含 C0.4 XNLI 独立环境，不入库）
+.venv/
+.venv-xnli/
+
 # 密钥与运行日志
 .env
 data/*.log
