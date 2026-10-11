@@ -4,6 +4,38 @@
 
 这一页记录投稿和范围。它不是预注册。改这一页不改变 `PREREG.md` 里的比较、指标、配额、算子、种子和评委。`PREREG.md` 跑数后不得修改；要改口径只能另写新文件，并声明旧页作废。
 
+## 路线 Y · CORPUS 波次完成（2026-10-09 · 可加载 · 未激活）
+
+- PE-Y-CORPUS-01 [#500](https://github.com/luxingjiang1993/FreshLatch/issues/500) CLOSED · PR [#503](https://github.com/luxingjiang1993/FreshLatch/pull/503) · claims=670
+- PE-Y-CORPUS-02 [#501](https://github.com/luxingjiang1993/FreshLatch/issues/501) CLOSED · PR [#504](https://github.com/luxingjiang1993/FreshLatch/pull/504) · route-y `名单已齐·可加载` · n400=400
+- `PREREG-Y` **仍未激活**；PE-Y-05 **仍停泊**（真数据过门 + 正式人令）
+- 可加载 ≠ 过门 ≠ 乙成立 ≠ 已激活
+
+## 路线 Y · CORPUS 票已开（2026-10-09 · CORPUS-01 已实装语料 · 未激活）
+
+按 ADR-0038 已开 enrich 票：
+
+- PE-Y-CORPUS-01 · [#500](https://github.com/luxingjiang1993/FreshLatch/issues/500) · 扩 `pe_v2` 库存（见下节「跑数据前偏离 · pe_v2 再扩充」）
+- PE-Y-CORPUS-02 · [#501](https://github.com/luxingjiang1993/FreshLatch/issues/501) · 重针 `SPLIT-pe-v2-route-y.json`（blocked-by #500 已解除 · PR #504）
+
+PE-Y-05 仍停泊。`PREREG-Y` 仍未激活；配额表 n=400 未改。
+
+## 跑数据前偏离 · pe_v2 再扩充（路线 Y / ADR-0038）
+
+日期：2026-10-09。决定人：ADR-0038 拍板（扩语料主解锁 + 停泊）。实现：PE-Y-CORPUS-01 / [#500](https://github.com/luxingjiang1993/FreshLatch/issues/500)。此时 `PREREG-Y` **未激活**；尚无路线 Y 正式评委数据；不发模型。
+
+本条只登记样本框内续扩公开法规语料。**不改**比较、成立尺、选取 R、门闩过门条件；**不改** `PREREG-Y` 配额表数字（正式 n=400 仍锁）；**不改**构造算子；**不改写** `SPLIT-pe-v2.json` 已发布 pilot/n30/n100 成员；**未**重针 `SPLIT-pe-v2-route-y.json`（留给 PE-Y-CORPUS-02 / #501）；**未**开 PE-Y-05。
+
+1. 同源续扩：`senry5433/china-effective-laws-regulations` 快照 `2026-08-26`，revision `11be732f1a529a46e02e8c1530bae3b84f967bc3`。脚本 `scripts/build_pe_v2_corpus.py` 显式目标：数值/日期/条款替换各 **150**，删除 **220**（删除层抬高以配齐坏槽算子 0/1/3）。
+2. 既有 178 条 claim_id 与正文保留（续扩追加）；`construct_samples` 仍满 B 的 pilot/n100，且与 `SPLIT-pe-v2.json` 成员逐位一致。
+3. 扩容后库存足以在「可满 route-y 正式 100/层、层内 50/50」意义上无语料不足；满 n=400 规划后每层 leftover ≥0（共形预留可规划，未挖主配额）。共形正式名单仍「未做」直至 #501 重针。
+4. Provenance：新增 `expand_fetch_time=2026-10-09T10:00:00Z`；URL、许可、sha256、来源 offset 仍记在 `data/corpus/pe_v2/PROVENANCE.json`；主张可在对应 T0 全文逐字定位。
+5. 评估见 `docs/research/patch_events-路线Y正式n与语料缺额设计评估.md`；ADR `docs/adr/0038-patch-events-route-y-corpus-n-unblock.md`。
+
+## 路线 Y · CORPUS 恢复进 main（2026-10-11 · #539）
+
+从 `archive/pe-y-v1-merge-tip`（`5d7cd17` / Draft #505）挑拣恢复：`pe_v2` 扩面、`SPLIT-pe-v2-route-y.json`、`construct_from_pins`、`patch_events_formal_y` / 单测。验收：`load_pe_v2_formal_n400()==400`。**仍未激活** `PREREG-Y`；**不派** PE-Y-05；不改写 `SPLIT-pe-v2.json` 已发布成员。
+
 ## 已锁进预注册的决定
 
 下面各项的可执行定义在 `docs/evidence/patch-events/PREREG.md`。这里只留索引。

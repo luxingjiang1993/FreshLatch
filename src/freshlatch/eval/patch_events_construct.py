@@ -14,7 +14,7 @@ import re
 from dataclasses import dataclass
 from decimal import Decimal, ROUND_HALF_UP
 from pathlib import Path
-from typing import Any, Iterable, Mapping
+from typing import Any, Iterable, Mapping, Sequence
 
 from freshlatch.eval.patch_events_exp import normalize_experiment_record
 from freshlatch.store.ingest import parse_document
@@ -205,6 +205,44 @@ def construct_samples(docket_path: Path, corpus_root: Path) -> ConstructResult:
         n100=tuple(n30 + rest),
         shortfalls=tuple(shortfalls),
     )
+
+
+def construct_from_pins(
+    docket_path: Path,
+    corpus_root: Path,
+    pins: Sequence[Mapping[str, Any]],
+) -> list[dict[str, Any]]:
+    """按名单针 (claim_id, edit_type, construction_gold) 确定性构造实验记录。
+
+    供路线 Y n=400 等超出 pilot/n30/n100 配额的正式名单使用。
+    层内坏槽的算子编号按针内出现序递增（同 ``construct_samples`` 的 bad_index 语义）。
+    构造失败则抛 ``ConstructError``，不得静默跳过冒充满额。
+    """
+    views = {view.claim_id: view for view in load_claims(docket_path, corpus_root)}
+    bad_index_by_stratum: dict[str, int] = {name: 0 for name in STRATA}
+    records: list[dict[str, Any]] = []
+    for pin in pins:
+        claim_id = str(pin["claim_id"])
+        edit_type = str(pin["edit_type"])
+        gold = str(pin["construction_gold"])
+        view = views.get(claim_id)
+        if view is None:
+            raise ConstructError(f"名单针主张不在 docket：{claim_id}", structural=True)
+        if edit_type not in STRATA:
+            raise ConstructError(f"未知层: {edit_type}", structural=True)
+        if gold == "坏":
+            bad_index = bad_index_by_stratum[edit_type]
+            operator = bad_index % 4
+            sign = _sign(bad_index)
+            bad_index_by_stratum[edit_type] = bad_index + 1
+        elif gold == "正确":
+            operator = None
+            sign = None
+        else:
+            raise ConstructError(f"construction_gold 非法: {gold!r}", structural=True)
+        edit = _build(view, edit_type, gold, operator, sign)
+        records.append(dict(edit.record))
+    return records
 
 
 def load_claims(docket_path: Path, corpus_root: Path) -> list[ClaimView]:
