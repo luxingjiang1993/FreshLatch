@@ -4,7 +4,7 @@
 > **本变更未编辑** `RESULT-Y` / `PREREG-Y` / SESOI / \(k_{\min}\) / Cond / 选取 R。生产变绿不得改判丙。  
 > **权威**：防火墙 ADR-0042（[#508](https://github.com/luxingjiang1993/FreshLatch/pull/508) 草案曾写 ADR-0034；tip `2a3fadd` 上该号已是 `docs/adr/0034-patch-events-route-b-identifiable-fixed-k.md`，本程不覆盖）· 评估草案留在 [#508](https://github.com/luxingjiang1993/FreshLatch/blob/b24b6f573652b156a798dfa3f3fd1985a9e3348d/docs/research/生产补丁放行SLO设计评估.md)（不复制进本分支，避免双真源）· 规格 `docs/spec/24-生产补丁放行SLO.md`  
 > **层身份**：宽表仍分硬闸 / 观测 / 离线 / 实验-only。**本波主 SLI 只有最小 6**，层身份是观测/Watch + 离线 canary。  
-> **冻结**：不改 `PREREG-Y` / `RESULT-Y` / `formal-generations-y`；不改生产放行谓词；金标不进生产 score。`#508` **Keep draft · No merge until Matt**。本页不实现 T2–T6。
+> **冻结**：不改 `PREREG-Y` / `RESULT-Y` / `formal-generations-y`；不改生产放行谓词；金标不进生产 score。`#508` **Keep draft · No merge until Matt**。SLI 1·2 成对协议见 [`抽检-放行误放误拒.md`](抽检-放行误放误拒.md)（[#558](https://github.com/luxingjiang1993/FreshLatch/issues/558)）。[#514](https://github.com/luxingjiang1993/FreshLatch/pull/514) 保持 candidate，不合并。本页不实现 T3–T6。
 
 ---
 
@@ -80,6 +80,8 @@
 | B6 | 无证拒拦率 | 无/非法 t1_ids 被拒 | 硬闸 | confirm 拒 | 连续 | ≈100% |
 | B7 | 未确认不出门率 | 未 confirm 不得改正文/正式出口 | 硬闸 | 草案/账本/导出 | 连续 | **100%** |
 | B8 | k / 有效放行量 | 自然放行数等 | 实验-only | 实验门闩 | — | 生产只作可用性旁注 |
+
+SLI 1·2 的人标协议（分母、同一窗口、样本不足、B1 只作旁注）：[`抽检-放行误放误拒.md`](抽检-放行误放误拒.md)。B2 即 false-accept，B3 即 false-reject。两侧必须出现在同一周报表。缺一侧写「样本不足」，禁止写成 0%。禁止只报 B1 当成功。禁止单独优化拒拦率。字段改编自 [#514](https://github.com/luxingjiang1993/FreshLatch/pull/514) @ `948db415`。交付真源是 [#556](https://github.com/luxingjiang1993/FreshLatch/issues/556) / [#558](https://github.com/luxingjiang1993/FreshLatch/issues/558)，不把 #514 合并进来，也不在本表外再起一套放行 KPI。
 
 ### 3.3 人审 / 自治
 
@@ -157,7 +159,7 @@
 - 硬闸违例计数：B6/B7/C5/D3（期望 0）  
 - A3/A4 抽检：样本 n、改对、严重错改  
 - A6 再验失败率  
-- B2/B3 成对（或「本周样本不足」诚实句）  
+- B2/B3 成对，同一窗口（协议 [`抽检-放行误放误拒.md`](抽检-放行误放误拒.md)）；缺一侧写「样本不足」，禁止写成 0%；B1 只旁注；禁止单独优化拒拦率  
 - C1 作废率 · C2 override rate · C4 中位 minutes  
 - D4 包结论分布  
 - D1/D5：若本周跑了离线评测则抄 multi-run；否则写「未跑」  
@@ -171,6 +173,6 @@
 - 把本程称作实验成立或主实验成功  
 - 大屏产品 UI（本期）  
 - 把评测加严阈值写入 `CONTEXT.md`  
-- 合并 `#508`；改 `src/` 放行谓词；实现 T2–T6（#558–#562）  
+- 合并 `#508` 或 `#514`；改 `src/` 放行谓词；实现 T3–T6（#559–#562）  
 - 把 phase-2 六项或宽表其余 ID 升成本波主 SLI  
 - 本决议会话写业务代码（须 before-implement 后另开）
