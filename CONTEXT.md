@@ -80,6 +80,18 @@ _Avoid_: Embed(向量)、embedding 钩子、导出即自动 Lead 再跑、无闸
 作废名单(`invalidation_list`)与续命人审日志(`latch_log` 的 discard/renew)的只读投影;挂复验单/Run 详情旁路并可导出 Markdown。不是新写表,不是 `patch_events`(ADR-0031)。
 _Avoid_: claim_ledger 双写表、把补丁账当人审台账、第三套主导航「资产库」
 
+**生产补丁/放行 SLO**:
+运营纪律页上的观测与硬闸不变量集合。宽表在 `docs/ops/生产补丁放行SLO.md`；本波收口是生产观测最小 6 SLI（ADR-0042）。未合并的 program draft 不是第二套交付真源。
+_Avoid_: 把实验固定 k / T−C 当生产 KPI、用生产变绿改判实验成立格、金标进生产 score
+
+**实验—生产防火墙**:
+生产运营数字与实验预注册/结果页分轨：生产观测改善不得回写已冻结预注册的成立格；机制大改须新预注册另页（ADR-0042）。
+_Avoid_: 同页兼写实验尺、把生产变绿写成主实验成功、把金标当在线放行器
+
+**生产观测最小 6 SLI**:
+本波生产运营观测的六个成员：false-accept、false-reject、unknown/abstention、HumanLatch override、e2e P95 latency 与 retrieval fallback rate（同一行）、frozen gold canary pass rate。层身份是观测/Watch 与离线 canary。索引 `docs/ops/生产观测最小6-索引.md`。
+_Avoid_: 把它当成实验成立格、把 phase-2 六项升成第 7 个主 SLI、另起一套平行 KPI 名
+
 **tenant_id**:
 召回 ACL 上下文:块/文档所属合成租户标识;缺省 `default`。带 `tenant_id` 的 retrieve 只返回同租户块(ADR-0030)。不是多租户产品或 SSO。
 _Avoid_: 租户管理面、RBAC 平台、把会话 evidence 白名单称作 ACL 已交付
