@@ -58,7 +58,7 @@ SLI 6 不进 A–E 新编号。主名仍是 frozen gold canary pass rate。分�
 
 ## 3. 指标清单
 
-> 下列 A–E 是 [#508](https://github.com/luxingjiang1993/FreshLatch/pull/508) 宽表库存，原样保留供对照。**不是**本波第 7+ 主 SLI。本波只收口上表 6 个成员。phase-2 六项见索引附录，不在本节升格。
+> 下列 A–E 是 [#508](https://github.com/luxingjiang1993/FreshLatch/pull/508) 宽表库存，原样保留供对照。**不是**本波第 7+ 主 SLI。本波只收口上表 6 个成员。phase-2 六项见索引附录，不在本节升格。phase-2 新 wave 的附录索引是 [`生产观测phase2-索引.md`](生产观测phase2-索引.md)（[#570](https://github.com/luxingjiang1993/FreshLatch/issues/570) · Parent [#569](https://github.com/luxingjiang1993/FreshLatch/issues/569)）。交付真源是 #569/#570。本宽表仍是 #508 program 库存，A–E 表不在本票重写。#556 仍是 min-6 父票，P1–P6 不挂在 #556 下。
 
 ### 3.1 改（生成 / 补丁质量）
 
