@@ -102,12 +102,71 @@ C-04 若再跑仍为丙：闸门可以很满，综合档停在 **L4**，实验�
 
 ---
 
+## 开票前已知歧义与边界（须钉死）
+
+> 本清单**够当规划 / 面试档位 / 摘法索引**，**不够当** Matt `/implement` 开工规格（缺可执行 Acceptance、Paths、Provenance、Trust/Blast）。下列项不是推翻 A→B→C 梯子的硬错误，但会让实现票走偏。开第一张功能票前至少钉死 §1–§3。
+
+### 1. `L0` 词冲突（A-FC-03）
+
+仓内既有 **L0 = HumanLatch 人审出口**（见 `gates/rule_gate.py` 文首、`CONTEXT.md`、评估文档第 7 节）。  
+本清单 `A-FC-03` 的 L0 / L1 / L2 指的是**工具权限分层**（读检索 / 写观测需批 / 禁动生产臂），与人审 L0 **不是同一词表**。
+
+**开票须改名**，例如 `tool_tier_0|1|2` 或「读 / 需批 / 禁」。禁止在实现 PR 里继续裸写「L0」而不加限定，以免与 HumanLatch 语义打架。
+
+### 2. A 与 B 边界：勿做成两遍、勿提前勾上
+
+| 易混对 | A 勾上只证明 | B 仍缺的硬条件 |
+|---|---|---|
+| `A-RAG-03` ↔ `B-04` | 后端有 temporal / `patch_id` / 有效期过滤（先于或并入 RRF） | 面板**看得见** `as_of` / `patch_id` / 有效期；夹具可演示错版本被滤或 stale。A 做完 ≠ B-04 |
+| `A-AG-03` ↔ `B-05` | 失败轨迹可复放（扩展 JSONL 与/或既有 latch checkpoint） | 审计面能指三桶（检索空 / grade 不够 / 工具被 `tool_tier_2` 拒）+ 人审 `disputed`（或等价）进台账可再开 |
+
+`A-AG-03` 的「checkpoint / 等价复放」= 轨迹 JSONL 可复盘 + 人审侧既有 LangGraph checkpoint。**禁止**把 LangGraph time-travel 引进 `run_loop`（见前沿参考 A-AG-03 / B-05 摘法）。
+
+### 3. B-01 数字闸：两种验收读法须二选一
+
+| 读法 | 含义 | 更贴 FreshLatch 处 |
+|---|---|---|
+| **verbatim 对账** | 从主张与 T1 证据抽数 → exact（或声明容差）匹配；对不上 → abstain / unknown | 复验主链（前沿 B-01 默认摘法） |
+| **公式重算** | 数由 code / operator 算出，模型只叙述「怎么来」 | FinRobot / VeNRA 式；可选增强，非首票默认 |
+
+清单正文「主张中的数由 code / operator 算出」易被读成第二种。开票时**必须钉死**采用哪一种（或分两张票：先对账、后重算）。未钉死不得勾 `[x]`。
+
+### 4. A 层完整前沿表不在本仓
+
+A 的完整实践/论文表原在组会两源整合附件（`freshlatch-module-frontier-refs-MERGED`）。本仓内 A 只有 [`module-level-frontier-refs-ABC-2026-10-12.md`](module-level-frontier-refs-ABC-2026-10-12.md) 的**按 ID 薄索引**。干净 clone **看不到**附件全文。
+
+**用法**：开 A 票以评估文档 + ABC 前沿索引的「挂点 / 摘法」为准；需要完整两侧原文时另落仓或指向已归档附件，勿假设上传目录常驻。
+
+### 5. A-EV-01 易被误判「早已完成」
+
+`src/freshlatch/eval/retrieve_*.py` 已有 Recall@k / MRR 函数与历史报告。清单仍标 `[ ]` 是因为缺的是**可重复的同 pin · 同 gold · 分列表 · 可进回归**的形状，不是从零写指标。
+
+开票验收须写清：金标路径、code pin、臂列表、输出表落点、是否进 CI（与 ADR-0005「零 LLM gate」语义如何并存）。写糊则禁止以「仓里早就有 Recall」为由空勾。
+
+### 6. 非 bug、但是限（摘码时自知）
+
+- 前沿参考中多条 ★0 个人仓：存在性已抽查，质量方差大；**只摘 pattern，禁止整仓迁移**。
+- TempRetriever（C-01）官方训练代码调研日未公开；可作理论锚，禁止写「已复现 TempRetriever」。
+- `A-FC-02` 的 API `strict`：DashScope / qwen 等托管端点可能不支持；保留「若端点支持」，不支持则文档声明「仅运行时再验」仍可勾业务语义闸。
+- `C-04` 受预注册与 `RESULT-Y` 丙防火墙约束；乙不成则整体诚实停 L4（见累计档位表）。
+
+### 7. 本清单够用 / 不够用
+
+| 用途 | 是否够用 |
+|---|---|
+| 排优先级、面试档位、防吹过头 | 够 |
+| 按 ID 查可摘 repo / 论文 | 够（B/C 尤甚；A 见 §4） |
+| 直接 `/implement` | **不够** → 先 to-tickets + enrich（Acceptance / Paths / Provenance / Trust） |
+| 勾选变 `[x]` | 须已合并实现或已关闭验收；不得空勾 |
+
+---
+
 ## 与评估文档 / #580 的关系
 
 | 文档 | 角色 |
 |---|---|
 | [`module-level-assessment-2026-10-12.md`](module-level-assessment-2026-10-12.md) | as-is / if-landed 档位与证据 |
-| 本清单 | A/B/C 缺口勾选；后续开票用 ID |
+| 本清单 | A/B/C 缺口勾选；后续开票用 ID；**开票前歧义见上一节** |
 | [`module-level-frontier-refs-ABC-2026-10-12.md`](module-level-frontier-refs-ABC-2026-10-12.md) | 各 ID 的 GitHub / 论文 / 产品可摘 pattern（只摘 fields/modes） |
 | draft PR #580 架构评估 | 另文；接线建议（检索臂进工具返回等）可作 A 的前置小票，不替代本清单 |
 

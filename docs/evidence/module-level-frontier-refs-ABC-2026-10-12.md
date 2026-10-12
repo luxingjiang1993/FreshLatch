@@ -5,6 +5,7 @@
 > 调研日：2026-10-12（Asia/Shanghai）。GitHub 存在性以 `gh api repos/...` 抽查为准；星标与 `pushed_at` 为当日快照，会变。
 > 原则：只偷 pattern；禁止编造 repo；日期未知标「日期未核实」；未开票、未改生产代码。
 > A 层：组会两源整合短名单（附件 `freshlatch-module-frontier-refs-MERGED`）已覆盖；本页给 **按 ID 索引 + 少量补漏**。B/C 层为本轮主查。
+> **开票前歧义**（L0 词冲突、A/B 边界、B-01 两种读法、A 附件不在仓、A-EV-01 误勾等）以缺口清单「开票前已知歧义与边界」为准：[`module-level-gap-checklist-2026-10-12.md`](module-level-gap-checklist-2026-10-12.md)。
 
 ## Meta · 核验备注
 
@@ -23,7 +24,7 @@
 |---|---|---|---|
 | A-FC-01 | OpenAI function calling + structured outputs；LangChain tool-args validation middleware；Wavise reliable tool calling | schema 再验 → typed error → 有限自纠 → 耗尽 fail-closed | `tools.py` / `run_loop`；统一 `UnknownToolGuard` 与参数错误形态 |
 | A-FC-02 | OpenAI `strict: true` + `additionalProperties:false` | 采样边界拒非法 args（仍需业务语义 gate） | `LLMClient.chat` 传 tools 时；端点若不支持则文档声明「仅运行时再验」 |
-| A-FC-03 | OpenAI Agents SDK `needsApproval`；OpenHands ConfirmRisky | L0 读 / L1 需批 / L2 禁 | 映射检索只读 vs 写观测 vs 禁动生产臂；各≥1 测 |
+| A-FC-03 | OpenAI Agents SDK `needsApproval`；OpenHands ConfirmRisky | 工具权限分层：读 / 需批 / 禁（开票勿裸写 L0，避与 HumanLatch L0 冲突） | 映射检索只读 vs 写观测 vs 禁动生产臂；各≥1 测；词表见缺口清单歧义 §1 |
 | A-SK-01 | Cursor Hooks（exit 2 + `failClosed:true`）；cookbook hooks | 可执行 deny，非 prompt 劝告 | `docs/agents/agent-guards.md` 旁样板；不进 `run_loop` 替代白名单 |
 | A-SK-02 | agentskills.io Spec；`anthropics/skills`；FinRobot skills/ | `SKILL.md` + progressive disclosure；金融 playbook 形状 | `skills/` 增 3–5 中文业务包 |
 | A-SK-03 | Spec references/scripts；仓内 `test_skills.py` 已锁工具名⊆白名单 | 真工具读 references，或改掉假承诺 | 新工具或修正 `skills/reverify/SKILL.md` frontmatter |
@@ -59,7 +60,7 @@
 | 论文 | VeNRA / numerical hallucination detector | arXiv:2603.04663（作者页宣称；日期随 arXiv） | 数值幻觉与 ledger 分离 | 论文页随站点；以 arXiv 为准 |
 | 产品/实践 | Verified Citations and Abstention in RAG for Finance（博文） | https://adam-boudjemaa.com/blog/agents-in-production/3 | span + NLI + **numeric exact match**；失败 abstain | 产品文，非仓 |
 
-**FreshLatch 摘法**：在 `reverify_claim(fresh)` / 落档前加确定性数字闸：从主张与 T1 证据抽数 → exact（或声明容差）匹配；失败 reason code 如 `numeric_mismatch` → unknown/abstain。不必上 XBRL。FinRobot「算与说分离」对齐面试故事。
+**FreshLatch 摘法（默认 = verbatim 对账）**：在 `reverify_claim(fresh)` / 落档前加确定性数字闸：从主张与 T1 证据抽数 → exact（或声明容差）匹配；失败 reason code 如 `numeric_mismatch` → unknown/abstain。不必上 XBRL。公式重算（FinRobot / VeNRA）为可选增强，须另票；与缺口清单歧义 §3 对齐后再勾 B-01。
 
 ### B-02 冲突拒答（`conflicting_evidence`）
 

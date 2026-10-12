@@ -290,3 +290,5 @@ If-landed：冻结一小撮中文 golden；Recall@k 与 MRR 按臂分列进 CI�
 | `web_search`、默认改挂 `LEAD_TOOLS_W9`、把 LangGraph 引进 `run_loop` | 插座或未默认 | 短名单 If-landed 也不包含这三项 |
 
 #580 文末的六步接线（工具返回带检索臂、用量落盘、SLI 5 聚合、教义读取、本地臂子命令、截断与死字段）在本基线上仍未实现。本报告不开这些票。
+
+后续缺口勾选与前沿摘法见 [`module-level-gap-checklist-2026-10-12.md`](module-level-gap-checklist-2026-10-12.md) 与 [`module-level-frontier-refs-ABC-2026-10-12.md`](module-level-frontier-refs-ABC-2026-10-12.md)。**开票前须先读缺口清单「开票前已知歧义与边界」**（L0 词冲突、A/B 勾选边界、B-01 数字闸两种读法、A 附件不在仓、A-EV-01 误勾等）；本评估 alone 不够当 `/implement` 规格。
