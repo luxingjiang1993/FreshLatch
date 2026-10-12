@@ -179,3 +179,59 @@ def test_send_refuses_when_inactive_api(monkeypatch):
     monkeypatch.setattr(formal_y, "prereg_y_activated", lambda root=None: False)
     with pytest.raises(RuntimeError, match="未激活"):
         send_formal_y(chat=lambda *a, **k: "x")
+
+
+def test_content_inspection_records_void_and_continues(monkeypatch, tmp_path):
+    """审查拒绝记作废并继续同一文件；不得把空回文记成 C 放行。其它异常仍抛出。"""
+    from freshlatch.eval.patch_events_formal import _saved_generator
+
+    y_path = tmp_path / "formal-generations-y.jsonl"
+    monkeypatch.setattr(formal_y, "generations_y_path", lambda root=None: y_path)
+    monkeypatch.setattr(formal_y, "prereg_y_activated", lambda root=None: True)
+    monkeypatch.setattr(formal_y, "live_gaps", lambda: ())
+    monkeypatch.setattr(
+        formal_y,
+        "load_pe_v2_formal_n400",
+        lambda root=None: [
+            {
+                "claim_id": "c1",
+                "before_text": "before",
+                "evidence_text": "evidence",
+                "evidence_id": "doc#p1#T1",
+                "edit_type": "删除",
+                "construction_gold": "坏",
+            }
+        ],
+    )
+
+    def _boom(*_a, **_k):
+        raise RuntimeError("connection reset")
+
+    with pytest.raises(RuntimeError, match="connection reset"):
+        send_formal_y(chat=_boom)
+    assert not y_path.exists()
+
+    calls = {"n": 0}
+
+    def _chat(*_a, **_k):
+        calls["n"] += 1
+        if calls["n"] == 1:
+            raise RuntimeError("Error code: 400 data_inspection_failed")
+        return "ok-text"
+
+    result = send_formal_y(chat=_chat)
+    assert result["blocked"] == 1
+    assert result["sent"] >= 1
+    lines = [
+        json.loads(line)
+        for line in y_path.read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+    blocked = [row for row in lines if row.get("output_field") == "blocked"]
+    assert len(blocked) == 1
+    assert blocked[0]["arm"] == "C"
+    assert blocked[0]["blocked_reason"] == "data_inspection_failed"
+    replay = _saved_generator(lines)
+    assert replay({"claim_id": "c1", "arm": "C", "phase": "rewrite"}).get("void") is True
+    produced_t = replay({"claim_id": "c1", "arm": "T", "phase": "rewrite"})
+    assert produced_t.get("after_text") == "ok-text"
