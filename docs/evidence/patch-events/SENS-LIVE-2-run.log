@@ -1,0 +1,31 @@
+FROZEN_S_SHA256 e1899872c8a6748de81d87b8c5b89c931d33d13fdd50109ad4694371258ced19
+BEGIN_SCORING
+SCORED S-数值-op0 ok=False p_entail=0.0018955959
+SCORED S-数值-op1 ok=False p_entail=0.0376208425
+SCORED S-数值-op2 ok=False p_entail=0.0046314951
+SCORED S-数值-op3 ok=False p_entail=0.4070456922
+SCORED S-日期-op0 ok=False p_entail=0.0043387418
+SCORED S-日期-op1 ok=False p_entail=0.0264161620
+SCORED DIAG-HANS-002 ok=False p_entail=0.0004841118
+SCORED DIAG-HANS-003 ok=False p_entail=0.0011600856
+SCORED S-条款-op0 ok=False p_entail=0.0018698263
+SCORED S-条款-op1 ok=False p_entail=0.3162308037
+SCORED DIAG-HANS-004 ok=False p_entail=0.1859738678
+SCORED S-条款-op3 ok=False p_entail=0.0080267889
+SCORED DIAG-HANS-006 ok=False p_entail=0.0104973661
+SCORED DIAG-CHEF-03-bad ok=True p_entail=0.8668648601
+SCORED S-删除-op2 ok=False p_entail=0.0078747226
+SCORED DIAG-CHEF-04-bad ok=True p_entail=0.9547298551
+SCORED S-废止-trap01 ok=False p_entail=0.0046763993
+SCORED S-废止-trap02 ok=False p_entail=0.0012190399
+SCORED S-版本-trap01 ok=False p_entail=0.0051305089
+SCORED S-版本-trap02 ok=False p_entail=0.1520473212
+SCORED S-正确-数值01 ok=True p_entail=0.9943641424
+SCORED S-正确-日期01 ok=True p_entail=0.5039777756
+SCORED S-正确-条款01 ok=True p_entail=0.7590352893
+SCORED S-正确-删除01 ok=True p_entail=0.8788937926
+SCORED DIAG-CHEF-03-good ok=True p_entail=0.9216354489
+SCORED DIAG-CHEF-04-good ok=True p_entail=0.9086972475
+FROZEN_S_SHA256_AFTER e1899872c8a6748de81d87b8c5b89c931d33d13fdd50109ad4694371258ced19
+transformers 4.57.6；torch 2.8.0+cu128；cuda_available=False；verify_edit 与 predict_xnli_probs 同一 ADR-0040 函数；权重来自本地 Hugging Face 缓存；无 secret_names
+END_SCORING
