@@ -18,6 +18,7 @@ from freshlatch.eval.patch_events_formal_y import (
     load_pe_v2_formal_n400,
     main,
     prereg_y_activated,
+    render_result_y,
     run_formal_y_primary,
     send_formal_y,
 )
@@ -235,3 +236,51 @@ def test_content_inspection_records_void_and_continues(monkeypatch, tmp_path):
     assert replay({"claim_id": "c1", "arm": "C", "phase": "rewrite"}).get("void") is True
     produced_t = replay({"claim_id": "c1", "arm": "T", "phase": "rewrite"})
     assert produced_t.get("after_text") == "ok-text"
+
+
+def test_render_copies_primary_when_roster_complete_despite_b2_shortfall():
+    """名单已齐且主比较有定义时抄表。不得因一条作废把成立格留成未填，也不得改尺。"""
+    pack = {
+        "primary": {
+            "k": 11,
+            "comparisons": [
+                {
+                    "name": "T-C",
+                    "point": 0.0927152317880795,
+                    "ci95_low": -0.006493506493506496,
+                    "ci95_high": 0.2,
+                },
+                {
+                    "name": "T-B1",
+                    "point": 0.01,
+                    "ci95_low": 0.0,
+                    "ci95_high": 0.1,
+                },
+                {
+                    "name": "T-B2",
+                    "point": 0.02,
+                    "ci95_low": 0.0,
+                    "ci95_high": 0.1,
+                },
+            ],
+        },
+        "b2_count": 399,
+        "n": 400,
+        "generations_n": 1599,
+        "generations_sha256": "abc",
+        "blocked_n": 3,
+        "blocked_ids": ["d030"],
+        "roster_complete": True,
+        "status": "recomputed",
+        "tier": "丙",
+        "verdict": "判定：结果丙。",
+        "decoding": decoding_pin(),
+    }
+    text = render_result_y(pack, code_pin="pin", activated_note="已激活")
+    table = text.split("## 主比较", 1)[1].split("## 甲 / 乙 / 丙判定", 1)[0]
+    assert "未填" not in table
+    assert "不成立" in table
+    assert "报告-only（不参与成立）" in table
+    assert "结果丙" in text
+    assert "结果乙" not in text
+    assert "-0.006493506493506496" in table

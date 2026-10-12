@@ -361,7 +361,15 @@ def run_formal_y_primary(
         for item in generations
         if item.get("output_field") == "blocked" or item.get("blocked_reason")
     )
+    blocked_ids = sorted(
+        {
+            str(item.get("claim_id"))
+            for item in generations
+            if item.get("output_field") == "blocked" or item.get("blocked_reason")
+        }
+    )
     candidates = load_pe_v2_formal_n400(base)
+    roster_complete = _y_roster_complete(candidates, generations)
     ingested = ingested_t1(candidates)
     arms = run_arms(
         candidates,
@@ -393,6 +401,8 @@ def run_formal_y_primary(
         "generations_n": len(generations),
         "generations_sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
         "blocked_n": blocked_n,
+        "blocked_ids": blocked_ids,
+        "roster_complete": roster_complete,
         "b2_count": b2_count,
         "n": len(candidates),
         "tier": tier,
@@ -400,6 +410,42 @@ def run_formal_y_primary(
         "decoding": decoding_pin(),
         "claim_ids": [str(row["claim_id"]) for row in candidates],
     }
+
+
+def _y_roster_complete(
+    candidates: Sequence[Mapping[str, Any]],
+    generations: Sequence[Mapping[str, Any]],
+) -> bool:
+    """400 条主张的 C/T/B2 claim 都已落盘（含审查作废）。未作废的 B2 claim 须有 diff。"""
+    ids = [str(row["claim_id"]) for row in candidates]
+    if len(ids) != _FORMAL_N or len(set(ids)) != _FORMAL_N:
+        return False
+    have = {
+        (str(item.get("claim_id")), str(item.get("arm")), str(item.get("phase")))
+        for item in generations
+    }
+    for claim_id in ids:
+        for arm, phase in _SEND_Y:
+            if (claim_id, arm, phase) not in have:
+                return False
+    blocked_b2_claim = {
+        str(item.get("claim_id"))
+        for item in generations
+        if item.get("arm") == "B2"
+        and item.get("phase") == "claim"
+        and (item.get("output_field") == "blocked" or item.get("blocked_reason"))
+    }
+    diff_ids = {
+        str(item.get("claim_id"))
+        for item in generations
+        if item.get("arm") == "B2" and item.get("phase") == "diff"
+    }
+    for claim_id in ids:
+        if claim_id in blocked_b2_claim:
+            continue
+        if claim_id not in diff_ids:
+            return False
+    return True
 
 
 def _content_inspection_blocked(exc: BaseException) -> bool:
@@ -536,7 +582,11 @@ def render_result_y(
     comparisons = list((primary or {}).get("comparisons") or [])
     by_name = {item.get("name"): item for item in comparisons}
     labels = (("T-C", "T 对 C"), ("T-B1", "T 对 B1"), ("T-B2", "T 对 B2"))
-    filled = primary is not None and pack.get("b2_count") == _FORMAL_N
+    # b2_count==400 是「每条都有非空 B2 after」。审查作废会使某主张四臂都没有 after，
+    # 但名单已齐且 compare_primary 有定义时仍抄该次主比较，不把成立格留成未填。
+    filled = primary is not None and (
+        pack.get("b2_count") == _FORMAL_N or pack.get("roster_complete") is True
+    )
     lines: list[str] = [
         "# patch_events 路线 Y · 正式结果（RESULT-Y）",
         "",
@@ -558,6 +608,8 @@ def render_result_y(
         f"- **B2 after 条数**：{pack.get('b2_count')!r}",
         f"- **内容审查作废条数** = {pack.get('blocked_n')!r}"
         "（data_inspection_failed；回放为生成失败，不记放行；不进成立格）",
+        f"- **内容审查作废主张** = {pack.get('blocked_ids')!r}"
+        "（该主张各臂不记放行；不进成立格）",
         f"- **解码**：model=`{(pack.get('decoding') or {}).get('model')}`；"
         f"temperature=`{(pack.get('decoding') or {}).get('temperature')}`；"
         f"Decoding.seed=`{(pack.get('decoding') or {}).get('decoding_seed')}`；"
