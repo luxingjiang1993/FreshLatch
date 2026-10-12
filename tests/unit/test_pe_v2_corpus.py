@@ -59,7 +59,8 @@ def test_pe_v2_route_y_expand_decision_log_pointer():
     assert "PE-Y-CORPUS-02" in section or "#501" in section
     assert "不改比较、成立尺" in section or "不改**比较、成立尺" in section
     prereg = _lf(_ROOT / "docs" / "evidence" / "patch-events" / "PREREG-Y.md").decode("utf-8")
-    assert "冲乙正式主跑未激活" in prereg
+    assert "冲乙正式主跑已激活" in prereg
+    assert "状态：协议已锁 · 冲乙正式主跑已激活" in prereg
     assert "| n=400（路线 Y 满样本门槛） | 100（50/50） | 100（50/50） | 100（50/50） | 100（50/50） | 400 |" in prereg
 
 

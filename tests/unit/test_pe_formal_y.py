@@ -23,8 +23,9 @@ from freshlatch.eval.patch_events_formal_y import (
 )
 
 
-def test_prereg_y_not_activated_on_current_tree():
-    assert prereg_y_activated() is False
+def test_prereg_y_activated_on_current_tree():
+    """PE-Y-05：现行 PREREG-Y 状态行已含激活标记。"""
+    assert prereg_y_activated() is True
 
 
 def test_authorize_send_refuses_when_inactive(tmp_path, monkeypatch):
@@ -38,8 +39,8 @@ def test_authorize_send_refuses_when_inactive(tmp_path, monkeypatch):
     assert not y_path.exists()
 
 
-def test_authorize_send_module_cli_refuses_and_skips_write(tmp_path):
-    """Acceptance CLI：真实 PREREG-Y 未激活时模块入口非零且不新建 y jsonl。"""
+def test_default_module_cli_does_not_send_on_live_tree():
+    """默认入口不发模型。已激活后无 flag 仍不得写 formal-generations-y。"""
     target = Path("docs/evidence/patch-events/formal-generations-y.jsonl")
     existed = target.exists()
     before = target.read_bytes() if existed else None
@@ -49,7 +50,6 @@ def test_authorize_send_module_cli_refuses_and_skips_write(tmp_path):
             sys.executable,
             "-m",
             "freshlatch.eval.patch_events_formal_y",
-            "--authorize-send",
         ],
         cwd=Path.cwd(),
         env=env,
@@ -59,9 +59,9 @@ def test_authorize_send_module_cli_refuses_and_skips_write(tmp_path):
         errors="replace",
         check=False,
     )
-    assert proc.returncode != 0
-    combined = (proc.stderr or "") + (proc.stdout or "")
-    assert "未激活" in combined
+    assert proc.returncode == 0
+    assert "formal-y default: no send" in (proc.stdout or "")
+    assert "activated=True" in (proc.stdout or "")
 
     if existed:
         assert target.read_bytes() == before
@@ -174,6 +174,8 @@ def test_send_refuses_when_path_is_forbidden(monkeypatch, tmp_path):
         send_formal_y(chat=lambda *a, **k: "x")
 
 
-def test_send_refuses_when_inactive_api():
+def test_send_refuses_when_inactive_api(monkeypatch):
+    """未激活守卫仍拒绝发送。不读现行已激活文首，避免误写正式 jsonl。"""
+    monkeypatch.setattr(formal_y, "prereg_y_activated", lambda root=None: False)
     with pytest.raises(RuntimeError, match="未激活"):
         send_formal_y(chat=lambda *a, **k: "x")
