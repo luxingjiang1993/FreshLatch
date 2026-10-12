@@ -1,7 +1,7 @@
 # TICKETS — SENS-LIVE-2 Windows CI CRLF（#546 / #542）
 
 > **to-tickets** 来源：已锁 SPEC `docs/evidence/patch-events/SENS-LIVE-2-CI-CRLF-SPEC.md`（`fd548cac0e3870bd00e5e822778f64f86f4d7440`）+ RCA `docs/evidence/patch-events/SENS-LIVE-2-CI-CRLF-RCA.md`（`045481f637c3484cd36be08472ca8e42a5039938`）。Grill 2026-10-12「按推荐」（G1–G12）。Matt `/to-tickets` plain mode（本账号无 `custom_mode`）。
-> **状态**：已发布。本页不是实施授权，不回改 SPEC。
+> **状态**：已发布。`/enrich-tickets` 已填 Trust / Blast / Provenance status。本页不是实施授权，不回改 SPEC。
 > **父票**: GitHub `#542` · PR `#546` · 分支 `cursor/pe-y-sens-live-2-c869`
 > **语言**: 中文。技术词保留 English 原词。
 > **本文件不授权**写测、改生产代码、重跑 LIVE-2、合入 `#546`、关闭 `#542`、升格 `activation_prerequisite_met`。
@@ -16,7 +16,7 @@
 |---|---|---|---|
 | [#547](https://github.com/luxingjiang1993/FreshLatch/issues/547) | `fix(#542): 修正 CRLF 测的 LF 工作区假设（双语义）` | None | LF 与 CRLF 工作区上同一套 CRLF 断言都绿，仪器锁与正式冻结锁不削弱 |
 
-- **Frontier**：`#547`（无 blocker）。下一跳是 `/enrich-tickets`，不是 `/implement`。
+- **Frontier**：`#547`（无 blocker）。`/enrich-tickets` 已完成。下一跳是 `/before-implement`，不是 `/implement`。
 - **标签**：`ready-for-agent`（仓库已有）。没有 pe-y 类标签，不新造。
 - **关系**：`#547` 是 `#542` 的 sub-issue。不关 `#542`，不合 `#546`。
 - **链级 Destination**：Windows CI pytest 绿，且不削弱仪器锁 / 正式冻结完整性；然后才允许 L1 合入 `#546` 并关 `#542`。`activation_prerequisite_met` 仍为否。合入与关单不在 `#547` 的实施范围内。
@@ -35,7 +35,7 @@
 
 **What to build:** 让 PR [#546](https://github.com/luxingjiang1993/FreshLatch/pull/546) 的 Windows CI 上，`pytest tests/unit/test_pe_sensitivity.py -q` 在工作区已是 CRLF 时通过，且同一套断言在工作区仍是 LF 时也通过。仪器锁与正式冻结锁不削弱。
 
-**Blocked by:** None（可以立刻开始。下一跳是 `/enrich-tickets`，不是 `/implement`）。
+**Blocked by:** None（可以立刻开始。`/enrich-tickets` 已完成。下一跳是 `/before-implement`，不是 `/implement`）。
 
 **Status:** ready-for-agent
 
@@ -140,12 +140,17 @@ Paths 触及既有测试。Kind 是 adapt，不是新文件。
 - **Why not copy as-is**: helper 仍假设「同一 LF 源文件写成 CRLF」。Windows 工作区已经是 CRLF，这个前提先失败，G7/G8 还没跑到。
 - **License note**: 同仓，无外部代码。
 
+### Provenance status
+
+- result: pass
+- notes: Kind=adapt；Source 同仓路径 + pin SHA；What changed / Why not copy as-is 已在票面
+
 ## Agent Guards
 
-薄字段在本票。**Trust / Blast 留给 `/enrich-tickets` 填写**，本 to-tickets 不代填、不宣称 enrich 已完成。
+薄字段在本票。**Trust / Blast / Provenance status 已由 `/enrich-tickets` 填写。**
 
-- **Trust**: （enrich）
-- **Blast**: （enrich）
+- **Trust**: L1（仅测契约；不改生产仪器/冻结；CI 修）
+- **Blast**: none（只动 `tests/unit/test_pe_sensitivity.py`）
 - **Tests**: 实现会话 updated（本 to-tickets 不改测试）
 - **Do-not-touch**: `VERIFY_PY_SHA256`、`FORMAL_FREEZE_SHA256`、冻结 jsonl、代码内 `SENSITIVITY_SET_S`、τ、ρ、ADR-0040、`ok` 公式、LIVE-2 报告 / 分表 / run log、`#538` 失败句、`#543`、`.gitattributes`、workflow、SPEC 锁、单独 `\r` 的折行语义、`activation_prerequisite_met`
 - **Rollback**: 还原 `tests/unit/test_pe_sensitivity.py` 即可；生产 fold 保持 `b9caf32`
@@ -157,7 +162,7 @@ None（can start immediately）。无前置票。Frontier 就是本票。
 ## 下一跳
 
 ```text
-/enrich-tickets → /before-implement → /implement
+/before-implement → /implement
 ```
 
-不要把本票直接交给 `/implement`。CI 绿、L1 合入 `#546`、关闭 `#542` 都在实现并验收之后，且 `activation_prerequisite_met` 保持否。
+`/enrich-tickets` 已完成。不要把本票直接交给 `/implement`。CI 绿、L1 合入 `#546`、关闭 `#542` 都在实现并验收之后，且 `activation_prerequisite_met` 保持否。
