@@ -29,6 +29,8 @@
 
 judge–human calibration 留在 phase-2 旁表 [`旁表-人机校准.md`](旁表-人机校准.md)（[#573](https://github.com/luxingjiang1993/FreshLatch/issues/573) · Parent [#569](https://github.com/luxingjiang1993/FreshLatch/issues/569)），不进本页主行。那一页与本页分列：它报同窗可配对样本上的一致率和分歧谱，不改下面 §5 的 C2 列。与 C2 的差写在那一页 §1.1，不在本页重写 C2。
 
+implicit feedback 留在 phase-2 弱信号页 [`弱信号Watch.md`](弱信号Watch.md)（[#576](https://github.com/luxingjiang1993/FreshLatch/issues/576) · Parent [#569](https://github.com/luxingjiang1993/FreshLatch/issues/569)）。那一页计的是无显式评分时的下游弱信号，不改下面 §5 的 C2 列，不把再审计数写入 `c2_rate`，也不新增人审动词。弱信号 ≠ 金标。
+
 ---
 
 ## 1. 字段定义（C2）与分母
@@ -145,7 +147,7 @@ C1 旁注分母为 0 时，C1 格子同样写「样本不足」，C2 格子按�
 | `c1_rate` | 旁注-only。不得作为成功格，不得顶替 C2 |
 | `notes` | 写明未新增动词；若抄了 `invalidation_list` 条数，注明它不是分母 |
 
-上表列到此为止。不新增一致率列、六格列或方向列。
+上表列到此为止。不新增一致率列、六格列、方向列或弱信号列。
 
 ### 5.1 与 P3 旁表分列（不占上表）
 
@@ -154,6 +156,12 @@ judge–human calibration 的协议在 [`旁表-人机校准.md`](旁表-人机�
 上表的 `c2_rate`、`override_true_n`、`override_labeled_n` 仍只服务 SLI 4。不把一致率、分歧谱或方向计数写进这些格子。
 
 C2 是已标注人审行上的单一 override rate。P3 是可配对样本上的谱。分母可以不同。一致率不是本页的 `c2_rate`，也不是用 `1 - c2_rate` 填出来的验收格。本页不把 P3 升成 Gate，不新增 HumanLatch 动词。
+
+### 5.2 与 P6 弱信号分列（不占上表）
+
+implicit feedback 的协议在 [`弱信号Watch.md`](弱信号Watch.md)（[#576](https://github.com/luxingjiang1993/FreshLatch/issues/576) · Parent [#569](https://github.com/luxingjiang1993/FreshLatch/issues/569)）。摘要进 phase-2 周报附录的 P6 行，不进上表。
+
+上表的 `c2_rate`、`override_true_n`、`override_labeled_n` 仍只服务 SLI 4。不把 confirm 后回改、重开、再审模式或补丁回滚迹象写进这些格子。再审模式不是本页的 override rate。本页不把 P6 升成 Gate，不新增 HumanLatch 动词。弱信号 ≠ 金标，不进生产 score。
 
 ---
 
