@@ -4,7 +4,7 @@
 > **本变更未编辑** `RESULT-Y` / `PREREG-Y` / SESOI / \(k_{\min}\) / Cond / 选取 R。生产变绿不得改判丙。  
 > **权威**：防火墙 ADR-0042（[#508](https://github.com/luxingjiang1993/FreshLatch/pull/508) 草案曾写 ADR-0034；tip `2a3fadd` 上该号已是 `docs/adr/0034-patch-events-route-b-identifiable-fixed-k.md`，本程不覆盖）· 评估草案留在 [#508](https://github.com/luxingjiang1993/FreshLatch/blob/b24b6f573652b156a798dfa3f3fd1985a9e3348d/docs/research/生产补丁放行SLO设计评估.md)（不复制进本分支，避免双真源）· 规格 `docs/spec/24-生产补丁放行SLO.md`  
 > **层身份**：宽表仍分硬闸 / 观测 / 离线 / 实验-only。**本波主 SLI 只有最小 6**，层身份是观测/Watch + 离线 canary。  
-> **冻结**：不改 `PREREG-Y` / `RESULT-Y` / `formal-generations-y`；不改生产放行谓词；金标不进生产 score。`#508` **Keep draft · No merge until Matt**。SLI 1·2 成对协议见 [`抽检-放行误放误拒.md`](抽检-放行误放误拒.md)（[#558](https://github.com/luxingjiang1993/FreshLatch/issues/558)）。[#514](https://github.com/luxingjiang1993/FreshLatch/pull/514) 保持 candidate，不合并。本页不实现 T3–T6。
+> **冻结**：不改 `PREREG-Y` / `RESULT-Y` / `formal-generations-y`；不改生产放行谓词；金标不进生产 score。`#508` **Keep draft · No merge until Matt**。SLI 1·2 成对协议见 [`抽检-放行误放误拒.md`](抽检-放行误放误拒.md)（[#558](https://github.com/luxingjiang1993/FreshLatch/issues/558)）。[#514](https://github.com/luxingjiang1993/FreshLatch/pull/514) 保持 candidate，不合并。SLI 4 override 周报见 [`人审-override周报.md`](人审-override周报.md)（[#559](https://github.com/luxingjiang1993/FreshLatch/issues/559)）。[#511](https://github.com/luxingjiang1993/FreshLatch/pull/511) 保持 candidate，不合并。本页不实现 T4–T6。
 
 ---
 
@@ -87,12 +87,14 @@ SLI 1·2 的人标协议（分母、同一窗口、样本不足、B1 只作旁�
 
 | ID | 指标 | 定义 | 层 | 采集点 | 频率 | 起步 |
 |----|------|------|----|--------|------|------|
-| C1 | 用户作废率 | 人对 Agent 绿灯/主张作废比例 | 观测（北星之一） | latch discard | 周 | 上线观测 |
-| C2 | Override rate | 人推翻机器判定比率（派生标签） | 观测 | `latch_log.override` | 周 | 看分权健康；**≠模型变好** |
+| C1 | 用户作废率 | 人对 Agent 绿灯/主张作废比例 | 观测（北星之一） | latch discard | 周 | 上线观测；最小 6 里只作 SLI 4 旁注 |
+| C2 | Override rate | 人推翻机器判定比率（派生标签） | 观测 | `latch_log.override` | 周 | 看分权健康；**≠模型变好 / ≠验收绿灯** |
 | C3 | 续命带证率 | renew 带新 T1 id | 硬闸 | renew 受理 | 连续 | **100%** |
 | C4 | 补丁确认耗时 | 人确认 minutes | 观测 | `patch_events.minutes` | 周 | 字段有；运营弱 |
 | C5 | 无人自动转绿次数 | Agent 自红变绿 | 硬闸 | 状态机 / 审计 | 连续 | **目标=0** |
 | C6 | 导出前闸拦截次数 | 发前钩子拦住坏包 | 观测 | publish_hook deny | 周 | 事故前哨 |
+
+SLI 4 的周报协议（C2 override rate、分母、样本不足、文首声明）：[`人审-override周报.md`](人审-override周报.md)。C2 即 HumanLatch override。分母是窗口内 `latch_log` 可计的、已带 override 标签的人审行（`action` 为 `discard` 或 `renew`，且 `override` 为 0 或 1）。分子是其中 `override=1` 的行。分母为 0 时写「样本不足」，禁止写成 0%。文首声明：**≠模型变好 / ≠验收绿灯**（ADR-0023）。C2 不作验收绿灯。C1 用户作废率可以出现在同一周报，身份是旁注，不另起平行 KPI，也不升成最小 6 的第二个主字段。不新增 HumanLatch 动词。字段改编自 [#511](https://github.com/luxingjiang1993/FreshLatch/pull/511) @ `70286694b30bf2d06df863b4a48e2ff3447b9644` 的 C2 聚合定义。交付真源是 [#556](https://github.com/luxingjiang1993/FreshLatch/issues/556) / [#559](https://github.com/luxingjiang1993/FreshLatch/issues/559)。不把 #511 合并进来，不合入 `scripts/slo_c1_c2_latch_rates.py`。
 
 ### 3.4 复验主业
 
@@ -142,7 +144,7 @@ SLI 1·2 的人标协议（分母、同一窗口、样本不足、B1 只作旁�
 
 **放行侧**：B2/B3 成对周报 · B6/B7 保持硬闸 · 不用单独放行率当成功  
 
-**人审**：C1+C2 上线 · C5=0 持续监控  
+**人审**：最小 6 主字段是 C2（[`人审-override周报.md`](人审-override周报.md)）；C1 只旁注 · C5=0 持续监控  
 
 **复验主业**：D1 multi-run 不掉 · D3=0  
 
@@ -160,7 +162,7 @@ SLI 1·2 的人标协议（分母、同一窗口、样本不足、B1 只作旁�
 - A3/A4 抽检：样本 n、改对、严重错改  
 - A6 再验失败率  
 - B2/B3 成对，同一窗口（协议 [`抽检-放行误放误拒.md`](抽检-放行误放误拒.md)）；缺一侧写「样本不足」，禁止写成 0%；B1 只旁注；禁止单独优化拒拦率  
-- C1 作废率 · C2 override rate · C4 中位 minutes  
+- C2 override rate 与分母（协议 [`人审-override周报.md`](人审-override周报.md)）；分母为 0 写「样本不足」，禁止写成 0%；文首声明 ≠模型变好 / ≠验收绿灯；C1 作废率只旁注；C4 中位 minutes 仍是宽表库存，不是本波主 SLI  
 - D4 包结论分布  
 - D1/D5：若本周跑了离线评测则抄 multi-run；否则写「未跑」  
 - **禁止**填写 RESULT-Y 成立格或「接近乙」句  
@@ -173,6 +175,7 @@ SLI 1·2 的人标协议（分母、同一窗口、样本不足、B1 只作旁�
 - 把本程称作实验成立或主实验成功  
 - 大屏产品 UI（本期）  
 - 把评测加严阈值写入 `CONTEXT.md`  
-- 合并 `#508` 或 `#514`；改 `src/` 放行谓词；实现 T3–T6（#559–#562）  
+- 合并 `#508`、`#511` 或 `#514`；改 `src/` 放行谓词或 HumanLatch 动词集；实现 T4–T6（#560–#562）  
+- 把 override rate 当成验收绿灯或模型变好  
 - 把 phase-2 六项或宽表其余 ID 升成本波主 SLI  
 - 本决议会话写业务代码（须 before-implement 后另开）
