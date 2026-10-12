@@ -1,6 +1,6 @@
 # PE-Y-SMOKE-LIVE
 
-日期：2026-10-12 15:15:24 +0800（探针）· 本页首版同日（Asia/Shanghai · UTC+8）
+日期：2026-10-12 15:15:24 +0800（探针）· (A) 回填 2026-10-12 15:24:36 +0800（Asia/Shanghai · UTC+8）
 票：PE-Y-SMOKE-LIVE · GitHub #550
 父图：#517
 Depends-on：#549 合入 `2b7401ad2257f9c5d42311ca9d7635c5ef951909`
@@ -16,7 +16,7 @@ Blast：none（本票只新建本页；未改生产码）
 - 冻结 S sha256: `e1899872c8a6748de81d87b8c5b89c931d33d13fdd50109ad4694371258ced19`
 - sensitivity_passed: 是（引用 LIVE-2；本页不重判）
 - gate_passed: 否（冒烟不假装 gate 已过）
-- smoke_passed: 否
+- smoke_passed: 是
 - 层身份: outcome-neutral · ≠ gate_passed · ≠ 乙成立 · ≠ 开 PE-Y-05
 
 本页是新建证据。历史页 `docs/evidence/patch-events/SMOKE-Y-N30.md` 不升格为本票过线。
@@ -28,7 +28,9 @@ Blast：none（本票只新建本页；未改生产码）
 - **(A)** 本 PR head 上 workflow `ci`（`.github/workflows/ci.yml`）的 `windows-latest` job：`ruff check` 与 `python -m pytest tests/ -q` 都成功。本地 Linux 预检不能代替这一条。
 - **(B)** `PYTHONPATH=src python -m freshlatch.eval.patch_events_smoke_y`（`smoke_n=30`）exit 0，且可复核 `collapse=false`、`score_hygiene.ok=true`、`constitutes_gate_passed=False`。
 
-当前观察：(B) 成立，(A) 尚未在本 PR 上终态。所以 `smoke_passed=否`。判据不随后续结果改写。若随后 (A) 成立，只回填本节之下的「(A) 回填」与页首 `smoke_passed`，并在那时给 #517 发 Decisions 一行。若 (A) 失败，页首保持否，走下面的回滚，不改 τ/ρ，不改生产码。
+首版观察（写于 CI 终态之前）：(B) 成立，(A) 尚未终态，当时页首为 `smoke_passed=否`。判据上文两行没有改。
+
+回填观察（2026-10-12 15:24:36 +0800）：(A) 与 (B) 同时成立，页首改为 `smoke_passed=是`。#517 Decisions 随这次回填发一行。
 
 ## 1. 前置核对（main @ `2b7401ad2257f9c5d42311ca9d7635c5ef951909`）
 
@@ -58,11 +60,23 @@ Blast：none（本票只新建本页；未改生产码）
 - Lint：`ruff check`
 - Test：`python -m pytest tests/ -q`（`PYTHONIOENCODING=utf-8`）
 
-**(A) 现状：未成立。** 本页首版提交时，本 PR 上还没有终态的 `windows-latest` 结果。因此不能写 `smoke_passed=是`。
+**(A) 现状：成立。** 证据钉在首版提交 `800c4584bd03f25c69eddea7d14663984202ea5a`。该 SHA 上 workflow `ci` 的 `pytest` job 跑在 `windows-latest`，Lint 与 Run tests 都成功。
 
 ### (A) 回填
 
-（空。等本 PR head 的 `ci` 终态后，只在这里补 run URL、结论、head SHA。未回填前 (A) 保持未成立。）
+| 项 | 值 |
+|---|---|
+| 事件 | `pull_request`（同一 SHA 的 `push` run `38217031942` 同样 success，runner 同为 `windows-latest`） |
+| run | `38217054864` · https://github.com/luxingjiang1993/FreshLatch/actions/runs/38217054864 |
+| job | `114704136167` · https://github.com/luxingjiang1993/FreshLatch/actions/runs/38217054864/job/114704136167 |
+| head | `800c4584bd03f25c69eddea7d14663984202ea5a` |
+| runner 标签 | `windows-latest` |
+| Python | `C:\hostedtoolcache\windows\Python\3.11.9\x64` |
+| Lint | 日志命令 `ruff check`；摘录 `All checks passed!`；step 结论 success |
+| Test | 日志命令 `python -m pytest tests/ -q`；`PYTHONIOENCODING=utf-8`；摘录 `1197 passed, 4 skipped in 172.17s`；step 结论 success |
+| job 结论 | success（2026-10-12T07:24:36Z · 15:24:36 +0800） |
+
+**(A) 成立。**
 
 ### 本地预检（Linux · 不能充当 (A)）
 
@@ -122,20 +136,23 @@ constitutes_gate_passed=False
 
 写盘后已还原。还原后 blob 与跑前相同：`49edaabf2eb238559d752c32af2deaf63f0994e0`。本页结论只认 §3 的 stdout 与只读摘录。
 
-## 5. 失败回滚（smoke_passed=否）
+## 5. 失败回滚
 
-原因：(A) 未在本 PR 的 `windows-latest` 上观察到 `ruff check` 与 `pytest tests/ -q` 全绿。(B) 已成立。这不是探针三项失败，也不是放宽 τ/ρ 的理由。
+本页 `smoke_passed=是`，回滚未触发。首版在 (A) 未观察时写成否；那次否的原因是 Windows CI 尚未终态，不是探针三项失败。判据锁没有改。回填后 (A)∧(B) 成立。
+
+下列约束在是与否两种结论下都保持：
 
 - 不改 τ，不改 `ENTAILMENT_TAU`，不改 ρ，不改 ADR-0040，不改冻结 S 字节，不改生产码。
-- 回到激活态：`SENS-LIVE-2-ACTIVATION.md` 仍然有效（`activation_prerequisite_met=是`）。
-- 不晋级 GATE。不开 GATE-Y 真探针，不开 PE-Y-05，不开 n=400。
+- `SENS-LIVE-2-ACTIVATION.md` 仍然有效（`activation_prerequisite_met=是`）。
+- 不开 GATE-Y 真探针，不开 PE-Y-05，不开 n=400。
 - 不复活 #507。
 - 不把本页写成 `gate_passed=是`，不写成乙成立。
-- #517 Decisions 在 (A) 终态并回填之后发一行。终态若仍是失败，该行写 `smoke_passed=否` 与本原因。
+
+若本页所钉的 run 事后被改判失败，或探针摘录不可复核，则把 `smoke_passed` 改回否，保持激活态，不晋级 GATE。
 
 ## 6. 边界
 
 - Trust L1。Blast none。
-- 过烟（若日后回填为是）仍 ≠ 乙成立，≠ 自动 `gate_passed`，≠ 自动开 GATE / PE-Y-05。
+- 本页 `smoke_passed=是` 仍 ≠ 乙成立，≠ 自动 `gate_passed`，≠ 自动开 GATE / PE-Y-05。
 - 本阶段不估 δ，不跑 discordant，不锁正式冲乙页。
-- 下一步在 `smoke_passed=是` 之后才允许另票谈人授 GATE-Y。本页当前为否，该另票未开。
+- 下一步允许另票谈人授 GATE-Y。该另票未开。
