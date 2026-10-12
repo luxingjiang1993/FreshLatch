@@ -135,3 +135,7 @@ S2 只用本跑 `ok`，分母是本冻结集的 20 条坏槽。
 - 未改 τ，未改 ρ，未改 ADR-0040，未改 `SENSITIVITY_SET_S`。
 - 未合并 #543，未沿用其过早哈希。
 - 无 secret_names。
+
+## 9. 人审节
+
+上文跑时句 `activation_prerequisite_met：否` 保持不动。人审落盘见 `docs/evidence/patch-events/SENS-LIVE-2-ACTIVATION.md`（授权人 Oriental Ronin；`activation_prerequisite_met=是`；下一步允许 SMOKE-LIVE=是，须另票）。`gate_passed` 仍为否。激活不等于乙成立，不等于自动 GATE。
