@@ -7,6 +7,8 @@
 > 未编辑 `RESULT-Y` / `PREREG-Y` / SESOI。未改 `data/eval/gold.json`。金标不进生产 score。  
 > 日期：2026-10-12（Asia/Shanghai）。预锁先于任何本协议的 pass rate。
 
+phase-2 pin 族只读继承本页，协议在 [`docs/ops/版本针族.md`](../../ops/版本针族.md)（[#574](https://github.com/luxingjiang1993/FreshLatch/issues/574) · Parent [#569](https://github.com/luxingjiang1993/FreshLatch/issues/569)）。下面的 blob、成员与 `<未跑>` 不改。本页仍然没有 pass rate。把这些针抄进 P4 不构成 canary pass，也不授权回写 `data/eval/gold.json`。
+
 ## 预锁（dataset pin）
 
 | 项 | 值 |
@@ -42,4 +44,5 @@
 - [x] 未填 pass rate，未写 0% 或 100%  
 - [x] 未回写 Y  
 - [x] 掉线处置尚未触发（因为未跑）。触发后的句子只允许是「停发列车讨论」  
-- [x] Canary ≠ 乙尺
+- [x] Canary ≠ 乙尺  
+- [x] 占位针可被 P4 只读继承；本页未改 blob，未填 pass rate

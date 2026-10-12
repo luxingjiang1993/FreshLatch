@@ -16,6 +16,8 @@
 
 版本针的预锁记录在 [`docs/evidence/slo-min6/canary-pin.md`](../evidence/slo-min6/canary-pin.md)。那一页只钉集与 pin，不填 pass rate。
 
+phase-2 的 pin 族在 [`版本针族.md`](版本针族.md)（[#574](https://github.com/luxingjiang1993/FreshLatch/issues/574) · Parent [#569](https://github.com/luxingjiang1993/FreshLatch/issues/569)）。那一页只读继承本页与占位针页。成绩仍只在本页的 pass rate。有针不等于 canary pass。本页 §1 的集、§2 的两根针、§3 的率、§10 的列不因那一页改写。
+
 ---
 
 ## 0. 目的
@@ -61,7 +63,7 @@
 | dataset pin（周报列名 `canary_pin`） | 实际读取的金标文件的 git blob，加桶名 `must_stale`。与 §1 预锁不一致则本跑作废，先停，不改门 | 用 pass rate 反推「当时大概是哪一版金标」 |
 | code pin | 实际执行的代码 git sha（完整 40 位） | 把本协议的落盘基线 `642733bc97ff1fa7183aeb21aa68f4651b327f6d` 填进「已跑」行。那是文档切出点，不是一次 canary 执行 |
 
-索引附录里的 version tags 仍是 phase-2。这两根针是 SLI 6 的占位，不把 version tags 升成主 SLI。
+索引附录里的 version tags 仍是 phase-2。这两根针是 SLI 6 的占位，不把 version tags 升成主 SLI。pin 族的可机读键、未跑写法与变更行在 [`版本针族.md`](版本针族.md)。那一页不把这两根针改成 pass rate，也不把本页的协议落盘基线填进已跑的 code pin。
 
 若该次调用了既有的 LLM 金标入口，逐遍另记 model、temperature、seed、日期（Asia/Shanghai）。`temperature=0` 时 seed 不构成独立样本，多遍相同结果不得当成多次独立证据。本协议不发起这种跑，不改 `src/freshlatch/eval/`。托管端点会漂移，跨会话复现只能是近似的；这个限制写在当周 notes，不写进生产 score。
 
@@ -221,6 +223,16 @@ ADR-0033：主张金标 `eval run --gold` 不得顶替 Hard-Gold 过线门；过
 | `掉线处置` | 未跑 / 未掉线（仍非绿灯）/ 停发列车讨论。禁止写成 RESULT-Y 改判 |
 | `notes` | 冒烟，不报总体方差。Canary ≠ 乙尺。金标不进生产 score |
 
+上表列到此为止。不把 pin 族的可选针或 `canary_status` 加进这张表。
+
+### 10.1 与 P4 针族分列（不占上表）
+
+version tags 的协议在 [`版本针族.md`](版本针族.md)（[#574](https://github.com/luxingjiang1993/FreshLatch/issues/574) · Parent [#569](https://github.com/luxingjiang1993/FreshLatch/issues/569)）。摘要进 phase-2 周报附录的 P4 行，不进上表。
+
+上表的 pass rate 仍只服务 SLI 6。`canary_pin` 与 `code_pin` 仍是本页的两根占位针。P4 把它们收进可机读针族，并可另写 model / prompt / index 针。那些键不进上表，也不代替 pass rate。
+
+有针不等于本页过门。未跑时 pass rate 仍写「未跑」。P4 不回写 `data/eval/gold.json`，不把本页的预锁 blob 改成一次执行成绩。
+
 ---
 
 ## 11. 账本指针（只读）
@@ -264,6 +276,7 @@ ADR-0033：主张金标 `eval run --gold` 不得顶替 Hard-Gold 过线门；过
 - 新建 Confident-*、Phoenix-* 或平行的 pass@k 主 KPI 名  
 - 把 Hard-Gold 检索集混进本 pass rate；改生产默认检索臂  
 - 新编宽表 ID，或把 version tags 从 phase-2 升成主 SLI  
+- 把「有针」写成 canary pass（§10.1 只互指 pin 族，不把针写进 pass rate）  
 - 本票实际跑 LLM 金标、填写 pass rate、或把 N=3 冒烟说成统计测量  
 - 回改 T1–T5 协议语义  
 - 把本页称作实验成立或主实验成功
