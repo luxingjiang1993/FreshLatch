@@ -3,9 +3,9 @@
 > **生产观测 ≠ 乙尺。** 本页未编辑 `RESULT-Y` / `PREREG-Y` / SESOI。  
 > Provenance：adapt [#508](https://github.com/luxingjiang1993/FreshLatch/pull/508) `tasks/SLO-INDEX.md` @ `b24b6f5`。  
 > **只做指针。** SLO-01…07 的票正文留在未合并的 #508，不抄进本分支（其中若干 Paths 指向 `src/`，本票 Blast=docs/obs）。  
-> 本波交付真源：[#556](https://github.com/luxingjiang1993/FreshLatch/issues/556) / [#557](https://github.com/luxingjiang1993/FreshLatch/issues/557)（索引）· [#558](https://github.com/luxingjiang1993/FreshLatch/issues/558)（SLI 1·2 协议）· [#559](https://github.com/luxingjiang1993/FreshLatch/issues/559)（SLI 4 协议）· [#560](https://github.com/luxingjiang1993/FreshLatch/issues/560)（SLI 3 协议）· [#561](https://github.com/luxingjiang1993/FreshLatch/issues/561)（SLI 5 协议）· [`docs/ops/生产观测最小6-索引.md`](../docs/ops/生产观测最小6-索引.md)。  
-> `#508` **Keep draft · No merge until Matt**。`#514` 与 `#511` 同样保持 candidate，不合并。  
-> SLO-05 的协议正文在 [`docs/ops/抽检-放行误放误拒.md`](../docs/ops/抽检-放行误放误拒.md)（#558）。SLO-06 的协议正文在 [`docs/ops/人审-override周报.md`](../docs/ops/人审-override周报.md)（#559）。SLI 3 没有宽表 ID，协议正文在 [`docs/ops/判定-unknown三分协议.md`](../docs/ops/判定-unknown三分协议.md)（#560）。SLI 5 没有宽表 ID，协议正文在 [`docs/ops/延迟与检索回退周报.md`](../docs/ops/延迟与检索回退周报.md)（#561）。本页只留指针，不另建 `tasks/SLO-05.md`、`tasks/SLO-06.md`、`tasks/SLO-08.md` 或 `tasks/SLO-09.md`。T6 仍不做。
+> 本波交付真源：[#556](https://github.com/luxingjiang1993/FreshLatch/issues/556) / [#557](https://github.com/luxingjiang1993/FreshLatch/issues/557)（索引）· [#558](https://github.com/luxingjiang1993/FreshLatch/issues/558)（SLI 1·2 协议）· [#559](https://github.com/luxingjiang1993/FreshLatch/issues/559)（SLI 4 协议）· [#560](https://github.com/luxingjiang1993/FreshLatch/issues/560)（SLI 3 协议）· [#561](https://github.com/luxingjiang1993/FreshLatch/issues/561)（SLI 5 协议）· [#562](https://github.com/luxingjiang1993/FreshLatch/issues/562)（SLI 6 协议）· [`docs/ops/生产观测最小6-索引.md`](../docs/ops/生产观测最小6-索引.md)。  
+> `#508` **Keep draft · No merge until Matt**。`#514` 与 `#511` 同样保持 candidate，不合并。`#515` 保持 defer，不合并。  
+> SLO-05 的协议正文在 [`docs/ops/抽检-放行误放误拒.md`](../docs/ops/抽检-放行误放误拒.md)（#558）。SLO-06 的协议正文在 [`docs/ops/人审-override周报.md`](../docs/ops/人审-override周报.md)（#559）。SLI 3 没有宽表 ID，协议正文在 [`docs/ops/判定-unknown三分协议.md`](../docs/ops/判定-unknown三分协议.md)（#560）。SLI 5 没有宽表 ID，协议正文在 [`docs/ops/延迟与检索回退周报.md`](../docs/ops/延迟与检索回退周报.md)（#561）。SLI 6 的协议正文在 [`docs/ops/冻结金标canary跑法.md`](../docs/ops/冻结金标canary跑法.md)（#562）。本页只留指针，不另建 `tasks/SLO-05.md`、`tasks/SLO-06.md`、`tasks/SLO-07.md`、`tasks/SLO-08.md` 或 `tasks/SLO-09.md`。
 
 | ID | #508 上的题目 | 与最小 6 | PR 去留 | 本波票 | 本 PR |
 |----|----------------|----------|---------|--------|-------|
@@ -15,8 +15,8 @@
 | SLO-04 | 再验失败率 A6 | 不是主 SLI | #513 defer | — | 不做 |
 | SLO-05 | 误放/误拒 B2/B3 | SLI 1·2 | #514 candidate · 不合并 | T2 #558 | 指针 → 抽检协议 |
 | SLO-06 | 作废率与 override C1/C2 | SLI 4 主用 C2；C1 旁注 | #511 candidate · 不合并 | T3 #559 | 指针 → override 周报 |
-| SLO-07 | 复验主业 D1/D3/D4 | D1/D5 可喂 SLI 6 | #515 defer | T6 #562 另摘口径 | 不做 |
+| SLO-07 | 复验主业 D1/D3/D4 | D1/D5 喂 SLI 6；D3/D4 不进本率 | #515 defer · 不合并 | T6 #562 只读摘 D1/D5 | 指针 → canary 跑法 |
 
-没有宽表 ID 的本波票仍不新编号：T4 #560 unknown/abstention（SLI 3）的协议在 [`docs/ops/判定-unknown三分协议.md`](../docs/ops/判定-unknown三分协议.md)，不新编 SLO-08。T5 #561 P95+fallback（SLI 5）的协议在 [`docs/ops/延迟与检索回退周报.md`](../docs/ops/延迟与检索回退周报.md)，不升成 SLO-09。T6 #562 本页不做。
+没有宽表 ID 的本波票仍不新编号：T4 #560 unknown/abstention（SLI 3）的协议在 [`docs/ops/判定-unknown三分协议.md`](../docs/ops/判定-unknown三分协议.md)，不新编 SLO-08。T5 #561 P95+fallback（SLI 5）的协议在 [`docs/ops/延迟与检索回退周报.md`](../docs/ops/延迟与检索回退周报.md)，不升成 SLO-09。T6 #562 frozen gold canary（SLI 6）的协议在 [`docs/ops/冻结金标canary跑法.md`](../docs/ops/冻结金标canary跑法.md)，不把 #515 的票正文抄进 `tasks/SLO-07.md`。`#515` 仍 defer。
 
 规格 `docs/spec/24-生产补丁放行SLO.md` · 防火墙 ADR-0042 · 宽表 `docs/ops/生产补丁放行SLO.md`。
