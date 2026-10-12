@@ -14,6 +14,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import sys
 from collections.abc import Callable, Mapping, Sequence
 from pathlib import Path
@@ -39,8 +40,10 @@ from freshlatch.eval.patch_events_metrics import (
     named_streams,
 )
 from freshlatch.eval.patch_events_send import (
-    append_b2_diffs,
     append_sent,
+    b2_claim_text,
+    b2_diff_written,
+    dispatch_b2_diff,
     dispatch_prompt,
     live_chat,
     written_keys,
@@ -353,7 +356,20 @@ def run_formal_y_primary(
         for line in path.read_text(encoding="utf-8").splitlines()
         if line.strip()
     ]
+    blocked_n = sum(
+        1
+        for item in generations
+        if item.get("output_field") == "blocked" or item.get("blocked_reason")
+    )
+    blocked_ids = sorted(
+        {
+            str(item.get("claim_id"))
+            for item in generations
+            if item.get("output_field") == "blocked" or item.get("blocked_reason")
+        }
+    )
     candidates = load_pe_v2_formal_n400(base)
+    roster_complete = _y_roster_complete(candidates, generations)
     ingested = ingested_t1(candidates)
     arms = run_arms(
         candidates,
@@ -384,6 +400,9 @@ def run_formal_y_primary(
         "generations_path": path,
         "generations_n": len(generations),
         "generations_sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+        "blocked_n": blocked_n,
+        "blocked_ids": blocked_ids,
+        "roster_complete": roster_complete,
         "b2_count": b2_count,
         "n": len(candidates),
         "tier": tier,
@@ -391,6 +410,104 @@ def run_formal_y_primary(
         "decoding": decoding_pin(),
         "claim_ids": [str(row["claim_id"]) for row in candidates],
     }
+
+
+def _y_roster_complete(
+    candidates: Sequence[Mapping[str, Any]],
+    generations: Sequence[Mapping[str, Any]],
+) -> bool:
+    """400 条主张的 C/T/B2 claim 都已落盘（含审查作废）。未作废的 B2 claim 须有 diff。"""
+    ids = [str(row["claim_id"]) for row in candidates]
+    if len(ids) != _FORMAL_N or len(set(ids)) != _FORMAL_N:
+        return False
+    have = {
+        (str(item.get("claim_id")), str(item.get("arm")), str(item.get("phase")))
+        for item in generations
+    }
+    for claim_id in ids:
+        for arm, phase in _SEND_Y:
+            if (claim_id, arm, phase) not in have:
+                return False
+    blocked_b2_claim = {
+        str(item.get("claim_id"))
+        for item in generations
+        if item.get("arm") == "B2"
+        and item.get("phase") == "claim"
+        and (item.get("output_field") == "blocked" or item.get("blocked_reason"))
+    }
+    diff_ids = {
+        str(item.get("claim_id"))
+        for item in generations
+        if item.get("arm") == "B2" and item.get("phase") == "diff"
+    }
+    for claim_id in ids:
+        if claim_id in blocked_b2_claim:
+            continue
+        if claim_id not in diff_ids:
+            return False
+    return True
+
+
+def _content_inspection_blocked(exc: BaseException) -> bool:
+    """只认托管端内容审查拒绝。其它异常继续抛出，避免把网络故障记成作废。"""
+    return "data_inspection_failed" in str(exc)
+
+
+def _append_blocked(path: Path, request: Mapping[str, Any]) -> None:
+    """审查拒绝落一行作废记录。output_field 不是回文栏，回放走生成失败，不记放行。"""
+    record = {
+        "claim_id": request.get("claim_id"),
+        "arm": request.get("arm"),
+        "phase": request.get("phase"),
+        "output_field": "blocked",
+        "text": "",
+        "model": DEFAULT_MODEL,
+        "temperature": MODEL_REGISTRY["default_llm"].temperature,
+        "blocked_reason": "data_inspection_failed",
+    }
+    path.parent.mkdir(parents=True, exist_ok=True)
+    line = json.dumps(record, ensure_ascii=False)
+    with path.open("a", encoding="utf-8") as handle:
+        handle.write(line + "\n")
+        handle.flush()
+        os.fsync(handle.fileno())
+
+
+def _append_b2_diffs_y(
+    rows: Sequence[Mapping[str, Any]],
+    path: Path,
+    chat: Callable[..., Any],
+) -> tuple[int, int]:
+    """补 B2 diff。成功路径与共享 append 相同；审查拒绝记作废后继续同一文件。"""
+    claims = b2_claim_text(path)
+    done = b2_diff_written(path)
+    wrote = 0
+    blocked = 0
+    for row in rows:
+        claim_id = str(row["claim_id"])
+        if claim_id not in claims or claim_id in done:
+            continue
+        request = {
+            "arm": "B2",
+            "phase": "diff",
+            "claim_id": claim_id,
+            "before_text": row["before_text"],
+            "evidence_text": row["evidence_text"],
+            "claim_text": claims[claim_id],
+        }
+        try:
+            result = dispatch_b2_diff(request, chat)
+        except Exception as exc:
+            if not _content_inspection_blocked(exc):
+                raise
+            _append_blocked(path, request)
+            done.add(claim_id)
+            blocked += 1
+            continue
+        if append_sent(path, result):
+            done.add(claim_id)
+            wrote += 1
+    return wrote, blocked
 
 
 def send_formal_y(
@@ -412,18 +529,29 @@ def send_formal_y(
     rows = load_pe_v2_formal_n400(base)
     done = written_keys(path)
     sent = 0
+    blocked = 0
     for request in formal_y_requests(rows):
         key = (str(request["claim_id"]), str(request["arm"]), str(request["phase"]))
         if key in done:
             continue
-        result = dispatch_prompt(request, chat)
+        try:
+            result = dispatch_prompt(request, chat)
+        except Exception as exc:
+            if not _content_inspection_blocked(exc):
+                raise
+            _append_blocked(path, request)
+            done.add(key)
+            blocked += 1
+            continue
         if append_sent(path, result):
             done.add(key)
             sent += 1
-    b2_added = append_b2_diffs(rows, path, chat)
+    b2_added, b2_blocked = _append_b2_diffs_y(rows, path, chat)
+    blocked += b2_blocked
     return {
         "status": "sent",
         "sent": sent,
+        "blocked": blocked,
         "b2_diff_added": b2_added,
         "path": path,
         "n": len(rows),
@@ -454,7 +582,11 @@ def render_result_y(
     comparisons = list((primary or {}).get("comparisons") or [])
     by_name = {item.get("name"): item for item in comparisons}
     labels = (("T-C", "T 对 C"), ("T-B1", "T 对 B1"), ("T-B2", "T 对 B2"))
-    filled = primary is not None and pack.get("b2_count") == _FORMAL_N
+    # b2_count==400 是「每条都有非空 B2 after」。审查作废会使某主张四臂都没有 after，
+    # 但名单已齐且 compare_primary 有定义时仍抄该次主比较，不把成立格留成未填。
+    filled = primary is not None and (
+        pack.get("b2_count") == _FORMAL_N or pack.get("roster_complete") is True
+    )
     lines: list[str] = [
         "# patch_events 路线 Y · 正式结果（RESULT-Y）",
         "",
@@ -474,6 +606,10 @@ def render_result_y(
         f"sha256=`{pack.get('generations_sha256')}`）",
         f"- **日志目录**：`{_EXP_DIR_Y.as_posix()}`",
         f"- **B2 after 条数**：{pack.get('b2_count')!r}",
+        f"- **内容审查作废条数** = {pack.get('blocked_n')!r}"
+        "（data_inspection_failed；回放为生成失败，不记放行；不进成立格）",
+        f"- **内容审查作废主张** = {pack.get('blocked_ids')!r}"
+        "（该主张各臂不记放行；不进成立格）",
         f"- **解码**：model=`{(pack.get('decoding') or {}).get('model')}`；"
         f"temperature=`{(pack.get('decoding') or {}).get('temperature')}`；"
         f"Decoding.seed=`{(pack.get('decoding') or {}).get('decoding_seed')}`；"
@@ -599,7 +735,8 @@ def main(argv: list[str] | None = None) -> int:
             return 2
         sys.stdout.write(
             f"sent={send_result.get('sent')!r} "
-            f"b2_diff_added={send_result.get('b2_diff_added')!r}\n"
+            f"b2_diff_added={send_result.get('b2_diff_added')!r} "
+            f"blocked={send_result.get('blocked')!r}\n"
         )
 
     if not args.authorize_send and not args.recompute_only:

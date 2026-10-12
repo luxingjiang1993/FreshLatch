@@ -118,7 +118,7 @@ def test_n400_ids_disjoint_from_pilot():
 
 
 def test_prereg_y_quota_table_numbers_unchanged():
-    """Do-not-touch: 不改 PREREG-Y 配额表数字；文首仍未激活。"""
+    """Do-not-touch: 不改 PREREG-Y 配额表数字；标题行不塞激活标记。"""
     text = _PREREG_Y.read_text(encoding="utf-8")
     assert (
         "| n=400（路线 Y 满样本门槛） | 100（50/50） | 100（50/50） "

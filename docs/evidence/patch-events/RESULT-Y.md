@@ -1,33 +1,37 @@
 # patch_events 路线 Y · 正式结果（RESULT-Y）
 
-> 口径：`docs/evidence/patch-events/PREREG-Y.md`（**未激活** · 冲乙整合升格 · 本壳不得冒充已跑）。  
-> 三行 false-accept 与 k **只抄**同一次 `compare_primary`（选取 R）。  
-> **成立格只认 T−C**：点估计 >0.05 且 95% 下界 >0；T−B1 / T−B2 为报告-only。  
-> 禁止把 GATE-Y-PROBE / GATE-Y-SENSITIVITY / SMOKE-Y-N30 / 夹具 / RESULT-B / RESULT-C / ALT 抄进成立格。  
-> 禁止称甲；放弃甲防火墙见 `PREREG-Y`。仪器/门闩 Amendment 见协议页（ADR-0040/0041）。
+> 口径：`docs/evidence/patch-events/PREREG-Y.md`。
+> 三行 false-accept 与 k **只抄**同一次 `compare_primary`（选取 R）。
+> **成立格只认 T−C**：点估计 >0.05 且 95% 下界 >0；T−B1 / T−B2 为报告-only。
+> 禁止把 GATE-Y-PROBE / 夹具 / RESULT-B / RESULT-C / ALT 抄进成立格。
+> 不得判甲；放弃甲防火墙见 `PREREG-Y`。
 
 ## 跑针
 
-- **代码针**：未跑  
-- **激活**：未激活  
-- **n**：400（激活后填写名单针）  
-- **生成路径**：`docs/evidence/patch-events/formal-generations-y.jsonl`（未写）  
-- **解码（预锁）**：model=`qwen-flash`；temperature=`0`；Decoding.seed=`20261007`；API seed=`None`
+- **代码针**：da6ec85490d5001177aabd2b6eb5c7d244d39cb6
+- **激活**：冲乙正式主跑已激活（指针 PREREG-Y 文首 + 批注）
+- **n** = 400（目标 400；名单见 PE-Y-03）
+- **生成路径**：`docs/evidence/patch-events/formal-generations-y.jsonl`（n_lines=1599；sha256=`6c19fb8604e8940edc87072fd8ff72c84406065557f6c85e80a629aea1218bad`）
+- **日志目录**：`data/exp/patch-events-y`
+- **B2 after 条数**：399
+- **内容审查作废条数** = 3（data_inspection_failed；回放为生成失败，不记放行；不进成立格）
+- **内容审查作废主张** = ['d030']（该主张各臂不记放行；不进成立格）
+- **解码**：model=`qwen-flash`；temperature=`0`；Decoding.seed=`20261007`；API seed=`None`
 
 ## 主比较（同一次 compare_primary · R）
 
 | 比较 | 指标 | 点估计 | 95% 区间下界 | 95% 区间上界 | 成立（Y 口径） |
 |---|---|---|---|---|---|
-| T 对 C | false-accept rate | 未填 | 未填 | 未填 | 未填 |
-| T 对 B1 | false-accept rate | 未填 | 未填 | 未填 | 报告-only（不参与成立） |
-| T 对 B2 | false-accept rate | 未填 | 未填 | 未填 | 报告-only（不参与成立） |
+| T 对 C | false-accept rate | 0.0927152317880795 | -0.006493506493506496 | 0.1866666666666666 | 不成立 |
+| T 对 B1 | false-accept rate | 0.01986754966887416 | 0 | 0.06622516556291391 | 报告-only（不参与成立） |
+| T 对 B2 | false-accept rate | 0.0927152317880795 | 0 | 0.1842151922359089 | 报告-only（不参与成立） |
 
-- **固定放行数 k** = 未填
+- **固定放行数 k** = 151
 
 ## 甲 / 乙 / 丙判定
 
-- **分层**：未跑  
-- 判定规则预锁：仅当 T−C 点>0.05 且下界>0 → **结果乙**；否则（含止损触发）→ **结果丙**。本页**不得**判甲。
+- **分层**：结果丙
+- 判定：结果丙。k=151。T−C 未过 Y 尺或无定义（点≤0.05 或下界≤0）（T-C 点估计=0.0927152317880795 95%下界=-0.006493506493506496 → 不成立；T-B1 点估计=0.01986754966887416 95%下界=0 → 报告-only；T-B2 点估计=0.0927152317880795 95%下界=0 → 报告-only）。不得判甲；不得把主实验写成成功。
 
 ## B / C 负结果附录（动机 · 非本页成立格）
 
@@ -36,6 +40,6 @@
 
 ## 边界
 
-- 不保证乙；不称甲；不复活路线 A；不改 B/C 归档。  
-- 乙成立也不许称优于 RARR·KPR。  
+- 不保证乙；不得判甲；不复活路线 A；不改 B/C 归档。
+- 乙成立也不许称优于 RARR·KPR。
 - 同一预注册禁止第二次正式主跑充数。
