@@ -3,6 +3,7 @@
 > **生产观测 ≠ 乙尺。**  
 > 本页是 SLO-min6 T4（[#560](https://github.com/luxingjiang1993/FreshLatch/issues/560) · Parent [#556](https://github.com/luxingjiang1993/FreshLatch/issues/556)）的 unknown / abstention 协议。SLI 3 与 `fresh` / `stale` **三分并存**。拒识算能力，不是失败。  
 > 交付真源是 #556 / #560 与本页，以及 [`生产观测最小6-索引.md`](生产观测最小6-索引.md)。未合并的 [#508](https://github.com/luxingjiang1993/FreshLatch/pull/508) 仍是 program draft，不是第二套交付真源。  
+> phase-2 P2（failure attribution 3-way）不进本页主行。协议在 [`挂标-失败归因三桶.md`](挂标-失败归因三桶.md)（[#572](https://github.com/luxingjiang1993/FreshLatch/issues/572) · Parent [#569](https://github.com/luxingjiang1993/FreshLatch/issues/569)）。**ADR-0028 ≠ fresh/stale/unknown**。本页不报 `fail_bucket`，不与那三桶互改标，不改本页 fresh/stale/unknown 定义。未改 RESULT-Y。未称乙。  
 > Provenance：**new**（本 ops 协议页）+ **adapt** 种子：ADR-0028 / I1 的失败三分法标签（评测/答辩，不改生产枚举）；仓内 `fresh` / `stale` / `unknown` 三档（`Claim.status`、ADR-0009）；[#508](https://github.com/luxingjiang1993/FreshLatch/pull/508) head `cursor/prod-slo-ops-aee8` @ `b24b6f573652b156a798dfa3f3fd1985a9e3348d` 宽表里「再验得明确 fresh/stale/unknown」的既有句子（A5，不新编号）。  
 > 对照（不新建主名）：HALT-RAG 的 abstention；Confident AI 的 abstention / groundedness。  
 > **本变更未编辑** `RESULT-Y` / `PREREG-Y` / SESOI / \(k_{\min}\) / Cond / 选取 R。未改 `src/` 放行谓词，未改 `src/freshlatch/gates/rule_gate.py`。金标不进生产 score。未实现、未调用 `compare_primary`。  
@@ -140,7 +141,7 @@ unknown 落档本身不是装绿违例。把本应 unknown 的出口写成 fresh
 | 仓内 fresh/stale/unknown | 本页主三分。词表已在 `Claim.status` 与 ADR-0009 | 不改生产枚举，不改 `rule_gate` |
 | ADR-0028 / I1 | 评测标签三桶：找不到、找错、没用上。漏拦/误拦须另标 `err_kind`，且**禁止**改生产 status 来承载这三桶 | 不把这三桶升成周报主行 |
 
-phase-2 的 failure attribution 3-way 复用 ADR-0028 这组种子，留在索引附录。本页不报 `fail_bucket`，不另起一套失败三分的名字。本页三分（fresh / stale / unknown）与 ADR-0028 三桶不是同一套词，也不互相改标。
+phase-2 的 failure attribution 3-way 复用 ADR-0028 这组种子，协议正文在 [`挂标-失败归因三桶.md`](挂标-失败归因三桶.md)（[#572](https://github.com/luxingjiang1993/FreshLatch/issues/572) · Parent [#569](https://github.com/luxingjiang1993/FreshLatch/issues/569)）。本页不报 `fail_bucket`，不另起一套失败三分的名字。本页三分（fresh / stale / unknown）与 ADR-0028 三桶不是同一套词，也不互相改标。**ADR-0028 ≠ fresh/stale/unknown**。
 
 [#508](https://github.com/luxingjiang1993/FreshLatch/pull/508) 宽表 A5 已经写「改完再验得明确 fresh/stale/unknown」。那是流程库存，不是 SLI 3 的占比定义。本页不把 A5 改号，不新编 B9 或 SLO-08。#508 保持 OPEN draft，head 仍为 `b24b6f573652b156a798dfa3f3fd1985a9e3348d`，不合并。
 
@@ -194,6 +195,7 @@ phase-2 的 failure attribution 3-way 复用 ADR-0028 这组种子，留在索�
 | `src/freshlatch/gates/rule_gate.py` | 校验项 1、2 与 `seal_no_unfounded_fresh`。本票不编辑 |
 | ADR-0009 | 3×3 落档。全 fresh 才绿。Auditor 缺席不构成绿格 |
 | ADR-0028 | 失败三分法标签。评测/答辩种子。不改生产枚举 |
+| [`挂标-失败归因三桶.md`](挂标-失败归因三桶.md) | phase-2 P2。ADR-0028 三桶的挂标协议。本页不改标、不报 `fail_bucket` |
 | ADR-0042 | 实验—生产防火墙。硬闸目标句的权威 |
 | [`抽检-放行误放误拒.md`](抽检-放行误放误拒.md) | B2/B3 分母。unknown 不并入 |
 | [`生产观测最小6-索引.md`](生产观测最小6-索引.md) | 最小 6 成员表。本页是其中 SLI 3 |
