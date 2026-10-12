@@ -8,6 +8,7 @@
 > 层身份：**观测/Watch + 离线**。P1–P6 是附录成员，不占 [`生产观测最小6-索引.md`](生产观测最小6-索引.md) §2 的六个主格。  
 > Parent [#556](https://github.com/luxingjiang1993/FreshLatch/issues/556)（min-6 track）**仍 OPEN**。P1–P6 不挂在 #556 下。  
 > Provenance：**adapt** from [#508](https://github.com/luxingjiang1993/FreshLatch/pull/508) head `cursor/prod-slo-ops-aee8` @ `b24b6f573652b156a798dfa3f3fd1985a9e3348d` 的 `docs/ops/生产补丁放行SLO.md` 与 `docs/ops/生产补丁放行SLO-地图.md`（只读摘字段）+ tip `docs/ops/生产观测最小6-索引.md` §5 名单 + **ADR-0042**。`#508` **Keep draft · No merge until Matt+human**。`#508`–`#515` 本波不合并。  
+> P1 协议页 Provenance：**adapt** from tip `docs/ops/抽检-放行误放误拒.md`（min-6 SLI 1/2 · 粗粒度折算起点）+ Confident AI faithfulness/groundedness 对照（不新建主名）+ 可选只读 [#514](https://github.com/luxingjiang1993/FreshLatch/pull/514) @ `948db41565b564f4b3f48861da6b9f36ceff546c`（[#571](https://github.com/luxingjiang1993/FreshLatch/issues/571) · Parent [#569](https://github.com/luxingjiang1993/FreshLatch/issues/569)）。交付真源是 #569/#571 与 [`抽检-主张忠实.md`](抽检-主张忠实.md)。`#514` 仍 Candidate，不合并。落地基线 `0cb03b99f71ddc8200ac04771d9338b0ff64e194`。  
 > 日期：2026-10-12（Asia/Shanghai）。grill 锁「按推荐」。tip `origin/main`=`666679c6ba09b09da34a46f558f14dab5896ca58`（RESULT-Y 丙，只读）。Trust **L1** · Blast **docs/obs**。  
 > **防火墙未破 · ADR-0042 · #556 仍 OPEN · No merge until Matt+human**
 
@@ -30,11 +31,11 @@ min-6 的层身份（观测/Watch + 离线 canary，主成员六个）写在 [`�
 
 ## 2. phase-2 六成员（附录 · 本波不增删）
 
-名单与 tip 索引 §5 相同。本波把延期名单收成可挂的附录定义。协议正文属于 T2–T7，不在本页展开。
+名单与 tip 索引 §5 相同。本波把延期名单收成可挂的附录定义。P1 协议正文在 [`抽检-主张忠实.md`](抽检-主张忠实.md)（#571）。P2–P6 协议正文属于 T3–T7，不在本页展开。
 
 | # | 项（英文保留） | 操作定义（起步） | 分母 / 单位 | 层 | 复用锚 | 起步姿态 |
 |---|----------------|------------------|-------------|----|--------|----------|
-| P1 | claim-level faithfulness | 主张粒度上，机器放行/陈述与所依证据一致的占比（或对称的不忠实率） | 抽检主张数；可挂 `claim_id` | 观测/Watch（可离线抽检） | min-6 SLI 1/2 [`抽检-放行误放误拒.md`](抽检-放行误放误拒.md)；Confident AI faithfulness/groundedness 只作对照 | 先协议+抽检表。样本不足写诚实句。不替代 FA/FR 成对周报。不新建 Confident-* 主名 |
+| P1 | claim-level faithfulness | 主张粒度上，机器放行/陈述与所依证据一致的占比（或对称的不忠实率） | 抽检主张数；可挂 `claim_id` | 观测/Watch（可离线抽检） | [`抽检-主张忠实.md`](抽检-主张忠实.md)（#571）；粗粒度折算起点仍是 min-6 SLI 1/2 [`抽检-放行误放误拒.md`](抽检-放行误放误拒.md)；Confident AI faithfulness/groundedness 只作对照 | 协议+抽检表可挂 `claim_id`。样本不足写诚实句。不替代 FA/FR 成对周报。不新建 Confident-* 主名 |
 | P2 | failure attribution 3-way | 失败样本按 ADR-0028 三桶标注：找不到 / 找错 / 没用上 | 失败样本；每条恰一桶 | 观测/Watch · 离线评测标签 | **ADR-0028 / I1**；[`判定-unknown三分协议.md`](判定-unknown三分协议.md) 已声明该三桶与 fresh/stale/unknown 分列 | 挂标协议。不改生产枚举。不写入 `rule_gate` / disposition / HumanLatch 动词 |
 | P3 | judge–human calibration | 同窗机器判定与人终审/人标的一致率 / 分歧谱 | 同窗可配对样本 | 观测/Watch | min-6 SLI 4 [`人审-override周报.md`](人审-override周报.md)；ADR-0023；ADR-0006 | 周报旁表。文首「≠模型变好 / ≠验收绿灯」。不新增 HumanLatch 动词 |
 | P4 | version tags | 可机读版本针族：至少 `code_pin` · `dataset_pin`（可扩 `model_pin` / `prompt_pin` / `index_pin`） | 每次周报行 / canary 执行 / 协议发布记录 | 观测/Watch · ops 协议 | SLI 6 [`冻结金标canary跑法.md`](冻结金标canary跑法.md)；[`docs/evidence/slo-min6/canary-pin.md`](../evidence/slo-min6/canary-pin.md)；arXiv 2608.26385 对照 | 针族写成必填列。未跑写「未跑」。有针不等于 canary pass |
@@ -45,7 +46,7 @@ min-6 的层身份（观测/Watch + 离线 canary，主成员六个）写在 [`�
 
 ### 附录纪律（协议在后续票）
 
-- P1 细化 SLI 1/2，两侧成对主行仍在 min-6 周报。  
+- P1 细化 SLI 1/2，协议在 [`抽检-主张忠实.md`](抽检-主张忠实.md)。两侧成对主行仍在 min-6 周报。  
 - P2 的三桶与 SLI 3 的 fresh/stale/unknown 分列，两套标签不互改。  
 - P3 只描述校准。文首继承 ADR-0023，不作验收绿灯。  
 - P4 的针只证明可追溯。canary 成绩仍只在 SLI 6。  
@@ -84,6 +85,7 @@ PR 去留与 #508 地图同一张单，本波仍不执行关合：`#508` keep ·
 - [x] 未改写 min-6 §2 六个主格；P1–P6 写在本页与周报附录  
 - [x] 未把 P1–P6 挂到 #556；#556 仍 OPEN；本票 Parent 是 #569  
 - [x] 未在本页实现 T2–T7 的协议正文  
+- [x] P1 正文在 `抽检-主张忠实.md`；本页只互指；未改 min-6 B2/B3 主行；未新建 Confident-* 主名  
 
 ## 5. Decisions 一行模板（SPEC §3.7 · 可粘贴）
 
@@ -106,7 +108,7 @@ SLO-phase2（grill 锁「按推荐」· Asia/Shanghai）：P1–P6 已钉（clai
 | PR | 去留 | 与 phase-2 |
 |----|------|------------|
 | #508 | Keep · program draft · 不合并 | 宽表总锚。字段只读摘入 §3 |
-| #514 | Candidate · 不合并 | 已喂 min-6 SLI 1/2；P1 以后只读该协议 |
+| #514 | Candidate · 不合并 | 已喂 min-6 SLI 1/2。P1 只读该 head @ `948db415`，协议不合并 #514 |
 | #511 | Candidate · 不合并 | 已喂 min-6 SLI 4；P3 以后只读该协议 |
 | #515 | Defer · 不合并 | canary 口径已在 SLI 6；P4 继承占位针，不合并其脚本 |
 | #513 | Defer · 不合并 | 非本六项 |
@@ -123,6 +125,7 @@ SLO-phase2（grill 锁「按推荐」· Asia/Shanghai）：P1–P6 已钉（clai
 | 本索引 | `docs/ops/生产观测phase2-索引.md` |
 | min-6 索引 §5 附录 | `docs/ops/生产观测最小6-索引.md`（六项名单镜像；主 6 格不在本页） |
 | 周报附录骨架 | `docs/evidence/slo-phase2/周报附录骨架.md` |
+| P1 主张抽检 | `docs/ops/抽检-主张忠实.md`（#571 · Parent #569；细化 SLI 1/2；不替换 FA/FR 主行；不挂在 #556 下） |
 | min-6 周报主行 | `docs/evidence/slo-min6/周报骨架.md`（主 6 格；本波不改） |
 | 宽表运营页 | `docs/ops/生产补丁放行SLO.md`（#508 库存；本票只加互指） |
 | 地图 | `docs/ops/生产补丁放行SLO-地图.md`（min-6 / #556 链；phase-2 模板不改写其锁文） |
@@ -136,7 +139,7 @@ Parent [#569](https://github.com/luxingjiang1993/FreshLatch/issues/569)。下列
 | 序 | 票 | 本 PR |
 |----|----|-------|
 | T1 | #570 program / #508 align + 附录骨架 | 本页 + 周报附录骨架 |
-| T2 | #571 P1 claim-level faithfulness | 后续票。本 PR 不写协议 |
+| T2 | #571 P1 claim-level faithfulness | [`抽检-主张忠实.md`](抽检-主张忠实.md) |
 | T3 | #572 P2 failure attribution 3-way | 后续票。本 PR 不写挂标协议 |
 | T4 | #573 P3 judge–human calibration | 后续票。本 PR 不写旁表协议 |
 | T5 | #574 P4 version tags | 后续票。本 PR 不写 pin 族协议 |
