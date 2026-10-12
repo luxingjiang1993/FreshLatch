@@ -225,13 +225,12 @@ def test_formal_freeze_keeps_must_carry_and_s2_denominator(capsys, monkeypatch):
 
 
 def _crlf_verify_copy(tmp_path: Path) -> Path:
-    """模拟 Windows checkout：同一 LF 源文件写成 CRLF，不改其它字节。"""
+    """先把工作区字节折成 LF，再合成 CRLF。LF 与 CRLF checkout 走同一条路径。"""
     from freshlatch.eval.patch_events_sensitivity import _verify_py_path
 
     raw = _verify_py_path().read_bytes()
-    assert b"\r" not in raw
     path = tmp_path / "patch_events_verify.py"
-    path.write_bytes(raw.replace(b"\n", b"\r\n"))
+    path.write_bytes(raw.replace(b"\r\n", b"\n").replace(b"\n", b"\r\n"))
     return path
 
 
@@ -242,8 +241,9 @@ def test_verify_py_crlf_matches_lf_pin_but_content_change_does_not(tmp_path: Pat
     from freshlatch.eval import patch_events_sensitivity as sens
 
     raw = sens._verify_py_path().read_bytes()
-    assert hashlib.sha256(raw).hexdigest() == sens.VERIFY_PY_SHA256
-    crlf = raw.replace(b"\n", b"\r\n")
+    # 真实工作区内容未改：只比折行后的摘要，原字节不对钉。
+    assert sens._verify_py_sha256() == sens.VERIFY_PY_SHA256
+    crlf = raw.replace(b"\r\n", b"\n").replace(b"\n", b"\r\n")
     assert hashlib.sha256(crlf).hexdigest() != sens.VERIFY_PY_SHA256
     crlf_path = tmp_path / "patch_events_verify.py"
     crlf_path.write_bytes(crlf)
@@ -264,6 +264,7 @@ def test_crlf_checkout_keeps_must_carry_gate(tmp_path: Path, monkeypatch):
 
     crlf_path = _crlf_verify_copy(tmp_path)
     monkeypatch.setattr(sens, "_verify_py_path", lambda: crlf_path)
+    assert sens._verify_py_sha256() == sens.VERIFY_PY_SHA256
     monkeypatch.setattr(
         verify_mod,
         "predict_xnli_probs",
@@ -308,6 +309,7 @@ def test_hash_mismatch_under_crlf_does_not_call_nli(tmp_path: Path, monkeypatch)
 
     crlf_path = _crlf_verify_copy(tmp_path)
     monkeypatch.setattr(sens, "_verify_py_path", lambda: crlf_path)
+    assert sens._verify_py_sha256() == sens.VERIFY_PY_SHA256
     called: list[str] = []
 
     def _boom(_premise: str, _hypothesis: str) -> dict[str, float]:
