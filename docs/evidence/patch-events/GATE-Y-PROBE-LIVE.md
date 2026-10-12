@@ -74,7 +74,9 @@ PYTHONPATH=src python -m freshlatch.eval.patch_events_gate_y_probe \
 
 ## soak / 卫生（不定 gate_passed）
 
-Windows CI（`.github/workflows/ci.yml` 的 ruff + pytest）只作卫生。本页不因 CI 绿或未绿改写方向门。链接随 PR #553 的 `ci` workflow。
+Windows CI（`.github/workflows/ci.yml`：`windows-latest` · `ruff check` · `python -m pytest tests/ -q`）只作卫生。本页不因 CI 绿改写方向门。
+
+证据提交 `4da34cc4ae50c6e3191904953677e2d1d8c3b099` 上，workflow `ci` 的 `pytest` job 在 `windows-latest` 成功：pull_request run [38222050488](https://github.com/luxingjiang1993/FreshLatch/actions/runs/38222050488)（job `114720398451`，Lint 与 Run tests 均为 success）。同一 SHA 的 push run [38222046508](https://github.com/luxingjiang1993/FreshLatch/actions/runs/38222046508) 同样 success。这只记卫生。
 
 ## 失败回滚（若 gate_passed=否）
 
