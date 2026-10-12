@@ -22,6 +22,7 @@
 | 2026-10-09 | #508 /to-tickets（未合入） | SLO-01…07 宽表票在 #508 分支；Frontier 曾为 SLO-01。本程不把该清单当第二套交付真源。 |
 | 2026-10-12 | SLO-min6 grill 锁「按推荐」 | 最小 6 钉死；phase-2 只挂附录。仓外锁，本页只镜像。 |
 | 2026-10-12 | T1 #557 文档对齐 | 索引 + 防火墙重申 + 下方一行模板可挂。**本行不是已发的 GitHub Decisions 评论**；人不审完不合并。 |
+| 2026-10-12 | T2 #558 协议摘字段 | SLI 1·2 成对协议落 `docs/ops/抽检-放行误放误拒.md`（adapt #514 @ `948db415`）。#514 仍 candidate，不合并。本行不是已发的 GitHub Decisions 评论。 |
 
 ## Decisions 一行模板（grill G17 · 可粘贴）
 
@@ -38,7 +39,7 @@ SLO-min6（grill 锁「按推荐」· Asia/Shanghai）：6 SLI 已钉；防火�
 | PR | 去留 | 与最小 6 |
 |----|------|----------|
 | #508 | Keep · program draft · 不合并 | 宽表总锚 |
-| #514 | Candidate | SLI 1·2 ← B2/B3（T2 #558，本票不做） |
+| #514 | Candidate · 不合并 | SLI 1·2 协议已摘入 `docs/ops/抽检-放行误放误拒.md`（T2 #558） |
 | #511 | Candidate | SLI 4 ← C2（T3 #559，本票不做） |
 | #515 | Defer | SLI 6 口径可摘；不本波合 |
 | #513 | Defer | 非最小 6 |
@@ -53,5 +54,5 @@ SLO-min6（grill 锁「按推荐」· Asia/Shanghai）：6 SLI 已钉；防火�
 - 同页二跑；把本程称作实验成立或主实验成功  
 - 金标当在线放行器或生产 score  
 - 合并 #508–#515 或本 PR（No merge until Matt）  
-- 实现 T2–T6；改 `src/` 放行谓词  
+- 实现 T3–T6；改 `src/` 放行谓词  
 - 大屏运营 UI；改生产默认检索臂；扩 HumanLatch 动词  
