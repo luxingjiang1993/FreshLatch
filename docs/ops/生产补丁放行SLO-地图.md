@@ -13,6 +13,7 @@
 - 禁：同页二跑、金标进生产 score、把 phase-2 六项升成第 7+ 主 SLI。  
 - 宽表 SLO-01…07 的票正文留在 #508；本仓只留 [`tasks/SLO-INDEX.md`](../../tasks/SLO-INDEX.md) 指针。  
 - 防火墙 ADR 编号为 **ADR-0042**。#508 草案曾写 ADR-0034；该文件名在 tip 上已被 `docs/adr/0034-patch-events-route-b-identifiable-fixed-k.md` 占用，本程不覆盖。  
+- phase-2 新 wave 的索引、SPEC §3.7 模板与周报附录记在 [`生产观测phase2-索引.md`](生产观测phase2-索引.md)（[#570](https://github.com/luxingjiang1993/FreshLatch/issues/570) · Parent [#569](https://github.com/luxingjiang1993/FreshLatch/issues/569)）。本页 Decisions 表仍是 min-6 / #556 链，下面的一行模板锁文不改。#556 仍 OPEN。#508 仍 Keep draft。  
 
 ## Decisions so far
 
