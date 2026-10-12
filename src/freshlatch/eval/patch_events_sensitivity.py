@@ -1077,6 +1077,8 @@ def render_sens_live2_report(
         "",
         "**DIAG ≠ S2。** SENS-DIAG-1A 的变红条数与 P_entail 不能代替本页 S2。",
         "",
+        *_diag_repro_lines(rows),
+        "",
         "## 4. 逐条结果",
         "",
         "| sample_id | stratum | heuristic | subcase | gold | pair_id | token_overlap | nli_construct_ok | ok | P_entail | score | pair_valid |",
@@ -1119,7 +1121,9 @@ def render_sens_live2_report(
             "",
             "删「大约」：证据只有弱化义务，主张把「大约」拿掉后语气更硬。",
             "这不是干净矛盾句。金标仍按跑前锁为坏，因为产品协议把义务硬化算坏改。",
-            "若本跑 ok=True，记录为仪器对这一亚型仍放行，不回头改金标，也不改 τ/ρ。",
+            "不回头改金标，也不改 τ/ρ。",
+            "",
+            *_deletion_outcome_lines(rows),
             "",
             "## 6. 边界",
             "",
@@ -1143,6 +1147,95 @@ def render_sens_live2_report(
         )
     lines.append("")
     return "\n".join(lines)
+
+
+# SENS-DIAG-1A 对同文刺激打印的 P_entail。只做仪器复核，不进入 S2。
+_DIAG_ARCHIVED_P_ENTAIL: dict[str, float] = {
+    "DIAG-HANS-002": 0.0004841118,
+    "DIAG-HANS-003": 0.0011600856,
+    "DIAG-HANS-004": 0.1859738678,
+    "DIAG-HANS-006": 0.0104973661,
+    "DIAG-CHEF-03-bad": 0.8668648601,
+    "DIAG-CHEF-03-good": 0.9216354489,
+    "DIAG-CHEF-04-bad": 0.9547298551,
+    "DIAG-CHEF-04-good": 0.9086972475,
+    "S-正确-日期01": 0.5039777756,
+}
+
+
+def _diag_repro_lines(rows: Sequence[Mapping[str, Any]]) -> list[str]:
+    """同文对照。缺 P_entail 时跳过，避免单测 stub 假装复现。"""
+    by_id = {str(row.get("sample_id")): row for row in rows}
+    comparable = []
+    for sample_id, archived in _DIAG_ARCHIVED_P_ENTAIL.items():
+        row = by_id.get(sample_id)
+        if row is None or not isinstance(row.get("p_entail"), float):
+            continue
+        comparable.append((sample_id, archived, float(row["p_entail"])))
+    if not comparable:
+        return []
+    lines = [
+        "### 3.1 同文仪器复核（不入 S2）",
+        "",
+        "下表只核对与 SENS-DIAG-1A 同文的本跑 P_entail。S2 仍只用本跑 ok，分母是本冻结集的全部坏槽。",
+        "",
+        "| id | 本跑 P_entail | DIAG 页 P_entail | 绝对差 |",
+        "|---|---:|---:|---:|",
+    ]
+    for sample_id, archived, got in comparable:
+        lines.append(
+            f"| {sample_id} | {got:.10f} | {archived:.10f} | {abs(got - archived):.10f} |"
+        )
+    lines.append("")
+    return lines
+
+
+def _deletion_outcome_lines(rows: Sequence[Mapping[str, Any]]) -> list[str]:
+    """按本跑行写出假阳性与删除亚型，不改金标。"""
+    by_id = {str(row.get("sample_id")): row for row in rows}
+    false_accepts = [
+        row
+        for row in rows
+        if row.get("gold") == "坏" and row.get("ok") is True
+    ]
+    lines = [
+        "### 5.1 本跑读数",
+        "",
+        f"gold=坏 且 ok=True 共 {len(false_accepts)} 条。它们留在 S2 分母里。",
+    ]
+    if not false_accepts:
+        lines.append("本跑没有这种假阳性。")
+    for row in false_accepts:
+        p_entail = row.get("p_entail")
+        p_s = f"{p_entail:.10f}" if isinstance(p_entail, float) else str(p_entail)
+        lines.append(
+            f"- `{row.get('sample_id')}`：ok=True，P_entail={p_s}。"
+            f"heuristic={row.get('heuristic')}，stratum={row.get('stratum')}。"
+        )
+    lines.append("")
+    lines.append("删除亚型（分数来自本跑，不是 DIAG 表）：")
+    for sample_id in ("DIAG-CHEF-03-bad", "DIAG-CHEF-04-bad", "DIAG-HANS-006", "S-删除-op2"):
+        row = by_id.get(sample_id)
+        if row is None:
+            continue
+        p_entail = row.get("p_entail")
+        p_s = f"{p_entail:.10f}" if isinstance(p_entail, float) else str(p_entail)
+        lines.append(
+            f"- `{sample_id}`：ok={row.get('ok')}，P_entail={p_s}，"
+            f"nli_construct_ok={row.get('nli_construct_ok')}（跑前锁，未改）。"
+        )
+    chef04 = by_id.get("DIAG-CHEF-04-bad")
+    if chef04 is not None and chef04.get("ok") is True:
+        lines.append(
+            "删「大约」本跑仍为 ok=True。仪器对义务硬化放行。"
+            "金标保持坏。这条不是过线被藏起来的失败，它已经算进 S2 的未拒绝数。"
+        )
+    chef03 = by_id.get("DIAG-CHEF-03-bad")
+    if chef03 is not None and chef03.get("ok") is True:
+        lines.append(
+            "5 年改为 3 年本跑仍为 ok=True。数字替换亚型仍被放行，同样留在分母里。"
+        )
+    return lines
 
 
 def _score_cell(score: object) -> str:
@@ -1314,6 +1407,8 @@ def main() -> None:
 
         runtime_note = (
             f"transformers {transformers.__version__}；torch {torch.__version__}；"
+            f"cuda_available={torch.cuda.is_available()}；"
+            "verify_edit 未调用 cuda()，与 ADR-0040 同一函数；"
             "权重来自本地 Hugging Face 缓存；无 secret_names"
         )
         log.write(runtime_note + "\n")
