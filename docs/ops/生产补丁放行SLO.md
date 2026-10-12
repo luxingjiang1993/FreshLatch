@@ -4,7 +4,7 @@
 > **本变更未编辑** `RESULT-Y` / `PREREG-Y` / SESOI / \(k_{\min}\) / Cond / 选取 R。生产变绿不得改判丙。  
 > **权威**：防火墙 ADR-0042（[#508](https://github.com/luxingjiang1993/FreshLatch/pull/508) 草案曾写 ADR-0034；tip `2a3fadd` 上该号已是 `docs/adr/0034-patch-events-route-b-identifiable-fixed-k.md`，本程不覆盖）· 评估草案留在 [#508](https://github.com/luxingjiang1993/FreshLatch/blob/b24b6f573652b156a798dfa3f3fd1985a9e3348d/docs/research/生产补丁放行SLO设计评估.md)（不复制进本分支，避免双真源）· 规格 `docs/spec/24-生产补丁放行SLO.md`  
 > **层身份**：宽表仍分硬闸 / 观测 / 离线 / 实验-only。**本波主 SLI 只有最小 6**，层身份是观测/Watch + 离线 canary。  
-> **冻结**：不改 `PREREG-Y` / `RESULT-Y` / `formal-generations-y`；不改生产放行谓词；金标不进生产 score。`#508` **Keep draft · No merge until Matt**。SLI 1·2 成对协议见 [`抽检-放行误放误拒.md`](抽检-放行误放误拒.md)（[#558](https://github.com/luxingjiang1993/FreshLatch/issues/558)）。[#514](https://github.com/luxingjiang1993/FreshLatch/pull/514) 保持 candidate，不合并。SLI 4 override 周报见 [`人审-override周报.md`](人审-override周报.md)（[#559](https://github.com/luxingjiang1993/FreshLatch/issues/559)）。[#511](https://github.com/luxingjiang1993/FreshLatch/pull/511) 保持 candidate，不合并。本页不实现 T4–T6。
+> **冻结**：不改 `PREREG-Y` / `RESULT-Y` / `formal-generations-y`；不改生产放行谓词；金标不进生产 score。`#508` **Keep draft · No merge until Matt**。SLI 1·2 成对协议见 [`抽检-放行误放误拒.md`](抽检-放行误放误拒.md)（[#558](https://github.com/luxingjiang1993/FreshLatch/issues/558)）。[#514](https://github.com/luxingjiang1993/FreshLatch/pull/514) 保持 candidate，不合并。SLI 4 override 周报见 [`人审-override周报.md`](人审-override周报.md)（[#559](https://github.com/luxingjiang1993/FreshLatch/issues/559)）。[#511](https://github.com/luxingjiang1993/FreshLatch/pull/511) 保持 candidate，不合并。SLI 3 三分协议见 [`判定-unknown三分协议.md`](判定-unknown三分协议.md)（[#560](https://github.com/luxingjiang1993/FreshLatch/issues/560)）。不新编宽表 ID。本页不实现 T5–T6。
 
 ---
 
@@ -24,7 +24,7 @@
 |---|------|----|--------|
 | 1 | false-accept | 观测/Watch | B2 |
 | 2 | false-reject | 观测/Watch | B3 |
-| 3 | unknown / abstention | 观测/Watch | 仓内 fresh/stale/unknown 三档（不新编号） |
+| 3 | unknown / abstention | 观测/Watch | 仓内 fresh/stale/unknown 三档（不新编号）；协议 [`判定-unknown三分协议.md`](判定-unknown三分协议.md) |
 | 4 | HumanLatch override | 观测/Watch | C2（C1 作废率只旁注） |
 | 5 | e2e P95 latency + retrieval fallback rate | 观测/Watch | 不进 A–E 新编号；一行两字段 |
 | 6 | frozen gold canary pass rate | 离线 canary | D1/D5 口径可喂；票本身 defer |
@@ -82,6 +82,8 @@
 | B8 | k / 有效放行量 | 自然放行数等 | 实验-only | 实验门闩 | — | 生产只作可用性旁注 |
 
 SLI 1·2 的人标协议（分母、同一窗口、样本不足、B1 只作旁注）：[`抽检-放行误放误拒.md`](抽检-放行误放误拒.md)。B2 即 false-accept，B3 即 false-reject。两侧必须出现在同一周报表。缺一侧写「样本不足」，禁止写成 0%。禁止只报 B1 当成功。禁止单独优化拒拦率。字段改编自 [#514](https://github.com/luxingjiang1993/FreshLatch/pull/514) @ `948db415`。交付真源是 [#556](https://github.com/luxingjiang1993/FreshLatch/issues/556) / [#558](https://github.com/luxingjiang1993/FreshLatch/issues/558)，不把 #514 合并进来，也不在本表外再起一套放行 KPI。
+
+SLI 3 不进本表新编号。判定出口的 `fresh` / `stale` / `unknown` 三分、unknown/abstain 占比，以及「装绿=0」硬闸指针，见 [`判定-unknown三分协议.md`](判定-unknown三分协议.md)。unknown 不是失败。禁止把 abstention 改记成 B2 或 B3，也禁止把 unknown 压进 B2/B3 分母。对照 HALT-RAG abstention 与 Confident AI abstention/groundedness，不新建主名。ADR-0028 的找不到 / 找错 / 没用上仍是 phase-2 种子，不在这里升成平行失败三分。交付真源是 [#556](https://github.com/luxingjiang1993/FreshLatch/issues/556) / [#560](https://github.com/luxingjiang1993/FreshLatch/issues/560)。不合并 [#508](https://github.com/luxingjiang1993/FreshLatch/pull/508)。
 
 ### 3.3 人审 / 自治
 
@@ -144,6 +146,8 @@ SLI 4 的周报协议（C2 override rate、分母、样本不足、文首声明�
 
 **放行侧**：B2/B3 成对周报 · B6/B7 保持硬闸 · 不用单独放行率当成功  
 
+**判定出口**：SLI 3 三分同窗（[`判定-unknown三分协议.md`](判定-unknown三分协议.md)）· unknown 不是失败 · 装绿违例只指向既有硬闸  
+
 **人审**：最小 6 主字段是 C2（[`人审-override周报.md`](人审-override周报.md)）；C1 只旁注 · C5=0 持续监控  
 
 **复验主业**：D1 multi-run 不掉 · D3=0  
@@ -162,6 +166,7 @@ SLI 4 的周报协议（C2 override rate、分母、样本不足、文首声明�
 - A3/A4 抽检：样本 n、改对、严重错改  
 - A6 再验失败率  
 - B2/B3 成对，同一窗口（协议 [`抽检-放行误放误拒.md`](抽检-放行误放误拒.md)）；缺一侧写「样本不足」，禁止写成 0%；B1 只旁注；禁止单独优化拒拦率  
+- SLI 3：fresh、stale、unknown/abstain 同窗，外加装绿违例指针（协议 [`判定-unknown三分协议.md`](判定-unknown三分协议.md)）。分母为 0 写「样本不足」，禁止写成 0%。装绿违例未计写「未计」，禁止无证填 0。unknown 不是失败。禁止把 abstention 重标成 B2/B3，禁止把 unknown 压进 B2/B3 分母  
 - C2 override rate 与分母（协议 [`人审-override周报.md`](人审-override周报.md)）；分母为 0 写「样本不足」，禁止写成 0%；文首声明 ≠模型变好 / ≠验收绿灯；C1 作废率只旁注；C4 中位 minutes 仍是宽表库存，不是本波主 SLI  
 - D4 包结论分布  
 - D1/D5：若本周跑了离线评测则抄 multi-run；否则写「未跑」  
@@ -175,7 +180,8 @@ SLI 4 的周报协议（C2 override rate、分母、样本不足、文首声明�
 - 把本程称作实验成立或主实验成功  
 - 大屏产品 UI（本期）  
 - 把评测加严阈值写入 `CONTEXT.md`  
-- 合并 `#508`、`#511` 或 `#514`；改 `src/` 放行谓词或 HumanLatch 动词集；实现 T4–T6（#560–#562）  
+- 合并 `#508`、`#511` 或 `#514`；改 `src/` 放行谓词或 HumanLatch 动词集；实现 T5–T6（#561–#562）  
+- 把 abstention 重标成 false-accept / false-reject；把 unknown 当作失败或压进 B2/B3 分母；新建平行失败三分法 KPI  
 - 把 override rate 当成验收绿灯或模型变好  
 - 把 phase-2 六项或宽表其余 ID 升成本波主 SLI  
 - 本决议会话写业务代码（须 before-implement 后另开）
