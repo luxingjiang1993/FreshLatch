@@ -27,7 +27,7 @@
 | C1 作废率作为旁注 | 把 C1 升成最小 6 的第二个主字段，或另起平行 KPI 名 |
 | 只读 `latch_log` | 改 `src/`、改闸语义、回写路线 Y 成立格、把金标写进生产 score |
 
-judge–human calibration 留在索引附录的 phase-2，不进本页主行。
+judge–human calibration 留在 phase-2 旁表 [`旁表-人机校准.md`](旁表-人机校准.md)（[#573](https://github.com/luxingjiang1993/FreshLatch/issues/573) · Parent [#569](https://github.com/luxingjiang1993/FreshLatch/issues/569)），不进本页主行。那一页与本页分列：它报同窗可配对样本上的一致率和分歧谱，不改下面 §5 的 C2 列。与 C2 的差写在那一页 §1.1，不在本页重写 C2。
 
 ---
 
@@ -145,6 +145,16 @@ C1 旁注分母为 0 时，C1 格子同样写「样本不足」，C2 格子按�
 | `c1_rate` | 旁注-only。不得作为成功格，不得顶替 C2 |
 | `notes` | 写明未新增动词；若抄了 `invalidation_list` 条数，注明它不是分母 |
 
+上表列到此为止。不新增一致率列、六格列或方向列。
+
+### 5.1 与 P3 旁表分列（不占上表）
+
+judge–human calibration 的协议在 [`旁表-人机校准.md`](旁表-人机校准.md)。摘要进 phase-2 周报附录的 P3 行，不进上表。
+
+上表的 `c2_rate`、`override_true_n`、`override_labeled_n` 仍只服务 SLI 4。不把一致率、分歧谱或方向计数写进这些格子。
+
+C2 是已标注人审行上的单一 override rate。P3 是可配对样本上的谱。分母可以不同。一致率不是本页的 `c2_rate`，也不是用 `1 - c2_rate` 填出来的验收格。本页不把 P3 升成 Gate，不新增 HumanLatch 动词。
+
 ---
 
 ## 6. 账本指针（只读）
@@ -173,4 +183,4 @@ C1 旁注分母为 0 时，C1 格子同样写「样本不足」，C2 格子按�
 - 把金标放进生产 score 或在线放行器  
 - 实现 T4–T6（#560–#562）  
 - 新建 `tasks/SLO-06.md` 把宽表票升成第二真源（指针只在 `tasks/SLO-INDEX.md`）  
-- 把 judge–human calibration 从 phase-2 升进本页
+- 把 judge–human calibration 从 phase-2 升进本页（§5.1 只互指旁表，不把 P3 数字写入 §5 主列）
