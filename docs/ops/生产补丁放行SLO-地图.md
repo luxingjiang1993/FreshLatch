@@ -25,6 +25,7 @@
 | 2026-10-12 | T2 #558 协议摘字段 | SLI 1·2 成对协议落 `docs/ops/抽检-放行误放误拒.md`（adapt #514 @ `948db415`）。#514 仍 candidate，不合并。本行不是已发的 GitHub Decisions 评论。 |
 | 2026-10-12 | T3 #559 协议摘字段 | SLI 4 override 周报落 `docs/ops/人审-override周报.md`（adapt #511 @ `70286694`，主字段 C2，C1 旁注）。#511 仍 candidate，不合并。本行不是已发的 GitHub Decisions 评论。 |
 | 2026-10-12 | T4 #560 三分协议 | SLI 3 unknown/abstention 协议落 `docs/ops/判定-unknown三分协议.md`（new + adapt ADR-0028/I1 · 仓内 fresh/stale/unknown · #508 program）。对照 HALT-RAG / Confident AI，不新建主名。#508 仍 keep，不合并。本行不是已发的 GitHub Decisions 评论。 |
+| 2026-10-12 | T5 #561 周报协议 | SLI 5 e2e P95 + retrieval fallback 落 `docs/ops/延迟与检索回退周报.md`（new + adapt retrieval-decision blob `f1acb10f13828db241ae3e32afab7b26c8dd367e`）。同一行两字段。cost 留 phase-2。对照 NVIDIA RAG observability / Arize Phoenix，不新建 Phoenix-* 主名。#508 仍 keep，不合并。本行不是已发的 GitHub Decisions 评论。 |
 
 ## Decisions 一行模板（grill G17 · 可粘贴）
 
@@ -56,6 +57,7 @@ SLO-min6（grill 锁「按推荐」· Asia/Shanghai）：6 SLI 已钉；防火�
 - 同页二跑；把本程称作实验成立或主实验成功  
 - 金标当在线放行器或生产 score  
 - 合并 #508–#515 或本 PR（No merge until Matt）  
-- 实现 T5–T6（#561–#562）；改 `src/` 放行谓词  
+- 实现 T6（#562）；改 `src/` 放行谓词  
 - 把 abstention 重标成 false-accept / false-reject；把 unknown 当作失败或压进 FA/FR 分母；新建平行失败三分法 KPI  
+- 把 P95 单独当成放行成功；把 cost 升成本波主 SLI；新建 Phoenix-* 主 KPI 名  
 - 大屏运营 UI；改生产默认检索臂；扩 HumanLatch 动词  
