@@ -108,6 +108,7 @@ C-04 若再跑仍为丙：闸门可以很满，综合档停在 **L4**，实验�
 |---|---|
 | [`module-level-assessment-2026-10-12.md`](module-level-assessment-2026-10-12.md) | as-is / if-landed 档位与证据 |
 | 本清单 | A/B/C 缺口勾选；后续开票用 ID |
+| [`module-level-frontier-refs-ABC-2026-10-12.md`](module-level-frontier-refs-ABC-2026-10-12.md) | 各 ID 的 GitHub / 论文 / 产品可摘 pattern（只摘 fields/modes） |
 | draft PR #580 架构评估 | 另文；接线建议（检索臂进工具返回等）可作 A 的前置小票，不替代本清单 |
 
 本页**不开票**。勾选变为 `[x]` 须对应已合并实现或已关闭验收，不得空勾。
