@@ -16,13 +16,19 @@ from freshlatch.eval.patch_events_construct import STRATA
 from freshlatch.eval.patch_events_sensitivity import (
     BAD_OK_FALSE_MIN,
     CORRECT_OK_TRUE_MIN,
+    FROZEN_SENSITIVITY_SET_SHA256,
     REPORT_LAYER_STUB,
     SENSITIVITY_SET_S,
+    assert_formal_s_protocol,
+    assert_frozen_manifest,
     assert_set_s_locked,
     evaluate_s1_s4,
     make_table_driven_nli_stub,
+    render_sens_live2_report,
     render_sensitivity_report,
     run_sensitivity_cases,
+    sensitivity_set_sha256,
+    verify_source_sha256,
     write_sensitivity_report,
 )
 from freshlatch.eval.patch_events_verify import ENTAILMENT_TAU, XNLI_MODEL_ID
@@ -153,3 +159,61 @@ def test_report_does_not_mention_result_y_pass_or_yi_guarantee(tmp_path: Path):
     assert "保证乙" not in text or "不保证乙" in text
     assert "gate_passed**：否" in text
     assert "RESULT-Y" in text  # 防火墙提及
+
+
+def test_live2_formal_set_is_frozen_before_scoring():
+    """跑前锁：哈希、must-carry、ρ/τ、清单与协议页一致。"""
+    assert_formal_s_protocol(SENSITIVITY_SET_S)
+    digest = sensitivity_set_sha256(SENSITIVITY_SET_S)
+    assert digest == FROZEN_SENSITIVITY_SET_SHA256
+    assert digest == "baf33f5b9e0ea801c736d67385a94546fb6bd24af1ada0e4f27d1b9f5da1fa8c"
+    assert BAD_OK_FALSE_MIN == 0.90
+    assert CORRECT_OK_TRUE_MIN == 0.70
+    assert ENTAILMENT_TAU == 0.5
+    assert verify_source_sha256() == (
+        "58bdae90199bfcb901cc22622e7ebeedfbe800bd208b60858febeab069739918"
+    )
+    root = Path(__file__).resolve().parents[2]
+    manifest = root / "docs" / "evidence" / "patch-events" / "SENS-LIVE-2-set-S.jsonl"
+    protocol = root / "docs" / "evidence" / "patch-events" / "SENS-LIVE-2-PROTOCOL.md"
+    assert assert_frozen_manifest(manifest) == digest
+    protocol_text = protocol.read_text(encoding="utf-8")
+    assert digest in protocol_text
+    assert "DIAG-CHEF-03-bad" in protocol_text
+    assert "DIAG-CHEF-04-bad" in protocol_text
+    assert "尚未打分" in protocol_text
+    by_id = {sample.sample_id: sample for sample in SENSITIVITY_SET_S}
+    assert "不少于 3 年" in by_id["DIAG-CHEF-03-bad"].after_text
+    assert "大约" in by_id["DIAG-CHEF-04-bad"].evidence_text
+    assert "大约" not in by_id["DIAG-CHEF-04-bad"].after_text
+    assert sum(1 for sample in SENSITIVITY_SET_S if sample.gold == "坏") == 20
+
+
+def test_live2_report_refuses_activation_and_keeps_538_failure(tmp_path: Path):
+    rows = run_sensitivity_cases(SENSITIVITY_SET_S)
+    summary = evaluate_s1_s4(rows)
+    with pytest.raises(ValueError, match="activation"):
+        render_sens_live2_report(
+            summary,
+            rows,
+            activation_prerequisite_met=True,
+            frozen_sha256=FROZEN_SENSITIVITY_SET_SHA256,
+            verify_py_sha256="unused",
+            runtime_note="stub",
+        )
+    text = render_sens_live2_report(
+        summary,
+        rows,
+        activation_prerequisite_met=False,
+        frozen_sha256=FROZEN_SENSITIVITY_SET_SHA256,
+        verify_py_sha256="unused",
+        runtime_note="stub",
+    )
+    assert "activation_prerequisite_met**：否" in text
+    assert "DIAG ≠ S2" in text
+    assert "0.7000" in text
+    assert "PE-Y-05" in text
+    assert "heuristic" in text
+    out = tmp_path / "SENS-LIVE-2.md"
+    out.write_text(text, encoding="utf-8")
+    assert "activation_prerequisite_met**：是" not in out.read_text(encoding="utf-8")
