@@ -1,7 +1,7 @@
 # FreshLatch 水平缺口清单（If-landed → 顶尖 demo → L5）
 
 > 日期：2026-10-12。性质：只读规划清单。不开功能票、不改生产代码、不改 `PRODUCTION_RETRIEVAL_MODE`、不改 `RESULT-Y` / `PREREG-Y`。
-> 水平评估见 [`module-level-assessment-2026-10-12.md`](module-level-assessment-2026-10-12.md)。本页把后续缺口收成可勾选项，便于另开任务。
+> 水平评估见 [`module-level-assessment-2026-10-12.md`](module-level-assessment-2026-10-12.md)。前沿参考（按本页 ID）见 [`module-level-frontier-refs-ABC-2026-10-12.md`](module-level-frontier-refs-ABC-2026-10-12.md)。本页把后续缺口收成可勾选项，便于另开任务。
 > 标尺：L1–L5 同评估文档。整体档取主链木桶（Function Call / RAG / AI Agent）。
 
 ## 0. 怎么读
