@@ -688,9 +688,22 @@ def formal_freeze_sha256(samples: Sequence[Mapping[str, Any]]) -> str:
     return hashlib.sha256(blob).hexdigest()
 
 
+def _verify_py_path() -> Path:
+    return Path(__file__).resolve().parent / "patch_events_verify.py"
+
+
+def _normalize_py_newlines(raw: bytes) -> bytes:
+    """把工作区 CRLF 折成 LF 再哈希。
+
+    ``VERIFY_PY_SHA256`` 锁的是 LF 字节。Windows checkout 会把同一文件写成 CRLF，
+    原始字节哈希会假性不一致。只折叠 CRLF，单独的 CR 保留，其它内容改动仍改变摘要。
+    """
+    return raw.replace(b"\r\n", b"\n")
+
+
 def _verify_py_sha256() -> str:
-    path = Path(__file__).resolve().parent / "patch_events_verify.py"
-    return hashlib.sha256(path.read_bytes()).hexdigest()
+    raw = _verify_py_path().read_bytes()
+    return hashlib.sha256(_normalize_py_newlines(raw)).hexdigest()
 
 
 def samples_from_freeze(records: Sequence[Mapping[str, Any]]) -> list[SensitivitySample]:

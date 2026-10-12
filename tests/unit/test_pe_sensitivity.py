@@ -224,6 +224,58 @@ def test_formal_freeze_keeps_must_carry_and_s2_denominator(capsys, monkeypatch):
     assert "大约" not in chef04["after_text"]
 
 
+def _crlf_verify_copy(tmp_path: Path) -> Path:
+    """模拟 Windows checkout：同一 LF 源文件写成 CRLF，不改其它字节。"""
+    from freshlatch.eval.patch_events_sensitivity import _verify_py_path
+
+    raw = _verify_py_path().read_bytes()
+    assert b"\r" not in raw
+    path = tmp_path / "patch_events_verify.py"
+    path.write_bytes(raw.replace(b"\n", b"\r\n"))
+    return path
+
+
+def test_verify_py_crlf_matches_lf_pin_but_content_change_does_not(tmp_path: Path, monkeypatch):
+    """CRLF 检出不得假性打破仪器锁；改 τ 文本后摘要必须离开 LF 冻结值。"""
+    import hashlib
+
+    from freshlatch.eval import patch_events_sensitivity as sens
+
+    raw = sens._verify_py_path().read_bytes()
+    assert hashlib.sha256(raw).hexdigest() == sens.VERIFY_PY_SHA256
+    crlf = raw.replace(b"\n", b"\r\n")
+    assert hashlib.sha256(crlf).hexdigest() != sens.VERIFY_PY_SHA256
+    crlf_path = tmp_path / "patch_events_verify.py"
+    crlf_path.write_bytes(crlf)
+    monkeypatch.setattr(sens, "_verify_py_path", lambda: crlf_path)
+    assert sens._verify_py_sha256() == sens.VERIFY_PY_SHA256
+
+    changed = crlf.replace(b"ENTAILMENT_TAU = 0.5", b"ENTAILMENT_TAU = 0.4", 1)
+    assert changed != crlf
+    changed_path = tmp_path / "patch_events_verify_changed.py"
+    changed_path.write_bytes(changed)
+    monkeypatch.setattr(sens, "_verify_py_path", lambda: changed_path)
+    assert sens._verify_py_sha256() != sens.VERIFY_PY_SHA256
+
+
+def test_crlf_checkout_keeps_must_carry_gate(tmp_path: Path, monkeypatch):
+    """Windows 语义下，仪器锁通过后仍走正式 S 的 must-carry / 分母断言。"""
+    from freshlatch.eval import patch_events_sensitivity as sens
+
+    crlf_path = _crlf_verify_copy(tmp_path)
+    monkeypatch.setattr(sens, "_verify_py_path", lambda: crlf_path)
+    monkeypatch.setattr(
+        verify_mod,
+        "predict_xnli_probs",
+        lambda _p, _h: {"entailment": 0.05, "neutral": 0.10, "contradiction": 0.85},
+    )
+    payload = sens.run_sens_live2(log=None)
+    assert payload["summary"]["n_bad"] == 20
+    bad_ids = {row["sample_id"] for row in payload["rows"] if row["gold"] == "坏"}
+    assert "DIAG-CHEF-03-bad" in bad_ids
+    assert "DIAG-CHEF-04-bad" in bad_ids
+
+
 def test_hash_mismatch_does_not_call_nli(tmp_path: Path, monkeypatch):
     from freshlatch.eval.patch_events_sensitivity import load_formal_freeze, run_sens_live2
 
@@ -247,6 +299,35 @@ def test_hash_mismatch_does_not_call_nli(tmp_path: Path, monkeypatch):
     assert raw
     with pytest.raises(RuntimeError, match="正式冻结"):
         run_sens_live2(freeze_path=path, log=None)
+    assert called == []
+
+
+def test_hash_mismatch_under_crlf_does_not_call_nli(tmp_path: Path, monkeypatch):
+    """CRLF 仪器锁通过后，名单哈希不符仍拒绝开跑，且不调用 NLI。"""
+    from freshlatch.eval import patch_events_sensitivity as sens
+
+    crlf_path = _crlf_verify_copy(tmp_path)
+    monkeypatch.setattr(sens, "_verify_py_path", lambda: crlf_path)
+    called: list[str] = []
+
+    def _boom(_premise: str, _hypothesis: str) -> dict[str, float]:
+        called.append("predict")
+        return {"entailment": 0.1, "neutral": 0.1, "contradiction": 0.8}
+
+    monkeypatch.setattr(verify_mod, "predict_xnli_probs", _boom)
+    _header, records, _raw = sens.load_formal_freeze()
+    mutated = dict(records[0])
+    mutated["note"] = str(mutated["note"]) + "改"
+    header, _records, _file_raw = sens.load_formal_freeze()
+    lines = [json.dumps(header, ensure_ascii=False, sort_keys=True)]
+    lines.append(json.dumps(mutated, ensure_ascii=False, sort_keys=True))
+    for record in records[1:]:
+        lines.append(json.dumps(record, ensure_ascii=False, sort_keys=True))
+    freeze_path = tmp_path / "formal-S.jsonl"
+    freeze_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    with pytest.raises(RuntimeError, match="正式冻结") as exc_info:
+        sens.run_sens_live2(freeze_path=freeze_path, log=None)
+    assert "patch_events_verify.py" not in str(exc_info.value)
     assert called == []
 
 
