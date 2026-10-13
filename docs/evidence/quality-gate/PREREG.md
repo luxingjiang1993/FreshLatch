@@ -206,7 +206,9 @@ DECISION-16 与 2026-10-07 的换臂是人的产品决定。它不充当本页�
 corpus_aggregate_sha256: 569597e1441363799f8da487cdd9102a9a769de07baaf6cebc4033466ab1adfd
 questions_aggregate_sha256: 4221c5e0ad9983b112e432496fe78fe5125d9781d63973451a650d326b5cd952
 config_sha256: 54736467729ccdc14aa1c9704908bf6f9dbc9292005488a92ae73edb23cfa2d6
-owner_freeze: pending
+owner_freeze: confirmed
+
+主人确认：2026-10-13（UTC+8）。
 
 模型针（与第 2 节同一组）：
 
