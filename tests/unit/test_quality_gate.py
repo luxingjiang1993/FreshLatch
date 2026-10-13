@@ -21,6 +21,7 @@ from freshlatch.eval.quality_gate import (
     parse_owner_freeze,
     run_quality_gate,
 )
+from freshlatch.eval.retrieve_typed import compute_x1_fingerprints
 from freshlatch.packs import repo_root
 
 ROOT = repo_root()
@@ -31,6 +32,7 @@ SECRET = "sekret-should-not-leak"
 def _run(*args: str) -> subprocess.CompletedProcess[str]:
     env = os.environ.copy()
     env["PYTHONIOENCODING"] = "utf-8"
+    env["PYTHONUTF8"] = "1"
     env["DASHSCOPE_API_KEY"] = SECRET + "-dash"
     env["DEEPSEEK_API_KEY"] = SECRET + "-deep"
     env["MOONSHOT_API_KEY"] = SECRET + "-moon"
@@ -39,9 +41,16 @@ def _run(*args: str) -> subprocess.CompletedProcess[str]:
         cwd=ROOT,
         capture_output=True,
         text=True,
+        encoding="utf-8",
+        errors="replace",
         env=env,
         check=False,
     )
+
+
+def _stdio(proc: subprocess.CompletedProcess[str]) -> tuple[str, str]:
+    """Windows 上解码失败时 stdout/stderr 可能是 None。"""
+    return proc.stdout or "", proc.stderr or ""
 
 
 def test_parse_owner_freeze_one_line_only():
@@ -69,17 +78,19 @@ def test_forbid_paid_env_blocks_read_without_returning_value(monkeypatch):
 
 def test_cli_refuses_without_offline():
     proc = _run("quality-gate", "--prereg", str(PREREG))
+    stdout, stderr = _stdio(proc)
     assert proc.returncode == 2
-    assert "未设置 --offline" in proc.stderr
-    assert SECRET not in proc.stdout + proc.stderr
-    assert "locked_gate=true" not in proc.stdout
+    assert "未设置 --offline" in stderr
+    assert SECRET not in stdout + stderr
+    assert "locked_gate=true" not in stdout
 
 
 def test_cli_missing_prereg():
     proc = _run("quality-gate", "--offline", "--prereg", str(ROOT / "missing-prereg.md"))
+    stdout, stderr = _stdio(proc)
     assert proc.returncode == 1
-    assert "不存在" in proc.stderr
-    assert SECRET not in proc.stdout + proc.stderr
+    assert "不存在" in stderr
+    assert SECRET not in stdout + stderr
 
 
 def test_owner_freeze_pending_is_not_locked(tmp_path, capsys):
@@ -166,10 +177,58 @@ def test_module_entrypoint_matches_command_shape():
         "--prereg",
         "docs/evidence/quality-gate/PREREG.md",
     )
-    assert proc.returncode == 0, proc.stderr
-    assert "segment id=A1 status=unregistered" in proc.stdout
-    assert "status=pass" not in proc.stdout
-    assert SECRET not in proc.stdout + proc.stderr
+    stdout, stderr = _stdio(proc)
+    assert proc.returncode == 0, stderr
+    assert "segment id=A1 status=unregistered" in stdout
+    assert "status=pass" not in stdout
+    assert SECRET not in stdout + stderr
+
+
+def test_lf_fingerprint_matches_crlf_bytes(tmp_path):
+    """同一正文的 CRLF 检出，按 lf 口径必须对上 LF 指纹。"""
+    corpus = tmp_path / "corpus" / "t0"
+    traps = tmp_path / "traps" / "t1"
+    corpus.mkdir(parents=True)
+    traps.mkdir(parents=True)
+    files = [
+        corpus / "a.md",
+        traps / "b.md",
+        tmp_path / "questions.json",
+        tmp_path / "config.json",
+    ]
+    lf_payloads = [
+        "甲行\n乙行\n".encode("utf-8"),
+        "丙\n".encode("utf-8"),
+        b'{"queries":[]}\n',
+        b'{"top_k":10}\n',
+    ]
+    for path, payload in zip(files, lf_payloads):
+        path.write_bytes(payload)
+    lf = compute_x1_fingerprints(
+        corpus=tmp_path / "corpus",
+        traps=tmp_path / "traps",
+        questions=tmp_path / "questions.json",
+        config=tmp_path / "config.json",
+        newline="lf",
+    )
+    for path, payload in zip(files, lf_payloads):
+        path.write_bytes(payload.replace(b"\n", b"\r\n"))
+    crlf = compute_x1_fingerprints(
+        corpus=tmp_path / "corpus",
+        traps=tmp_path / "traps",
+        questions=tmp_path / "questions.json",
+        config=tmp_path / "config.json",
+        newline="lf",
+    )
+    raw = compute_x1_fingerprints(
+        corpus=tmp_path / "corpus",
+        traps=tmp_path / "traps",
+        questions=tmp_path / "questions.json",
+        config=tmp_path / "config.json",
+    )
+    assert crlf == lf
+    assert raw["config_sha256"] != lf["config_sha256"]
+    assert raw["corpus_aggregate_sha256"] != lf["corpus_aggregate_sha256"]
 
 
 def test_live_invocation_refused(capsys):

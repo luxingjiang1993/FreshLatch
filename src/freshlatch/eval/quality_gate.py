@@ -27,6 +27,7 @@ from freshlatch.eval.retrieve_typed import (
     compute_x1_fingerprints,
     conflict_pair_correct,
     fingerprints_match,
+    parse_prereg_fingerprints,
     guardrail_pass,
     require_as_of,
     score_role_of,
@@ -34,7 +35,7 @@ from freshlatch.eval.retrieve_typed import (
 from freshlatch.models import LOCAL_EMBED_MODEL, NEURAL_RERANK_MODEL
 from freshlatch.packs import repo_root
 from freshlatch.store.base import PRODUCTION_RETRIEVAL_MODE
-from freshlatch.store.checksum import sha256_hex
+from freshlatch.store.checksum import normalize_newlines, sha256_hex
 from freshlatch.store.local_embed import LOCAL_EMBED_DIM
 from freshlatch.store.neural_rerank import NEURAL_RERANK_K
 from freshlatch.store.pipeline import RRF_K
@@ -190,7 +191,8 @@ def _fmt(value: float) -> str:
 
 
 def _sha256_file(path: Path) -> str:
-    return sha256_hex(path.read_bytes())
+    """冻结 sha 按 LF 字节。Windows 检出的 CRLF 先折回 LF。"""
+    return sha256_hex(normalize_newlines(path.read_bytes(), "lf"))
 
 
 def build_unregistered_rows(root: Path) -> list[ReportRow]:
@@ -538,9 +540,14 @@ def _run(
         traps=root / TRAPS_REL,
         questions=root / QUESTIONS_REL,
         config=root / CONFIG_REL,
+        newline="lf",
     )
     if not fingerprints_match(text, computed):
-        print("指纹不一致", file=sys.stderr)
+        parsed = parse_prereg_fingerprints(text)
+        detail = ["指纹不一致"]
+        for key in PREREG_FP_KEYS:
+            detail.append(f"  {key} file={parsed.get(key)} computed={computed.get(key)}")
+        print("\n".join(detail), file=sys.stderr)
         return 1
 
     fastembed_ver = _check_pins(root, text)

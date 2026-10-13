@@ -27,7 +27,7 @@ from freshlatch.eval.retrieve_eval import (
 )
 from freshlatch.eval.x1_checks import check_x1
 from freshlatch.store.base import PRODUCTION_RETRIEVAL_MODE, InMemoryStore, chunk_evidence_id
-from freshlatch.store.checksum import aggregate_checksum, sha256_hex
+from freshlatch.store.checksum import aggregate_checksum, normalize_newlines, sha256_hex
 from freshlatch.store.embed_cache import EMBED_CACHE_TABLE, embed_texts_cached, make_embed_cache_key
 from freshlatch.store.ingest import load_corpus
 from freshlatch.store.pipeline import RRF_K
@@ -155,8 +155,12 @@ def compute_x1_fingerprints(
     traps: Path,
     questions: Path,
     config: Path,
+    newline: str | None = None,
 ) -> dict[str, str]:
-    """口径同 RET-01.4：语料聚合 root 为 corpus 与 traps 的共同父目录。"""
+    """口径同 RET-01.4：语料聚合 root 为 corpus 与 traps 的共同父目录。
+
+    ``newline`` 缺省时哈希原始字节。质量闸传 ``lf``，让 Windows CRLF 检出对上冻结指纹。
+    """
     corpus = Path(corpus)
     traps = Path(traps)
     questions = Path(questions)
@@ -164,11 +168,11 @@ def compute_x1_fingerprints(
     md_files = sorted(corpus.rglob("*.md")) + sorted(traps.rglob("*.md"))
     root = corpus.parent
     return {
-        "corpus_aggregate_sha256": aggregate_checksum(md_files, root=root),
+        "corpus_aggregate_sha256": aggregate_checksum(md_files, root=root, newline=newline),
         "questions_aggregate_sha256": aggregate_checksum(
-            [questions], root=questions.parent
+            [questions], root=questions.parent, newline=newline
         ),
-        "config_sha256": sha256_hex(config.read_bytes()),
+        "config_sha256": sha256_hex(normalize_newlines(config.read_bytes(), newline)),
     }
 
 
