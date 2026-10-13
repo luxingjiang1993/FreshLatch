@@ -14,6 +14,11 @@ p95 与 guardrail / conflict_pair / multi_hop 不参与产品地板。
 不调用付费 LLM，不读取 DASHSCOPE_API_KEY / DEEPSEEK_API_KEY / MOONSHOT_API_KEY。
 不调用 eval run / control / control-c。
 QG-04 的 1 次新基线运行不在本模块。
+QG-11 在三段 segment 行之后、R1 之前另印四条描述性指标：
+G1 与 gold.json 三档的一致性、A1 的 citation recall / citation precision、
+T1 的 new-over-old accuracy。这四条 status=TBD，counted_as_pass=false。
+低分、unavailable 与 unresolved 都不改退出码。不把它们放进 REQUIRED_METRICS，
+也不为这三段发明绝对百分数。
 """
 
 from __future__ import annotations
@@ -62,6 +67,14 @@ BASELINE_SUMMARY_REL = Path("docs/evidence/neural-rerank/summary.json")
 BASELINE_PER_QUERY_REL = Path("docs/evidence/neural-rerank/per-query.json")
 EXCLUDED_SUMMARY_REL = Path("docs/evidence/x1-retrieval-modes/summary.json")
 TRAP_SMOKE_REL = Path("data/eval/retrieve_traps.json")
+# G1 期望标签只读这三档。must_fresh_distractor 不是期望桶。
+GOLD_REL = Path("data/eval/gold.json")
+# must_stale 与 must_unknown 都对应 should_refuse，但它们仍是两个不同的桶。
+_GOLD_EXPECT_BUCKETS = (
+    ("must_stale", "should_refuse"),
+    ("must_unknown", "should_refuse"),
+    ("must_fresh", "should_pass"),
+)
 
 QUESTIONS_SHA256 = "2cd7c5fb1e14859049c148e4dafc95b4d3c0abb4fa1080965dcc57b0d57c73fe"
 BASELINE_SHA256 = "8fb4f1271b844c979b28bf351cf22ecbad354e3f5f35f7d2e1e7d760efb8e526"
@@ -665,6 +678,334 @@ def _trap_row(root: Path) -> ReportRow:
     )
 
 
+@dataclass(frozen=True)
+class GuardAgreement:
+    """G1：keep 条的 label 与 gold.json 三档期望是否一致。value 不是模型拒绝率。"""
+
+    n: int
+    scored: int
+    correct: int
+    unresolved: int
+    n_should_refuse: int
+    n_should_pass: int
+    value: str
+
+
+@dataclass(frozen=True)
+class SetOverlap:
+    """A1 的一条集合重叠。scored 为 0 时 value 为 unavailable。"""
+
+    n: int
+    scored: int
+    unresolved: int
+    value: str
+
+
+@dataclass(frozen=True)
+class CitationOverlap:
+    """citation recall 与 citation precision。两条共用 n，scored 各自计算。"""
+
+    recall: SetOverlap
+    precision: SetOverlap
+
+
+@dataclass(frozen=True)
+class RankAgreement:
+    """T1：冻结名次上 conflict_pair_correct 为真的比例。"""
+
+    n: int
+    scored: int
+    correct: int
+    unresolved: int
+    value: str
+
+
+def _accuracy_value(correct: int, scored: int) -> str:
+    """scored 为 0 时不把准确率补成 0 或 1。"""
+    if scored == 0:
+        return "unavailable"
+    return _fmt(correct / scored)
+
+
+def _overlap_value(hit: int, denom: int, *, scored: int) -> str:
+    """scored 为 0 时不除。scored 大于 0 时分母是支撑集或引用集的大小之和。"""
+    if scored == 0:
+        return "unavailable"
+    return _fmt(hit / denom)
+
+
+def _id_set(value: Any) -> set[str]:
+    """精确 id 字符串集合。不是列表就是空集。"""
+    if not isinstance(value, list):
+        return set()
+    return {str(item) for item in value}
+
+
+def _questions_by_id(queries: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
+    by_id: dict[str, dict[str, Any]] = {}
+    for item in queries:
+        if not isinstance(item, dict) or "id" not in item:
+            continue
+        key = str(item["id"])
+        if key not in by_id:
+            by_id[key] = item
+    return by_id
+
+
+def _first_named(source_refs: Any, by_id: dict[str, Any]) -> Any | None:
+    """source_refs 里第一个能对上键的引用。不排序，不读 label。"""
+    if not isinstance(source_refs, list):
+        return None
+    for ref in source_refs:
+        found = by_id.get(str(ref))
+        if found is not None:
+            return found
+    return None
+
+
+def _read_json_object(path: Path) -> dict[str, Any] | None:
+    """文件不在返回 None。在但不是 JSON 对象则破坏契约。"""
+    if not path.is_file():
+        return None
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise ContractError(f"{path.name} 不是 JSON") from exc
+    if not isinstance(payload, dict):
+        raise ContractError(f"{path.name} 不是对象")
+    return payload
+
+
+def _items_or_empty(path: Path) -> list[dict[str, Any]]:
+    """正式文件缺失时没有 keep 条。调用方据此得到 n=0、value=unavailable。"""
+    payload = _read_json_object(path)
+    if payload is None:
+        return []
+    raw = payload.get("items")
+    if not isinstance(raw, list):
+        raise ContractError(f"{path.name} 缺少 items")
+    return [item for item in raw if isinstance(item, dict)]
+
+
+def _segment_file(seg_id: str) -> str:
+    for spec in UNREGISTERED_SEGMENTS:
+        if spec["id"] == seg_id:
+            return str(spec["file"])
+    raise ContractError(f"未知段: {seg_id}")
+
+
+def gold_bucket_expected(source_refs: Any, gold: dict[str, Any]) -> str | None:
+    """主张 id 对上 gold.json 三档后的期望标签。
+
+    不读条目的 label，也不读 policy_id。没有命中，或命中了两个不同桶，返回 None。
+    must_stale 与 must_unknown 期望相同，但仍算两个桶。must_fresh_distractor 不算。
+    """
+    if not isinstance(source_refs, list) or not isinstance(gold, dict):
+        return None
+    buckets = {
+        name: _id_set(gold.get(name))
+        for name, _expected in _GOLD_EXPECT_BUCKETS
+    }
+    hit: list[str] = []
+    for ref in source_refs:
+        key = str(ref)
+        for name, _expected in _GOLD_EXPECT_BUCKETS:
+            if key in buckets[name] and name not in hit:
+                hit.append(name)
+    if len(hit) != 1:
+        return None
+    expected_of = {name: expected for name, expected in _GOLD_EXPECT_BUCKETS}
+    return expected_of[hit[0]]
+
+
+def score_guard_should_accuracy(
+    items: list[dict[str, Any]],
+    gold: dict[str, Any],
+) -> GuardAgreement:
+    """keep 条里 label 等于分桶期望的比例。n_should_* 只计 label，不是率。"""
+    n = 0
+    scored = 0
+    correct = 0
+    n_should_refuse = 0
+    n_should_pass = 0
+    for item in items:
+        if not isinstance(item, dict) or item.get("disposition") != "keep":
+            continue
+        n += 1
+        expected = gold_bucket_expected(item.get("source_refs"), gold)
+        label = item.get("label")
+        if label == "should_refuse":
+            n_should_refuse += 1
+        elif label == "should_pass":
+            n_should_pass += 1
+        if expected is None:
+            continue
+        scored += 1
+        if label == expected:
+            correct += 1
+    return GuardAgreement(
+        n=n,
+        scored=scored,
+        correct=correct,
+        unresolved=n - scored,
+        n_should_refuse=n_should_refuse,
+        n_should_pass=n_should_pass,
+        value=_accuracy_value(correct, scored),
+    )
+
+
+def score_citation_overlap(
+    items: list[dict[str, Any]],
+    questions_by_id: dict[str, dict[str, Any]],
+) -> CitationOverlap:
+    """来源题 relevant 为支撑集 R，cited_ids 为 C。distractors 不进入 R。
+
+    recall 只收入对上来源题且 |R|>0 的 keep 条，value = sum(|C∩R|) / sum(|R|)。
+    precision 只收入对上来源题且 |C|>0 的 keep 条，value = sum(|C∩R|) / sum(|C|)。
+    空 cited_ids 不进 precision 分母。
+    """
+    n = 0
+    recall_scored = 0
+    recall_hit = 0
+    recall_support = 0
+    precision_scored = 0
+    precision_hit = 0
+    precision_cited = 0
+    for item in items:
+        if not isinstance(item, dict) or item.get("disposition") != "keep":
+            continue
+        n += 1
+        question = _first_named(item.get("source_refs"), questions_by_id)
+        if not isinstance(question, dict):
+            continue
+        relevant = _id_set(question.get("relevant"))
+        cited = _id_set(item.get("cited_ids"))
+        overlap = len(cited & relevant)
+        if relevant:
+            recall_scored += 1
+            recall_hit += overlap
+            recall_support += len(relevant)
+        if cited:
+            precision_scored += 1
+            precision_hit += overlap
+            precision_cited += len(cited)
+    return CitationOverlap(
+        recall=SetOverlap(
+            n=n,
+            scored=recall_scored,
+            unresolved=n - recall_scored,
+            value=_overlap_value(recall_hit, recall_support, scored=recall_scored),
+        ),
+        precision=SetOverlap(
+            n=n,
+            scored=precision_scored,
+            unresolved=n - precision_scored,
+            value=_overlap_value(precision_hit, precision_cited, scored=precision_scored),
+        ),
+    )
+
+
+def score_new_over_old_accuracy(
+    items: list[dict[str, Any]],
+    rankings: dict[str, list[str]] | None,
+) -> RankAgreement:
+    """source_refs 里第一个冻结题 id 的 k10 名次交给 conflict_pair_correct。
+
+    该函数不读 precedence。没有冻结名次的条（例如只在冒烟题里）算 unresolved，不另跑检索。
+    """
+    table: dict[str, Any] = dict(rankings) if rankings else {}
+    n = 0
+    scored = 0
+    correct = 0
+    for item in items:
+        if not isinstance(item, dict) or item.get("disposition") != "keep":
+            continue
+        n += 1
+        ranked = _first_named(item.get("source_refs"), table)
+        if not isinstance(ranked, list):
+            continue
+        pair: dict[str, Any] = {}
+        if "in_force" in item:
+            pair["in_force"] = item["in_force"]
+        if "superseded" in item:
+            pair["superseded"] = item["superseded"]
+        scored += 1
+        if conflict_pair_correct([str(part) for part in ranked], pair):
+            correct += 1
+    return RankAgreement(
+        n=n,
+        scored=scored,
+        correct=correct,
+        unresolved=n - scored,
+        value=_accuracy_value(correct, scored),
+    )
+
+
+def _guard_metric_row(score: GuardAgreement) -> ReportRow:
+    extra = (
+        f"n={score.n} scored={score.scored} correct={score.correct} "
+        f"unresolved={score.unresolved} "
+        f"n_should_refuse={score.n_should_refuse} "
+        f"n_should_pass={score.n_should_pass} "
+        f"source=gold-bucket-agreement"
+    )
+    return _metric_line(
+        "G1-should-refuse-accuracy",
+        value=score.value,
+        baseline="none",
+        extra=extra,
+    )
+
+
+def _overlap_metric_row(row_id: str, score: SetOverlap) -> ReportRow:
+    extra = (
+        f"n={score.n} scored={score.scored} unresolved={score.unresolved} "
+        f"source=cited-vs-relevant"
+    )
+    return _metric_line(row_id, value=score.value, baseline="none", extra=extra)
+
+
+def _temporal_metric_row(score: RankAgreement) -> ReportRow:
+    extra = (
+        f"n={score.n} scored={score.scored} correct={score.correct} "
+        f"unresolved={score.unresolved} source=frozen-per-query-replay"
+    )
+    return _metric_line(
+        "T1-new-over-old-accuracy",
+        value=score.value,
+        baseline="none",
+        extra=extra,
+    )
+
+
+def build_descriptive_metric_rows(
+    root: Path,
+    *,
+    queries: list[dict[str, Any]],
+    rankings: dict[str, list[str]] | None,
+) -> list[ReportRow]:
+    """四条描述性指标。段行仍由 build_unregistered_rows 打印，这里不改那些字面。"""
+    gold = _read_json_object(root / GOLD_REL) or {}
+    guard = score_guard_should_accuracy(
+        _items_or_empty(root / _segment_file("G1-should-refuse")),
+        gold,
+    )
+    citation = score_citation_overlap(
+        _items_or_empty(root / _segment_file("A1")),
+        _questions_by_id(queries),
+    )
+    temporal = score_new_over_old_accuracy(
+        _items_or_empty(root / _segment_file("T1-new-over-old")),
+        rankings,
+    )
+    return [
+        _guard_metric_row(guard),
+        _overlap_metric_row("A1-citation-recall", citation.recall),
+        _overlap_metric_row("A1-citation-precision", citation.precision),
+        _temporal_metric_row(temporal),
+    ]
+
+
 def _run(
     *,
     offline: bool,
@@ -769,6 +1110,7 @@ def _run(
     registered = parse_registered_segments(text)
     rows = [
         *build_unregistered_rows(root, registered=registered),
+        *build_descriptive_metric_rows(root, queries=queries, rankings=rankings),
         _metric_line(
             "R1-recall@10",
             value=recall_value,
