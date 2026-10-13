@@ -1013,26 +1013,40 @@ def test_prereg_floors_copy_result_fence_tokens():
 
 
 def test_track_a_floor_literals_stay_out_of_runner():
-    """本票新增行不含 G1/A1/T1 地板数字。R1 两条常数仍只服务 R1。"""
-    diff = subprocess.run(
-        ["git", "diff", "-U0", "origin/main", "--", "src/freshlatch/eval/quality_gate.py"],
-        cwd=ROOT,
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-        check=True,
-    ).stdout
-    added = "\n".join(
-        line[1:] for line in diff.splitlines()
-        if line.startswith("+") and not line.startswith("+++")
-    )
-    for floor in _prereg_floors().values():
-        assert floor.value not in added
-    source = (ROOT / "src" / "freshlatch" / "eval" / "quality_gate.py").read_text(encoding="utf-8")
+    """扫描当前 quality_gate.py。G1/A1/T1 地板 token 不在 runner 里。不调用 git。
+
+    `1.0` 单独出现太宽：护栏计分已有 `1.0 if guardrail_pass`。
+    短 token 只禁止整行地板，以及除护栏行以外的浮点字面量。
+    """
+    path = ROOT / "src" / "freshlatch" / "eval" / "quality_gate.py"
+    source = path.read_text(encoding="utf-8")
+    lines = source.splitlines()
+    floors = _prereg_floors()
     assert "R1_RECALL_AT_10_FLOOR = 0.9732142857142857" in source
     assert "R1_MRR_AT_10_FLOOR = 0.8381855867346939" in source
     floor_names = [name for name in vars(qg) if name.endswith("_FLOOR")]
     assert floor_names == ["R1_RECALL_AT_10_FLOOR", "R1_MRR_AT_10_FLOOR"]
+    for floor in floors.values():
+        exact = (
+            f"{floor.value} n={floor.n} scored={floor.scored} "
+            f"unresolved={floor.unresolved}"
+        )
+        assert exact not in source
+        if floor.value != "1.0":
+            assert floor.value not in source
+    r1_literals = {"0.9732142857142857", "0.8381855867346939"}
+    tree = ast.parse(source)
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Constant) or not isinstance(node.value, float):
+            continue
+        literal = ast.get_source_segment(source, node)
+        line = lines[node.lineno - 1]
+        if literal in r1_literals:
+            assert "R1_" in line and "_FLOOR" in line
+            continue
+        if literal in {"1.0", "0.0"} and "guardrail_pass" in line:
+            continue
+        raise AssertionError(f"意外的浮点字面量 {literal} 在第 {node.lineno} 行")
 
 
 def test_enforce_report_registered_segment_is_tbd():
