@@ -5,6 +5,7 @@
 
 只核对冻结身份，并用已有离线资产回放描述数字。通过线仍是 TBD 的列不判失败。
 A1、should-refuse / should-pass、new-over-old 保持 unregistered，不得记成通过。
+三段金标的字段表挂在 UNREGISTERED_SEGMENTS 上，本模块不创建 JSON，也不按表判分。
 不调用付费 LLM，不读取 DASHSCOPE_API_KEY / DEEPSEEK_API_KEY / MOONSHOT_API_KEY。
 QG-04 的 1 次新基线运行不在本模块。
 """
@@ -73,18 +74,74 @@ N_MULTI_HOP = 45
 N_CONFLICT = 3
 QUESTION_STATUS = "owner-delegated-model-reviewed"
 
+# G1 / A1 / T1 金标字段表。F2 草稿与 F3 定稿共用。
+# final 时 human_row_review 必须为 true，且 reviewer 非空。那是定稿不变量，不是本闸的通过。
+# 缺文件，或文件已在但通过线未写死，都仍是 unregistered，counted_as_pass 保持 false。
+GOLD_META_FIELDS = (
+    "status",
+    "human_row_review",
+    "reviewer",
+)
+GOLD_META_STATUSES = frozenset({"draft", "final"})
+
+GUARD_SHOULD_ITEM_FIELDS = (
+    "id",
+    "policy_id",
+    "label",
+    "text",
+    "source_refs",
+)
+GUARD_SHOULD_LABELS = frozenset({"should_refuse", "should_pass"})
+
+CITE_SENTENCE_ITEM_FIELDS = (
+    "id",
+    "sentence",
+    "cited_ids",
+    "label",
+    "source_refs",
+)
+CITE_SENTENCE_LABELS = frozenset({"supported", "false_cite", "miss_cite"})
+# 首版同时报告这两项。Faithfulness 公式不进首版通过线。
+CITE_SENTENCE_METRICS = (
+    "citation recall",
+    "citation precision",
+)
+
+TEMPORAL_NEW_OVER_OLD_ITEM_FIELDS = (
+    "id",
+    "query",
+    "as_of",
+    "in_force",
+    "superseded",
+    "source_refs",
+)
+# 与 R1 Recall@10 分列。不写绝对百分数。
+TEMPORAL_NEW_OVER_OLD_METRIC = "new-over-old accuracy"
+
 UNREGISTERED_SEGMENTS = (
     {
         "id": "G1-should-refuse",
         "file": "data/eval/guard_should.json",
+        "meta_fields": GOLD_META_FIELDS,
+        "item_fields": GUARD_SHOULD_ITEM_FIELDS,
+        "labels": GUARD_SHOULD_LABELS,
+        "metrics": (),
     },
     {
         "id": "A1",
         "file": "data/eval/cite_sentence.json",
+        "meta_fields": GOLD_META_FIELDS,
+        "item_fields": CITE_SENTENCE_ITEM_FIELDS,
+        "labels": CITE_SENTENCE_LABELS,
+        "metrics": CITE_SENTENCE_METRICS,
     },
     {
         "id": "T1-new-over-old",
         "file": "data/eval/temporal_new_over_old.json",
+        "meta_fields": GOLD_META_FIELDS,
+        "item_fields": TEMPORAL_NEW_OVER_OLD_ITEM_FIELDS,
+        "labels": frozenset(),
+        "metrics": (TEMPORAL_NEW_OVER_OLD_METRIC,),
     },
 )
 REQUIRED_METRICS = (
@@ -196,7 +253,10 @@ def _sha256_file(path: Path) -> str:
 
 
 def build_unregistered_rows(root: Path) -> list[ReportRow]:
-    """三段永远 unregistered。文件在磁盘上也不改判成通过。"""
+    """三段永远 unregistered。文件在磁盘上也不改判成通过。
+
+    字段表只登记在 UNREGISTERED_SEGMENTS。这里不读 JSON，也不看 meta.status。
+    """
     rows: list[ReportRow] = []
     for spec in UNREGISTERED_SEGMENTS:
         rel = spec["file"]
@@ -238,7 +298,7 @@ def _metric_line(
 
 
 def enforce_report(rows: list[ReportRow]) -> None:
-    """缺 A1 或把 unregistered / TBD 印成 pass 时，本次运行不能以 0 结束。"""
+    """缺 A1、counted_as_pass=true，或把 unregistered / TBD 印成 pass 时，本次运行不能以 0 结束。"""
     if not rows:
         raise ContractError("报告没有行")
     by_id = {row.row_id: row for row in rows}
