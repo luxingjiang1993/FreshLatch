@@ -1,0 +1,33 @@
+{
+  "model": "BAAI/bge-reranker-base",
+  "engine": "fastembed TextCrossEncoder",
+  "cuda": false,
+  "fastembed_version_score": "0.8.1",
+  "fastembed_version_dump": "0.7.1",
+  "load_s": 5.4494102859999884,
+  "weight_bytes": 1129559830,
+  "weight_bytes_method": "unique inode; path contains reranker; same cache root once",
+  "p95_budget_ms": 800.0,
+  "p95_ms_k10": {
+    "lexical": 2.886876000047778,
+    "neural": 433.7633459999779
+  },
+  "p95_ms_k30": {
+    "lexical": 6.808449999994082,
+    "neural": 1347.4492790000454
+  },
+  "extra_requirements": "requirements-eval-neural-rerank.txt",
+  "production_retrieval_mode": "hybrid+rerank",
+  "gold_commit": "50adc3251737c318815105b3562a823198b80dc3",
+  "n_arm": 224,
+  "supported_cross_encoders": [
+    "Xenova/ms-marco-MiniLM-L-6-v2",
+    "Xenova/ms-marco-MiniLM-L-12-v2",
+    "BAAI/bge-reranker-base",
+    "jinaai/jina-reranker-v1-tiny-en",
+    "jinaai/jina-reranker-v1-turbo-en",
+    "jinaai/jina-reranker-v2-base-multilingual"
+  ],
+  "v2_m3": "未跑。本环境的 fastembed TextCrossEncoder 支持列表没有 BAAI/bge-reranker-v2-m3。没有另装 sentence-transformers 或 torch。",
+  "recommendation": "建议另开切换票"
+}
