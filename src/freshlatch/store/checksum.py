@@ -16,16 +16,31 @@ def sha256_hex(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
-def aggregate_checksum(files: list[Path], *, root: Path) -> str:
+def normalize_newlines(data: bytes, newline: str | None = None) -> bytes:
+    """换行口径。缺省保持原字节。``lf`` 把 CRLF 与单独的 CR 折成 LF。
+
+    冻结指纹是在 LF 检出上算的。Windows 的 autocrlf 会把同一文件落成 CRLF，
+    质量闸比对前先折回 LF，其它调用方不传 newline 时字节不变。
+    """
+    if newline is None:
+        return data
+    if newline != "lf":
+        raise ValueError(f"未知换行口径 {newline}")
+    return data.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+
+
+def aggregate_checksum(files: list[Path], *, root: Path, newline: str | None = None) -> str:
     """目录内文件的聚合 checksum:按相对路径排序,逐文件 sha256 后再哈希。
 
     不读库列。路径相对 root,避免绝对路径把机器名写进指纹。
+    ``newline="lf"`` 时先折换行再哈希；缺省仍是原始字节。
     """
     root = Path(root)
     lines: list[str] = []
     for path in sorted((Path(p) for p in files), key=lambda p: p.as_posix()):
         rel = path.resolve().relative_to(root.resolve()).as_posix()
-        lines.append(f"{rel} {sha256_hex(path.read_bytes())}")
+        payload = normalize_newlines(path.read_bytes(), newline)
+        lines.append(f"{rel} {sha256_hex(payload)}")
     return sha256_hex("\n".join(lines).encode("utf-8"))
 
 
