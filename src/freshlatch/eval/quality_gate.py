@@ -1,12 +1,18 @@
-"""离线产品质量闸入口（QG-03）。
+"""离线产品质量闸入口（QG-03 / QG-09）。
 
 命令形状：
 `python -m freshlatch.eval quality-gate --offline --prereg docs/evidence/quality-gate/PREREG.md`
 
 只核对冻结身份，并用已有离线资产回放描述数字。通过线仍是 TBD 的列不判失败。
-A1、should-refuse / should-pass、new-over-old 保持 unregistered，不得记成通过。
-三段金标的字段表挂在 UNREGISTERED_SEGMENTS 上，本模块不创建 JSON，也不按表判分。
+未登记的 A1、should-refuse / should-pass、new-over-old 保持 unregistered，不得记成通过。
+登记只认行首 `segment_registered:`，不认金标文件是否在磁盘上。
+已登记但正式文件缺失，或文件不是 QG-08 final，退出码非 0。
+G1/A1/T1 不设绝对百分数。R1 无回归只比较 Recall@10 与 MRR@10 两条冻结点估计。
+在 QG-10 主人确认通过线之前，这两行仍印 status=TBD，无回归结果不改退出码。
+p95 与 guardrail / conflict_pair / multi_hop 不参与产品地板。
+三段金标的字段表挂在 UNREGISTERED_SEGMENTS 上。本模块不创建 JSON。
 不调用付费 LLM，不读取 DASHSCOPE_API_KEY / DEEPSEEK_API_KEY / MOONSHOT_API_KEY。
+不调用 eval run / control / control-c。
 QG-04 的 1 次新基线运行不在本模块。
 """
 
@@ -67,6 +73,9 @@ FROZEN_RRF_K = 60
 FROZEN_RERANK_K = 10
 FROZEN_FASTEMBED = "0.8.1"
 FROZEN_K = 10
+# QG-05 无回归地板 = 冻结 neural k10 点估计，不是新 SESOI。p95 不参与。
+R1_RECALL_AT_10_FLOOR = 0.9732142857142857
+R1_MRR_AT_10_FLOOR = 0.8381855867346939
 N_QUESTIONS = 267
 N_ARM = 224
 N_GUARDRAIL = 43
@@ -77,6 +86,7 @@ QUESTION_STATUS = "owner-delegated-model-reviewed"
 # G1 / A1 / T1 金标字段表。F2 草稿与 F3 定稿共用。
 # final 时 human_row_review 必须为 true，且 reviewer 非空。那是定稿不变量，不是本闸的通过。
 # 缺文件，或文件已在但通过线未写死，都仍是 unregistered，counted_as_pass 保持 false。
+# 文件在磁盘上不等于登记。只有行首 segment_registered 才进入登记检查。
 GOLD_META_FIELDS = (
     "status",
     "human_row_review",
@@ -247,20 +257,105 @@ def _fmt(value: float) -> str:
     return json.dumps(value)
 
 
+def r1_no_regression(*, recall: float, mrr: float) -> bool:
+    """Recall@10 与神经右臂 MRR@10 都不低于冻结点估计，才算无回归。
+
+    没有第三条产品地板。p95、guardrail、conflict_pair、multi_hop 不进这个判断。
+    """
+    return recall >= R1_RECALL_AT_10_FLOOR and mrr >= R1_MRR_AT_10_FLOOR
+
+
+_SEGMENT_REGISTERED_PREFIX = "segment_registered:"
+
+
+def parse_registered_segments(text: str) -> frozenset[str]:
+    """行首 `segment_registered: <id>` 才算已登记。
+
+    散文和表格里的 unregistered 不算。现行 PREREG 没有这种行。
+    金标文件在不在磁盘上，不参与这个判断。
+    """
+    known = {spec["id"] for spec in UNREGISTERED_SEGMENTS}
+    found: list[str] = []
+    for line in text.splitlines():
+        stripped = line.strip()
+        if not stripped.startswith(_SEGMENT_REGISTERED_PREFIX):
+            continue
+        seg_id = stripped[len(_SEGMENT_REGISTERED_PREFIX):].strip()
+        if seg_id not in known:
+            raise ContractError(f"未知登记段: {seg_id}")
+        found.append(seg_id)
+    return frozenset(found)
+
+
 def _sha256_file(path: Path) -> str:
     """冻结 sha 按 LF 字节。Windows 检出的 CRLF 先折回 LF。"""
     return sha256_hex(normalize_newlines(path.read_bytes(), "lf"))
 
 
-def build_unregistered_rows(root: Path) -> list[ReportRow]:
-    """三段永远 unregistered。文件在磁盘上也不改判成通过。
+def _require_final_gold(path: Path, spec: dict[str, Any]) -> None:
+    """已登记段的正式文件必须是 QG-08 final。这里不计算绝对百分数。"""
+    seg_id = spec["id"]
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise ContractError(f"{seg_id} 金标不是 JSON") from exc
+    if not isinstance(payload, dict):
+        raise ContractError(f"{seg_id} 金标不是对象")
+    meta = payload.get("meta")
+    if not isinstance(meta, dict):
+        raise ContractError(f"{seg_id} 缺少 meta")
+    if meta.get("status") != "final":
+        raise ContractError(f"{seg_id} 已登记但不是 final")
+    if meta.get("human_row_review") is not True:
+        raise ContractError(f"{seg_id} 已登记但 human_row_review 不是 true")
+    reviewer = meta.get("reviewer")
+    if not isinstance(reviewer, str) or not reviewer.strip():
+        raise ContractError(f"{seg_id} 已登记但 reviewer 为空")
+    items = payload.get("items")
+    if not isinstance(items, list) or not items:
+        raise ContractError(f"{seg_id} 已登记但 items 为空")
+    labels = spec["labels"]
+    for item in items:
+        if not isinstance(item, dict):
+            raise ContractError(f"{seg_id} 条目不是对象")
+        if item.get("disposition") != "keep":
+            raise ContractError(f"{seg_id} 条目不是 keep")
+        for field in spec["item_fields"]:
+            if field not in item:
+                raise ContractError(f"{seg_id} 条目缺少 {field}")
+        if labels and item.get("label") not in labels:
+            raise ContractError(f"{seg_id} 标签不在登记表内")
+        if "in_force" in spec["item_fields"] or "superseded" in spec["item_fields"]:
+            if not item.get("in_force") or not item.get("superseded"):
+                raise ContractError(f"{seg_id} 缺少 in_force 或 superseded")
 
-    字段表只登记在 UNREGISTERED_SEGMENTS。这里不读 JSON，也不看 meta.status。
+
+def build_unregistered_rows(
+    root: Path,
+    *,
+    registered: frozenset[str] | None = None,
+) -> list[ReportRow]:
+    """未登记段永远印 unregistered。文件在磁盘上也不改判成通过。
+
+    已登记但文件缺失，或文件不是 QG-08 final，抛 ContractError。
+    已登记且文件是 final 时，行仍是 unregistered / counted_as_pass=false：
+    G1/A1/T1 没有绝对地板，不能升成 pass。
+    字段表只登记在 UNREGISTERED_SEGMENTS。未登记时不读 JSON。
     """
+    registered_ids = registered or frozenset()
+    known = {spec["id"] for spec in UNREGISTERED_SEGMENTS}
+    unknown = registered_ids - known
+    if unknown:
+        raise ContractError("未知登记段: " + ", ".join(sorted(unknown)))
     rows: list[ReportRow] = []
     for spec in UNREGISTERED_SEGMENTS:
         rel = spec["file"]
-        present = (root / rel).is_file()
+        path = root / rel
+        present = path.is_file()
+        if spec["id"] in registered_ids:
+            if not present:
+                raise ContractError(f"{spec['id']} 已登记但文件缺失: {rel}")
+            _require_final_gold(path, spec)
         flag = "true" if present else "false"
         line = (
             f"segment id={spec['id']} status=unregistered file={rel} "
@@ -282,8 +377,15 @@ def _metric_line(
     value: str,
     baseline: str,
     extra: str = "",
+    r1_no_regression: bool | None = None,
 ) -> ReportRow:
-    tail = f" {extra}" if extra else ""
+    """status 固定 TBD。R1 无回归只写进描述，不把行改成 pass。"""
+    parts = [extra]
+    if r1_no_regression is not None:
+        flag = "true" if r1_no_regression else "false"
+        parts.append(f"r1_no_regression={flag}")
+    tail_body = " ".join(part for part in parts if part)
+    tail = f" {tail_body}" if tail_body else ""
     line = (
         f"metric id={row_id} status=TBD value={value} baseline={baseline}"
         f"{tail} counted_as_pass=false"
@@ -298,7 +400,10 @@ def _metric_line(
 
 
 def enforce_report(rows: list[ReportRow]) -> None:
-    """缺 A1、counted_as_pass=true，或把 unregistered / TBD 印成 pass 时，本次运行不能以 0 结束。"""
+    """缺 A1、counted_as_pass=true，或行内出现 status=pass 时，本次运行不能以 0 结束。
+
+    unregistered 被记成通过也走这里。旁列 TBD 失败不在本函数改退出码。
+    """
     if not rows:
         raise ContractError("报告没有行")
     by_id = {row.row_id: row for row in rows}
@@ -626,6 +731,8 @@ def _run(
     full_extra = f"n={N_MULTI_HOP}"
     recall_extra = f"source={replay_source}"
     mrr_extra = f"source={replay_source}"
+    # 通过线尚未经 QG-10 主人确认时，这个布尔只写进行描述，不改退出码。
+    r1_joint: bool | None = None
     if rankings is not None:
         replay = _replay_arm(queries, rankings)
         got_recall = float(replay["recall"])
@@ -640,6 +747,7 @@ def _run(
         mrr_value = _fmt(got_mrr)
         recall_extra += f" delta={_fmt(got_recall - baseline_recall)}"
         mrr_extra += f" delta={_fmt(got_mrr - baseline_mrr)}"
+        r1_joint = r1_no_regression(recall=got_recall, mrr=got_mrr)
         full_value = _fmt(float(replay["full_hit"]))
         pair_ok = int(replay["pair_ok"])
         pair_n = int(replay["pair_n"])
@@ -658,19 +766,22 @@ def _run(
         guard_value = _fmt(score_guardrail_hits(guardrail_hits))
         guard_extra = f"n={N_GUARDRAIL} source=guardrail_pass"
 
+    registered = parse_registered_segments(text)
     rows = [
-        *build_unregistered_rows(root),
+        *build_unregistered_rows(root, registered=registered),
         _metric_line(
             "R1-recall@10",
             value=recall_value,
             baseline=_fmt(baseline_recall),
             extra=recall_extra,
+            r1_no_regression=r1_joint,
         ),
         _metric_line(
             "R1-mrr@10",
             value=mrr_value,
             baseline=_fmt(baseline_mrr),
             extra=mrr_extra,
+            r1_no_regression=r1_joint,
         ),
         _metric_line(
             "guardrail-0hit",
@@ -739,6 +850,26 @@ def run_quality_gate(
                 guardrail_hits=guardrail_hits,
                 replay_baseline=replay_baseline,
             )
+    except PaidKeyRead as exc:
+        print(f"拒绝读取付费密钥 {exc.key}", file=sys.stderr)
+        return 2
+    except ContractError as exc:
+        print(str(exc), file=sys.stderr)
+        return 1
+
+
+def score_registered_segments(root: Path, prereg_text: str) -> int:
+    """登记后的判分入口。零 LLM，不调用 eval run / control / control-c。
+
+    夹具把某一段标成已登记（行首 `segment_registered:`）但对应正式文件缺失，
+    或文件不是 QG-08 final，退出码为 1。未登记段缺文件仍返回 0。
+    不发明 G1/A1/T1 的拒绝率、citation recall 或 new-over-old 下限。
+    """
+    try:
+        with forbid_paid_env():
+            registered = parse_registered_segments(prereg_text)
+            build_unregistered_rows(root, registered=registered)
+        return 0
     except PaidKeyRead as exc:
         print(f"拒绝读取付费密钥 {exc.key}", file=sys.stderr)
         return 2
