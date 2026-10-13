@@ -1,4 +1,4 @@
-"""离线产品质量闸入口（QG-03 / QG-09）。
+"""离线产品质量闸入口（QG-03 / QG-09 / QG-13）。
 
 命令形状：
 `python -m freshlatch.eval quality-gate --offline --prereg docs/evidence/quality-gate/PREREG.md`
@@ -7,9 +7,12 @@
 未登记的 A1、should-refuse / should-pass、new-over-old 保持 unregistered，不得记成通过。
 登记只认行首 `segment_registered:`，不认金标文件是否在磁盘上。
 已登记但正式文件缺失，或文件不是 QG-08 final，退出码非 0。
-G1/A1/T1 不设绝对百分数。R1 无回归只比较 Recall@10 与 MRR@10 两条冻结点估计。
+已登记段的行是 status=TBD、registered=true、counted_as_pass=false。
+G1/A1/T1 不设绝对百分数。地板只读 PREREG 行首键，本文件不写这三段的数字字面量。
+键缺失而段已登记则 ContractError，不默认成某个百分数。
+R1 无回归只比较 Recall@10 与 MRR@10 两条冻结点估计。
 在 QG-10 主人确认通过线之前，这两行仍印 status=TBD，无回归结果不改退出码。
-p95 与 guardrail / conflict_pair / multi_hop 不参与产品地板。
+p95 与 guardrail / conflict_pair / multi_hop 不参与产品地板，失败不改退出码。
 三段金标的字段表挂在 UNREGISTERED_SEGMENTS 上。本模块不创建 JSON。
 不调用付费 LLM，不读取 DASHSCOPE_API_KEY / DEEPSEEK_API_KEY / MOONSHOT_API_KEY。
 不调用 eval run / control / control-c。
@@ -17,8 +20,12 @@ QG-04 的 1 次新基线运行不在本模块。
 QG-11 在三段 segment 行之后、R1 之前另印四条描述性指标：
 G1 与 gold.json 三档的一致性、A1 的 citation recall / citation precision、
 T1 的 new-over-old accuracy。这四条 status=TBD，counted_as_pass=false。
-低分、unavailable 与 unresolved 都不改退出码。不把它们放进 REQUIRED_METRICS，
-也不为这三段发明绝对百分数。
+未登记时，低分、unavailable 与 unresolved 都不改退出码。
+QG-13 对已登记段：value >= 行首地板 token，且 n、scored、unresolved 逐字段相同，
+才算该条无回归。相等不是回归。value=unavailable 或分母变了，旗标为 false。
+A1 两条都成立才写 a1_no_regression=true，并且写在两条 A1 指标上。
+任一已登记段无回归为 false，退出码非 0。仍禁止 status=pass 与 counted_as_pass=true。
+不把这四条放进 REQUIRED_METRICS，也不为这三段发明绝对百分数。
 """
 
 from __future__ import annotations
@@ -284,7 +291,7 @@ _SEGMENT_REGISTERED_PREFIX = "segment_registered:"
 def parse_registered_segments(text: str) -> frozenset[str]:
     """行首 `segment_registered: <id>` 才算已登记。
 
-    散文和表格里的 unregistered 不算。现行 PREREG 没有这种行。
+    散文和表格里的 unregistered 不算。
     金标文件在不在磁盘上，不参与这个判断。
     """
     known = {spec["id"] for spec in UNREGISTERED_SEGMENTS}
@@ -298,6 +305,167 @@ def parse_registered_segments(text: str) -> frozenset[str]:
             raise ContractError(f"未知登记段: {seg_id}")
         found.append(seg_id)
     return frozenset(found)
+
+
+# 行首地板键。数字只出现在 PREREG，不在本模块再写一份字面量。
+_POINT_FLOOR_KEYS = (
+    "g1_accuracy_floor",
+    "a1_citation_recall_floor",
+    "a1_citation_precision_floor",
+    "t1_new_over_old_accuracy_floor",
+)
+_SEGMENT_FLOOR_KEYS = {
+    "G1-should-refuse": ("g1_accuracy_floor",),
+    "A1": ("a1_citation_recall_floor", "a1_citation_precision_floor"),
+    "T1-new-over-old": ("t1_new_over_old_accuracy_floor",),
+}
+_REGISTERED_FLAG_ROWS = {
+    "G1-should-refuse": (("G1-should-refuse-accuracy", "g1_no_regression="),),
+    "A1": (
+        ("A1-citation-recall", "a1_no_regression="),
+        ("A1-citation-precision", "a1_no_regression="),
+    ),
+    "T1-new-over-old": (("T1-new-over-old-accuracy", "t1_no_regression="),),
+}
+_REGRESSION_FALSE = (
+    "g1_no_regression=false",
+    "a1_no_regression=false",
+    "t1_no_regression=false",
+)
+
+
+@dataclass(frozen=True)
+class PointFloor:
+    """行首点估计地板。value 保留 PREREG 上的原样 token。"""
+
+    value: str
+    n: int
+    scored: int
+    unresolved: int
+
+
+def parse_point_floors(text: str) -> dict[str, PointFloor]:
+    """只认行首地板键。表格散文里的同一串数字不算。缺键不补默认百分数。"""
+    found: dict[str, list[str]] = {key: [] for key in _POINT_FLOOR_KEYS}
+    for line in text.splitlines():
+        stripped = line.strip()
+        for key in _POINT_FLOOR_KEYS:
+            prefix = key + ":"
+            if stripped.startswith(prefix):
+                found[key].append(stripped[len(prefix):].strip())
+                break
+    parsed: dict[str, PointFloor] = {}
+    for key, bodies in found.items():
+        if not bodies:
+            continue
+        if len(bodies) != 1:
+            raise ContractError(f"{key} 必须恰好一行")
+        parsed[key] = _parse_floor_body(key, bodies[0])
+    return parsed
+
+
+def _parse_floor_body(key: str, body: str) -> PointFloor:
+    parts = body.split()
+    if len(parts) != 4:
+        raise ContractError(f"{key} 行格式不对")
+    value = parts[0]
+    names = ("n", "scored", "unresolved")
+    numbers: dict[str, int] = {}
+    for part, name in zip(parts[1:], names):
+        prefix = name + "="
+        raw = part[len(prefix):] if part.startswith(prefix) else ""
+        if raw == "" or not raw.isdigit():
+            raise ContractError(f"{key} 行缺少 {name}")
+        numbers[name] = int(raw)
+    try:
+        float(value)
+    except ValueError as exc:
+        raise ContractError(f"{key} 的 value 不是数字") from exc
+    return PointFloor(
+        value=value,
+        n=numbers["n"],
+        scored=numbers["scored"],
+        unresolved=numbers["unresolved"],
+    )
+
+
+def _require_registered_floors(
+    registered: frozenset[str],
+    floors: dict[str, PointFloor],
+) -> None:
+    """已登记却没有对应行首地板：契约错误。不默认成某个百分数。"""
+    for seg_id in sorted(registered):
+        keys = _SEGMENT_FLOOR_KEYS.get(seg_id)
+        if keys is None:
+            raise ContractError(f"未知登记段: {seg_id}")
+        for key in keys:
+            if key not in floors:
+                raise ContractError(f"{seg_id} 已登记但缺少行首 {key}")
+
+
+def _point_no_regression(
+    *,
+    value: str,
+    n: int,
+    scored: int,
+    unresolved: int,
+    floor: PointFloor,
+) -> bool:
+    """点估计 >= 地板 token，且 n、scored、unresolved 逐字段相同。
+
+    相等不是回归。value=unavailable 不是无回归。分母变了也不是。
+    不把缺值补成 0 或 1。
+    """
+    if value == "unavailable":
+        return False
+    if n != floor.n or scored != floor.scored or unresolved != floor.unresolved:
+        return False
+    try:
+        got = float(value)
+    except ValueError as exc:
+        raise ContractError(f"指标 value 不是数字也不是 unavailable: {value}") from exc
+    return got >= float(floor.value)
+
+
+def _registered_point_flag(
+    seg_id: str,
+    registered: frozenset[str],
+    *,
+    value: str,
+    n: int,
+    scored: int,
+    unresolved: int,
+    floor_key: str,
+    floors: dict[str, PointFloor],
+) -> bool | None:
+    """未登记返回 None：不写旗标，也不挡退出码。"""
+    if seg_id not in registered:
+        return None
+    return _point_no_regression(
+        value=value,
+        n=n,
+        scored=scored,
+        unresolved=unresolved,
+        floor=floors[floor_key],
+    )
+
+
+def registered_segment_regressed(rows: list[ReportRow]) -> bool:
+    """已登记段的无回归旗标为 false。R1 的旗标不在这里挡门。"""
+    return any(token in row.line for row in rows for token in _REGRESSION_FALSE)
+
+
+def _require_registered_flags(rows: list[ReportRow], registered: frozenset[str]) -> None:
+    """已登记段必须印出自己的无回归旗标。漏印不能当成通过。"""
+    by_id = {row.row_id: row for row in rows}
+    for seg_id in sorted(registered):
+        specs = _REGISTERED_FLAG_ROWS.get(seg_id)
+        if specs is None:
+            raise ContractError(f"未知登记段: {seg_id}")
+        for row_id, token in specs:
+            row = by_id.get(row_id)
+            if row is None or token not in row.line:
+                raise ContractError(f"{row_id} 已登记但没有无回归旗标")
 
 
 def _sha256_file(path: Path) -> str:
@@ -351,8 +519,8 @@ def build_unregistered_rows(
     """未登记段永远印 unregistered。文件在磁盘上也不改判成通过。
 
     已登记但文件缺失，或文件不是 QG-08 final，抛 ContractError。
-    已登记且文件是 final 时，行仍是 unregistered / counted_as_pass=false：
-    G1/A1/T1 没有绝对地板，不能升成 pass。
+    已登记且文件是 final 时，行是 status=TBD、registered=true、counted_as_pass=false。
+    相对无回归过线也不升成 pass。
     字段表只登记在 UNREGISTERED_SEGMENTS。未登记时不读 JSON。
     """
     registered_ids = registered or frozenset()
@@ -369,15 +537,20 @@ def build_unregistered_rows(
             if not present:
                 raise ContractError(f"{spec['id']} 已登记但文件缺失: {rel}")
             _require_final_gold(path, spec)
+            status = "TBD"
+            registered_mark = " registered=true"
+        else:
+            status = "unregistered"
+            registered_mark = ""
         flag = "true" if present else "false"
         line = (
-            f"segment id={spec['id']} status=unregistered file={rel} "
-            f"file_present={flag} counted_as_pass=false"
+            f"segment id={spec['id']} status={status} file={rel} "
+            f"file_present={flag}{registered_mark} counted_as_pass=false"
         )
         rows.append(ReportRow(
             kind="segment",
             row_id=spec["id"],
-            status="unregistered",
+            status=status,
             counted_as_pass=False,
             line=line,
         ))
@@ -391,12 +564,20 @@ def _metric_line(
     baseline: str,
     extra: str = "",
     r1_no_regression: bool | None = None,
+    g1_no_regression: bool | None = None,
+    a1_no_regression: bool | None = None,
+    t1_no_regression: bool | None = None,
 ) -> ReportRow:
-    """status 固定 TBD。R1 无回归只写进描述，不把行改成 pass。"""
+    """status 固定 TBD。无回归旗标只写进描述，不把行改成 pass。"""
     parts = [extra]
-    if r1_no_regression is not None:
-        flag = "true" if r1_no_regression else "false"
-        parts.append(f"r1_no_regression={flag}")
+    for name, flag in (
+        ("r1_no_regression", r1_no_regression),
+        ("g1_no_regression", g1_no_regression),
+        ("a1_no_regression", a1_no_regression),
+        ("t1_no_regression", t1_no_regression),
+    ):
+        if flag is not None:
+            parts.append(f"{name}={'true' if flag else 'false'}")
     tail_body = " ".join(part for part in parts if part)
     tail = f" {tail_body}" if tail_body else ""
     line = (
@@ -412,11 +593,17 @@ def _metric_line(
     )
 
 
-def enforce_report(rows: list[ReportRow]) -> None:
-    """缺 A1、counted_as_pass=true，或行内出现 status=pass 时，本次运行不能以 0 结束。
+def enforce_report(
+    rows: list[ReportRow],
+    *,
+    registered: frozenset[str] | None = None,
+) -> None:
+    """缺段、counted_as_pass=true，或行内出现 status=pass 时，本次运行不能以 0 结束。
 
-    unregistered 被记成通过也走这里。旁列 TBD 失败不在本函数改退出码。
+    未登记段必须是 unregistered。已登记段改为要求 TBD 与 registered=true，
+    不再要求 unregistered。旁列 TBD 失败不在本函数改退出码。
     """
+    registered_ids = registered or frozenset()
     if not rows:
         raise ContractError("报告没有行")
     by_id = {row.row_id: row for row in rows}
@@ -424,7 +611,12 @@ def enforce_report(rows: list[ReportRow]) -> None:
         raise ContractError("报告行 id 重复")
     for spec in UNREGISTERED_SEGMENTS:
         row = by_id.get(spec["id"])
-        if row is None or row.status != "unregistered":
+        if spec["id"] in registered_ids:
+            if row is None or row.status != "TBD":
+                raise ContractError(f"{spec['id']} 已登记但缺失或不是 TBD")
+            if "registered=true" not in row.line:
+                raise ContractError(f"{spec['id']} 已登记但行未标明 registered=true")
+        elif row is None or row.status != "unregistered":
             raise ContractError(f"{spec['id']} 缺失或不是 unregistered")
     for row_id in REQUIRED_METRICS:
         row = by_id.get(row_id)
@@ -941,7 +1133,11 @@ def score_new_over_old_accuracy(
     )
 
 
-def _guard_metric_row(score: GuardAgreement) -> ReportRow:
+def _guard_metric_row(
+    score: GuardAgreement,
+    *,
+    g1_no_regression: bool | None = None,
+) -> ReportRow:
     extra = (
         f"n={score.n} scored={score.scored} correct={score.correct} "
         f"unresolved={score.unresolved} "
@@ -954,18 +1150,34 @@ def _guard_metric_row(score: GuardAgreement) -> ReportRow:
         value=score.value,
         baseline="none",
         extra=extra,
+        g1_no_regression=g1_no_regression,
     )
 
 
-def _overlap_metric_row(row_id: str, score: SetOverlap) -> ReportRow:
+def _overlap_metric_row(
+    row_id: str,
+    score: SetOverlap,
+    *,
+    a1_no_regression: bool | None = None,
+) -> ReportRow:
     extra = (
         f"n={score.n} scored={score.scored} unresolved={score.unresolved} "
         f"source=cited-vs-relevant"
     )
-    return _metric_line(row_id, value=score.value, baseline="none", extra=extra)
+    return _metric_line(
+        row_id,
+        value=score.value,
+        baseline="none",
+        extra=extra,
+        a1_no_regression=a1_no_regression,
+    )
 
 
-def _temporal_metric_row(score: RankAgreement) -> ReportRow:
+def _temporal_metric_row(
+    score: RankAgreement,
+    *,
+    t1_no_regression: bool | None = None,
+) -> ReportRow:
     extra = (
         f"n={score.n} scored={score.scored} correct={score.correct} "
         f"unresolved={score.unresolved} source=frozen-per-query-replay"
@@ -975,6 +1187,7 @@ def _temporal_metric_row(score: RankAgreement) -> ReportRow:
         value=score.value,
         baseline="none",
         extra=extra,
+        t1_no_regression=t1_no_regression,
     )
 
 
@@ -983,8 +1196,16 @@ def build_descriptive_metric_rows(
     *,
     queries: list[dict[str, Any]],
     rankings: dict[str, list[str]] | None,
+    registered: frozenset[str] | None = None,
+    floors: dict[str, PointFloor] | None = None,
 ) -> list[ReportRow]:
-    """四条描述性指标。段行仍由 build_unregistered_rows 打印，这里不改那些字面。"""
+    """四条描述性指标。段行仍由 build_unregistered_rows 打印。
+
+    已登记段在这里写无回归旗标。未登记时不写旗标，计分与 QG-11 相同。
+    """
+    registered_ids = registered or frozenset()
+    floor_map = floors if floors is not None else {}
+    _require_registered_floors(registered_ids, floor_map)
     gold = _read_json_object(root / GOLD_REL) or {}
     guard = score_guard_should_accuracy(
         _items_or_empty(root / _segment_file("G1-should-refuse")),
@@ -998,11 +1219,57 @@ def build_descriptive_metric_rows(
         _items_or_empty(root / _segment_file("T1-new-over-old")),
         rankings,
     )
+    g1_flag = _registered_point_flag(
+        "G1-should-refuse",
+        registered_ids,
+        value=guard.value,
+        n=guard.n,
+        scored=guard.scored,
+        unresolved=guard.unresolved,
+        floor_key="g1_accuracy_floor",
+        floors=floor_map,
+    )
+    if "A1" in registered_ids:
+        recall_ok = _point_no_regression(
+            value=citation.recall.value,
+            n=citation.recall.n,
+            scored=citation.recall.scored,
+            unresolved=citation.recall.unresolved,
+            floor=floor_map["a1_citation_recall_floor"],
+        )
+        precision_ok = _point_no_regression(
+            value=citation.precision.value,
+            n=citation.precision.n,
+            scored=citation.precision.scored,
+            unresolved=citation.precision.unresolved,
+            floor=floor_map["a1_citation_precision_floor"],
+        )
+        a1_flag: bool | None = recall_ok and precision_ok
+    else:
+        a1_flag = None
+    t1_flag = _registered_point_flag(
+        "T1-new-over-old",
+        registered_ids,
+        value=temporal.value,
+        n=temporal.n,
+        scored=temporal.scored,
+        unresolved=temporal.unresolved,
+        floor_key="t1_new_over_old_accuracy_floor",
+        floors=floor_map,
+    )
     return [
-        _guard_metric_row(guard),
-        _overlap_metric_row("A1-citation-recall", citation.recall),
-        _overlap_metric_row("A1-citation-precision", citation.precision),
-        _temporal_metric_row(temporal),
+        _guard_metric_row(guard, g1_no_regression=g1_flag),
+        _overlap_metric_row(
+            "A1-citation-recall",
+            citation.recall,
+            a1_no_regression=a1_flag,
+        ),
+        _overlap_metric_row(
+            "A1-citation-precision",
+            citation.precision,
+            a1_no_regression=a1_flag,
+        ),
+        _temporal_metric_row(temporal, t1_no_regression=t1_flag),
     ]
 
 
@@ -1108,9 +1375,16 @@ def _run(
         guard_extra = f"n={N_GUARDRAIL} source=guardrail_pass"
 
     registered = parse_registered_segments(text)
+    floors = parse_point_floors(text)
     rows = [
         *build_unregistered_rows(root, registered=registered),
-        *build_descriptive_metric_rows(root, queries=queries, rankings=rankings),
+        *build_descriptive_metric_rows(
+            root,
+            queries=queries,
+            rankings=rankings,
+            registered=registered,
+            floors=floors,
+        ),
         _metric_line(
             "R1-recall@10",
             value=recall_value,
@@ -1145,7 +1419,8 @@ def _run(
         ),
         _trap_row(root),
     ]
-    enforce_report(rows)
+    enforce_report(rows, registered=registered)
+    _require_registered_flags(rows, registered)
     header = [
         "离线产品质量闸",
         "offline=true",
@@ -1171,6 +1446,8 @@ def _run(
         "qg04=separate",
     ]
     print("\n".join(header + [row.line for row in rows]), flush=True)
+    if registered_segment_regressed(rows):
+        return 1
     return 0
 
 
@@ -1182,7 +1459,7 @@ def run_quality_gate(
     guardrail_hits: list[list[Any]] | None = None,
     replay_baseline: tuple[float, float] | None = None,
 ) -> int:
-    """离线闸。退出码 2 是 live 拒绝；1 是契约破坏；0 是不变量成立且未登记段已标明。"""
+    """离线闸。退出码 2 是 live 拒绝；1 是契约破坏或已登记段回归；0 是不变量成立、未登记段已标明且已登记段无回归。"""
     try:
         with forbid_paid_env():
             return _run(
