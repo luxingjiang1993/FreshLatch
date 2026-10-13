@@ -1,9 +1,10 @@
-"""CLI:`python -m freshlatch.eval run|control|control-c|report`(§4.1)。
+"""CLI:`python -m freshlatch.eval run|control|control-c|report|quality-gate`(§4.1)。
 
 run --gold data/eval/gold.json [--runs N]   金标对账(LLM,手动/milestone 触发,不进 CI)
 control                                      无工具假绿对照(旧仪器;判 alive = 假绿,对照成立)
 control-c                                    假绿仪器 C(并行 CONTROL_PROMPT_C + 私有多锚)
 report <raw.json>                            从 raw JSON 重渲染 markdown(不改判据,只重排版)
+quality-gate --offline --prereg PATH         离线产品质量闸(零付费 LLM;未写 --offline 则拒绝)
 
 decoding 参数显式逐运行入档(§4.7);temp=0 时 seed 无采样意义,采样场景请显式非零温度。
 """
@@ -81,11 +82,33 @@ def build_parser(pack: PackPaths | None = None) -> argparse.ArgumentParser:
     )
     p_ret.add_argument("--out", default="reports")
 
+    p_qg = sub.add_parser(
+        "quality-gate",
+        help="离线产品质量闸（必须 --offline；不调用付费 LLM）",
+    )
+    p_qg.add_argument(
+        "--offline",
+        action="store_true",
+        help="显式离线。未设置则拒绝，避免误走 live LLM。",
+    )
+    p_qg.add_argument(
+        "--prereg",
+        default=None,
+        help="预注册文件，冻结路径为 docs/evidence/quality-gate/PREREG.md",
+    )
+
     return ap
 
 
-def main() -> None:
-    args = build_parser().parse_args()
+def main(argv: list[str] | None = None) -> None:
+    args = build_parser().parse_args(argv)
+
+    # 质量闸先返回，不打开 SQLite，也不构造 LLM 客户端。
+    if args.cmd == "quality-gate":
+        from freshlatch.eval.quality_gate import run_quality_gate
+
+        code = run_quality_gate(offline=bool(args.offline), prereg=args.prereg)
+        raise SystemExit(code)
 
     if args.cmd == "report":
         raw = json.loads(Path(args.raw_json).read_text(encoding="utf-8"))
