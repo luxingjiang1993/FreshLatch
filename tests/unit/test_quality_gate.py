@@ -3,6 +3,9 @@
 from __future__ import annotations
 
 import ast
+import inspect
+import json
+import math
 import os
 import subprocess
 import sys
@@ -19,7 +22,10 @@ from freshlatch.eval.quality_gate import (
     enforce_report,
     forbid_paid_env,
     parse_owner_freeze,
+    parse_registered_segments,
+    r1_no_regression,
     run_quality_gate,
+    score_registered_segments,
 )
 from freshlatch.eval.retrieve_typed import compute_x1_fingerprints
 from freshlatch.packs import repo_root
@@ -162,6 +168,13 @@ def test_offline_command_marks_unregistered_and_compares_baseline(capsys, monkey
     assert "metric id=R1-recall@10 status=TBD value=0.9732142857142857" in out
     assert "metric id=R1-mrr@10 status=TBD value=0.8381855867346939" in out
     assert "0.7566609977324263" not in out
+    for line in out.splitlines():
+        if line.startswith("metric id=R1-recall@10") or line.startswith("metric id=R1-mrr@10"):
+            assert "status=TBD" in line
+            assert "r1_no_regression=true" in line
+        elif line.startswith("metric id="):
+            assert "status=TBD" in line
+            assert "r1_no_regression" not in line
     assert "metric id=guardrail-0hit status=TBD value=unavailable" in out
     assert "metric id=conflict-pair-ordering status=TBD value=0.3333333333333333" in out
     assert "metric id=multi-hop-full-hit status=TBD value=0.7555555555555555" in out
@@ -461,6 +474,112 @@ def test_unregistered_printed_as_status_pass_is_contract_error():
         ))
     with pytest.raises(ContractError, match="A1 打印成 pass"):
         enforce_report(printed)
+
+
+def test_score_registered_a1_missing_cite_sentence_exits_nonzero(tmp_path, capsys):
+    """A1 在临时目录被标成已登记，且 cite_sentence.json 缺失时，判分入口退出码非 0。"""
+    mark = tmp_path / "registration.txt"
+    mark.write_text("segment_registered: A1\n", encoding="utf-8")
+    cite = tmp_path / "data" / "eval" / "cite_sentence.json"
+    assert not cite.is_file()
+    code = score_registered_segments(tmp_path, mark.read_text(encoding="utf-8"))
+    err = capsys.readouterr().err
+    assert code != 0
+    assert "A1 已登记但文件缺失: data/eval/cite_sentence.json" in err
+
+
+def test_unregistered_missing_cite_file_score_stays_zero(tmp_path, capsys):
+    """现行 PREREG 不登记任何段。临时目录缺文件时，判分入口仍退出码 0。"""
+    text = PREREG.read_text(encoding="utf-8")
+    assert parse_registered_segments(text) == frozenset()
+    code = score_registered_segments(tmp_path, text)
+    err = capsys.readouterr().err
+    assert code == 0, err
+
+
+def _final_cite_text() -> str:
+    payload = {
+        "meta": {
+            "status": "final",
+            "human_row_review": True,
+            "reviewer": "fixture-reviewer",
+        },
+        "items": [
+            {
+                "id": "cs-fixture-1",
+                "sentence": "fixture sentence",
+                "cited_ids": ["block@T1"],
+                "label": "supported",
+                "source_refs": ["fixture-src"],
+                "disposition": "keep",
+            }
+        ],
+    }
+    return json.dumps(payload, ensure_ascii=False) + "\n"
+
+
+def test_registered_final_cite_file_is_not_counted_as_pass(tmp_path, capsys):
+    """已登记且文件是 final 时，结构检查通过，但行仍不是 pass。"""
+    dest = tmp_path / "data" / "eval"
+    dest.mkdir(parents=True)
+    (dest / "cite_sentence.json").write_text(_final_cite_text(), encoding="utf-8")
+    rows = build_unregistered_rows(tmp_path, registered=frozenset({"A1"}))
+    a1 = next(row for row in rows if row.row_id == "A1")
+    assert a1.status == "unregistered"
+    assert a1.counted_as_pass is False
+    assert "status=pass" not in a1.line
+    assert "counted_as_pass=false" in a1.line
+    code = score_registered_segments(tmp_path, "segment_registered: A1\n")
+    err = capsys.readouterr().err
+    assert code == 0, err
+
+
+def test_registered_non_final_cite_file_exits_nonzero(tmp_path, capsys):
+    """已登记但不是 QG-08 final 时，判分入口退出码非 0。"""
+    dest = tmp_path / "data" / "eval"
+    dest.mkdir(parents=True)
+    draft = {
+        "meta": {"status": "draft", "human_row_review": False, "reviewer": ""},
+        "items": [],
+    }
+    (dest / "cite_sentence.json").write_text(
+        json.dumps(draft, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
+    code = score_registered_segments(tmp_path, "segment_registered: A1\n")
+    err = capsys.readouterr().err
+    assert code != 0
+    assert "不是 final" in err
+
+
+def test_repo_qg08_final_files_pass_registered_structural_check(capsys):
+    """仓库里的 QG-08 final 只做结构检查，不设绝对百分数，也不记成通过。"""
+    lines = "".join(
+        f"segment_registered: {spec['id']}\n" for spec in qg.UNREGISTERED_SEGMENTS
+    )
+    code = score_registered_segments(ROOT, lines)
+    err = capsys.readouterr().err
+    assert code == 0, err
+    rows = build_unregistered_rows(
+        ROOT,
+        registered=frozenset(spec["id"] for spec in qg.UNREGISTERED_SEGMENTS),
+    )
+    assert [row.status for row in rows] == ["unregistered", "unregistered", "unregistered"]
+    assert all(row.counted_as_pass is False for row in rows)
+
+
+def test_r1_no_regression_two_floors_only():
+    """两条地板取等为真；任一低于地板为假。没有第三条产品地板。"""
+    recall = qg.R1_RECALL_AT_10_FLOOR
+    mrr = qg.R1_MRR_AT_10_FLOOR
+    assert recall == 0.9732142857142857
+    assert mrr == 0.8381855867346939
+    assert r1_no_regression(recall=recall, mrr=mrr) is True
+    assert r1_no_regression(recall=math.nextafter(recall, 0.0), mrr=mrr) is False
+    assert r1_no_regression(recall=recall, mrr=math.nextafter(mrr, 0.0)) is False
+    assert list(inspect.signature(r1_no_regression).parameters) == ["recall", "mrr"]
+    floor_names = [name for name in vars(qg) if name.endswith("_FLOOR")]
+    assert floor_names == ["R1_RECALL_AT_10_FLOOR", "R1_MRR_AT_10_FLOOR"]
 
 
 def test_quality_gate_source_has_no_live_imports():
