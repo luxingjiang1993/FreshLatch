@@ -1,0 +1,135 @@
+{
+  "meta": {
+    "status": "draft",
+    "human_row_review": false,
+    "reviewer": "",
+    "draft_model": "manual-adapt",
+    "temperature": null,
+    "seed": null,
+    "draft_date": "2026-10-13",
+    "segment_id": "G1-should-refuse",
+    "note": "手工改编，未调用模型。temperature 与 seed 记 null，表示没有解码采样。text 取 data/t0_docket.json 里与 gold.json must_* id 对应的 statement；source_refs 只指向 c1–c12。must_stale 与 must_unknown 标 should_refuse（过时主张不得放行；无 T1 覆盖不得判 fresh）。must_fresh 标 should_pass。这是主张级种子，不是 should-refuse 拒绝率，也不是冻结金标。"
+  },
+  "items": [
+    {
+      "id": "gs-c1",
+      "policy_id": "must_stale",
+      "label": "should_refuse",
+      "text": "竞品 SeaDesk 在该市场的客单价仍显著高于我方拟定的 59 美元/月/店定价",
+      "source_refs": [
+        "c1"
+      ],
+      "disposition": "draft"
+    },
+    {
+      "id": "gs-c2",
+      "policy_id": "must_stale",
+      "label": "should_refuse",
+      "text": "印尼与泰国监管暂无客服数据本地化强制要求",
+      "source_refs": [
+        "c2"
+      ],
+      "disposition": "draft"
+    },
+    {
+      "id": "gs-c3",
+      "policy_id": "must_stale",
+      "label": "should_refuse",
+      "text": "3 家意向渠道伙伴接受 30% 销售分成比例",
+      "source_refs": [
+        "c3"
+      ],
+      "disposition": "draft"
+    },
+    {
+      "id": "gs-c7",
+      "policy_id": "must_stale",
+      "label": "should_refuse",
+      "text": "行业媒体最新一期报道显示,竞品 SeaDesk 客单价仍为 99 美元/月,我方价格优势仍在",
+      "source_refs": [
+        "c7"
+      ],
+      "disposition": "draft"
+    },
+    {
+      "id": "gs-c4",
+      "policy_id": "must_fresh",
+      "label": "should_pass",
+      "text": "目标市场(六国具备基础数字化条件的中小企业)不少于 800 万家",
+      "source_refs": [
+        "c4"
+      ],
+      "disposition": "draft"
+    },
+    {
+      "id": "gs-c5",
+      "policy_id": "must_fresh",
+      "label": "should_pass",
+      "text": "我方单会话服务成本仍低于竞品",
+      "source_refs": [
+        "c5"
+      ],
+      "disposition": "draft"
+    },
+    {
+      "id": "gs-c6",
+      "policy_id": "must_fresh",
+      "label": "should_pass",
+      "text": "竞品 SeaDesk 收缩东南亚免费版、聚焦付费商户,意味着市场窗口打开",
+      "source_refs": [
+        "c6"
+      ],
+      "disposition": "draft"
+    },
+    {
+      "id": "gs-c8",
+      "policy_id": "must_fresh",
+      "label": "should_pass",
+      "text": "东南亚本地语言小模型生态不成熟,核心对话能力需自研",
+      "source_refs": [
+        "c8"
+      ],
+      "disposition": "draft"
+    },
+    {
+      "id": "gs-c9",
+      "policy_id": "must_unknown",
+      "label": "should_refuse",
+      "text": "目标市场 WhatsApp Business 渗透率不低于 70%",
+      "source_refs": [
+        "c9"
+      ],
+      "disposition": "draft"
+    },
+    {
+      "id": "gs-c10",
+      "policy_id": "must_unknown",
+      "label": "should_refuse",
+      "text": "雅加达双语客服专员综合用工成本约 450 美元/月",
+      "source_refs": [
+        "c10"
+      ],
+      "disposition": "draft"
+    },
+    {
+      "id": "gs-c11",
+      "policy_id": "must_unknown",
+      "label": "should_refuse",
+      "text": "电子钱包已是目标市场第一大收款方式(占比约 58%)",
+      "source_refs": [
+        "c11"
+      ],
+      "disposition": "draft"
+    },
+    {
+      "id": "gs-c12",
+      "policy_id": "must_unknown",
+      "label": "should_refuse",
+      "text": "合作候选云服务商区域可用区年计划外故障不超过 2 次",
+      "source_refs": [
+        "c12"
+      ],
+      "disposition": "draft"
+    }
+  ]
+}

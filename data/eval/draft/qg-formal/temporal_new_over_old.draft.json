@@ -1,0 +1,69 @@
+{
+  "meta": {
+    "status": "draft",
+    "human_row_review": false,
+    "reviewer": "",
+    "draft_model": "manual-adapt",
+    "temperature": null,
+    "seed": null,
+    "draft_date": "2026-10-13",
+    "segment_id": "T1-new-over-old",
+    "note": "手工改编，未调用模型。temperature 与 seed 记 null，表示没有解码采样。trap-supersede-1 来自 retrieve_traps.json，level=smoke，只作种子，不升成正式金标。三对 conflict_pair 来自 questions.json，n=3 旁列，本文件不把它升成 P0。in_force 与 superseded 照抄来源。precedence 未写入条目，判分函数不读它。",
+    "excluded_seeds": [
+      {
+        "id": "trap-conflict-1",
+        "reason": "同快照两侧都放进 relevant，测不到错条排前，不能编成 new-over-old 的 in_force/superseded。"
+      },
+      {
+        "id": "trap-meta-1",
+        "reason": "元陈述块只是干扰，不是被取代的旧条。"
+      }
+    ]
+  },
+  "items": [
+    {
+      "id": "tno-trap-supersede-1",
+      "query": "席位标价",
+      "as_of": "T1",
+      "in_force": "trap-supersede#p1@T1",
+      "superseded": "trap-supersede#p1@T0",
+      "source_refs": [
+        "trap-supersede-1"
+      ],
+      "disposition": "draft"
+    },
+    {
+      "id": "tno-s6-d1-c1-q1",
+      "query": "出境评估结论现在的有效期是多长？满足什么条件可以续期，续期能延多久？",
+      "as_of": "T1",
+      "in_force": "p1-cac-o16#p9@T1",
+      "superseded": "p1-cac-o11#p13@T1",
+      "source_refs": [
+        "s6-d1-c1-q1"
+      ],
+      "disposition": "draft"
+    },
+    {
+      "id": "tno-s6-d1-c2-q1",
+      "query": "不属于关基的企业，出境个人信息到多少人才需要报评估？这条线和以前比有什么不同？",
+      "as_of": "T1",
+      "in_force": "p1-cac-o16#p7@T1",
+      "superseded": "p1-cac-o11#p2@T1",
+      "source_refs": [
+        "s6-d1-c2-q1"
+      ],
+      "disposition": "draft"
+    },
+    {
+      "id": "tno-s6-d1-c3-q1",
+      "query": "标准合同的适用区间在新规下有何变化？",
+      "as_of": "T1",
+      "in_force": "p1-cac-o16#p8@T1",
+      "superseded": "p1-cac-o13#p2@T1",
+      "source_refs": [
+        "s6-d1-c3-q1"
+      ],
+      "disposition": "draft"
+    }
+  ]
+}

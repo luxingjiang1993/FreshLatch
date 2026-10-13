@@ -1,0 +1,95 @@
+{
+  "meta": {
+    "status": "draft",
+    "human_row_review": false,
+    "reviewer": "",
+    "draft_model": "manual-adapt",
+    "temperature": null,
+    "seed": null,
+    "draft_date": "2026-10-13",
+    "segment_id": "A1",
+    "note": "手工改编，未调用模型。temperature 与 seed 记 null，表示没有解码采样。句子与 cited_ids 取自 questions.json 的 arm / guardrail 切片：问句的 answer_points、relevant、distractors，并对照语料段落核对过字面。supported：句子由 relevant 块支撑。false_cite：句子成立，但 cited_ids 指向该题 distractor。miss_cite：句子成立，cited_ids 为空。分母仍是草稿，human_row_review=false。未从 retrieve_gold.json 或 retrieve_hard_gold.json 抄行。"
+  },
+  "items": [
+    {
+      "id": "cs-p1-lx-03-supported",
+      "sentence": "省级网信部门应当自收到申报材料之日起5个工作日内完成完备性查验。",
+      "cited_ids": [
+        "p1-cac-o11#p6@T1"
+      ],
+      "label": "supported",
+      "source_refs": [
+        "p1-lx-03-new"
+      ],
+      "disposition": "draft"
+    },
+    {
+      "id": "cs-p1-lx-06-supported",
+      "sentence": "本办法自2026年1月1日起施行。",
+      "cited_ids": [
+        "p1-cac-o20#p9@T1"
+      ],
+      "label": "supported",
+      "source_refs": [
+        "p1-lx-06-new"
+      ],
+      "disposition": "draft"
+    },
+    {
+      "id": "cs-s1-d0-01-q1-supported",
+      "sentence": "目标市场渗透率实际为71%，受区域政策调整影响，原定覆盖计划需延后至下一财年。",
+      "cited_ids": [
+        "s1-d0-01-memo#p1@T1"
+      ],
+      "label": "supported",
+      "source_refs": [
+        "s1-d0-01-q1"
+      ],
+      "disposition": "draft"
+    },
+    {
+      "id": "cs-p1-lx-04-false",
+      "sentence": "国家网信部门应当自向数据处理者发出书面受理通知书之日起45个工作日内完成数据出境安全评估。",
+      "cited_ids": [
+        "p1-cac-o11#p6@T1"
+      ],
+      "label": "false_cite",
+      "source_refs": [
+        "p1-lx-04-new"
+      ],
+      "disposition": "draft"
+    },
+    {
+      "id": "cs-s1-d0-01-q1-false",
+      "sentence": "目标市场渗透率实际为71%。",
+      "cited_ids": [
+        "s1-d0-01-memo#p1@T0"
+      ],
+      "label": "false_cite",
+      "source_refs": [
+        "s1-d0-01-q1"
+      ],
+      "disposition": "draft"
+    },
+    {
+      "id": "cs-p1-lx-07-miss",
+      "sentence": "通过简易程序注销公司登记，应当通过国家企业信用信息公示系统予以公告，公告期限不少于二十日。",
+      "cited_ids": [],
+      "label": "miss_cite",
+      "source_refs": [
+        "p1-lx-07-new"
+      ],
+      "disposition": "draft"
+    },
+    {
+      "id": "cs-s1-d0-01-q3-miss",
+      "sentence": "财务模型因需求放缓出现下调，预计年度营收将达1.05亿美元，利润率预计为23%。",
+      "cited_ids": [],
+      "label": "miss_cite",
+      "source_refs": [
+        "s1-d0-01-q3"
+      ],
+      "disposition": "draft"
+    }
+  ]
+}
