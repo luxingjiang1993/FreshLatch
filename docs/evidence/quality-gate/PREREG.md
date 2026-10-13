@@ -192,9 +192,19 @@ G1 should-refuse / should-pass、A1、T1 new-over-old 的首版规则：QG-08 �
 | guardrail 0-hit | 第 4 节定义。n=43 | TBD |
 | conflict-pair ordering | 第 4 节定义。n=3，未进 CI | TBD |
 | multi-hop 全命中 | 第 4 节定义。n=45 | TBD |
-| G1 should-refuse / should-pass | `unregistered` | 无。不得记成通过 |
-| A1 false cite / miss cite | `unregistered` | 无。不得记成通过 |
-| T1 new-over-old | `unregistered`。`run_trap_eval` 在旧块排到新块前面时不失败 | 无。不得记成通过 |
+| G1 should-refuse / should-pass | `unregistered` | `value >=` `1.0`，且 `n=12` `scored=12` `unresolved=0`。地板 = 该次冻结点估计，比较是 `value >=` 该 token。这不是新 SESOI。过线不得记成通过 |
+| A1 false cite / miss cite | `unregistered` | citation recall `value >=` `0.42857142857142855`，且 `n=7` `scored=7` `unresolved=0`；citation precision `value >=` `0.6`，且 `n=7` `scored=5` `unresolved=2`。两条都满足才算无回归。地板 = 该次冻结点估计。这不是新 SESOI。过线不得记成通过 |
+| T1 new-over-old | `unregistered`。`run_trap_eval` 在旧块排到新块前面时不失败 | `value >=` `0.3333333333333333`，且 `n=4` `scored=3` `unresolved=1`。地板 = 该次冻结点估计，比较是 `value >=` 该 token。这不是新 SESOI。过线不得记成通过 |
+
+下面四行与三段登记只认行首。表格散文不是第二个来源。
+
+g1_accuracy_floor: 1.0 n=12 scored=12 unresolved=0
+a1_citation_recall_floor: 0.42857142857142855 n=7 scored=7 unresolved=0
+a1_citation_precision_floor: 0.6 n=7 scored=5 unresolved=2
+t1_new_over_old_accuracy_floor: 0.3333333333333333 n=4 scored=3 unresolved=1
+segment_registered: G1-should-refuse
+segment_registered: A1
+segment_registered: T1-new-over-old
 
 `tasks/RET-01.4.md` 与 `data/exp/x1/config.json` 里的 `lead_delta=0.10`（hybrid − BM25 的分型 R@10）是 **draft-experiment-only**。该票正文仍要求把生产臂写成 bm25。这个 0.10 不是产品质量通过线。
 

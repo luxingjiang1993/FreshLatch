@@ -160,9 +160,13 @@ def test_offline_command_marks_unregistered_and_compares_baseline(capsys, monkey
     assert "excluded_lexical_used=false" in out
     assert "paid_llm=false" in out
     assert "qg04=separate" in out
-    assert "segment id=A1 status=unregistered" in out
-    assert "segment id=G1-should-refuse status=unregistered" in out
-    assert "segment id=T1-new-over-old status=unregistered" in out
+    assert "segment id=A1 status=TBD" in out
+    assert "segment id=G1-should-refuse status=TBD" in out
+    assert "segment id=T1-new-over-old status=TBD" in out
+    assert "registered=true" in out
+    assert "g1_no_regression=true" in out
+    assert "a1_no_regression=true" in out
+    assert "t1_no_regression=true" in out
     assert "status=pass" not in out
     assert "counted_as_pass=true" not in out
     assert "metric id=R1-recall@10 status=TBD value=0.9732142857142857" in out
@@ -184,7 +188,7 @@ def test_offline_command_marks_unregistered_and_compares_baseline(capsys, monkey
 
 
 def test_module_entrypoint_matches_command_shape():
-    """三条正式金标已在场时，离线闸仍退出码 0：三段 unregistered，file_present=true，未记通过。"""
+    """三条正式金标已在场且已登记时，离线闸退出码 0：三段 TBD、registered=true，未记通过。"""
     present = (
         "data/eval/guard_should.json",
         "data/eval/cite_sentence.json",
@@ -201,16 +205,17 @@ def test_module_entrypoint_matches_command_shape():
     stdout, stderr = _stdio(proc)
     assert proc.returncode == 0, stderr
     assert (
-        "segment id=G1-should-refuse status=unregistered "
-        "file=data/eval/guard_should.json file_present=true counted_as_pass=false"
+        "segment id=G1-should-refuse status=TBD "
+        "file=data/eval/guard_should.json file_present=true registered=true counted_as_pass=false"
     ) in stdout
     assert (
-        "segment id=A1 status=unregistered "
-        "file=data/eval/cite_sentence.json file_present=true counted_as_pass=false"
+        "segment id=A1 status=TBD "
+        "file=data/eval/cite_sentence.json file_present=true registered=true counted_as_pass=false"
     ) in stdout
     assert (
-        "segment id=T1-new-over-old status=unregistered "
-        "file=data/eval/temporal_new_over_old.json file_present=true counted_as_pass=false"
+        "segment id=T1-new-over-old status=TBD "
+        "file=data/eval/temporal_new_over_old.json file_present=true registered=true "
+        "counted_as_pass=false"
     ) in stdout
     assert "counted_as_pass=false" in stdout
     assert "counted_as_pass=true" not in stdout
@@ -491,10 +496,19 @@ def test_score_registered_a1_missing_cite_sentence_exits_nonzero(tmp_path, capsy
 
 
 def test_unregistered_missing_cite_file_score_stays_zero(tmp_path, capsys):
-    """现行 PREREG 不登记任何段。临时目录缺文件时，判分入口仍退出码 0。"""
+    """去掉行首登记后，临时目录缺文件时，判分入口仍退出码 0。"""
     text = PREREG.read_text(encoding="utf-8")
-    assert parse_registered_segments(text) == frozenset()
-    code = score_registered_segments(tmp_path, text)
+    assert parse_registered_segments(text) == frozenset({
+        "G1-should-refuse",
+        "A1",
+        "T1-new-over-old",
+    })
+    bare = "\n".join(
+        line for line in text.splitlines()
+        if not line.strip().startswith("segment_registered:")
+    ) + "\n"
+    assert parse_registered_segments(bare) == frozenset()
+    code = score_registered_segments(tmp_path, bare)
     err = capsys.readouterr().err
     assert code == 0, err
 
@@ -527,7 +541,8 @@ def test_registered_final_cite_file_is_not_counted_as_pass(tmp_path, capsys):
     (dest / "cite_sentence.json").write_text(_final_cite_text(), encoding="utf-8")
     rows = build_unregistered_rows(tmp_path, registered=frozenset({"A1"}))
     a1 = next(row for row in rows if row.row_id == "A1")
-    assert a1.status == "unregistered"
+    assert a1.status == "TBD"
+    assert "registered=true" in a1.line
     assert a1.counted_as_pass is False
     assert "status=pass" not in a1.line
     assert "counted_as_pass=false" in a1.line
@@ -566,8 +581,10 @@ def test_repo_qg08_final_files_pass_registered_structural_check(capsys):
         ROOT,
         registered=frozenset(spec["id"] for spec in qg.UNREGISTERED_SEGMENTS),
     )
-    assert [row.status for row in rows] == ["unregistered", "unregistered", "unregistered"]
+    assert [row.status for row in rows] == ["TBD", "TBD", "TBD"]
+    assert all("registered=true" in row.line for row in rows)
     assert all(row.counted_as_pass is False for row in rows)
+    assert all("status=pass" not in row.line for row in rows)
 
 
 def test_r1_no_regression_two_floors_only():
@@ -609,25 +626,29 @@ def test_quality_gate_source_has_no_live_imports():
 
 
 def _repo_descriptive_lines() -> list[str]:
+    text = PREREG.read_text(encoding="utf-8")
     questions = json.loads((ROOT / qg.QUESTIONS_REL).read_text(encoding="utf-8"))
     rows = qg.build_descriptive_metric_rows(
         ROOT,
         queries=list(questions["queries"]),
         rankings=qg._neural_rankings(ROOT),
+        registered=qg.parse_registered_segments(text),
+        floors=qg.parse_point_floors(text),
     )
     return [row.line for row in rows]
 
 
 def _assert_qg11_descriptive_lines(stdout: str) -> None:
-    """四条描述行在三段 segment 之后、R1 之前。不计通过，也不带无回归旗标。"""
+    """四条描述行在三段 segment 之后、R1 之前。不计通过。已登记段带自己的无回归旗标。"""
     lines = stdout.splitlines()
     prefixes = [
-        "segment id=G1-should-refuse status=unregistered "
-        "file=data/eval/guard_should.json file_present=true counted_as_pass=false",
-        "segment id=A1 status=unregistered "
-        "file=data/eval/cite_sentence.json file_present=true counted_as_pass=false",
-        "segment id=T1-new-over-old status=unregistered "
-        "file=data/eval/temporal_new_over_old.json file_present=true counted_as_pass=false",
+        "segment id=G1-should-refuse status=TBD "
+        "file=data/eval/guard_should.json file_present=true registered=true counted_as_pass=false",
+        "segment id=A1 status=TBD "
+        "file=data/eval/cite_sentence.json file_present=true registered=true counted_as_pass=false",
+        "segment id=T1-new-over-old status=TBD "
+        "file=data/eval/temporal_new_over_old.json file_present=true registered=true "
+        "counted_as_pass=false",
         "metric id=G1-should-refuse-accuracy ",
         "metric id=A1-citation-recall ",
         "metric id=A1-citation-precision ",
@@ -670,6 +691,7 @@ def _assert_qg11_descriptive_lines(stdout: str) -> None:
         assert "r1_no_regression" not in line
         assert "value=unavailable" not in line
     g1 = next(item for item in lines if item.startswith("metric id=G1-should-refuse-accuracy "))
+    assert "g1_no_regression=true" in g1
     assert " correct=" in g1
     assert " n_should_refuse=" in g1
     assert " n_should_pass=" in g1
@@ -677,8 +699,10 @@ def _assert_qg11_descriptive_lines(stdout: str) -> None:
     for row_id in ("A1-citation-recall", "A1-citation-precision"):
         line = next(item for item in lines if item.startswith(f"metric id={row_id} "))
         assert "source=cited-vs-relevant" in line
+        assert "a1_no_regression=true" in line
         assert " correct=" not in line
     t1 = next(item for item in lines if item.startswith("metric id=T1-new-over-old-accuracy "))
+    assert "t1_no_regression=true" in t1
     assert " correct=" in t1
     assert "source=frozen-per-query-replay" in t1
     assert "metric id=conflict-pair-ordering status=TBD" in stdout
@@ -884,8 +908,14 @@ def test_missing_formal_files_print_unavailable_counts(tmp_path):
     assert all(row.status == "TBD" and row.counted_as_pass is False for row in rows)
 
 
-def test_zero_guard_agreement_keeps_exit_zero(capsys, monkeypatch):
-    """夹具把 G1 计成 0 时，离线入口仍退出码 0，行仍是 TBD。"""
+def test_unregistered_zero_guard_agreement_keeps_exit_zero(tmp_path, capsys, monkeypatch):
+    """去掉行首登记后，夹具把 G1 计成 0 仍退出码 0，且不写 g1 旗标。"""
+    text = "\n".join(
+        line for line in PREREG.read_text(encoding="utf-8").splitlines()
+        if not line.strip().startswith("segment_registered:")
+    ) + "\n"
+    path = tmp_path / "PREREG.md"
+    path.write_text(text, encoding="utf-8")
     items = [{
         "disposition": "keep",
         "source_refs": ["c1"],
@@ -904,7 +934,7 @@ def test_zero_guard_agreement_keeps_exit_zero(capsys, monkeypatch):
         "score_guard_should_accuracy",
         lambda *_args, **_kwargs: scored,
     )
-    code = run_quality_gate(offline=True, prereg=str(PREREG))
+    code = run_quality_gate(offline=True, prereg=str(path))
     captured = capsys.readouterr()
     assert code == 0, captured.err
     assert (
@@ -914,5 +944,296 @@ def test_zero_guard_agreement_keeps_exit_zero(capsys, monkeypatch):
         "n_should_refuse=0 n_should_pass=1 "
         "source=gold-bucket-agreement counted_as_pass=false"
     ) in captured.out
+    assert "g1_no_regression" not in captured.out
+    assert "segment id=G1-should-refuse status=unregistered" in captured.out
+    assert "status=pass" not in captured.out
+    assert "counted_as_pass=true" not in captured.out
+
+
+def _prereg_floors() -> dict[str, qg.PointFloor]:
+    return qg.parse_point_floors(PREREG.read_text(encoding="utf-8"))
+
+
+def _result_fence_lines() -> list[str]:
+    text = (ROOT / "docs" / "evidence" / "quality-gate" / "QG-GAT-FREEZE-RESULT.md").read_text(
+        encoding="utf-8",
+    )
+    parts = text.split("```")
+    assert len(parts) >= 3
+    return parts[1].splitlines()
+
+
+def _field_token(line: str, name: str) -> str:
+    prefix = name + "="
+    for part in line.split():
+        if part.startswith(prefix):
+            return part[len(prefix):]
+    raise AssertionError(f"{name} 不在行内: {line}")
+
+
+def test_prereg_floors_copy_result_fence_tokens():
+    """地板 token 与 RESULT 围栏逐字相同。登记只覆盖有地板的三段。"""
+    floors = _prereg_floors()
+    mapping = {
+        "G1-should-refuse-accuracy": "g1_accuracy_floor",
+        "A1-citation-recall": "a1_citation_recall_floor",
+        "A1-citation-precision": "a1_citation_precision_floor",
+        "T1-new-over-old-accuracy": "t1_new_over_old_accuracy_floor",
+    }
+    seen: set[str] = set()
+    for line in _result_fence_lines():
+        if not line.startswith("metric id="):
+            continue
+        metric_id = line.split()[1].split("=", 1)[1]
+        key = mapping.get(metric_id)
+        if key is None:
+            continue
+        floor = floors[key]
+        assert floor.value == _field_token(line, "value")
+        assert floor.n == int(_field_token(line, "n"))
+        assert floor.scored == int(_field_token(line, "scored"))
+        assert floor.unresolved == int(_field_token(line, "unresolved"))
+        seen.add(key)
+    assert seen == set(mapping.values())
+    text = PREREG.read_text(encoding="utf-8")
+    registered = [
+        line.split(":", 1)[1].strip()
+        for line in text.splitlines()
+        if line.startswith("segment_registered:")
+    ]
+    assert registered == ["G1-should-refuse", "A1", "T1-new-over-old"]
+    assert [line for line in text.splitlines() if line.startswith("owner_freeze:")] == [
+        "owner_freeze: confirmed",
+    ]
+    assert "R1 通过线主人确认: confirmed" in text.splitlines()
+    assert "| conflict-pair ordering | 第 4 节定义。n=3，未进 CI | TBD |" in text
+    assert "| multi-hop 全命中 | 第 4 节定义。n=45 | TBD |" in text
+    assert "| guardrail 0-hit | 第 4 节定义。n=43 | TBD |" in text
+    assert "无。不得记成通过" not in text
+
+
+def test_track_a_floor_literals_stay_out_of_runner():
+    """本票新增行不含 G1/A1/T1 地板数字。R1 两条常数仍只服务 R1。"""
+    diff = subprocess.run(
+        ["git", "diff", "-U0", "origin/main", "--", "src/freshlatch/eval/quality_gate.py"],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        check=True,
+    ).stdout
+    added = "\n".join(
+        line[1:] for line in diff.splitlines()
+        if line.startswith("+") and not line.startswith("+++")
+    )
+    for floor in _prereg_floors().values():
+        assert floor.value not in added
+    source = (ROOT / "src" / "freshlatch" / "eval" / "quality_gate.py").read_text(encoding="utf-8")
+    assert "R1_RECALL_AT_10_FLOOR = 0.9732142857142857" in source
+    assert "R1_MRR_AT_10_FLOOR = 0.8381855867346939" in source
+    floor_names = [name for name in vars(qg) if name.endswith("_FLOOR")]
+    assert floor_names == ["R1_RECALL_AT_10_FLOOR", "R1_MRR_AT_10_FLOOR"]
+
+
+def test_enforce_report_registered_segment_is_tbd():
+    """已登记段可以是 TBD。未传入登记集时，TBD 段仍不是 unregistered。"""
+    rows = _rows_that_reach_pass_check()
+    swapped: list[qg.ReportRow] = []
+    for row in rows:
+        if row.row_id != "A1":
+            swapped.append(row)
+            continue
+        swapped.append(qg.ReportRow(
+            kind=row.kind,
+            row_id=row.row_id,
+            status="TBD",
+            counted_as_pass=False,
+            line=row.line.replace("status=unregistered", "status=TBD registered=true"),
+        ))
+    with pytest.raises(ContractError, match="A1 缺失或不是 unregistered"):
+        enforce_report(swapped)
+    enforce_report(swapped, registered=frozenset({"A1"}))
+
+
+def test_registered_g1_next_smaller_float_exits_nonzero(capsys, monkeypatch):
+    """已登记 G1 放到地板的下一个更小浮点时，离线入口非 0，且 g1 旗标为 false。"""
+    floor = _prereg_floors()["g1_accuracy_floor"]
+    lowered = json.dumps(math.nextafter(float(floor.value), 0.0))
+    assert float(lowered) < float(floor.value)
+    monkeypatch.setattr(
+        qg,
+        "score_guard_should_accuracy",
+        lambda *_args, **_kwargs: qg.GuardAgreement(
+            n=floor.n,
+            scored=floor.scored,
+            correct=0,
+            unresolved=floor.unresolved,
+            n_should_refuse=0,
+            n_should_pass=0,
+            value=lowered,
+        ),
+    )
+    code = run_quality_gate(offline=True, prereg=str(PREREG))
+    captured = capsys.readouterr()
+    assert code != 0
+    g1 = next(
+        line for line in captured.out.splitlines()
+        if line.startswith("metric id=G1-should-refuse-accuracy ")
+    )
+    assert f"value={lowered}" in g1
+    assert "g1_no_regression=false" in g1
+    assert "status=pass" not in captured.out
+    assert "counted_as_pass=true" not in captured.out
+
+
+def test_registered_t1_scored_change_exits_nonzero(capsys, monkeypatch):
+    """已登记 T1 的 scored 与地板不一致时，即使 value 相等也非 0。"""
+    floor = _prereg_floors()["t1_new_over_old_accuracy_floor"]
+    monkeypatch.setattr(
+        qg,
+        "score_new_over_old_accuracy",
+        lambda *_args, **_kwargs: qg.RankAgreement(
+            n=floor.n,
+            scored=floor.scored + 1,
+            correct=0,
+            unresolved=floor.unresolved,
+            value=floor.value,
+        ),
+    )
+    code = run_quality_gate(offline=True, prereg=str(PREREG))
+    captured = capsys.readouterr()
+    assert code != 0
+    t1 = next(
+        line for line in captured.out.splitlines()
+        if line.startswith("metric id=T1-new-over-old-accuracy ")
+    )
+    assert f"value={floor.value}" in t1
+    assert f"scored={floor.scored + 1}" in t1
+    assert "t1_no_regression=false" in t1
+    assert "status=pass" not in captured.out
+    assert "counted_as_pass=true" not in captured.out
+
+
+def test_registered_a1_unavailable_exits_nonzero(capsys, monkeypatch):
+    """已登记 A1 的 recall 为 unavailable 时，两条 A1 都写 false，退出码非 0。"""
+    floors = _prereg_floors()
+    recall = floors["a1_citation_recall_floor"]
+    precision = floors["a1_citation_precision_floor"]
+    monkeypatch.setattr(
+        qg,
+        "score_citation_overlap",
+        lambda *_args, **_kwargs: qg.CitationOverlap(
+            recall=qg.SetOverlap(
+                n=recall.n,
+                scored=recall.scored,
+                unresolved=recall.unresolved,
+                value="unavailable",
+            ),
+            precision=qg.SetOverlap(
+                n=precision.n,
+                scored=precision.scored,
+                unresolved=precision.unresolved,
+                value=precision.value,
+            ),
+        ),
+    )
+    code = run_quality_gate(offline=True, prereg=str(PREREG))
+    captured = capsys.readouterr()
+    assert code != 0
+    a1_lines = [
+        line for line in captured.out.splitlines()
+        if line.startswith("metric id=A1-citation-")
+    ]
+    assert len(a1_lines) == 2
+    assert all("a1_no_regression=false" in line for line in a1_lines)
+    assert "status=pass" not in captured.out
+    assert "counted_as_pass=true" not in captured.out
+
+
+def test_registered_metrics_matching_floor_stay_zero(capsys, monkeypatch):
+    """夹具的 value、n、scored、unresolved 与地板行相同，则旗标为 true，且不因此非 0。"""
+    floors = _prereg_floors()
+    g1 = floors["g1_accuracy_floor"]
+    recall = floors["a1_citation_recall_floor"]
+    precision = floors["a1_citation_precision_floor"]
+    t1 = floors["t1_new_over_old_accuracy_floor"]
+    monkeypatch.setattr(
+        qg,
+        "score_guard_should_accuracy",
+        lambda *_args, **_kwargs: qg.GuardAgreement(
+            n=g1.n,
+            scored=g1.scored,
+            correct=g1.scored,
+            unresolved=g1.unresolved,
+            n_should_refuse=0,
+            n_should_pass=0,
+            value=g1.value,
+        ),
+    )
+    monkeypatch.setattr(
+        qg,
+        "score_citation_overlap",
+        lambda *_args, **_kwargs: qg.CitationOverlap(
+            recall=qg.SetOverlap(
+                n=recall.n,
+                scored=recall.scored,
+                unresolved=recall.unresolved,
+                value=recall.value,
+            ),
+            precision=qg.SetOverlap(
+                n=precision.n,
+                scored=precision.scored,
+                unresolved=precision.unresolved,
+                value=precision.value,
+            ),
+        ),
+    )
+    monkeypatch.setattr(
+        qg,
+        "score_new_over_old_accuracy",
+        lambda *_args, **_kwargs: qg.RankAgreement(
+            n=t1.n,
+            scored=t1.scored,
+            correct=0,
+            unresolved=t1.unresolved,
+            value=t1.value,
+        ),
+    )
+    code = run_quality_gate(offline=True, prereg=str(PREREG))
+    captured = capsys.readouterr()
+    assert code == 0, captured.err
+    out = captured.out
+    assert "g1_no_regression=true" in out
+    a1_lines = [line for line in out.splitlines() if "a1_no_regression=" in line]
+    assert len(a1_lines) == 2
+    assert all("a1_no_regression=true" in line for line in a1_lines)
+    assert "t1_no_regression=true" in out
+    assert "status=pass" not in out
+    assert "counted_as_pass=true" not in out
+
+
+def test_registered_missing_floor_key_is_contract_error(tmp_path, capsys):
+    """段已登记但行首地板键缺失时，ContractError，不默认成某个百分数。"""
+    kept = [
+        line for line in PREREG.read_text(encoding="utf-8").splitlines()
+        if not line.startswith("g1_accuracy_floor:")
+    ]
+    path = tmp_path / "PREREG.md"
+    path.write_text("\n".join(kept) + "\n", encoding="utf-8")
+    code = run_quality_gate(offline=True, prereg=str(path))
+    err = capsys.readouterr().err
+    assert code != 0
+    assert "G1-should-refuse 已登记但缺少行首 g1_accuracy_floor" in err
+    assert "status=pass" not in err
+
+
+def test_r1_false_does_not_change_exit(capsys, monkeypatch):
+    """R1 无回归为 false 仍只写进描述，不改退出码。"""
+    monkeypatch.setattr(qg, "r1_no_regression", lambda **_kwargs: False)
+    code = run_quality_gate(offline=True, prereg=str(PREREG))
+    captured = capsys.readouterr()
+    assert code == 0, captured.err
+    assert "r1_no_regression=false" in captured.out
+    assert "g1_no_regression=true" in captured.out
     assert "status=pass" not in captured.out
     assert "counted_as_pass=true" not in captured.out
