@@ -171,6 +171,14 @@ def test_offline_command_marks_unregistered_and_compares_baseline(capsys, monkey
 
 
 def test_module_entrypoint_matches_command_shape():
+    """三条金标路径都不存在时，离线闸退出码 0，三段 unregistered 且未记通过。"""
+    absent = (
+        "data/eval/guard_should.json",
+        "data/eval/cite_sentence.json",
+        "data/eval/temporal_new_over_old.json",
+    )
+    for rel in absent:
+        assert not (ROOT / rel).is_file(), rel
     proc = _run(
         "quality-gate",
         "--offline",
@@ -179,7 +187,20 @@ def test_module_entrypoint_matches_command_shape():
     )
     stdout, stderr = _stdio(proc)
     assert proc.returncode == 0, stderr
-    assert "segment id=A1 status=unregistered" in stdout
+    assert (
+        "segment id=G1-should-refuse status=unregistered "
+        "file=data/eval/guard_should.json file_present=false counted_as_pass=false"
+    ) in stdout
+    assert (
+        "segment id=A1 status=unregistered "
+        "file=data/eval/cite_sentence.json file_present=false counted_as_pass=false"
+    ) in stdout
+    assert (
+        "segment id=T1-new-over-old status=unregistered "
+        "file=data/eval/temporal_new_over_old.json file_present=false counted_as_pass=false"
+    ) in stdout
+    assert "counted_as_pass=false" in stdout
+    assert "counted_as_pass=true" not in stdout
     assert "status=pass" not in stdout
     assert SECRET not in stdout + stderr
 
@@ -290,6 +311,156 @@ def test_missing_a1_cannot_exit_zero(tmp_path):
     rows = [row for row in build_unregistered_rows(tmp_path) if row.row_id != "A1"]
     with pytest.raises(ContractError):
         enforce_report(rows)
+
+
+def test_unregistered_schema_field_tables():
+    """字段表锁路径与列名。不发明 G1/A1/T1 的绝对百分数。"""
+    by_id = {spec["id"]: spec for spec in qg.UNREGISTERED_SEGMENTS}
+    assert tuple(by_id) == ("G1-should-refuse", "A1", "T1-new-over-old")
+    assert by_id["G1-should-refuse"]["file"] == "data/eval/guard_should.json"
+    assert by_id["A1"]["file"] == "data/eval/cite_sentence.json"
+    assert by_id["T1-new-over-old"]["file"] == "data/eval/temporal_new_over_old.json"
+    assert qg.GOLD_META_FIELDS == ("status", "human_row_review", "reviewer")
+    assert qg.GOLD_META_STATUSES == frozenset({"draft", "final"})
+    for spec in qg.UNREGISTERED_SEGMENTS:
+        assert spec["meta_fields"] == qg.GOLD_META_FIELDS
+    assert by_id["G1-should-refuse"]["item_fields"] == qg.GUARD_SHOULD_ITEM_FIELDS
+    assert by_id["G1-should-refuse"]["item_fields"] == (
+        "id",
+        "policy_id",
+        "label",
+        "text",
+        "source_refs",
+    )
+    assert by_id["G1-should-refuse"]["labels"] == frozenset({"should_refuse", "should_pass"})
+    assert by_id["G1-should-refuse"]["metrics"] == ()
+    assert by_id["A1"]["item_fields"] == (
+        "id",
+        "sentence",
+        "cited_ids",
+        "label",
+        "source_refs",
+    )
+    assert by_id["A1"]["labels"] == frozenset({"supported", "false_cite", "miss_cite"})
+    assert by_id["A1"]["metrics"] == ("citation recall", "citation precision")
+    assert "Faithfulness" not in " ".join(by_id["A1"]["metrics"])
+    assert by_id["T1-new-over-old"]["item_fields"] == (
+        "id",
+        "query",
+        "as_of",
+        "in_force",
+        "superseded",
+        "source_refs",
+    )
+    assert by_id["T1-new-over-old"]["labels"] == frozenset()
+    assert by_id["T1-new-over-old"]["metrics"] == ("new-over-old accuracy",)
+    joined = " ".join(
+        field
+        for spec in qg.UNREGISTERED_SEGMENTS
+        for field in (*spec["item_fields"], *spec["metrics"])
+    )
+    assert "Recall@10" not in joined
+
+
+def _rows_that_reach_pass_check() -> list[qg.ReportRow]:
+    """金标段只有这三段。其余是既有 TBD / not_counted，好让检查走到 counted_as_pass。"""
+    rows: list[qg.ReportRow] = []
+    for spec in qg.UNREGISTERED_SEGMENTS:
+        rows.append(qg.ReportRow(
+            kind="segment",
+            row_id=spec["id"],
+            status="unregistered",
+            counted_as_pass=False,
+            line=(
+                f"segment id={spec['id']} status=unregistered file={spec['file']} "
+                "file_present=false counted_as_pass=false"
+            ),
+        ))
+    for row_id in qg.REQUIRED_METRICS:
+        rows.append(qg.ReportRow(
+            kind="metric",
+            row_id=row_id,
+            status="TBD",
+            counted_as_pass=False,
+            line=(
+                f"metric id={row_id} status=TBD value=unavailable "
+                "baseline=none counted_as_pass=false"
+            ),
+        ))
+    rows.append(qg.ReportRow(
+        kind="trap",
+        row_id=qg.TRAP_ROW_ID,
+        status="not_counted",
+        counted_as_pass=False,
+        line=(
+            f"trap_smoke id={qg.TRAP_ROW_ID} status=not_counted "
+            "counted_as_pass=false"
+        ),
+    ))
+    return rows
+
+
+def test_three_segments_a1_counted_as_pass_raises(tmp_path):
+    """只含这三段、且 A1 counted_as_pass=true 时，enforce_report 抛 ContractError。"""
+    rows: list[qg.ReportRow] = []
+    for row in build_unregistered_rows(tmp_path):
+        if row.row_id == "A1":
+            rows.append(qg.ReportRow(
+                kind=row.kind,
+                row_id=row.row_id,
+                status=row.status,
+                counted_as_pass=True,
+                line=row.line.replace("counted_as_pass=false", "counted_as_pass=true"),
+            ))
+        else:
+            rows.append(row)
+    assert [row.row_id for row in rows] == [
+        "G1-should-refuse",
+        "A1",
+        "T1-new-over-old",
+    ]
+    assert rows[1].counted_as_pass is True
+    assert rows[1].status == "unregistered"
+    with pytest.raises(ContractError):
+        enforce_report(rows)
+
+
+def test_unregistered_counted_as_pass_true_is_contract_error():
+    """counted_as_pass=true 必须打在「被记成通过」上。缺指标行会先抛，盖不住这条。"""
+    legal = _rows_that_reach_pass_check()
+    enforce_report(legal)
+    flipped: list[qg.ReportRow] = []
+    for row in legal:
+        if row.row_id != "A1":
+            flipped.append(row)
+            continue
+        flipped.append(qg.ReportRow(
+            kind=row.kind,
+            row_id=row.row_id,
+            status="unregistered",
+            counted_as_pass=True,
+            line=row.line.replace("counted_as_pass=false", "counted_as_pass=true"),
+        ))
+    with pytest.raises(ContractError, match="A1 被记成通过"):
+        enforce_report(flipped)
+
+
+def test_unregistered_printed_as_status_pass_is_contract_error():
+    """把 unregistered 印成 status=pass 时抛 ContractError。status 字段仍是 unregistered。"""
+    printed: list[qg.ReportRow] = []
+    for row in _rows_that_reach_pass_check():
+        if row.row_id != "A1":
+            printed.append(row)
+            continue
+        printed.append(qg.ReportRow(
+            kind=row.kind,
+            row_id=row.row_id,
+            status="unregistered",
+            counted_as_pass=False,
+            line=row.line.replace("status=unregistered", "status=pass"),
+        ))
+    with pytest.raises(ContractError, match="A1 打印成 pass"):
+        enforce_report(printed)
 
 
 def test_quality_gate_source_has_no_live_imports():
