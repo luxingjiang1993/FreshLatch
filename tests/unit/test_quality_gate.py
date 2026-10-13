@@ -171,14 +171,14 @@ def test_offline_command_marks_unregistered_and_compares_baseline(capsys, monkey
 
 
 def test_module_entrypoint_matches_command_shape():
-    """三条金标路径都不存在时，离线闸退出码 0，三段 unregistered 且未记通过。"""
-    absent = (
+    """三条正式金标已在场时，离线闸仍退出码 0：三段 unregistered，file_present=true，未记通过。"""
+    present = (
         "data/eval/guard_should.json",
         "data/eval/cite_sentence.json",
         "data/eval/temporal_new_over_old.json",
     )
-    for rel in absent:
-        assert not (ROOT / rel).is_file(), rel
+    for rel in present:
+        assert (ROOT / rel).is_file(), rel
     proc = _run(
         "quality-gate",
         "--offline",
@@ -189,15 +189,15 @@ def test_module_entrypoint_matches_command_shape():
     assert proc.returncode == 0, stderr
     assert (
         "segment id=G1-should-refuse status=unregistered "
-        "file=data/eval/guard_should.json file_present=false counted_as_pass=false"
+        "file=data/eval/guard_should.json file_present=true counted_as_pass=false"
     ) in stdout
     assert (
         "segment id=A1 status=unregistered "
-        "file=data/eval/cite_sentence.json file_present=false counted_as_pass=false"
+        "file=data/eval/cite_sentence.json file_present=true counted_as_pass=false"
     ) in stdout
     assert (
         "segment id=T1-new-over-old status=unregistered "
-        "file=data/eval/temporal_new_over_old.json file_present=false counted_as_pass=false"
+        "file=data/eval/temporal_new_over_old.json file_present=true counted_as_pass=false"
     ) in stdout
     assert "counted_as_pass=false" in stdout
     assert "counted_as_pass=true" not in stdout
