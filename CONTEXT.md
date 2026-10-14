@@ -214,8 +214,16 @@ _Avoid_: 公式重算、SESOI、数值容差、全角折算、用模型算术放
 主张中的数字字面量没有逐字出现在所引 `@T1` 证据 span 中时的拒因码。假 quote 或改写后的数走这一码,结果不得为 `fresh`(保持 abstain / unknown)。不是 `grade_ambiguous`。
 _Avoid_: 用模型算术放行、把缺失数字写成 fresh、`grade_ambiguous`
 
+**T1 冲突闸**:
+`reverify_claim(fresh)` 交给执行器之前的确定性检查。本轮 retrieve 观察里的 `@T1` span,若有两块对同一可判定前提给出互斥取值,则拒答。可判定前提有两种字面绑定,容差为空:一是正文里的 `前提「…」：取值`;二是同一属性词(如定价、月费、报价、价格、费用、成本)窗口内的数字字面量,或封闭反义对。数字字面量与 verbatim 数字闸同一抽出规则。两边都点名了具体对象且对象不同(如竞品A 与竞品B、专业版与免费版)不是同一前提。一条 span 同时写出两个数时,不与另一条只含其中一数的 span 互斥。本闸不挑选其中一侧,不把两块合并成 fresh。
+_Avoid_: 用模型做 NLI、静默合并、SESOI、把 CRAG Ambiguous 叫成这一闸
+
+**conflicting_evidence**:
+两条 `@T1` 对同一可判定前提互斥时的拒因码。结果不得为 `fresh`。不是 `grade_ambiguous`(那是观察不够支持继续写判定,并不要求互斥对)。不是 `numeric_mismatch`(那是主张数字未落在所引 span 里)。
+_Avoid_: `grade_ambiguous`、挑更流畅的一侧写 fresh、无人审的冲突合并
+
 **abstention reason**:
-拒答原因的封闭枚举。轨迹事件上的 `reason_code` 只有落在这一份里才是拒答原因。成员与已经发出的码是同一符号:`insufficient_evidence`(本轮未见可引用的 `@T1`)、`cite_outside_registry`(引用不在本轮 TurnRegistry)、`grade_incorrect_exhausted`、`grade_ambiguous`、`numeric_mismatch`(主张数字未在所引 `@T1` span 中逐字出现)。UI 只读这一份。自由文本可以留在 `error`,不能单独充当原因。
+拒答原因的封闭枚举。轨迹事件上的 `reason_code` 只有落在这一份里才是拒答原因。成员与已经发出的码是同一符号:`insufficient_evidence`(本轮未见可引用的 `@T1`)、`cite_outside_registry`(引用不在本轮 TurnRegistry)、`grade_incorrect_exhausted`、`grade_ambiguous`、`numeric_mismatch`(主张数字未在所引 `@T1` span 中逐字出现)、`conflicting_evidence`(两条 `@T1` 对同一可判定前提互斥)。UI 只读这一份。自由文本可以留在 `error`,不能单独充当原因。
 _Avoid_: 另写平行拼写、把错误文案当成原因码、把 `unknown_tool` / `illegal_tool_args` / `illegal_dimension` / `NO_T1_EVIDENCE` 并进本枚举
 
 **失败轨迹可复放 (failure replay)**:
