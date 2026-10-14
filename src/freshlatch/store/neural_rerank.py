@@ -12,7 +12,7 @@ import os
 from freshlatch.models import NEURAL_RERANK_MODEL, RERANK_MODE_NEURAL
 from freshlatch.store.base import Chunk
 from freshlatch.store.local_embed import embed_offline_requested, local_embed_cache_dir
-from freshlatch.store.pipeline import rerank_lexical
+from freshlatch.store.pipeline import rerank_lexical, target_hit_score_book
 
 logger = logging.getLogger(__name__)
 NEURAL_RERANK_K = 10
@@ -88,7 +88,7 @@ def _load_encoder():
     return _encoder
 
 
-def _rerank_neural(query: str, chunks: list[Chunk]) -> list[Chunk]:
+def _rerank_neural(query: str, chunks: list[Chunk], *, book=None) -> list[Chunk]:
     if not chunks:
         return []
     encoder = _load_encoder()
@@ -96,6 +96,13 @@ def _rerank_neural(query: str, chunks: list[Chunk]) -> list[Chunk]:
     scores = [float(item) for item in encoder.rerank(query, docs)]
     if len(scores) != len(chunks):
         raise RuntimeError(f"rerank 分数条数 {len(scores)} 与候选 {len(chunks)} 不一致")
+    # 先记下已有分,再按原排序键重排。book 不参与 key。
+    target = target_hit_score_book(book)
+    if target is not None:
+        from freshlatch.store.base import chunk_evidence_id
+
+        for chunk, score in zip(chunks, scores):
+            target.rerank[chunk_evidence_id(chunk)] = float(score)
     order = sorted(range(len(chunks)), key=lambda i: (-scores[i], i))
     return [chunks[i] for i in order]
 
@@ -118,25 +125,32 @@ def rerank_hybrid_candidates(
     *,
     top_k: int,
     lexical_only: bool,
+    book=None,
 ) -> tuple[list[Chunk], str]:
     """重排 hybrid 已经给出的候选。
 
     神经路径只把前 ``NEURAL_RERANK_K`` 条送进 cross-encoder。多出来的尾巴保持 hybrid 原序。
     ``lexical_only`` 时整段 ``top_k`` 走 ``rerank_lexical``，不加载模型。
+    book 只接收这次实际采用的精排分。失败退回词面时先清掉未采用的神经分。
     """
     limit = min(len(chunks), top_k)
     body = list(chunks[:limit])
+    target = target_hit_score_book(book)
     if lexical_only:
-        return rerank_lexical(query, body, top_k=limit), RERANK_MODE_LEXICAL
+        return rerank_lexical(query, body, top_k=limit, book=target), RERANK_MODE_LEXICAL
     head_n = min(NEURAL_RERANK_K, limit)
     head = body[:head_n]
     tail = body[head_n:]
     if neural_rerank_disabled():
         _warn_fallback(NeuralRerankDisabled(NEURAL_RERANK_ENV))
-        return rerank_lexical(query, head, top_k=head_n) + tail, RERANK_MODE_FALLBACK
+        if target is not None:
+            target.rerank.clear()
+        return rerank_lexical(query, head, top_k=head_n, book=target) + tail, RERANK_MODE_FALLBACK
     try:
-        ranked = _rerank_neural(query, head)
+        ranked = _rerank_neural(query, head, book=target)
     except Exception as exc:
         _warn_fallback(exc)
-        return rerank_lexical(query, head, top_k=head_n) + tail, RERANK_MODE_FALLBACK
+        if target is not None:
+            target.rerank.clear()
+        return rerank_lexical(query, head, top_k=head_n, book=target) + tail, RERANK_MODE_FALLBACK
     return ranked + tail, RERANK_MODE_NEURAL
