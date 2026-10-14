@@ -12,6 +12,7 @@ from __future__ import annotations
 
 from freshlatch.evidence import check_evidence_ids, valid_as_of
 from freshlatch.store.base import chunk_evidence_id
+from freshlatch.store.pipeline import blank_hit_scores
 from freshlatch.store.query_transform import transform_claim_query
 from freshlatch.gates.meta_gate import META_ONLY_MESSAGE, is_meta_only_disproof
 from freshlatch.gates.support_review import (
@@ -277,14 +278,20 @@ class LeadReverifier:
         return handler(args)
 
     def _blocks_from_hits(self, hits: list) -> list[dict]:
-        """一次检索命中转观察块。四字段与原先一致,另读夹具注入的 crag_grade。"""
+        """一次检索命中转观察块。四字段与原先一致,另读夹具注入的 crag_grade。
+
+        scores 是当次已经算出的 bm25 / dense / rrf / rerank。不改 grade 计算。
+        """
+        table = getattr(self.ctx.store, "last_hit_scores", None) or {}
         blocks: list[dict] = []
         for chunk in hits:
+            evidence_id = chunk_evidence_id(chunk)
             block = {
-                "evidence_id": chunk_evidence_id(chunk),
+                "evidence_id": evidence_id,
                 "as_of": chunk.as_of,
                 "source_type": chunk.source_type,
                 "text": chunk.text,
+                "scores": dict(table.get(evidence_id) or blank_hit_scores()),
             }
             injected = getattr(chunk, "crag_grade", None)
             if isinstance(injected, str) and injected.strip():
@@ -343,6 +350,9 @@ class LeadReverifier:
             "grade_reason_code": grade["reason_code"],
             "grade_attempts": attempts,
             "grade_token": grade_token(str(grade["grade"])),
+            # 轨迹事件里已有的臂信息。模型参数改不了 retrieval_mode。
+            "retrieval_mode": getattr(self.ctx.store, "last_retrieval_mode", None),
+            "rerank_mode": getattr(self.ctx.store, "last_rerank_mode", None),
         }
         self._retrieve_observations.append(observation)
         return observation

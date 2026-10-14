@@ -162,6 +162,18 @@ _Avoid_: 网络回退、第一次 Incorrect 就换一个码、`insufficient_evid
 `ambiguous` 观察的拒因码。轨迹含 `grade=ambiguous`,该状态不写成 `fresh`。不表示两条 T1 互相矛盾。
 _Avoid_: `conflicting_evidence`、fresh、相关度阈值
 
+**hit 可测分 (hit scores)**:
+一次 retrieve 观察里每个 hit 的 `scores`,四个字段 `bm25`、`dense`、`rrf`、`rerank`。值是当次 BM25、余弦、RRF 与精排已经算出的数;该臂没算的字段为空。不进入排序,不改融合公式,也不当 fresh 阈值。
+_Avoid_: 单一相关度、CRAG grade、用这些分拟合通过线
+
+**rerank 开关记录 (rerank switch manifest)**:
+一次检索 manifest 上的 `rerank`。`on` 表示这次神经精排成功(`retrieval_mode=hybrid+rerank` 且 `rerank_mode=bge-reranker-base`)。`off` 表示显式词面精排 `hybrid+rerank_lexical`。两次都不改 `PRODUCTION_RETRIEVAL_MODE`。`lexical_fallback` 记 `fallback`,不记成 `on`。
+_Avoid_: 用 224 题重跑替换 `neural-rerank/summary.json`、把词面精排说成神经精排
+
+**bm25_fallback**:
+`last_retrieval_mode` 的一个值:请求了需要向量的臂(dense / hybrid / hybrid+rerank),但没有可用向量。`set_retrieval_switch("bm25")` 记下的是 `bm25`,不是这个词。
+_Avoid_: 把一键回退 BM25 叫成 fallback、把缺向量记成 `bm25`
+
 **主张查询变换 (claim→query transform)**:
 检索入口把主张(及可选登记维度/`focus` 封闭枚举映射)变成 retrieve 的 `query` 的确定性/可配变换;评测可对比变换前后召回。Lead/Critic 等角色不得自由改写检索串。
 _Avoid_: Lead 改写查询、query rewrite(Agent 品味)、HyDE(未拍板前)

@@ -23,12 +23,19 @@ from freshlatch.store.base import (
     RetrievalStore,
     chunk_evidence_id,
 )
+from freshlatch.store.pipeline import (
+    HitScoreBook,
+    activate_hit_score_book,
+    build_retrieval_manifest,
+    index_hit_scores,
+    reset_hit_score_book,
+)
 from freshlatch.tools import FOCUS_DIMENSIONS
 
 # 运维开关。未设开关时用 PRODUCTION_RETRIEVAL_MODE（精排是 bge-reranker-base）。
-# set_retrieval_switch("bm25") 一键回退到 bm25。
+# set_retrieval_switch("bm25") 一键回退到 bm25,last_retrieval_mode 记 bm25,不记 bm25_fallback。
 # set_retrieval_switch("hybrid+rerank_lexical") 只把精排切回 rerank_lexical。
-# 两者都不改 PRODUCTION_RETRIEVAL_MODE。
+# 两者都不改 PRODUCTION_RETRIEVAL_MODE。bm25_fallback 只表示缺可用向量。
 RETRIEVAL_SWITCH_MODES = frozenset(
     {"bm25", "hybrid", "hybrid+rerank", "hybrid+rerank_lexical"}
 )
@@ -89,6 +96,8 @@ class RunContext:
     eval_retrieval_mode: str | None = None
     # 运维开关。None 表示沿用 PRODUCTION_RETRIEVAL_MODE。不改那个常量。
     retrieval_switch: str | None = None
+    # 最近一次成功 retrieve 的 manifest。预算耗尽时清空。
+    last_retrieval_manifest: dict | None = None
 
     def arm_eval_retrieval_mode(self, mode: str) -> None:
         """评测夹具:强制检索臂。生产 online 拒绝;未实装的臂拒绝,避免误标。"""
@@ -105,7 +114,8 @@ class RunContext:
     def set_retrieval_switch(self, mode: str) -> None:
         """运维开关:bm25 / hybrid / hybrid+rerank / hybrid+rerank_lexical。
 
-        bm25 是一键回退到 BM25。hybrid+rerank_lexical 只把精排切回词重叠。
+        bm25 是一键回退到 BM25,写入 last_retrieval_mode=bm25,不是 bm25_fallback。
+        hybrid+rerank_lexical 只把精排切回词重叠。
         不修改 PRODUCTION_RETRIEVAL_MODE。Agent 工具仍不能传 retrieval_mode。
         """
         if mode not in RETRIEVAL_SWITCH_MODES:
@@ -129,10 +139,14 @@ class RunContext:
         if self.retrieval_used >= self.guardrails.retrieval_budget:
             self.events.append({"type": "budget", "kind": "retrieval_exhausted",
                                 "used": self.retrieval_used})
+            self.last_retrieval_manifest = None
             return RETRIEVAL_EXHAUSTED
         self.retrieval_used += 1
         requested = self._active_retrieval_mode()
-        if requested in {
+        if requested == "bm25":
+            # 显式 BM25 单独绑定。后面的向量臂集合不含它,避免被记成 bm25_fallback。
+            self.store.bind_eval_retrieval_mode("bm25")
+        elif requested in {
             "dense",
             "hybrid",
             "hybrid+rerank",
@@ -149,7 +163,13 @@ class RunContext:
         }
         if tenant_id is not None:
             retrieve_kwargs["tenant_id"] = tenant_id
-        hits = self.store.retrieve(query, **retrieve_kwargs)
+        book = HitScoreBook()
+        score_token = activate_hit_score_book(book)
+        try:
+            hits = self.store.retrieve(query, **retrieve_kwargs)
+        finally:
+            reset_hit_score_book(score_token)
+        self.store.last_hit_scores = index_hit_scores(hits, book)
         self.store.bind_eval_retrieval_mode(None)
         evidence_ids = [chunk_evidence_id(c) for c in hits]
         mode = getattr(self.store, "last_retrieval_mode", requested)
@@ -168,6 +188,12 @@ class RunContext:
             "used": self.retrieval_used,
             "hits": len(hits),
         })
+        self.last_retrieval_manifest = build_retrieval_manifest(
+            hits,
+            retrieval_mode=mode,
+            rerank_mode=rerank_mode,
+            hit_scores=getattr(self.store, "last_hit_scores", None),
+        )
         return hits
 
     def emit(self, event: dict) -> None:
