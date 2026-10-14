@@ -1,0 +1,30 @@
+{
+  "registry": [
+    "fix-memo#p1@T1",
+    "fix-memo#p2@T1"
+  ],
+  "outside": [
+    {
+      "claim_id": "c-ev02-outside",
+      "statement": "专业版定价仍为 299 元/席/月",
+      "evidence_ids": ["ghost-doc#p9@T1"]
+    },
+    {
+      "claim_id": "c-ev02-mixed",
+      "statement": "同一主张混入了本轮未见过的证据块",
+      "evidence_ids": ["fix-memo#p1@T1", "ghost-doc#p9@T1"]
+    }
+  ],
+  "subset": [
+    {
+      "claim_id": "c-ev02-subset",
+      "statement": "专业版定价仍为 299 元/席/月",
+      "evidence_ids": ["fix-memo#p1@T1"]
+    },
+    {
+      "claim_id": "c-ev02-equal",
+      "statement": "引用集合与本轮 registry 相同",
+      "evidence_ids": ["fix-memo#p2@T1", "fix-memo#p1@T1"]
+    }
+  ]
+}
