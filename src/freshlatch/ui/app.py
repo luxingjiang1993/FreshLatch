@@ -66,6 +66,7 @@ from freshlatch.sheet import (  # noqa: E402
 )
 from freshlatch.store.checksum import make_checksum_fn  # noqa: E402
 from freshlatch.gates.basis_rot import rot_claims  # noqa: E402
+from freshlatch.claim_span import split_sentences  # noqa: E402
 from freshlatch.store.ingest import parse_document  # noqa: E402
 from freshlatch.store.sqlite_store import SQLiteStore  # noqa: E402
 from freshlatch.t1_source import T1SourceSession  # noqa: E402
@@ -877,7 +878,17 @@ def api_source(doc_id: str, as_of: str = Query("T1", pattern="^(T0|T1)$")) -> di
         "as_of": as_of,
         "title": doc.title,
         "source_type": doc.source_type,
-        "sections": [{"anchor": c.clause_id, "text": c.text} for c in chunks],
+        "sections": [
+            {
+                "anchor": c.clause_id,
+                "text": c.text,
+                "sentences": [
+                    {"sentence_id": f"s{index}", "text": sentence}
+                    for index, sentence in enumerate(split_sentences(c.text))
+                ],
+            }
+            for c in chunks
+        ],
     }
 
 
@@ -890,8 +901,61 @@ def _format_audit_score(value: float) -> str:
     return format(value, ".12g")
 
 
+def _span_link(item: dict, role: str) -> str:
+    """句锚链接。可见文本含 evidence id 与句 id。"""
+    esc = html.escape
+    css = "span-support" if role == "support" else "span-oppose"
+    evidence_id = str(item.get("evidence_id") or "")
+    sentence_id = str(item.get("sentence_id") or "")
+    anchor = str(item.get("anchor") or f"{evidence_id}#{sentence_id}")
+    text = str(item.get("text") or "")
+    return (
+        f'<a class="{css}" data-role="{role}" '
+        f'data-evidence-id="{esc(evidence_id, quote=True)}" '
+        f'data-sentence-id="{esc(sentence_id, quote=True)}" '
+        f'href="#{esc(anchor, quote=True)}" '
+        f'onclick="openClaimSpan(this);return false;">'
+        f"{esc(anchor)}</a> {esc(text)}"
+    )
+
+
+def _render_claim_spans(spans: list) -> str:
+    """主张句分列支撑与反对。无支撑时不画 span-support。"""
+    esc = html.escape
+    if not spans:
+        return '<div id="audit-claim-spans"><b>主张句</b> · 无</div>'
+    items: list[str] = []
+    for row in spans:
+        claim_id = esc(str(row.get("claim_id") or ""), quote=True)
+        claim_text = esc(str(row.get("claim_text") or ""))
+        flag = "true" if row.get("unsupported") else "false"
+        support = row.get("support") or []
+        oppose = row.get("oppose") or []
+        if support:
+            support_html = " ".join(_span_link(item, "support") for item in support)
+        else:
+            support_html = "无"
+        if oppose:
+            oppose_html = " ".join(_span_link(item, "oppose") for item in oppose)
+        else:
+            oppose_html = "无"
+        items.append(
+            f'<li class="claim-span-card" data-claim-id="{claim_id}" '
+            f'data-unsupported="{flag}">'
+            f'<div class="claim-span-text">{claim_text}</div>'
+            f'<div class="claim-span-support"><b>支撑句</b> · {support_html}</div>'
+            f'<div class="claim-span-oppose"><b>反对句</b> · {oppose_html}</div>'
+            "</li>"
+        )
+    return (
+        '<div id="audit-claim-spans"><b>主张句</b><ul>'
+        + "".join(items)
+        + "</ul></div>"
+    )
+
+
 def _render_audit_body(audit: dict) -> str:
-    """审计面 HTML。缺查询、缺分、缺依据、缺 reason 都写「无」。"""
+    """审计面 HTML。缺查询、缺分、缺依据、缺 reason、缺主张句都写「无」。"""
     from freshlatch.store.pipeline import HIT_SCORE_FIELDS
 
     esc = html.escape
@@ -951,6 +1015,7 @@ def _render_audit_body(audit: dict) -> str:
         + f'<div id="audit-hits"><b>命中</b> · {hits_html}</div>'
         + f'<div id="audit-attribution"><b>判定依据</b> · {attribution_html}</div>'
         + f'<div id="audit-unknown"><b>未知原因</b> · {reason_html}</div>'
+        + _render_claim_spans(audit.get("claim_spans") or [])
     )
 
 

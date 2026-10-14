@@ -120,12 +120,20 @@ _Avoid_: 记忆准确率、隔离率
 _Avoid_: 报告、看板
 
 **职人视图 / 审计视图**:
-复验单同一界面的两种信息密度:职人视图是默认成交面,不展示角色专名,并按本轮真状态显示只读 UiBadge;审计视图展开轨迹投影(查询、命中与分、判定依据、未知原因),标签用「复验 / 反证 / 闸」这类中性词。不改变闸与人闩语义。
+复验单同一界面的两种信息密度:职人视图是默认成交面,不展示角色专名,并按本轮真状态显示只读 UiBadge;审计视图展开轨迹投影(查询、命中与分、判定依据、未知原因、主张句的支撑句与可选反对句),标签用「复验 / 反证 / 闸」这类中性词。不改变闸与人闩语义。
 _Avoid_: 简单模式/专家模式、调试页、在职人视图或审计标签里写角色专名
 
 **审计面**:
-审计视图上的只读轨迹投影。字段为 `query`、带分的 `hits`(`scores` 的 bm25 / dense / rrf / rerank,缺臂为空)、`attribution_ids`、`unknown_reason`。reason 只读 abstention reason 枚举,不另写拼写。缺字段显示空或「无」,不编造分数。不改 `Claim.status`。`badges` 是只读 UiBadge 列表;缺字段时为空,不编造。人审动词仍只有 `discard` / `renew`。
-_Avoid_: 角色专名、假分、人审动词 `disputed`、把 UiBadge 写进 Claim.status
+审计视图上的只读轨迹投影。字段为 `query`、带分的 `hits`(`scores` 的 bm25 / dense / rrf / rerank,缺臂为空)、`attribution_ids`、`unknown_reason`、`claim_spans`。reason 只读 abstention reason 枚举,不另写拼写。缺字段显示空或「无」,不编造分数。不改 `Claim.status`。`badges` 是只读 UiBadge 列表;缺字段时为空,不编造。`claim_spans` 是主张句到 T1 句 id 的只读列表,支撑句与反对句分列;无支撑句时不画支撑高亮。人审动词仍只有 `discard` / `renew`。
+_Avoid_: 角色专名、假分、人审动词 `disputed`、把 UiBadge 写进 Claim.status、把命中块涂成支撑句
+
+**句 id (sentence_id)**:
+主张句点回 T1 的偏移方案,本票只认这一种。一句在所属 `evidence_id` 块内的序号,形如 `s0`、`s1`,从 0 起。可见锚是 `evidence_id#sentence_id`(如 `fix-memo#p1@T1#s0`)。切句只认句末标点 `。！？!?`,以及前面不是数字的英文句点(`12.5` 不切)。块首 `## pN` 标题行不进入句子。不使用字符偏移。
+_Avoid_: char_start、char_end、字符级 span、同时维护两套偏移
+
+**主张句锚 (claim_span)**:
+与 `cite_registry_judgment` 同一次判定写出的轨迹事件。不改后者的 `claim_id` / `status` / `evidence_ids`。字段:`claim_text`、`sentence_scheme=sentence_id`、`unsupported`、`support`、`oppose`。支撑句仅当所引 `@T1` 块中某一句与主张句去空白后逐字相同。对不上则 `unsupported` 为真,审计面不画支撑链接。反对句仅在判定为 `stale` 且该 `@T1` 块去掉标题后恰好一句、而这句又不是支撑句时写出;多句块不挑选。审计投影按事件原样分列,不把 Hits 补成句锚。
+_Avoid_: 相关块、假支撑高亮、NLI、字符偏移、改 `cite_sentence.json`
 
 **UiBadge**:
 职人视图上的只读徽章,取值 `verified` | `partial` | `abstain`。`verified` 表示本轮闸允许的 fresh:证据足以续验且未拒答。`partial` 表示有本轮 evidence id,但不足以 `verified`。`abstain` 表示拒答原因属于既有 abstention reason 枚举。旧轨迹缺字段时不渲染。不写入 `Claim.status`。

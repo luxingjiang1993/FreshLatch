@@ -88,11 +88,13 @@ _UI_BADGE_SKIP_PARTIAL = frozenset({"stale", "void"})
 def project_audit(trajectory: str | Path | None) -> dict[str, Any]:
     """只读轨迹投影成审计面。不改闸,不改 Claim.status。
 
-    字段:query、hits(含 scores)、attribution_ids、unknown_reason、badges。
+    字段:query、hits(含 scores)、attribution_ids、unknown_reason、badges、
+    claim_spans(句 id 锚,支撑句与反对句分列)。
     scores 只抄 RAG-04 已有的 bm25 / dense / rrf / rerank;缺臂留空。
     unknown_reason 只经由 parse_failure_replay,不另写 reason 拼写。
     文件不是轨迹 JSONL,或没有这些字段时,对应项为空,不编造分数。
     badges 是 UiBadge 只读列表,语义见 project_ui_badges;缺字段时为 []。
+    claim_spans 只读 claim_span 事件;不把命中块涂成支撑句。
     """
     path_text = None if trajectory is None else str(trajectory)
     out: dict[str, Any] = {
@@ -103,6 +105,7 @@ def project_audit(trajectory: str | Path | None) -> dict[str, Any]:
         "attribution_ids": [],
         "unknown_reason": None,
         "badges": [],
+        "claim_spans": [],
     }
     if trajectory is None:
         return out
@@ -174,7 +177,10 @@ def project_audit(trajectory: str | Path | None) -> dict[str, Any]:
         if reason is None and isinstance(code, str) and code:
             reason = code
 
-    parsed = bool(queries or hit_order or attribution or reason)
+    from freshlatch.claim_span import project_claim_spans
+
+    claim_spans = project_claim_spans(events)
+    parsed = bool(queries or hit_order or attribution or reason or claim_spans)
     out["parsed"] = parsed
     out["query"] = queries
     out["hits"] = [
@@ -183,6 +189,7 @@ def project_audit(trajectory: str | Path | None) -> dict[str, Any]:
     ]
     out["attribution_ids"] = attribution
     out["unknown_reason"] = reason
+    out["claim_spans"] = claim_spans
     # 与审计字段分开算:只读徽章,不回写 status。
     out["badges"] = project_ui_badges(path)
     return out
