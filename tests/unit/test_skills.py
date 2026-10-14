@@ -26,13 +26,22 @@ ROLE_WHITELIST = {
     "memory_forensics": set(FORENSIC_TOOLS),
 }
 
+# L4-SK-02: 中文业务包。不进 Runner 默认注入。工具名仍须 ⊆ Lead 默认白名单。
+BUSINESS_PACK_WHITELIST = {
+    "earnings_figures": set(LEAD_TOOLS_W3),
+    "event_timeline": set(LEAD_TOOLS_W3),
+    "patch_diff": set(LEAD_TOOLS_W3),
+    "strategy_walkthrough": set(LEAD_TOOLS_W3),
+}
+
 # 全量工具词汇:任何 skill 文件里反引号提到的工具名都必须落在本角色白名单内
 TOOL_VOCABULARY = (
     set(LEAD_TOOLS_W3) | set(CRITIC_TOOLS) | set(AUDITOR_TOOLS)
     | {"spawn_auditor"} | set(FORENSIC_TOOLS) | {"spawn_forensic"}
 )
 
-SLUGS = sorted(ROLE_WHITELIST)
+ALL_WHITELIST = {**ROLE_WHITELIST, **BUSINESS_PACK_WHITELIST}
+ALL_SLUGS = sorted(ALL_WHITELIST)
 XML_TAG = re.compile(r"<[A-Za-z/!][^>]*>")
 IDENT = re.compile(r"`([a-z][a-z0-9_]*)`")
 KEBAB = re.compile(r"^[a-z0-9]+([-_][a-z0-9]+)*$")  # 小写连字符/下划线(#10 总表 slug 用下划线)
@@ -58,7 +67,7 @@ def _frontmatter(text: str) -> dict[str, str]:
 # -- 断言 1:frontmatter 规则 ----------------------------------------------
 
 
-@pytest.mark.parametrize("slug", SLUGS)
+@pytest.mark.parametrize("slug", ALL_SLUGS)
 def test_frontmatter_rules(slug):
     text = (SKILLS_DIR / slug / "SKILL.md").read_text(encoding="utf-8")
     fm = _frontmatter(text)
@@ -83,12 +92,12 @@ def test_frontmatter_rules(slug):
 # -- 断言 2:工具名 ⊆ 角色白名单 -------------------------------------------
 
 
-@pytest.mark.parametrize("slug", SLUGS)
+@pytest.mark.parametrize("slug", ALL_SLUGS)
 def test_tool_names_subset_of_whitelist(slug):
     mentioned: set[str] = set()
     for path in _skill_paths(slug):
         mentioned.update(IDENT.findall(path.read_text(encoding="utf-8")))
-    offending = (mentioned & TOOL_VOCABULARY) - ROLE_WHITELIST[slug]
+    offending = (mentioned & TOOL_VOCABULARY) - ALL_WHITELIST[slug]
     assert not offending, (
         f"{slug} 提及了白名单外的工具(禁令唯一真相在代码): {sorted(offending)}"
     )
@@ -111,7 +120,7 @@ def test_focus_dimensions_match_code_constant():
 # -- 断言 4:拦截→纠正对照表映射存在(不断言文案) ----------------------------
 
 
-@pytest.mark.parametrize("slug", SLUGS)
+@pytest.mark.parametrize("slug", ALL_SLUGS)
 def test_doctrine_correction_table_present(slug):
     text = (SKILLS_DIR / slug / "SKILL.md").read_text(encoding="utf-8")
     section = re.search(r"## 教义.*?(?=\n## |\Z)", text, re.S)
@@ -207,10 +216,90 @@ def test_load_skill_reference_rejects_unsafe_or_missing(slug, name):
     assert load_skill_reference(slug, name) is None
 
 
+# pin 27acda75 的 Runner 默认教义块。业务包不得出现在这段注入里。
+_PINNED_RUNNER_DOCTRINE = """\
+        self._doctrine: dict[str, str | None] = {
+            "reverify": load_skill_body("reverify"),
+            "devil_advocate": load_skill_body("devil_advocate"),
+            "freshness_audit": load_skill_body("freshness_audit"),  # Auditor(#20/ADR-0009,#22 接线)
+        }"""
+
+_CJK = re.compile(r"[\u4e00-\u9fff]")
+
+
 def test_runner_default_skill_injection_unchanged():
-    """默认注入仍是三次 load_skill_body,不调用 reference 加载器。"""
+    """默认注入仍是三次 load_skill_body,不调用 reference 加载器,也不加载业务包。"""
     src = (REPO_ROOT / "src/freshlatch/runner.py").read_text(encoding="utf-8")
     assert "load_skill_reference" not in src
+    assert src.count("load_skill_body(") == 3
     assert src.count('load_skill_body("reverify")') == 1
     assert src.count('load_skill_body("devil_advocate")') == 1
     assert src.count('load_skill_body("freshness_audit")') == 1
+    assert _PINNED_RUNNER_DOCTRINE in src
+    lead = (REPO_ROOT / "src/freshlatch/roles/lead.py").read_text(encoding="utf-8")
+    loop = (REPO_ROOT / "src/freshlatch/roles/loop.py").read_text(encoding="utf-8")
+    for slug in BUSINESS_PACK_WHITELIST:
+        assert f'load_skill_body("{slug}")' not in src
+        assert f"skills/{slug}" not in src
+        assert f"skills/{slug}" not in lead
+        assert f"skills/{slug}" not in loop
+    assert LEAD_TOOLS_W3 == (
+        "retrieve",
+        "read_source",
+        "reverify_claim",
+        "mark_stale",
+        "mark_gap",
+        "finish_reverify",
+        "spawn_critic",
+    )
+
+
+@pytest.mark.parametrize("slug", sorted(BUSINESS_PACK_WHITELIST))
+def test_business_pack_utf8_chinese_and_real_references(slug):
+    """业务包正文为 UTF-8 中文;frontmatter 写的读取器必须能真读到 reference。"""
+    path = SKILLS_DIR / slug / "SKILL.md"
+    raw = path.read_bytes()
+    text = raw.decode("utf-8")
+    assert b"\xef\xbf\xbd" not in raw
+    fm = _frontmatter(text)
+    body = text.split("---", 2)[2]
+    assert _CJK.search(fm["description"])
+    assert _CJK.search(fm["metadata"])
+    assert _CJK.search(body)
+    assert _FALSE_REFERENCE_CLAIM not in text
+    assert "read_source" not in fm["description"]
+    assert "不进入 Runner" in fm["description"]
+    assert "不进入 Lead 系统提示" in fm["description"]
+    assert "load_skill_reference" in fm["description"]
+    assert "skills/{slug}/references/{name}.md" in fm["description"]
+    assert "load_skill_reference" not in body
+    refs = sorted((SKILLS_DIR / slug / "references").glob("*.md"))
+    assert refs
+    for ref in refs:
+        got = load_skill_reference(slug, ref.stem)
+        assert got
+        assert _CJK.search(got)
+
+
+def test_patch_diff_line_delta_counts_rows_only():
+    """可选脚本只计 before/after 行差,不触碰事件账。"""
+    import importlib.util
+
+    script = SKILLS_DIR / "patch_diff" / "scripts" / "line_delta.py"
+    spec = importlib.util.spec_from_file_location("patch_diff_line_delta", script)
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    assert module.line_delta("甲\n乙\n", "甲\n丙\n") == {
+        "removed": 1,
+        "added": 1,
+        "before_lines": 2,
+        "after_lines": 2,
+    }
+    assert module.line_delta("甲\n甲\n", "甲\n")["removed"] == 1
+    assert module.line_delta("", "") == {
+        "removed": 0,
+        "added": 0,
+        "before_lines": 0,
+        "after_lines": 0,
+    }
