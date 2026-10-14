@@ -77,6 +77,155 @@ def project_claim(store: RetrievalStore, claim: Claim) -> dict[str, Any]:
     }
 
 
+def project_audit(trajectory: str | Path | None) -> dict[str, Any]:
+    """只读轨迹投影成审计面。不改闸,不改 Claim.status。
+
+    字段:query、hits(含 scores)、attribution_ids、unknown_reason。
+    scores 只抄 RAG-04 已有的 bm25 / dense / rrf / rerank;缺臂留空。
+    unknown_reason 只经由 parse_failure_replay,不另写 reason 拼写。
+    文件不是轨迹 JSONL,或没有这些字段时,对应项为空,不编造分数。
+    badges 留给 L4-UI-02,本函数恒为空列表,不从轨迹里读徽章。
+    """
+    path_text = None if trajectory is None else str(trajectory)
+    out: dict[str, Any] = {
+        "parsed": False,
+        "path": path_text,
+        "query": [],
+        "hits": [],
+        "attribution_ids": [],
+        "unknown_reason": None,
+        "badges": [],
+    }
+    if trajectory is None:
+        return out
+    path = Path(trajectory)
+    if not path.is_file():
+        return out
+    events = _load_audit_events(path)
+    if events is None:
+        return out
+
+    queries: list[str] = []
+    hit_scores: dict[str, dict[str, float | None] | None] = {}
+    hit_order: list[str] = []
+
+    def add_query(value: object) -> None:
+        if isinstance(value, str) and value.strip() and value not in queries:
+            queries.append(value)
+
+    def add_hit(evidence_id: object, scores_raw: object) -> None:
+        if not isinstance(evidence_id, str) or not evidence_id:
+            return
+        copied = _copy_hit_scores(scores_raw)
+        if evidence_id not in hit_scores:
+            hit_order.append(evidence_id)
+            hit_scores[evidence_id] = copied
+            return
+        if hit_scores[evidence_id] is None and copied is not None:
+            hit_scores[evidence_id] = copied
+
+    for event in events:
+        if event.get("type") == "retrieve":
+            add_query(event.get("query"))
+            score_map = event.get("scores")
+            if not isinstance(score_map, dict):
+                score_map = {}
+            raw_hits = event.get("hits")
+            if isinstance(raw_hits, list):
+                for row in raw_hits:
+                    if isinstance(row, dict):
+                        add_hit(row.get("evidence_id"), row.get("scores"))
+            ids = event.get("evidence_ids")
+            if isinstance(ids, list):
+                for evidence_id in ids:
+                    row_scores = score_map.get(evidence_id) if isinstance(evidence_id, str) else None
+                    add_hit(evidence_id, row_scores)
+        if event.get("type") == "lead_step" and event.get("tool") == "retrieve":
+            result = event.get("result")
+            if isinstance(result, dict):
+                blocks = result.get("blocks")
+                if isinstance(blocks, list):
+                    for block in blocks:
+                        if isinstance(block, dict):
+                            add_hit(block.get("evidence_id"), block.get("scores"))
+            args = event.get("args")
+            if isinstance(args, dict):
+                add_query(args.get("query"))
+
+    attribution: list[str] = []
+    reason: str | None = None
+    # 复用 AG-03。调用卫生码与自由文本不会出现在 reason_code 上。
+    from freshlatch.runner import parse_failure_replay
+
+    replay = parse_failure_replay(path)
+    for claim in replay.get("claims") or []:
+        for evidence_id in claim.get("evidence_ids") or []:
+            if isinstance(evidence_id, str) and evidence_id and evidence_id not in attribution:
+                attribution.append(evidence_id)
+        code = claim.get("reason_code")
+        if reason is None and isinstance(code, str) and code:
+            reason = code
+
+    parsed = bool(queries or hit_order or attribution or reason)
+    out["parsed"] = parsed
+    out["query"] = queries
+    out["hits"] = [
+        {"evidence_id": evidence_id, "scores": hit_scores[evidence_id]}
+        for evidence_id in hit_order
+    ]
+    out["attribution_ids"] = attribution
+    out["unknown_reason"] = reason
+    return out
+
+
+def _load_audit_events(path: Path) -> list[dict] | None:
+    """整文件都是 JSON 对象才当作轨迹。只有路径文本时返回 None。"""
+    try:
+        raw = path.read_text(encoding="utf-8")
+    except (OSError, UnicodeError):
+        return None
+    events: list[dict] = []
+    for line in raw.splitlines():
+        text = line.strip()
+        if not text:
+            continue
+        try:
+            event = json.loads(text)
+        except json.JSONDecodeError:
+            return None
+        if isinstance(event, dict):
+            events.append(event)
+    if not events:
+        return None
+    return events
+
+
+def _copy_hit_scores(raw: object) -> dict[str, float | None] | None:
+    """只保留已写出的有限数字。四个臂都缺则返回 None,调用方显示「无」。"""
+    if not isinstance(raw, dict):
+        return None
+    import math
+
+    from freshlatch.store.pipeline import HIT_SCORE_FIELDS
+
+    copied: dict[str, float | None] = {}
+    any_number = False
+    for name in HIT_SCORE_FIELDS:
+        value = raw.get(name)
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            copied[name] = None
+            continue
+        number = float(value)
+        if not math.isfinite(number):
+            copied[name] = None
+            continue
+        copied[name] = number
+        any_number = True
+    if not any_number:
+        return None
+    return copied
+
+
 def project_run_disposition(claims: list[Claim] | tuple[Claim, ...]) -> str:
     """报告级包结论投影(#173):与发前列表/复验单包结论条同吃 disposition 纯函数。"""
     from freshlatch.prepublish import disposition_for_claims

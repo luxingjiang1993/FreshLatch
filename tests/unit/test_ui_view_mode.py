@@ -27,12 +27,18 @@ def test_default_view_is_craftsman():
 
 
 def test_can_switch_to_audit_view():
-    """DEM-6:可切换审计视图并看到轨迹/角色信息。"""
+    """DEM-6 / L4-UI-01:可切换审计视图。标签是中性词,页面源码不含角色专名。"""
     assert "function setViewMode(" in HTML_PAGE
     assert 'setViewMode(&quot;audit&quot;)' in HTML_PAGE
     assert 'id="audit-panel"' in HTML_PAGE
-    assert "Agent 轨迹" in HTML_PAGE or "工具轨迹" in HTML_PAGE
-    assert "Lead" in HTML_PAGE  # 审计视图文案允许角色名
+    assert "工具轨迹" in HTML_PAGE
+    assert "查询" in HTML_PAGE
+    assert "命中" in HTML_PAGE
+    assert "判定依据" in HTML_PAGE
+    assert "未知原因" in HTML_PAGE
+    assert "复验 / 反证 / 闸" in HTML_PAGE
+    for role in ("Lead", "Critic", "Auditor"):
+        assert role not in HTML_PAGE
     # 切换后可见性:add/remove visible
     assert 'panel.classList.add("visible")' in HTML_PAGE
     assert 'panel.classList.remove("visible")' in HTML_PAGE
@@ -51,11 +57,15 @@ def test_craftsman_default_surface_hides_role_chrome():
 
 
 def test_audit_view_exposes_trajectory_and_roles():
-    """DEM-6:审计视图才展示轨迹路径与角色向状态文案。"""
+    """DEM-6 / L4-UI-01:审计视图展示轨迹字段,状态文案不用角色专名。"""
     assert "STATUS_RUNNING_AUDIT" in HTML_PAGE
     assert "STATUS_DONE_AUDIT" in HTML_PAGE
     m = re.search(r'STATUS_RUNNING_AUDIT\s*=\s*[\'"]([^\'"]*)[\'"]', HTML_PAGE)
-    assert m and "Lead" in m.group(1)
+    assert m
+    for role in ("Lead", "Critic", "Auditor"):
+        assert role not in m.group(1)
+    assert "复验" in m.group(1)
+    assert "闸" in m.group(1)
     assert 'VIEW_MODE === "audit"' in HTML_PAGE
 
 
