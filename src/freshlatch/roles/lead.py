@@ -24,6 +24,12 @@ from freshlatch.models import Claim
 from freshlatch.roles.auditor import Auditor
 from freshlatch.roles.critic import Critic
 from freshlatch.roles.loop import LoopResult, run_loop
+from freshlatch.roles.retrieve_sufficiency import (
+    INSUFFICIENT_FRESH_REFUSAL,
+    REASON_INSUFFICIENT_EVIDENCE,
+    label_retrieve_sufficiency,
+    may_continue_fresh_write,
+)
 from freshlatch.runner import ClaimDecision, RunContext
 from freshlatch.tools import FOCUS_DIMENSIONS, LEAD_TOOLS_W3, optional_tenant_id, tool_specs
 
@@ -165,6 +171,8 @@ class LeadReverifier:
         # 未成功受理过一次 reverify_claim(fresh) 前拒 unknown。
         self._precheck_blocked = False
         self._post_precheck_fresh_accepted = False
+        # 本会话成功 retrieve 的观察(含 sufficiency)。不足则不得写 fresh。
+        self._retrieve_observations: list[dict] = []
 
     def run(self) -> ClaimDecision:
         self.ctx.gaps = []  # 缺口按主张隔离,禁止跨主张渗漏
@@ -289,7 +297,16 @@ class LeadReverifier:
         self._seen_blocks.update({b["evidence_id"]: b["text"] for b in blocks})
         # 「最近检索块」= messages 里最近的 tool 结果(§2.8:messages 单角色内只增不减),
         # 模型每轮基于最新观察决策,无需额外注入。
-        return {"blocks": blocks, "retrieval_used": self.ctx.retrieval_used}
+        # 充分性标签挂在同一次观察上:零条 @T1 不得继续写 fresh(规则闸不放宽)。
+        label = label_retrieve_sufficiency(blocks)
+        observation = {
+            "blocks": blocks,
+            "retrieval_used": self.ctx.retrieval_used,
+            "sufficiency": label["sufficiency"],
+            "reason_code": label["reason_code"],
+        }
+        self._retrieve_observations.append(observation)
+        return observation
 
     def _t_read_source(self, args: dict) -> dict:
         try:
@@ -323,6 +340,19 @@ class LeadReverifier:
         checkpoint: dict | None = None
         audit: dict | None = None
         if status == "fresh":
+            # 拒答前移到检索观察:全部观察不足时,不进入证据校验、不派 Critic/Auditor。
+            if not may_continue_fresh_write(self._retrieve_observations):
+                self.ctx.emit({
+                    "type": "retrieve_sufficiency_refusal",
+                    "claim_id": self.claim.claim_id,
+                    "sufficiency": "insufficient",
+                    "reason_code": REASON_INSUFFICIENT_EVIDENCE,
+                })
+                return {
+                    "error": INSUFFICIENT_FRESH_REFUSAL,
+                    "sufficiency": "insufficient",
+                    "reason_code": REASON_INSUFFICIENT_EVIDENCE,
+                }
             ids, err = self._check_evidence_ids(args.get("evidence_ids"), require_t1=True)
             if err:
                 # 立刻 error 不计「成功受理」(防空调用刷开 unknown)
