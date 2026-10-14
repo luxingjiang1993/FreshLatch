@@ -154,6 +154,14 @@ _Avoid_: 相关度、CRAG grade、置信度
 检索观察不足时的拒因码。本轮未见可引用的 `@T1` 块,不得写 `fresh`。规则闸「无 `t1_evidence_ids` 不得 fresh」(`NO_T1_EVIDENCE`)仍在,且不放宽;本码把这次拒答前移到检索观察。
 _Avoid_: 未知、缺口文案、把本码写成闸错误码 `NO_T1_EVIDENCE`
 
+**TurnRegistry**:
+一次复验会话(本轮)里 retrieve 返回过的 evidence_id 集合。`reverify_claim` 与 `mark_stale` 只能引用这个集合中的 id。集合随本轮 retrieve 累积,不跨主张。
+_Avoid_: 金标引用集、全库 id、跨主张白名单
+
+**cite_outside_registry**:
+传入的 evidence_id 不在本轮 TurnRegistry 时的拒因码。该 call 被拒绝,不写 `fresh`。轨迹与工具回执使用同一符号。不是 `insufficient_evidence`(那是本轮未见可引用的 `@T1` 块)。
+_Avoid_: `insufficient_evidence`、自由文本拒因、把 registry 外的 id 写成 fresh
+
 **CRAG grade (retrieve grade)**:
 一次 retrieve 观察上的封闭三态:`correct` | `incorrect` | `ambiguous`。挂在检索边,不在 Agent 循环里另算。夹具可在命中块上注入 `crag_grade`;无注入时的确定性规则只看 id 后缀:至少一条 `@T1` 为 `correct`,否则为 `incorrect`。`ambiguous` 只来自注入,意思是这份观察不够支持继续写判定。不是分类器,不联网,不读正文打分。轨迹紧凑记号为 `grade=correct` / `grade=incorrect` / `grade=ambiguous`。
 _Avoid_: 相关度分、LLM judge、置信度、把两条 T1 矛盾叫成 ambiguous

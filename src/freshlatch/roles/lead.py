@@ -10,7 +10,13 @@ W3 起白名单含 spawn_critic:动态派驻 Critic 专找反证(§6.3),Critic �
 
 from __future__ import annotations
 
-from freshlatch.evidence import check_evidence_ids, valid_as_of
+from freshlatch.evidence import (
+    CITE_OUTSIDE_REGISTRY,
+    TurnRegistry,
+    check_evidence_ids,
+    registry_refusal_code,
+    valid_as_of,
+)
 from freshlatch.store.base import chunk_evidence_id
 from freshlatch.store.pipeline import blank_hit_scores
 from freshlatch.store.query_transform import transform_claim_query
@@ -171,7 +177,8 @@ class LeadReverifier:
         self.steps_used = 0
         self.decision = ClaimDecision(claim_id=claim.claim_id)
         self._finished = False
-        self._seen_evidence: set[str] = set()  # 本会话 retrieve 返回过的 evidence_id(#16 白名单)
+        # 本轮 TurnRegistry:只登记本会话 retrieve 见过的 evidence_id(#16 白名单)
+        self._seen_evidence: TurnRegistry = TurnRegistry()
         self._seen_blocks: dict[str, str] = {}  # evidence_id → 块文本(Auditor 证据包原料,#22)
         self._critic_spawned = False  # 本会话是否已派驻过 Critic(§8.5 checkpoint 去重)
         # ADR-0012 维度异议状态:受理层预检打回时置位 {error_code, stale_dimension,
@@ -335,7 +342,7 @@ class LeadReverifier:
                 grade = grade_retrieve_observation(blocks)
             grade = mark_incorrect_exhausted(grade)
         blocks = strip_grade_injection(blocks)
-        self._seen_evidence.update(b["evidence_id"] for b in blocks)
+        self._seen_evidence.admit(b["evidence_id"] for b in blocks)
         self._seen_blocks.update({b["evidence_id"]: b["text"] for b in blocks})
         # 「最近检索块」= messages 里最近的 tool 结果(§2.8:messages 单角色内只增不减),
         # 模型每轮基于最新观察决策,无需额外注入。
@@ -368,8 +375,32 @@ class LeadReverifier:
         return {"doc_id": args["doc_id"], "as_of": as_of, "full_text": text}
 
     def _check_evidence_ids(self, raw: object, *, require_t1: bool) -> tuple[list[str] | None, str | None]:
-        """白名单校验(#16):id 必须逐字来自本会话 retrieve 返回;fresh/stale 引用的必须是锚 T1 的证据。"""
+        """本轮 TurnRegistry 校验:id 必须逐字来自本轮 retrieve;fresh/stale 引用的必须锚 T1。"""
         return check_evidence_ids(raw, self._seen_evidence, require_t1=require_t1)
+
+    def _refuse_evidence_ids(self, *, tool: str, err: str, prefix: str) -> dict:
+        """证据 id 未过校验。registry 外 id 的 reason_code 为 cite_outside_registry,不写 fresh。"""
+        payload: dict = {"error": f"{prefix}: {err}"}
+        code = registry_refusal_code(err)
+        if code == CITE_OUTSIDE_REGISTRY:
+            payload["reason_code"] = CITE_OUTSIDE_REGISTRY
+            # 拒因进 ctx.events,Runner._dump_trajectory 原样落盘。
+            self.ctx.emit({
+                "type": "cite_registry_refusal",
+                "claim_id": self.claim.claim_id,
+                "tool": tool,
+                "reason_code": CITE_OUTSIDE_REGISTRY,
+            })
+        return payload
+
+    def _emit_cite_judgment(self, status: str, evidence_ids: list[str]) -> None:
+        """成功判定写入轨迹:所用 evidence_id 列表。Runner._dump_trajectory 消费 ctx.events。"""
+        self.ctx.emit({
+            "type": "cite_registry_judgment",
+            "claim_id": self.claim.claim_id,
+            "status": status,
+            "evidence_ids": list(evidence_ids),
+        })
 
     def _t_reverify_claim(self, args: dict) -> dict:
         status = args.get("status")
@@ -420,8 +451,12 @@ class LeadReverifier:
                 }
             ids, err = self._check_evidence_ids(args.get("evidence_ids"), require_t1=True)
             if err:
-                # 立刻 error 不计「成功受理」(防空调用刷开 unknown)
-                return {"error": f"判 fresh 必须给出锚 T1 的检索证据 id: {err}"}
+                # 立刻 error 不计「成功受理」(防空调用刷开 unknown),也不写 fresh。
+                return self._refuse_evidence_ids(
+                    tool="reverify_claim",
+                    err=err,
+                    prefix="判 fresh 必须给出锚 T1 的检索证据 id",
+                )
             evidence_ids = ids or []
             checkpoint = self._auto_critic_checkpoint()  # §8.5:绿灯前反对派必须有一次发言机会
             audit = self._auto_auditor_checkpoint(path="fresh", reason="",
@@ -438,6 +473,7 @@ class LeadReverifier:
             self._post_precheck_fresh_accepted = True
             self.ctx.emit({"type": "post_precheck_fresh_accepted",
                            "claim_id": self.claim.claim_id})
+        self._emit_cite_judgment(status, evidence_ids)
         result = {"recorded": {"claim_id": self.claim.claim_id, "status": status,
                                "evidence_ids": evidence_ids},
                   "note": ("fresh 需经规则闸(双判一致),闸打回将落 unknown;"
@@ -461,7 +497,11 @@ class LeadReverifier:
             return {"error": f"mark_stale 打回: {SUPPORT_REVIEW_MISREAD_MESSAGE}"}
         ids, err = self._check_evidence_ids(args.get("evidence_ids"), require_t1=True)
         if err:
-            return {"error": f"stale 必须给出可点回的 T1 反证 id(有效反证=可点回): {err}"}
+            return self._refuse_evidence_ids(
+                tool="mark_stale",
+                err=err,
+                prefix="stale 必须给出可点回的 T1 反证 id(有效反证=可点回)",
+            )
         # ADR-0011:反证必填维度字段(问法=反证自身攻击的维度)。硬校验整段复刻 focus 形态:
         # 非法值整 call 拒绝、回列词表;每次重试消耗 Lead 步数预算(循环每轮计一步)。
         dimension = args.get("dimension")
@@ -495,6 +535,7 @@ class LeadReverifier:
         self.decision.reason = reason
         self.decision.evidence_ids = ids or []
         self.decision.stale_dimension = dimension
+        self._emit_cite_judgment("stale", ids or [])
         result = {"recorded": {"claim_id": self.claim.claim_id, "status": "stale",
                                "reason": reason, "evidence_ids": ids},
                   "note": MARK_STALE_DIMENSION_NOTE}
