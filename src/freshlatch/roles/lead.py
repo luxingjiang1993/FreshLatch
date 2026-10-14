@@ -30,7 +30,7 @@ from freshlatch.gates.rule_gate import (ERR_DIMENSION_CROSSCHECK_MISMATCH,
 from freshlatch.models import Claim
 from freshlatch.roles.auditor import Auditor
 from freshlatch.roles.critic import Critic
-from freshlatch.roles.loop import LoopResult, run_loop
+from freshlatch.roles.loop import LoopResult, named_abstention_reason, run_loop
 from freshlatch.roles.retrieve_grade import (
     INJECTION_KEY,
     fresh_refused_by_grade,
@@ -222,13 +222,18 @@ class LeadReverifier:
         self.steps_used = loop.steps_used
         self.ctx.lead_steps_used = loop.steps_used
         self.decision.dimension_objection = self._objection  # ADR-0012:未清异议随判定移交闸侧挂卡
-        self.ctx.emit({"type": "lead_loop_end", "claim_id": self.claim.claim_id,
-                       "steps_used": loop.steps_used, "finished": loop.finished,
-                       "failed": loop.failed, "failure_reason": loop.failure_reason,
-                       "evidence_ids": list(loop.evidence_ids),
-                       "grade": loop.grade,
-                       "retry_count": loop.retry_count,
-                       "abstained": loop.abstained})
+        end_event = {"type": "lead_loop_end", "claim_id": self.claim.claim_id,
+                     "steps_used": loop.steps_used, "finished": loop.finished,
+                     "failed": loop.failed, "failure_reason": loop.failure_reason,
+                     "evidence_ids": list(loop.evidence_ids),
+                     "grade": loop.grade,
+                     "retry_count": loop.retry_count,
+                     "abstained": loop.abstained}
+        # 拒答码进结束事件。只放枚举成员,自由文本不进 reason_code。
+        abstention_reason = named_abstention_reason(loop.abstention_reason)
+        if abstention_reason:
+            end_event["reason_code"] = abstention_reason
+        self.ctx.emit(end_event)
         if loop.failed and self.decision.status == "unknown" and not self.decision.reason:
             self.decision.reason = f"非法调用自纠耗尽({loop.failure_reason}),fail-closed"
         elif not self.decision.reason and self.decision.status == "unknown":

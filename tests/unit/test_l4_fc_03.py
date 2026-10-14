@@ -493,9 +493,24 @@ def test_diff_new_identifiers_use_tool_tier_names():
         for line in diff.stdout.splitlines()
         if line.startswith("+") and not line.startswith("+++")
     ]
+    text = (REPO / "src/freshlatch/tools.py").read_text(encoding="utf-8")
+    bare = re.compile(r'(?<![A-Za-z0-9_])L0(?![A-Za-z0-9_])')
     if not added:
         # 这三档已在 base 上。后续票不再重复要求同一批新增行。
-        text = (REPO / "src/freshlatch/tools.py").read_text(encoding="utf-8")
+        assert "tool_tier_0" in text
+        assert "tool_tier_1" in text
+        assert "tool_tier_2" in text
+        return
+    for line in added:
+        if not bare.search(line):
+            continue
+        assert "人审 L0" in line
+        assert '"L0"' not in line
+        assert "'L0'" not in line
+    # 只有本 diff 新写权限档时,才要求三档名字同时出现。
+    # 后续票改 CONTEXT.md 的其他词条,不把 tool_tier 再写一遍。
+    introduces_tier = any("tool_tier" in line or bare.search(line) for line in added)
+    if not introduces_tier:
         assert "tool_tier_0" in text
         assert "tool_tier_1" in text
         assert "tool_tier_2" in text
@@ -503,10 +518,3 @@ def test_diff_new_identifiers_use_tool_tier_names():
     assert any("tool_tier_0" in line for line in added)
     assert any("tool_tier_1" in line for line in added)
     assert any("tool_tier_2" in line for line in added)
-    bare = re.compile(r'(?<![A-Za-z0-9_])L0(?![A-Za-z0-9_])')
-    for line in added:
-        if not bare.search(line):
-            continue
-        assert "人审 L0" in line
-        assert '"L0"' not in line
-        assert "'L0'" not in line
