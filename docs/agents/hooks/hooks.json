@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "hooks": {
+    "beforeShellExecution": [
+      {
+        "command": "python docs/agents/hooks/deny_exit_2.py",
+        "failClosed": true
+      }
+    ]
+  }
+}
