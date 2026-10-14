@@ -17,7 +17,15 @@ GUARDS_DOC = REPO / "docs/agents/agent-guards.md"
 SAMPLE_HOOKS = REPO / "docs/agents/hooks/hooks.json"
 SAMPLE_SCRIPT = REPO / "docs/agents/hooks/deny_exit_2.py"
 LOOP_PATH = REPO / "src/freshlatch/roles/loop.py"
-PIN = "bb6f3e20e6346b24514c69f9b72498fa7ee7e163"
+LOOP_REL = "src/freshlatch/roles/loop.py"
+# 本票新增或改动的路径。验收「不改 loop.py」只对照这份清单与当前 checkout，不查历史 commit。
+TICKET_PATHS = (
+    "docs/agents/agent-guards.md",
+    "docs/agents/hooks/hooks.json",
+    "docs/agents/hooks/deny_exit_2.py",
+    "tests/unit/test_l4_sk_01.py",
+    "tasks/L4-SK-01.md",
+)
 
 
 def cursor_command_hook_outcome(exit_code: int, *, fail_closed: bool) -> str:
@@ -100,14 +108,28 @@ def test_sample_is_not_enabled_by_default():
 
 
 def test_ticket_does_not_change_run_loop():
+    """不改 loop.py：内容里没有样板标记，当前 checkout 的差异也不含该路径。
+
+    只用 HEAD 与工作区。浅克隆里没有旧 pin 时，这条仍然能跑。
+    """
     loop = LOOP_PATH.read_text(encoding="utf-8")
     assert "failClosed" not in loop
     assert "deny_exit_2" not in loop
-    diff = subprocess.run(
-        ["git", "diff", "--exit-code", PIN, "--", "src/freshlatch/roles/loop.py"],
+    assert LOOP_REL not in TICKET_PATHS
+    names = subprocess.run(
+        ["git", "diff", "--name-only", "HEAD"],
         cwd=REPO,
         capture_output=True,
         text=True,
-        check=False,
+        check=True,
     )
-    assert diff.returncode == 0, diff.stdout
+    status = subprocess.run(
+        ["git", "status", "--porcelain", "--", LOOP_REL],
+        cwd=REPO,
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    changed = {line.strip() for line in names.stdout.splitlines() if line.strip()}
+    assert LOOP_REL not in changed
+    assert status.stdout.strip() == ""
