@@ -3,7 +3,7 @@
 grade 在检索观察上算完。Agent 只读观察里的 grade 与 reason code,
 不在循环里另写一套,也不做联网回退。
 Ambiguous 表示这份观察不够支持继续写判定。
-两条 T1 互相矛盾的 conflicting_evidence 不在本模块。
+两条 T1 互相矛盾时的 conflicting_evidence 不由本模块发出,见 conflict_evidence。
 """
 
 from __future__ import annotations

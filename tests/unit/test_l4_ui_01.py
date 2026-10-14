@@ -18,6 +18,7 @@ from fastapi.testclient import TestClient
 import freshlatch.ui.app as appmod
 from freshlatch.evidence import CITE_OUTSIDE_REGISTRY
 from freshlatch.numeric_gate import REASON_NUMERIC_MISMATCH
+from freshlatch.roles.conflict_evidence import REASON_CONFLICTING_EVIDENCE
 from freshlatch.roles.loop import ABSTENTION_REASONS
 from freshlatch.roles.retrieve_grade import (
     REASON_GRADE_AMBIGUOUS,
@@ -261,13 +262,14 @@ def test_ui_audit_ignores_free_text_reason(tmp_path):
 
 
 def test_abstention_enum_unchanged():
-    """Unknown reason 只读封闭枚举。旧码拼写不变;B-01 加入 numeric_mismatch。"""
+    """Unknown reason 只读封闭枚举。旧码拼写不变;B-02 加入 conflicting_evidence。"""
     assert ABSTENTION_REASONS == frozenset({
         REASON_INSUFFICIENT_EVIDENCE,
         CITE_OUTSIDE_REGISTRY,
         REASON_GRADE_INCORRECT_EXHAUSTED,
         REASON_GRADE_AMBIGUOUS,
         REASON_NUMERIC_MISMATCH,
+        REASON_CONFLICTING_EVIDENCE,
     })
     assert PRODUCTION_RETRIEVAL_MODE == "hybrid+rerank"
 

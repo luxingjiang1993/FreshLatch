@@ -12,8 +12,9 @@ from types import SimpleNamespace
 
 from freshlatch.evidence import CITE_OUTSIDE_REGISTRY
 from freshlatch.guardrails import Guardrails
-from freshlatch.numeric_gate import REASON_NUMERIC_MISMATCH
 from freshlatch.models import Claim
+from freshlatch.numeric_gate import REASON_NUMERIC_MISMATCH
+from freshlatch.roles.conflict_evidence import REASON_CONFLICTING_EVIDENCE
 from freshlatch.roles.lead import LeadReverifier
 from freshlatch.roles.loop import (
     ABSTENTION_REASONS,
@@ -39,6 +40,7 @@ _SPELLINGS = (
     "grade_incorrect_exhausted",
     "grade_ambiguous",
     "numeric_mismatch",
+    "conflicting_evidence",
 )
 
 _tc_counter = 0
@@ -143,22 +145,26 @@ def test_enum_is_the_same_symbols_as_rag01_and_fc_cite():
     assert any(code is REASON_GRADE_INCORRECT_EXHAUSTED for code in ABSTENTION_REASONS)
     assert any(code is REASON_GRADE_AMBIGUOUS for code in ABSTENTION_REASONS)
     assert any(code is REASON_NUMERIC_MISMATCH for code in ABSTENTION_REASONS)
+    assert any(code is REASON_CONFLICTING_EVIDENCE for code in ABSTENTION_REASONS)
     assert ABSTENTION_REASONS == frozenset({
         REASON_INSUFFICIENT_EVIDENCE,
         CITE_OUTSIDE_REGISTRY,
         REASON_GRADE_INCORRECT_EXHAUSTED,
         REASON_GRADE_AMBIGUOUS,
         REASON_NUMERIC_MISMATCH,
+        REASON_CONFLICTING_EVIDENCE,
     })
     assert REASON_INSUFFICIENT_EVIDENCE == "insufficient_evidence"
     assert CITE_OUTSIDE_REGISTRY == "cite_outside_registry"
     assert REASON_NUMERIC_MISMATCH == "numeric_mismatch"
+    assert REASON_CONFLICTING_EVIDENCE == "conflicting_evidence"
     text = LOOP_PATH.read_text(encoding="utf-8")
     assert "REASON_INSUFFICIENT_EVIDENCE" in text
     assert "CITE_OUTSIDE_REGISTRY" in text
     assert "REASON_GRADE_INCORRECT_EXHAUSTED" in text
     assert "REASON_GRADE_AMBIGUOUS" in text
     assert "REASON_NUMERIC_MISMATCH" in text
+    assert "REASON_CONFLICTING_EVIDENCE" in text
     for spelling in _SPELLINGS:
         assert f'"{spelling}"' not in text
         assert f"'{spelling}'" not in text

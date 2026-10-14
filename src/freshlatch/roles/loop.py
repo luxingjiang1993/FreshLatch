@@ -10,6 +10,8 @@ ILLEGAL_CALL_REPAIR_BUDGET。耗尽后 fail-closed 并留下轨迹,不以 Unknow
 verify 短环只读工具观察上已经写好的 grade(RAG-02 的边),不在这里重算。
 Incorrect 且 retry 未耗尽时做一次有限 repair(再检索或改判定草稿);
 retry 耗尽或 grade 仍不足则 abstain,不把 fresh 交给执行器。
+两条 @T1 对同一可判定前提互斥时,同样不把 fresh 交给执行器。
+这一闸不改写 grade,也不把 Ambiguous 当成冲突。
 
 拒答原因是封闭枚举 ABSTENTION_REASONS。成员只引用已经发出的常量,
 不在这里另写拼写。自由文本错误可以留在 error 里,不能单独充当 reason_code。
@@ -23,6 +25,10 @@ from typing import Callable
 
 from freshlatch.evidence import CITE_OUTSIDE_REGISTRY
 from freshlatch.numeric_gate import REASON_NUMERIC_MISMATCH
+from freshlatch.roles.conflict_evidence import (
+    REASON_CONFLICTING_EVIDENCE,
+    fresh_refusal_for_conflicting_evidence,
+)
 from freshlatch.roles.retrieve_grade import (
     REASON_GRADE_AMBIGUOUS,
     REASON_GRADE_INCORRECT_EXHAUSTED,
@@ -48,13 +54,14 @@ VERIFY_ABSTAIN_TOOL = "__verify_abstain__"
 _GRADE_VALUES = frozenset({"correct", "incorrect", "ambiguous"})
 
 # 拒答原因。成员只引用已经发出的常量,不在这里另写拼写。
-# RAG-01 / FC-CITE / RAG-02 / B-01 与这一份是同一符号。UI 只读这一份。
+# RAG-01 / FC-CITE / RAG-02 / B-01 / B-02 与这一份是同一符号。UI 只读这一份。
 ABSTENTION_REASONS: frozenset[str] = frozenset({
     REASON_INSUFFICIENT_EVIDENCE,
     CITE_OUTSIDE_REGISTRY,
     REASON_GRADE_INCORRECT_EXHAUSTED,
     REASON_GRADE_AMBIGUOUS,
     REASON_NUMERIC_MISMATCH,
+    REASON_CONFLICTING_EVIDENCE,
 })
 
 
@@ -203,6 +210,13 @@ def _dispatch_tool_call(
             result, messages, tc, name, args, _abstain_fresh_result(result), on_event,
         )
         return
+    # 本轮已见互斥的 @T1 时,不挑其中一侧,也不把 fresh 交给执行器。
+    # grade 仍是 grade。Ambiguous 已在上面的短环拒答,不会改写成这一码。
+    if name == "reverify_claim" and args.get("status") == "fresh":
+        conflict = fresh_refusal_for_conflicting_evidence(result.tool_trace)
+        if conflict is not None:
+            _observe(result, messages, tc, name, args, conflict, on_event)
+            return
     try:
         out = execute(name, args)
     except UnknownToolGuard as guard:
