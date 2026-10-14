@@ -340,6 +340,20 @@ function setViewMode(mode){
       (VIEW_MODE === "audit") ? STATUS_RUNNING_AUDIT : STATUS_RUNNING_CRAFTSMAN;
   }
 }
+function auditPatchText(hit){
+  // 与 PATCH_VISIBILITY_FIELDS、服务端 _patch_visibility_html 同一组列。空值写「无」。
+  const keys = ['as_of','patch_id','valid_from','valid_to'];
+  const parts = [];
+  for(const key of keys){
+    const raw = hit ? hit[key] : '';
+    const shown = (typeof raw === 'string' && raw.trim()) ? raw.trim() : '';
+    const label = shown ? shown : '无';
+    const css = 'hit-' + key.replace(/_/g, '-');
+    const attr = esc(shown).replace(/"/g, '&quot;');
+    parts.push('<span class="'+css+'" data-'+css+'="'+attr+'">'+esc(key)+' '+esc(label)+'</span>');
+  }
+  return parts.join(' · ');
+}
 function auditScoreText(scores){
   // 四个臂与 HIT_SCORE_FIELDS 一致。缺臂写「无」,不补 0。
   if(!scores || typeof scores !== 'object') return '分 无';
@@ -425,6 +439,7 @@ function renderAuditMarkup(){
     h += '<div id="audit-hits"><b>命中</b> · <ul>';
     for(const hit of hits){
       h += '<li><code>'+esc(String(hit.evidence_id||''))+'</code> · '
+         + auditPatchText(hit)+' · '
          + esc(auditScoreText(hit.scores))+'</li>';
     }
     h += '</ul></div>';
@@ -443,6 +458,7 @@ function renderAuditMarkup(){
        +' temp='+esc(String(d.temperature))+' '+esc(String(d.recorded_at||''))+'</div>';
   }
   h += '<div style="margin-top:6px;color:#8250df">查询、命中、判定依据、未知原因与主张句只在审计视图展开;'
+     + '命中行展示 as_of、patch_id、valid_from、valid_to。'
      + '支撑句与反对句分列,按句 id 点回原文。'
      + '职人视图用主张状态、只读徽章与作废/续命/重跑。</div>';
   return h;
