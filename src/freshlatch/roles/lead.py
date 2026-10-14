@@ -224,7 +224,11 @@ class LeadReverifier:
         self.decision.dimension_objection = self._objection  # ADR-0012:未清异议随判定移交闸侧挂卡
         self.ctx.emit({"type": "lead_loop_end", "claim_id": self.claim.claim_id,
                        "steps_used": loop.steps_used, "finished": loop.finished,
-                       "failed": loop.failed, "failure_reason": loop.failure_reason})
+                       "failed": loop.failed, "failure_reason": loop.failure_reason,
+                       "evidence_ids": list(loop.evidence_ids),
+                       "grade": loop.grade,
+                       "retry_count": loop.retry_count,
+                       "abstained": loop.abstained})
         if loop.failed and self.decision.status == "unknown" and not self.decision.reason:
             self.decision.reason = f"非法调用自纠耗尽({loop.failure_reason}),fail-closed"
         elif not self.decision.reason and self.decision.status == "unknown":
