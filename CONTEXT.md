@@ -206,8 +206,16 @@ _Avoid_: 网络回退、第一次 Incorrect 就换一个码、`insufficient_evid
 `ambiguous` 观察的拒因码。轨迹含 `grade=ambiguous`,该状态不写成 `fresh`。不表示两条 T1 互相矛盾。
 _Avoid_: `conflicting_evidence`、fresh、相关度阈值
 
+**verbatim 数字闸**:
+`reverify_claim(fresh)` 落档前的确定性检查。从主张文本抽出数字字面量(ASCII 数字,可带千分位逗号、小数点、紧贴的 `%` 与前导 ASCII 负号),每一枚都必须作为同样的字面量出现在所引 `@T1` 证据 span 的数字字面量里。主张里没有数字字面量时,本闸不拒答。前导 ASCII 字母粘连的数字(`T1`、`p1`)不是数字字面量。票内容差为空:不把 `12.5` 当成 `12.50`,不把 `1,299` 当成 `1299`。
+_Avoid_: 公式重算、SESOI、数值容差、全角折算、用模型算术放行
+
+**numeric_mismatch**:
+主张中的数字字面量没有逐字出现在所引 `@T1` 证据 span 中时的拒因码。假 quote 或改写后的数走这一码,结果不得为 `fresh`(保持 abstain / unknown)。不是 `grade_ambiguous`。
+_Avoid_: 用模型算术放行、把缺失数字写成 fresh、`grade_ambiguous`
+
 **abstention reason**:
-拒答原因的封闭枚举。轨迹事件上的 `reason_code` 只有落在这一份里才是拒答原因。成员与已经发出的码是同一符号:`insufficient_evidence`(本轮未见可引用的 `@T1`)、`cite_outside_registry`(引用不在本轮 TurnRegistry)、`grade_incorrect_exhausted`、`grade_ambiguous`。UI 只读这一份。自由文本可以留在 `error`,不能单独充当原因。
+拒答原因的封闭枚举。轨迹事件上的 `reason_code` 只有落在这一份里才是拒答原因。成员与已经发出的码是同一符号:`insufficient_evidence`(本轮未见可引用的 `@T1`)、`cite_outside_registry`(引用不在本轮 TurnRegistry)、`grade_incorrect_exhausted`、`grade_ambiguous`、`numeric_mismatch`(主张数字未在所引 `@T1` span 中逐字出现)。UI 只读这一份。自由文本可以留在 `error`,不能单独充当原因。
 _Avoid_: 另写平行拼写、把错误文案当成原因码、把 `unknown_tool` / `illegal_tool_args` / `illegal_dimension` / `NO_T1_EVIDENCE` 并进本枚举
 
 **失败轨迹可复放 (failure replay)**:

@@ -28,6 +28,11 @@ from freshlatch.gates.support_review import (
 from freshlatch.gates.rule_gate import (ERR_DIMENSION_CROSSCHECK_MISMATCH,
                                         dimension_crosscheck_mismatch)
 from freshlatch.models import Claim
+from freshlatch.numeric_gate import (
+    REASON_NUMERIC_MISMATCH,
+    check_verbatim_numbers,
+    numeric_mismatch_message,
+)
 from freshlatch.roles.auditor import Auditor
 from freshlatch.roles.critic import Critic
 from freshlatch.roles.loop import LoopResult, named_abstention_reason, run_loop
@@ -477,6 +482,25 @@ class LeadReverifier:
                     prefix="判 fresh 必须给出锚 T1 的检索证据 id",
                 )
             evidence_ids = ids or []
+            # 数字字面量必须落在所引 @T1 span 里。对不上不落 fresh,也不派 Critic/Auditor。
+            spans = [
+                self._seen_blocks.get(evidence_id, "")
+                for evidence_id in evidence_ids
+                if str(evidence_id).endswith("@T1")
+            ]
+            numeric = check_verbatim_numbers(self.claim.statement, spans)
+            if not numeric.ok:
+                self.ctx.emit({
+                    "type": "numeric_verbatim_refusal",
+                    "claim_id": self.claim.claim_id,
+                    "reason_code": REASON_NUMERIC_MISMATCH,
+                    "missing": list(numeric.missing),
+                })
+                return {
+                    "error": numeric_mismatch_message(numeric.missing),
+                    "reason_code": REASON_NUMERIC_MISMATCH,
+                    "missing": list(numeric.missing),
+                }
             checkpoint = self._auto_critic_checkpoint()  # §8.5:绿灯前反对派必须有一次发言机会
             audit = self._auto_auditor_checkpoint(path="fresh", reason="",
                                                   evidence_ids=evidence_ids)  # ADR-0009 双判

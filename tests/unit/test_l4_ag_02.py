@@ -12,6 +12,7 @@ from types import SimpleNamespace
 
 from freshlatch.evidence import CITE_OUTSIDE_REGISTRY
 from freshlatch.guardrails import Guardrails
+from freshlatch.numeric_gate import REASON_NUMERIC_MISMATCH
 from freshlatch.models import Claim
 from freshlatch.roles.lead import LeadReverifier
 from freshlatch.roles.loop import (
@@ -37,6 +38,7 @@ _SPELLINGS = (
     "cite_outside_registry",
     "grade_incorrect_exhausted",
     "grade_ambiguous",
+    "numeric_mismatch",
 )
 
 _tc_counter = 0
@@ -140,19 +142,23 @@ def test_enum_is_the_same_symbols_as_rag01_and_fc_cite():
     assert any(code is CITE_OUTSIDE_REGISTRY for code in ABSTENTION_REASONS)
     assert any(code is REASON_GRADE_INCORRECT_EXHAUSTED for code in ABSTENTION_REASONS)
     assert any(code is REASON_GRADE_AMBIGUOUS for code in ABSTENTION_REASONS)
+    assert any(code is REASON_NUMERIC_MISMATCH for code in ABSTENTION_REASONS)
     assert ABSTENTION_REASONS == frozenset({
         REASON_INSUFFICIENT_EVIDENCE,
         CITE_OUTSIDE_REGISTRY,
         REASON_GRADE_INCORRECT_EXHAUSTED,
         REASON_GRADE_AMBIGUOUS,
+        REASON_NUMERIC_MISMATCH,
     })
     assert REASON_INSUFFICIENT_EVIDENCE == "insufficient_evidence"
     assert CITE_OUTSIDE_REGISTRY == "cite_outside_registry"
+    assert REASON_NUMERIC_MISMATCH == "numeric_mismatch"
     text = LOOP_PATH.read_text(encoding="utf-8")
     assert "REASON_INSUFFICIENT_EVIDENCE" in text
     assert "CITE_OUTSIDE_REGISTRY" in text
     assert "REASON_GRADE_INCORRECT_EXHAUSTED" in text
     assert "REASON_GRADE_AMBIGUOUS" in text
+    assert "REASON_NUMERIC_MISMATCH" in text
     for spelling in _SPELLINGS:
         assert f'"{spelling}"' not in text
         assert f"'{spelling}'" not in text

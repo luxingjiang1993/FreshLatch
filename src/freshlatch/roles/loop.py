@@ -22,6 +22,7 @@ from dataclasses import dataclass, field
 from typing import Callable
 
 from freshlatch.evidence import CITE_OUTSIDE_REGISTRY
+from freshlatch.numeric_gate import REASON_NUMERIC_MISMATCH
 from freshlatch.roles.retrieve_grade import (
     REASON_GRADE_AMBIGUOUS,
     REASON_GRADE_INCORRECT_EXHAUSTED,
@@ -46,12 +47,14 @@ VERIFY_REPAIR_TOOL = "__verify_repair__"
 VERIFY_ABSTAIN_TOOL = "__verify_abstain__"
 _GRADE_VALUES = frozenset({"correct", "incorrect", "ambiguous"})
 
-# 拒答原因。与 RAG-01 / FC-CITE / RAG-02 已发出的码是同一符号。UI 只读这一份。
+# 拒答原因。成员只引用已经发出的常量,不在这里另写拼写。
+# RAG-01 / FC-CITE / RAG-02 / B-01 与这一份是同一符号。UI 只读这一份。
 ABSTENTION_REASONS: frozenset[str] = frozenset({
     REASON_INSUFFICIENT_EVIDENCE,
     CITE_OUTSIDE_REGISTRY,
     REASON_GRADE_INCORRECT_EXHAUSTED,
     REASON_GRADE_AMBIGUOUS,
+    REASON_NUMERIC_MISMATCH,
 })
 
 
