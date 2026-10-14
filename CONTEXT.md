@@ -139,8 +139,12 @@ _Avoid_: 自由散文抽主张、一键 LLM 切分(首版不做)
 _Avoid_: 证据链接、出处编号、chunk_id(对外)
 
 **快照过滤 (snapshot filter)**:
-retrieve 按离散快照时点 `as_of ∈ {T0,T1}`(及可选 `source_type` / `doc_version`)收窄语料的过滤;不是日历生效/失效窗。日历时间窗不进本期检索契约。
-_Avoid_: 时间窗(含糊)、effective_from、expires_at、日历过滤
+retrieve 按离散快照时点 `as_of ∈ {T0,T1}`(及可选 `source_type` / `doc_version`)收窄语料的过滤。`as_of` 的 T0/T1 WHERE 不是日历生效/失效窗。可选的 `patch_id` / `valid_from` / `valid_to` 见「补丁元数据过滤」,不并入这条 WHERE。
+_Avoid_: 把 `as_of` 当成日历窗、用 `doc_version` 充当补丁身份、effective_from、expires_at
+
+**补丁元数据过滤 (patch metadata filter)**:
+在 BM25、dense 召回以及 RRF 之前,按块上可选的 `patch_id`、`valid_from`、`valid_to` 收窄候选池。查询未给 `patch_id` 与 `valid_at`,或块上这三个字段皆空时,本过滤器是空操作,候选 id 序列与未加字段时相同。指定 `patch_id` 时只剔除 `patch_id` 非空且不相等的块。指定 `valid_at` 时只对写了边界的块做闭区间比较,日期文本用 `YYYY-MM-DD`。不复用 `doc_version`。不改 `as_of` 的 T0/T1 WHERE。
+_Avoid_: 语义分乘时间分、训练型时序臂、把本过滤说成注册指标变化、用 `doc_version` 过滤补丁
 
 **检索充分性 (retrieve sufficiency)**:
 一次 retrieve 观察上的封闭标签:`sufficient` | `insufficient`。该观察里至少一条 `evidence_id` 以 `@T1` 结尾为 `sufficient`;零块或没有 `@T1` 块为 `insufficient`。不是相关度分,不是分类器,不联网补证。

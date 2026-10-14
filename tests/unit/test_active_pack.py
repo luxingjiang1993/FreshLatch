@@ -76,7 +76,7 @@ SQLITE_COLUMNS = {
     "chunks": {
         "doc_id", "chunk_id", "clause_id", "title", "text", "source_type", "as_of",
         "doc_version", "checksum", "tokens", "parent_id", "hypo_questions", "vec",
-        "tenant_id", "poison", "untrusted",
+        "tenant_id", "poison", "untrusted", "patch_id", "valid_from", "valid_to",
     },
     "invalidation_list": {"claim_id", "voided_at", "actor", "reason"},
     "latch_log": {"ts", "claim_id", "action", "evidence_id", "actor", "machine_status_before", "override", "run_id", "reviewer_note"},

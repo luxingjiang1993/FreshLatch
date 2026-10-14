@@ -33,8 +33,9 @@ REPO_FILES = {
     "models": "src/freshlatch/models.py",
 }
 
+# L4-RAG-03 允许给 Chunk 加可选字段,不再把 base.py 整文件冻在 diff 外。
+# PRODUCTION_RETRIEVAL_MODE 那一行仍由 test_frozen_pins_always_run 锁住。
 _DO_NOT_TOUCH = (
-    "src/freshlatch/store/base.py",
     "docs/evidence/patch-events/RESULT-Y.md",
     "docs/evidence/patch-events/PREREG-Y.md",
     "docs/evidence/quality-gate/PREREG.md",

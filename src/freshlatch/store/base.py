@@ -31,6 +31,7 @@ class Chunk:
     """chunk schema 定稿 13 列(§2.5):parent_id / hypo_questions / vec 本期留位。
 
     I2 可选信任列(ADR-0030):tenant_id 缺省 default;poison/untrusted 为真则不可引用。
+    patch_id / valid_from / valid_to 可选。皆空时补丁过滤器是空操作。
     """
 
     doc_id: str
@@ -49,6 +50,10 @@ class Chunk:
     tenant_id: str = "default"
     poison: bool = False
     untrusted: bool = False
+    # 可选补丁元数据。皆空时补丁过滤器是空操作,不复用 doc_version。
+    patch_id: str | None = None
+    valid_from: str | None = None
+    valid_to: str | None = None
 
 
 @dataclass
@@ -122,6 +127,8 @@ class RetrievalStore(ABC):
         source_type: str | None = None,
         top_k: int = 10,
         tenant_id: str | None = None,
+        patch_id: str | None = None,
+        valid_at: str | None = None,
     ) -> list[Chunk]: ...
 
     @abstractmethod
@@ -171,8 +178,10 @@ class InMemoryStore(RetrievalStore):
         source_type: str | None = None,
         top_k: int = 10,
         tenant_id: str | None = None,
+        patch_id: str | None = None,
+        valid_at: str | None = None,
     ) -> list[Chunk]:
-        from freshlatch.store.pipeline import recall_bm25
+        from freshlatch.store.pipeline import filter_patch_metadata, recall_bm25
 
         pool = [
             c
@@ -181,6 +190,8 @@ class InMemoryStore(RetrievalStore):
             and (source_type is None or c.source_type == source_type)
         ]
         pool = filter_retrieve_pool(pool, tenant_id=tenant_id)
+        # 补丁与有效期先于 BM25 / dense / RRF。三字段皆空则原池不动。
+        pool = filter_patch_metadata(pool, patch_id=patch_id, valid_at=valid_at)
         from freshlatch.store.neural_rerank import RERANK_MODE_NONE, rerank_hybrid_candidates
         from freshlatch.store.pipeline import RRF_K, rank_dense, rrf_fuse
 
