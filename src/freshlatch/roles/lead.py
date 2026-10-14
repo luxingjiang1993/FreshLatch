@@ -24,6 +24,16 @@ from freshlatch.models import Claim
 from freshlatch.roles.auditor import Auditor
 from freshlatch.roles.critic import Critic
 from freshlatch.roles.loop import LoopResult, run_loop
+from freshlatch.roles.retrieve_grade import (
+    INJECTION_KEY,
+    fresh_refused_by_grade,
+    grade_fresh_refusal_message,
+    grade_retrieve_observation,
+    grade_token,
+    mark_incorrect_exhausted,
+    should_refine_incorrect,
+    strip_grade_injection,
+)
 from freshlatch.roles.retrieve_sufficiency import (
     INSUFFICIENT_FRESH_REFUSAL,
     REASON_INSUFFICIENT_EVIDENCE,
@@ -171,7 +181,8 @@ class LeadReverifier:
         # 未成功受理过一次 reverify_claim(fresh) 前拒 unknown。
         self._precheck_blocked = False
         self._post_precheck_fresh_accepted = False
-        # 本会话成功 retrieve 的观察(含 sufficiency)。不足则不得写 fresh。
+        # 本会话成功 retrieve 的观察(含 sufficiency 与 CRAG grade)。
+        # sufficiency 不足,或 grade 为 ambiguous / incorrect 耗尽时,不得写 fresh。
         self._retrieve_observations: list[dict] = []
 
     def run(self) -> ClaimDecision:
@@ -265,6 +276,22 @@ class LeadReverifier:
             raise RuntimeError(f"未允许的工具: {name}")
         return handler(args)
 
+    def _blocks_from_hits(self, hits: list) -> list[dict]:
+        """一次检索命中转观察块。四字段与原先一致,另读夹具注入的 crag_grade。"""
+        blocks: list[dict] = []
+        for chunk in hits:
+            block = {
+                "evidence_id": chunk_evidence_id(chunk),
+                "as_of": chunk.as_of,
+                "source_type": chunk.source_type,
+                "text": chunk.text,
+            }
+            injected = getattr(chunk, "crag_grade", None)
+            if isinstance(injected, str) and injected.strip():
+                block[INJECTION_KEY] = injected.strip().lower()
+            blocks.append(block)
+        return blocks
+
     def _t_retrieve(self, args: dict) -> dict:
         # 生产工具不暴露检索臂;模型多传 retrieval_mode 也不得切臂。
         if "retrieval_mode" in args:
@@ -279,20 +306,28 @@ class LeadReverifier:
             )
         except ValueError as e:
             return {"error": str(e)}
-        hits = self.ctx.try_retrieve(
-            query,
-            source_type=args.get("source_type") or None,
-            as_of=as_of,
-            top_k=10,  # §8.5:top_k 放宽到 10 缓释同义改写漏召回
-            tenant_id=optional_tenant_id(args),
-        )
+        retrieve_kwargs = {
+            "source_type": args.get("source_type") or None,
+            "as_of": as_of,
+            "top_k": 10,  # §8.5:top_k 放宽到 10 缓释同义改写漏召回
+            "tenant_id": optional_tenant_id(args),
+        }
+        hits = self.ctx.try_retrieve(query, **retrieve_kwargs)
         if isinstance(hits, dict):  # 预算已尽,fail-soft
             return hits
-        blocks = [
-            {"evidence_id": chunk_evidence_id(c), "as_of": c.as_of,
-             "source_type": c.source_type, "text": c.text}
-            for c in hits
-        ]
+        blocks = self._blocks_from_hits(hits)
+        # CRAG 三态只在这次检索边上计算一次。Agent 稍后只消费观察里的 grade。
+        grade = grade_retrieve_observation(blocks)
+        attempts = 1
+        if should_refine_incorrect(grade):
+            # Incorrect:同一检索器再检索一次。不改查询变换,不挂联网工具。
+            hits_again = self.ctx.try_retrieve(query, **retrieve_kwargs)
+            attempts = 2
+            if not isinstance(hits_again, dict):
+                blocks = self._blocks_from_hits(hits_again)
+                grade = grade_retrieve_observation(blocks)
+            grade = mark_incorrect_exhausted(grade)
+        blocks = strip_grade_injection(blocks)
         self._seen_evidence.update(b["evidence_id"] for b in blocks)
         self._seen_blocks.update({b["evidence_id"]: b["text"] for b in blocks})
         # 「最近检索块」= messages 里最近的 tool 结果(§2.8:messages 单角色内只增不减),
@@ -304,6 +339,10 @@ class LeadReverifier:
             "retrieval_used": self.ctx.retrieval_used,
             "sufficiency": label["sufficiency"],
             "reason_code": label["reason_code"],
+            "grade": grade["grade"],
+            "grade_reason_code": grade["reason_code"],
+            "grade_attempts": attempts,
+            "grade_token": grade_token(str(grade["grade"])),
         }
         self._retrieve_observations.append(observation)
         return observation
@@ -352,6 +391,22 @@ class LeadReverifier:
                     "error": INSUFFICIENT_FRESH_REFUSAL,
                     "sufficiency": "insufficient",
                     "reason_code": REASON_INSUFFICIENT_EVIDENCE,
+                }
+            # Agent 只消费 retrieve 边上已写的 grade,不在这里重算。
+            blocked = fresh_refused_by_grade(self._retrieve_observations)
+            if blocked is not None:
+                self.ctx.emit({
+                    "type": "retrieve_grade_refusal",
+                    "claim_id": self.claim.claim_id,
+                    "grade": blocked["grade"],
+                    "reason_code": blocked["reason_code"],
+                    "grade_token": grade_token(blocked["grade"]),
+                })
+                return {
+                    "error": grade_fresh_refusal_message(blocked["reason_code"]),
+                    "grade": blocked["grade"],
+                    "reason_code": blocked["reason_code"],
+                    "grade_token": grade_token(blocked["grade"]),
                 }
             ids, err = self._check_evidence_ids(args.get("evidence_ids"), require_t1=True)
             if err:

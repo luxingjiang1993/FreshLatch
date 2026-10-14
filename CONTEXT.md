@@ -150,6 +150,18 @@ _Avoid_: 相关度、CRAG grade、置信度
 检索观察不足时的拒因码。本轮未见可引用的 `@T1` 块,不得写 `fresh`。规则闸「无 `t1_evidence_ids` 不得 fresh」(`NO_T1_EVIDENCE`)仍在,且不放宽;本码把这次拒答前移到检索观察。
 _Avoid_: 未知、缺口文案、把本码写成闸错误码 `NO_T1_EVIDENCE`
 
+**CRAG grade (retrieve grade)**:
+一次 retrieve 观察上的封闭三态:`correct` | `incorrect` | `ambiguous`。挂在检索边,不在 Agent 循环里另算。夹具可在命中块上注入 `crag_grade`;无注入时的确定性规则只看 id 后缀:至少一条 `@T1` 为 `correct`,否则为 `incorrect`。`ambiguous` 只来自注入,意思是这份观察不够支持继续写判定。不是分类器,不联网,不读正文打分。轨迹紧凑记号为 `grade=correct` / `grade=incorrect` / `grade=ambiguous`。
+_Avoid_: 相关度分、LLM judge、置信度、把两条 T1 矛盾叫成 ambiguous
+
+**grade_incorrect_exhausted**:
+`incorrect` 后再检索一次(同一检索器、同一主张查询变换)仍为 `incorrect` 时的拒因码。不得写 `fresh`。再检索不是联网检索。无 `@T1` 的规则型 `incorrect` 不使用本码,拒答仍是 `insufficient_evidence`。
+_Avoid_: 网络回退、第一次 Incorrect 就换一个码、`insufficient_evidence`
+
+**grade_ambiguous**:
+`ambiguous` 观察的拒因码。轨迹含 `grade=ambiguous`,该状态不写成 `fresh`。不表示两条 T1 互相矛盾。
+_Avoid_: `conflicting_evidence`、fresh、相关度阈值
+
 **主张查询变换 (claim→query transform)**:
 检索入口把主张(及可选登记维度/`focus` 封闭枚举映射)变成 retrieve 的 `query` 的确定性/可配变换;评测可对比变换前后召回。Lead/Critic 等角色不得自由改写检索串。
 _Avoid_: Lead 改写查询、query rewrite(Agent 品味)、HyDE(未拍板前)
