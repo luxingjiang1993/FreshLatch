@@ -1,18 +1,33 @@
-# FreshLatch 模块水平评估（2026-10-12）
+# FreshLatch 模块水平评估（2026-10-12 原文 · 2026-10-15 回写）
 
-> 性质：只读水平评估。不改生产代码，不改 `PRODUCTION_RETRIEVAL_MODE`，不改 `RESULT-Y` / `PREREG-Y` / `retrieval-decision.md`。
-> 代码基线：`main` @ `a7505d66bac24e7b6ffc1e243c86c61ad2a95b96`（`docs(SLO-phase2): #573 judge–human calibration 旁表协议（P3）`）。
-> 对照稿：draft PR [#580](https://github.com/luxingjiang1993/FreshLatch/pull/580) 的 `docs/evidence/architecture-module-status-2026-10-12.md`（基线 `666679c`，未合并）。下文凡引用该稿，均已在本基线上重读代码。
+> **As-of 2026-10-15 / HEAD `9af5af00`。本横幅替换下文过期的 as-is L3 与 If-landed 推测，作为 A 层已落地后的现行结论。** L4U-DOC-01。
+>
+> - 代码基线：`main` @ `9af5af00ef85ad693bc3877299f2ac978ce75f2e`（`docs(evidence): M8 A-layer checklist 2026-10-14 (#621)`，**M8 PASS**）。
+> - 父提交：`9cc116d975e06246c6c9d61db8a173364d16a73b`（`feat(skills): L4-SK-02 中文业务 skill 包 (#620)`）。
+> - **工程结论：L4**（可回归的拒答产品）。主链木桶 min(Function Call, RAG, AI Agent) = L4。
+> - **Skill：L3**。hook 样板默认不启用；四个中文业务包在盘、未挂 Runner。Skill 不拉低主链木桶，也不单独把整体抬到更高档。
+> - **不是 L5。** B-01…B-05 与 C-01…C-04 未做。工程档停在 L4，不把产品写成已经对上头部产品。
+> - 注册 G1 / A1 / T1 / R1 仍是 `status=TBD`、`counted_as_pass=false`。冻结 `value=` 是无回归锁上的点估计，不是产品拒绝率、产品引用率或产品时序准确率。token 以 [`m8-a-layer-checklist-2026-10-14.md`](m8-a-layer-checklist-2026-10-14.md) §1 为准。本回写不把 `counted_as_pass` 改成 true，不发明 SESOI。
+> - RESULT-Y：**丙**（T−C 不成立）。不改判乙。不得称优于 RARR / KPR。
+> - A 层 #602–#620 已合，M8 清单是 #621。**A-EV-03**（轨迹目录 → e2e P95 与 `retrieval_fallback_rate`）仍未实现。它不挡 M8：L4 要求的「SLI 或 ablation」已由 L4-RAG-04 / #605 的 rerank ON/OFF 记录满足一腿。
+> - §4 五轴长文保持 2026-10-12 基线 `a7505d66bac24e7b6ffc1e243c86c61ad2a95b96` 的快照，不整篇重写。该快照里「未落地 / as-is 不到 L4 / If-landed 才到 L4」的 A 层句子，以本横幅、§1、§3 的 HEAD 列、§7 指针为准。
+> - 勾选见 [`module-level-gap-checklist-2026-10-12.md`](module-level-gap-checklist-2026-10-12.md)。`l4-system-diagnosis-2026-10-14.md` 的基线是 `b2caaef`（A 层落地前），读 HEAD 时以本横幅与 M8 为准，不与工程 L4 对打。
+
+> 2026-10-12 原文性质（历史，不覆盖上栏）：只读水平评估。不改生产代码，不改 `PRODUCTION_RETRIEVAL_MODE`，不改 `RESULT-Y` / `PREREG-Y` / `retrieval-decision.md`。
+> 历史代码基线：`main` @ `a7505d66bac24e7b6ffc1e243c86c61ad2a95b96`（`docs(SLO-phase2): #573 judge–human calibration 旁表协议（P3）`）。
+> 对照稿：draft PR [#580](https://github.com/luxingjiang1993/FreshLatch/pull/580) 的 `docs/evidence/architecture-module-status-2026-10-12.md`（基线 `666679c`，未合并）。下文凡引用该稿，均已在该历史基线上重读代码。
 > 前沿输入：两源整合版（组会票序 FC→Skill→RAG→Agent→UI，外加 Eval）。冲突 C1 / C4 / C5 的情景规则见 §2。
-> 测量：本评估未跑 `pytest`，未跑 `python -m freshlatch.eval`，未重放路线 Y。已落档数字只标明出处；本轮没有新测到的指标一律写「未测到」。
+> 测量：2026-10-12 评估未跑 `pytest`，未跑 `python -m freshlatch.eval`，未重放路线 Y。已落档数字只标明出处。2026-10-15 回写采信 M8 落档的离线质量闸，不把注册 `value=` 说成新产品率，也不复跑路线 Y。
 
 ## 1. 执行摘要
 
-**As-is：整体 L3。** 主链已经是可测的复验产品：工具白名单与规则闸能把无 T1 证据的 fresh 打回，生产检索默认是 `hybrid+rerank`，轨迹能记下检索臂。Skill 的运行时仍是整份注入加失败回退，hooks 未启用。权限分层、检索 sufficiency 拒答、citation CI 都未落地，所以整体不到 L4。
+**HEAD `9af5af00`：工程 L4。** 对外可说的是「可回归的拒答产品」。A 层主链已合（#602–#620），M8 #621 PASS。证据不足可以在 retrieve 边拒，非法调用有 typed reason 与有限自纠，`tool_tier_0/1/2` 把越权调用拒下，失败轨迹可复放，审计面能看 Query→Hits→Attribution 与 `verified|partial|abstain`。生产检索默认仍是 `hybrid+rerank`（BM25 + dense，RRF(k=60)，neural rerank top-10）。
 
-**If-landed：整体 L4。** 情景是组会票序，并且 RAG 一张票同时吸收两源：sufficient-context / CRAG 拒答，加上 temporal / patch 元数据过滤。不换向量库，不装 REA。主链（Function Call、RAG、Agent）五轴木桶到 L4：非法调用有 reason code 与 L0/L1/L2，证据不足能拒，失败轨迹能复放，golden 与 citation 进 CI。仍不到 L5：没有金融级数字闸与成熟 HITL 产品面，路线 Y 的正式结果仍是已落档的丙。
+**Skill 是 L3，整体不是 L5。** 业务包在盘未挂 Runner，Guards hook 样板默认 off。金融级数字闸、冲突拒答、句级归因、面板可见的 patch / 有效期、`disputed` 人审改账都还在 B 层，未做。训练型时序检索、在线 claim 监控、多租户 ACL、成立的 patch 实验都还在 C 层，未做。注册 G1 / A1 / T1 / R1 仍是 `status=TBD`、`counted_as_pass=false`。RESULT-Y 仍是丙。
 
-一句话：现在能诚实讲解的是「复验闸 + hybrid+rerank + 预注册负结果」；按短名单只摘 fields/modes 之后，能讲解的是「可回归的拒答产品」。单做来源 A 或单做来源 B，主链木桶都还是 L3。
+**A-EV-03 仍开着。** `src/` 里没有把轨迹目录收成 `e2e_p95_ms` 与 `retrieval_fallback_rate` 的纯函数。这是文档与实现都承认的软缺口，不把工程档打回 L3。
+
+历史摘要（2026-10-12，基线 `a7505d6`，已被本横幅替换，只留作当时判断）：当时 **as-is 整体 L3**（权限分层、sufficiency 拒答、citation CI 都未落地）；当时 **If-landed 情景整体 L4**，且写明仍不到 L5、路线 Y 为丙。该 If-landed 情景里的 A 层形状，除 A-EV-03 外，已在 HEAD 落地。单做来源 A 或单做来源 B 的反事实只解释当时为什么两边都要摘，不再描述 HEAD。
 
 ## 2. 标尺说明
 
@@ -44,6 +59,8 @@ L4 要四件事同时在：可回归、可审计、SLI 或 ablation 能重复跑
 
 ### 2.4 双情景与冲突项
 
+下表是 2026-10-12 的情景规则，不是 HEAD 档位。HEAD 档位只认文首、§1 与 §3。
+
 | 情景 | 落地内容 | 整体档 |
 |---|---|---|
 | As-is | 仅 `main` @ `a7505d6` | L3 |
@@ -66,7 +83,7 @@ C4 / C5（RAG 主打、CRAG 挂点）：A 把 temporal/patch 放在检索，把 
 
 ### 2.6 draft PR #580 哪些句子在本基线上仍成立
 
-#580 未合并。它的基线 `666679c` 到本基线 `a7505d6` 的增量是 SLO phase-2 协议页（主张忠实抽检、失败归因三桶、人机校准旁表），`src/freshlatch/` 的行为代码不在这四笔提交里。下列 #580 句子经重读仍成立：
+#580 未合并。它的基线 `666679c` 到 2026-10-12 基线 `a7505d6` 的增量是 SLO phase-2 协议页（主张忠实抽检、失败归因三桶、人机校准旁表），`src/freshlatch/` 的行为代码不在这四笔提交里。下列 #580 句子在 **该历史基线** 上经重读仍成立。到 HEAD `9af5af00`，其中「不读 `references/`」与「仓库内无 `hooks.json` / `failClosed`」两句已过期：分别见 #618、#619（样板默认仍 off）。其余句子是否仍逐字成立，以 §7 指针为准，不在本节重审。
 
 | #580 句子 | 本基线证据 |
 |---|---|
@@ -83,16 +100,19 @@ C4 / C5（RAG 主打、CRAG 挂点）：A 把 temporal/patch 放在检索，把 
 
 ## 3. 总表
 
-| 模块 | as-is | if-landed | 关键缺口（最多 3） |
-|---|---|---|---|
-| Function Call | L3 | L4 | 无 API `strict` 与通用 schema 再验；`UnknownToolGuard` 直接拆循环；无 L0/L1/L2 |
-| Skill | L2 | L3 | 加载失败回退内联人格；`references/` 运行时不可读；hooks 未启用 |
-| RAG | L3 | L4 | 无 sufficient-context / CRAG 边；无 patch 元数据过滤与 temporal×semantic；SLI 5 与 citation 未进 CI |
-| AI Agent | L3 | L4 | 无 verify→abstain 节点与命名 reason code；轨迹无完整 assistant 文本与 `token_usage`；checkpoint 只覆盖人审 |
-| UI | L3 | L4 | 审计面只显示轨迹路径；无 Hits 分数与 Attribution；Unknown 不展示检索 reason code |
-| Eval / Evidence | L3 | L4 | 金标 LLM 与 Recall 不进 CI；无 claim citation gate；SLI 协议页没有 `src/` 聚合函数 |
+HEAD 列是 2026-10-15 现行档。2026-10-12 的 as-is / if-landed 两列只保留当时判断，避免和 #602–#621 对打。if-landed 列里的 A 层形状，除 A-EV-03 外已经落地；它不是第二套现行结论。
 
-只落地 A 或只落地 B 时的模块档（综合档，木桶）：
+| 模块 | 2026-10-12 as-is（过期） | 2026-10-12 if-landed（情景，已过期） | HEAD `9af5af00` | 仍开着的缺口（最多 3） |
+|---|---|---|---|---|
+| Function Call | L3 | L4 | **L4** | 无 BFCL 规模排行榜；`strict` 不支持的端点仍是书面「仅运行时再验」（#610）；`web_search` / `LEAD_TOOLS_W9` 仍未默认挂载 |
+| Skill | L2 | L3 | **L3** | hook deny 未进默认可重复运行时（#619 样板默认 off）；四个业务包未挂 Runner（#620）；不因此把主链打回 L3 |
+| RAG | L3 | L4 | **L4** | 无注入时 CRAG grade 偏「有无 `@T1`」，learned grader 非 A 层；面板可见 patch / 有效期是 B-04，未做；训练型时序检索是 C-01，未做 |
+| AI Agent | L3 | L4 | **L4** | 审计面指三桶 + `disputed` 是 B-05，未做；`token_usage` 落盘未核为本回写范围 |
+| UI | L3 | L4 | **L4** | 句级 span 是 B-03，未做；面板露 `patch_id` / 有效期是 B-04，未做；无多用户权限面（C-03） |
+| Eval / Evidence | L3 | L4 | **L4（A 层；注册分仍 TBD）** | A-EV-03 SLI 聚合未实现；注册 G1/A1/T1/R1 仍 `status=TBD` / `counted_as_pass=false`；RESULT-Y 仍丙 |
+| 主链木桶 | L3 | L4 | **L4** | 不是 L5。B、C 未齐 |
+
+2026-10-12 反事实（只落地来源 A 或只落地来源 B）的模块档，综合档、木桶。它解释当时的票序取舍，不描述 HEAD：
 
 | 模块 | 只落地 A | 只落地 B |
 |---|---|---|
@@ -108,7 +128,11 @@ C4 / C5（RAG 主打、CRAG 挂点）：A 把 temporal/patch 放在检索，把 
 
 ## 4. 分模块详评
 
-### 4.1 Function Call · as-is L3 · if-landed L4
+本节正文是 2026-10-12 基线 `a7505d6` 的五轴快照，不整篇重写。各小节标题后的一行是 HEAD 现行指针。快照里的「未落地」「If-landed 才到 L4」对已合 A 层项无效；仍开着的 B/C 与 A-EV-03 以 §3 为准。
+
+### 4.1 Function Call · 2026-10-12 快照（当时 as-is L3 / if-landed L4）
+
+> HEAD 现行 **L4**。指针：L4-FC-01 #609、L4-FC-02 #610、L4-FC-03 #611（`tool_tier_0/1/2`，不是 HumanLatch 的 L0）。下文表格仍是 `a7505d6` 快照。
 
 产品里的工具是复验动作。现行 Lead 可见集合是 `LEAD_TOOLS_W3`：`retrieve`、`read_source`、`reverify_claim`、`mark_stale`、`mark_gap`、`finish_reverify`、`spawn_critic`（`src/freshlatch/tools.py`）。活跃数低于短名单的「≤20」。`tool_specs` 对白名单外名字直接 `KeyError`。schema 带 `additionalProperties: false` 与 `required`。
 
@@ -124,7 +148,9 @@ If-landed（组会首票形状）：检索相关工具各自 schema，非法 arg
 
 只落地 A：schema、错误 code、契约测会变厚，权限分层不在 A 的可摘清单里，综合档保持 L3。只落地 B：综合档 L4。
 
-### 4.2 Skill · as-is L2 · if-landed L3
+### 4.2 Skill · 2026-10-12 快照（当时 as-is L2 / if-landed L3）
+
+> HEAD 现行 **L3**。指针：L4-SK-03 #618（`load_skill_reference`）、L4-SK-01 #619（hook 样板，默认 off）、L4-SK-02 #620（四个中文包在盘，未挂 Runner）。下文表格仍是 `a7505d6` 快照。
 
 运行时有三份教义：`skills/reverify/`、`skills/devil_advocate/`、`skills/freshness_audit/`。`load_skill_body` 剥掉 frontmatter，把正文交给角色 system prompt。文件缺失或正文为空返回 `None`，调用方回退内联人格并记 `skill_fallback`。加载器文档写明这是故意不抛。这是 fail-open。
 
@@ -146,7 +172,9 @@ If-landed：3–5 个中文业务 skill（财报 / 事件 / patch diff / 策略 
 
 只落地 A：playbook 与渐进加载变厚，hooks 仍未启用，综合档保持 L2。只落地 B：综合档 L3。
 
-### 4.3 RAG · as-is L3 · if-landed L4
+### 4.3 RAG · 2026-10-12 快照（当时 as-is L3 / if-landed L4）
+
+> HEAD 现行 **L4**。指针：L4-RAG-01 #602、L4-RAG-02 #604、L4-RAG-04 #605、L4-RAG-03 #606（`filter_patch_metadata` 先于 RRF）。生产臂仍是 `hybrid+rerank`。下文表格仍是 `a7505d6` 快照；其中「store 无 `patch_id`」在 HEAD 上已不成立。B-04 面板夹具仍未做。
 
 生产路径在 `SQLiteStore.retrieve`：BM25 与 dense 做 RRF（`RRF_K = 60`），`hybrid+rerank` 再对前 10 条做本地 cross-encoder。没有任何可用 vec 时 `last_retrieval_mode = "bm25_fallback"`。reranker 不可用时 `last_rerank_mode = lexical_fallback`。`filter_retrieve_pool` 剔除 `poison` / `untrusted`。`as_of` 与 `source_type` 是 SQL `WHERE`。
 
@@ -170,7 +198,9 @@ If-landed：保留现有 hybrid+rerank 与 SQLite。retrieve 边增加 sufficien
 
 只落地 A：契合轴到 L4 门槛（temporal/patch 过滤），fail-closed 轴仍是今天的规则闸，综合档 L3。只落地 B：fail-closed 轴到 L4 门槛（sufficiency/CRAG），契合轴仍是 T0/T1 `WHERE`，综合档 L3。两边都摘，综合档才是 L4。CRAG 在 If-landed 挂在 RAG retrieve 边；Agent 只读 grade，避免 C5 两套挂点。
 
-### 4.4 AI Agent · as-is L3 · if-landed L4
+### 4.4 AI Agent · 2026-10-12 快照（当时 as-is L3 / if-landed L4）
+
+> HEAD 现行 **L4**。指针：L4-AG-01 #612、L4-AG-02 #613、L4-AG-03 #614。LangGraph 仍不进 `run_loop`。下文表格仍是 `a7505d6` 快照。B-05 未做。
 
 循环是 `run_loop`（`src/freshlatch/roles/loop.py`）：`while` 里 chat → tool → observe。ADR-0004 把这条路线钉死，并写明 LangGraph 不进 Agent 层。`src/freshlatch/latch/pipeline.py` 的 LangGraph `interrupt` + `SqliteSaver` 只做人审 checkpoint，图注释写「图不是 Agent」。
 
@@ -192,7 +222,9 @@ If-landed：在现有 `run_loop` 上加 verify 节点与命名 reason code，sta
 
 只落地 A：短环 verify|abstain 让正确性轴到 L4 门槛，可复放轴仍缺失败 checkpoint，综合档 L3。只落地 B：综合档 L4。
 
-### 4.5 UI · as-is L3 · if-landed L4
+### 4.5 UI · 2026-10-12 快照（当时 as-is L3 / if-landed L4）
+
+> HEAD 现行 **L4**。指针：L4-UI-01 #615、L4-UI-02 #616。下文表格仍是 `a7505d6` 快照；其中「审计面只显示轨迹路径」在 HEAD 上已不成立。B-03 / B-04 未做。若面试官拿 2026-10-12 五轴木桶追问观测轴 L2，回答是：那是落地前快照，HEAD 观测轴已随审计面绑定抬升，模块现行 L4。
 
 UI 是 FastAPI 加静态复验单（ADR-0002）。`src/freshlatch/ui/app.py` 的 `MAIN_BUTTON_TEXT` 是「开始复验」。`GET /` 为复验单，`GET /prepublish` 为发前页。默认 `VIEW_MODE_DEFAULT = "craftsman"`。主张状态有 fresh / stale / unknown / void（`reverify.html`）。无 `@T1` evidence id 时前端禁用续命，后端闸兜底。
 
@@ -214,7 +246,9 @@ If-landed：在现有复验单上加四段 walkthrough，abstain 必须露出 re
 
 只落地 A：双栏与徽章相对今天的复验单是增量，reason code 与分数面板不在 A 的最小摘法里，综合档 L3（观测轴可到 L3）。只落地 B：四段 walkthrough 落地，综合档 L4。
 
-### 4.6 Eval / Evidence · as-is L3 · if-landed L4
+### 4.6 Eval / Evidence · 2026-10-12 快照（当时 as-is L3 / if-landed L4）
+
+> HEAD 现行 **L4（A 层）**，注册分仍 TBD。指针：L4-EV-T1-CASE #603、L4-FC-CITE #607、L4-EV-02 #608、L4-EV-01 #617（`replaces_frozen_baseline=false`）。A-EV-03 未做。下文表格仍是 `a7505d6` 快照。G1/A1/T1/R1 的 `value=` 不是产品率。
 
 评测入口是 `python -m freshlatch.eval`（`eval/__main__.py`）：`run`、`control`、`retrieve` 等。`retrieve` 能出 Recall / MRR。假绿对照是无工具基线（ADR-0005）。CI 绿灯表示不变量没破。模型表现绿走手动金标 runner，不进这次 GitHub Actions。
 
@@ -236,7 +270,7 @@ If-landed：冻结一小撮中文 golden；Recall@k 与 MRR 按臂分列进 CI�
 
 ## 5. 面试 / 作品集口径
 
-受众：求职 mid-level RAG / Agent。能讲的是仓里已有的闸与已落档的测量纪律。不能讲的是短名单里尚未开票的模式。
+受众：求职 mid-level RAG / Agent。HEAD 上能讲的是文首工程 L4 与已落档的测量纪律（注册仍 TBD，RESULT-Y 仍丙）。不能讲的是 B/C 未做项，以及把注册 `value=` 说成产品率。§5.1–§5.3 正文里未被勘误点名的句子，仍是 2026-10-12 口径。
 
 ### 5.1 能讲
 
@@ -248,6 +282,18 @@ If-landed：冻结一小撮中文 golden；Recall@k 与 MRR 按臂分列进 CI�
 
 ### 5.2 不能吹
 
+**2026-10-15 勘误（替换下列过期禁句；未点名的禁句仍然有效）：**
+
+- 「不能说已有 sufficient-context、CRAG」在 HEAD 上不再成立。retrieve 边 sufficiency 与 CRAG 三态已落地（#602、#604）。仍然不能说 learned CRAG grader，也不能说在线 claim / faithfulness 监控（那是 C-02）。规则闸仍是最终兜底。
+- 「store 没有 `patch_id` / `valid_from` / `valid_to`」在 HEAD 上不再成立。`filter_patch_metadata` 在 RRF 前（#606）。仍然不能说面板看得见（B-04），不能说训练型 temporal hybrid ranking 或 TempRetriever 已复现（C-01），不能说路线 Y 为乙，不能说优于 RARR / KPR。
+- 「未传 `strict`、没有工具权限分层、非法工具名会拆掉循环」在 HEAD 上不再成立（#609–#611）。实现名是 `tool_tier_0/1/2`。仍然不能说 BFCL，不能把 `tool_tier` 说成 HumanLatch 的 L0。端点不支持 `strict` 时，书面声明仍是「仅运行时再验」。
+- 「references 不会加载、仓库里没有 hook 样板」在 HEAD 上不再成立（#618、#619）。仍然不能说 Skill 是 L4：样板默认 off，四个业务包未挂 Runner（#620）。
+- 「审计 UI 只能看轨迹路径」在 HEAD 上不再成立（#615、#616）。仍然不能说句级 span（B-03）或 `disputed`（B-05）。
+- 不能把注册 G1/A1/T1/R1 的 `value=` 或冒烟集历史 Recall 说成此次新产品率。本回写未测到新的 P95、fallback rate、faithfulness。A-EV-03 未做。
+- 不能说整体是 L5，也不能说「对标头部产品已成立」。code-computed 数字闸与成熟 HITL（`disputed`）不在本仓。RESULT-Y 仍是丙。
+
+2026-10-12 原文禁句（已被上列勘误替换的，不要再当 HEAD 口径）：
+
 - 不能说已有 sufficient-context、CRAG、claim faithfulness CI。检索空了或不够时，拒答在规则闸，不在检索分级器。
 - 不能说 patch-aware 或 temporal hybrid ranking 已上生产。生产时序是 `as_of` 的 T0/T1 过滤。`patch_id` / `valid_from` / `valid_to` 不在 store。路线 Y 为丙，不能说补丁放行实验成立，也不能说优于 RARR / KPR（`RESULT-Y.md` 的边界句）。
 - 不能说 function calling 达到 strict constrained decoding 或 BFCL。`LLMClient.chat` 未传 `strict`。没有 L0/L1/L2 工具审批。非法工具名会拆掉循环。
@@ -258,9 +304,11 @@ If-landed：冻结一小撮中文 golden；Recall@k 与 MRR 按臂分列进 CI�
 
 ### 5.3 作品集里怎么放档位
 
-对外一句话用 §1：现状 L3，短名单只摘落地后 L4。Skill 单独是 L2→L3。UI 若被要求五轴木桶，as-is 观测轴是 L2，模块主路径是 L3。把 #580 称为「另一份未合并的只读架构笔记」，不要写成已合并设计。
+对外一句话用文首：工程 L4，Skill L3，不是 L5。不要再用「现状 L3，落地后才 L4」。UI 的 2026-10-12 观测轴 L2 是落地前快照。把 #580 称为「另一份未合并的只读架构笔记」，不要写成已合并设计。
 
 ## 6. 风险：只做 UI / 讲解、不做闸门
+
+本节是 2026-10-12 的风险假设。A 层闸门已在 #602–#621 落地，现行档见文首，不再停在该假设的 L3。假设本身仍说明：只改讲解层、不绑真闸，观测轴会停在看故事。
 
 只改复验单的讲解层（徽章、双栏、轨迹时间线、面试稿），不落地 schema 再验、hooks `failClosed`、sufficiency/CRAG、citation CI：
 
@@ -269,26 +317,30 @@ If-landed：冻结一小撮中文 golden；Recall@k 与 MRR 按臂分列进 CI�
 - 讲解若把 `mark_gap` 说成 CRAG，或把 T0/T1 `WHERE` 说成 temporal retriever，听众听到的是 L4/L5，代码仍是 L3。作品集会被追问一次路径就穿。
 - 路线 Y 的丙不会因为 UI 文案改变。把丙放进幻灯片的「我们如何拒答」页，比放进「我们证明了补丁闸」页安全。
 
-## 7. 未实现、未开功能票
+## 7. 2026-10-12 未实现项 · HEAD 指针
 
-本评估不实现下列项，也不开票。整合版短名单自身写明未开票、未改仓库。`gh issue list --state open` 在 2026-10-12 的打开项集中在 SLO 观测协议与 patch_events 实验轨（例如 #556、#569、#576）。其中没有「FC schema + L0/L1/L2」「Skill `failClosed`」「RAG sufficiency/CRAG + temporal/patch」「Agent verify checkpoint」「UI 四段 walkthrough」「citation CI」的实现票。
+2026-10-12 的评估不实现下列项，当时也未开票。`gh issue list --state open` 在当天的打开项集中在 SLO 观测协议与 patch_events 实验轨（例如 #556、#569、#576）。A 层实现后来走 #602–#621，不在那天的 issue 列表里。
 
-下列能力在 `main` @ `a7505d6` 上未实现：
+下表左列是 `main` @ `a7505d6` 上的现状。右列是 HEAD `9af5af00` 的指针。squash 与 M8 清单一致。勾选正文在缺口清单，不在本表重复打勾。
 
-| 项 | 现状符号 | 若要做，形状（仍未开票） |
+| 项 | 2026-10-12 现状符号 | HEAD `9af5af00` |
 |---|---|---|
-| FC API `strict` + 运行时 schema 再验 + illegal reason code | `tools.py` 有 `additionalProperties: false`；`llm.py` 的 `chat` 不传 `strict`；`UnknownToolGuard` 抛异常 | 检索工具分 schema；耗尽 retry 后 fail-closed |
-| 工具权限 L0/L1/L2 | 仓内 L0 现指 HumanLatch 人审出口（`gates/rule_gate.py` 文首） | 读检索 / 写观测需批 / 禁动生产臂，各有测试 |
-| Skill hooks `failClosed` | `docs/agents/agent-guards.md` 写明 hooks 未启用 | 一个 `exit 2` + `failClosed: true` 样板 |
-| references 按需读取 | `load_skill_body` 不读 `references/` | 独立只读工具，或改掉 frontmatter 的承诺 |
-| sufficient-context 与 CRAG 边 | `src/` 无对应符号 | retrieve 边：不足则 abstain 或再检索 |
-| temporal×semantic 与 patch 元数据过滤 | 仅 `as_of` WHERE；store 无 `patch_id` | 过滤先于 RRF；不换向量库 |
-| claim citation CI | 协议页在 `docs/ops/抽检-主张忠实.md`；CI 只跑零 LLM pytest | golden 上 citation 对不齐则 fail |
-| Agent verify 节点与失败 checkpoint | 拒答在 `rule_gate`；checkpoint 在 `latch/pipeline.py` 人审图 | state 含 grade / retry_count；失败轨迹可复放 |
-| UI Query→Hits→Attribution→Unknown\|Override | 审计面板渲染轨迹路径 | 绑定已有事件字段，abstain 露 reason code |
-| SLI 5 聚合 | 协议在 `docs/ops/延迟与检索回退周报.md` | 纯函数读轨迹目录；显式切到 BM25 的开关不算 `bm25_fallback` |
-| `web_search`、默认改挂 `LEAD_TOOLS_W9`、把 LangGraph 引进 `run_loop` | 插座或未默认 | 短名单 If-landed 也不包含这三项 |
+| FC API `strict` + 运行时 schema 再验 + illegal reason code | `tools.py` 有 `additionalProperties: false`；`llm.py` 的 `chat` 不传 `strict`；`UnknownToolGuard` 抛异常 | 已落地。L4-FC-01 [#609](https://github.com/luxingjiang1993/FreshLatch/pull/609) `5ab6ca3e077e61ecee6181e41c31ea33e430c1ec`；L4-FC-02 [#610](https://github.com/luxingjiang1993/FreshLatch/pull/610) `005a7e2b9aa21e4364ef412a64f39bcb1daa71de`。端点不支持 `strict` 时书面声明仅运行时再验。未做 BFCL |
+| 工具权限 L0/L1/L2 | 仓内 L0 现指 HumanLatch 人审出口（`gates/rule_gate.py` 文首） | 已落地为 `tool_tier_0/1/2`。L4-FC-03 [#611](https://github.com/luxingjiang1993/FreshLatch/pull/611) `17d9ddb89e09d13dff6069ab42c149866039c35b`。与人审 L0 不是同一词 |
+| Skill hooks `failClosed` | `docs/agents/agent-guards.md` 写明 hooks 未启用 | 样板已落地，默认不启用。L4-SK-01 [#619](https://github.com/luxingjiang1993/FreshLatch/pull/619) `27acda75cefa11e6a4327aeb22febbd17ddcb4b9`。Skill 综合仍 L3 |
+| references 按需读取 | `load_skill_body` 不读 `references/` | 已落地。L4-SK-03 [#618](https://github.com/luxingjiang1993/FreshLatch/pull/618) `bb6f3e20e6346b24514c69f9b72498fa7ee7e163` |
+| 中文业务 skill 包 | 无财报 / 事件 / patch diff / 策略包 | 四包在盘，未挂 Runner。L4-SK-02 [#620](https://github.com/luxingjiang1993/FreshLatch/pull/620) `9cc116d975e06246c6c9d61db8a173364d16a73b` |
+| sufficient-context 与 CRAG 边 | `src/` 无对应符号 | 已落地。L4-RAG-01 [#602](https://github.com/luxingjiang1993/FreshLatch/pull/602) `e7b44f469ab32ac89926af66c557c82cb246f7bb`；L4-RAG-02 [#604](https://github.com/luxingjiang1993/FreshLatch/pull/604) `aa7f2a5537f0a5236bde8337dc73fd16d55c4c0f` |
+| hit 可测分与 rerank ON/OFF | 轨迹有臂名，无分列表字段 | 已落地。L4-RAG-04 [#605](https://github.com/luxingjiang1993/FreshLatch/pull/605) `42df3c7371d0d4add7ce7594c3df9adb5edda8a1` |
+| temporal / patch 元数据过滤 | 仅 `as_of` WHERE；store 无 `patch_id` | 已落地，过滤先于 RRF，不换向量库。L4-RAG-03 [#606](https://github.com/luxingjiang1993/FreshLatch/pull/606) `1ac137d15d5c1fe52c596276f1e549fc75d793f4`。面板可见夹具是 B-04，仍未做 |
+| T1 个案锁 | 无冻结名次上的个案锁 | 已落地。L4-EV-T1-CASE [#603](https://github.com/luxingjiang1993/FreshLatch/pull/603) `7547e9f15d57ddbec018f69d56cd01940e0f5c17`。不改注册 T1 地板 |
+| claim citation 落 registry + CI | 协议页在 `docs/ops/抽检-主张忠实.md`；CI 只跑零 LLM pytest | 已落地。L4-FC-CITE [#607](https://github.com/luxingjiang1993/FreshLatch/pull/607) `b0c66bf68f9c9a668ee12ac932e422e10c8a163c`；L4-EV-02 [#608](https://github.com/luxingjiang1993/FreshLatch/pull/608) `b131d562e76b8ea38e8437dc643a088055258d35`。夹具绿不是注册 A1 新地板 |
+| Agent verify 节点与失败复放 | 拒答在 `rule_gate`；checkpoint 在 `latch/pipeline.py` 人审图 | 已落地。L4-AG-01 [#612](https://github.com/luxingjiang1993/FreshLatch/pull/612) `99b285e50df7194c510ce09433ec0b0eeba8ea18`；L4-AG-02 [#613](https://github.com/luxingjiang1993/FreshLatch/pull/613) `9da579a37dd24daec49eaf5aa43f4780ac465119`；L4-AG-03 [#614](https://github.com/luxingjiang1993/FreshLatch/pull/614) `9b55ff7ac84a2820243b88207432f8a91a49472e`。三桶 + `disputed` 是 B-05，仍未做 |
+| UI Query→Hits→Attribution→Unknown\|Override 与徽章 | 审计面板渲染轨迹路径 | 已落地。L4-UI-01 [#615](https://github.com/luxingjiang1993/FreshLatch/pull/615) `dc551f01c94a6a1b20977fe7a09d8b4467b30868`；L4-UI-02 [#616](https://github.com/luxingjiang1993/FreshLatch/pull/616) `3c3ac7a6fdb89288a5ad868ad733cfe13669cb46` |
+| Recall@k / MRR 分列表 | 函数与历史报告在仓，缺同 pin 可重复臂表 | 已落地。L4-EV-01 [#617](https://github.com/luxingjiang1993/FreshLatch/pull/617) `2aba5500069ac813ba8ab3254258e5093e1d48c7`。`replaces_frozen_baseline=false`。不是因为「仓里早就有 Recall」而空勾 |
+| SLI 5 聚合 | 协议在 `docs/ops/延迟与检索回退周报.md` | **仍未实现**（A-EV-03）。显式切到 BM25 的开关不算 `bm25_fallback` 这条契约也还没有代码。不挡 M8 |
+| `web_search`、默认改挂 `LEAD_TOOLS_W9`、把 LangGraph 引进 `run_loop` | 插座或未默认 | 仍未默认。有意不做 |
 
-#580 文末的六步接线（工具返回带检索臂、用量落盘、SLI 5 聚合、教义读取、本地臂子命令、截断与死字段）在本基线上仍未实现。本报告不开这些票。
+#580 文末的六步接线里，SLI 5 聚合在 HEAD 上仍未实现。本回写不开新票。
 
-后续缺口勾选与前沿摘法见 [`module-level-gap-checklist-2026-10-12.md`](module-level-gap-checklist-2026-10-12.md) 与 [`module-level-frontier-refs-ABC-2026-10-12.md`](module-level-frontier-refs-ABC-2026-10-12.md)。**开票前须先读缺口清单「开票前已知歧义与边界」**（L0 词冲突、A/B 勾选边界、B-01 数字闸两种读法、A 附件不在仓、A-EV-01 误勾等）；本评估 alone 不够当 `/implement` 规格。
+后续缺口勾选与前沿摘法见 [`module-level-gap-checklist-2026-10-12.md`](module-level-gap-checklist-2026-10-12.md) 与 [`module-level-frontier-refs-ABC-2026-10-12.md`](module-level-frontier-refs-ABC-2026-10-12.md)。**开票前须先读缺口清单「开票前已知歧义与边界」**（`tool_tier` 与人审 L0 词冲突、A/B 勾选边界、B-01 数字闸两种读法、A 附件不在仓）。A-EV-01 已按 #617 勾上，不是按历史 Recall 函数空勾。本评估 alone 不够当 `/implement` 规格。

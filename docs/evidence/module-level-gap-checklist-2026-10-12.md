@@ -1,8 +1,11 @@
 # FreshLatch 水平缺口清单（If-landed → 顶尖 demo → L5）
 
-> 日期：2026-10-12。性质：只读规划清单。不开功能票、不改生产代码、不改 `PRODUCTION_RETRIEVAL_MODE`、不改 `RESULT-Y` / `PREREG-Y`。
-> 水平评估见 [`module-level-assessment-2026-10-12.md`](module-level-assessment-2026-10-12.md)。前沿参考（按本页 ID）见 [`module-level-frontier-refs-ABC-2026-10-12.md`](module-level-frontier-refs-ABC-2026-10-12.md)。本页把后续缺口收成可勾选项，便于另开任务。
-> 标尺：L1–L5 同评估文档。整体档取主链木桶（Function Call / RAG / AI Agent）。
+> **As-of 2026-10-15 / HEAD `9af5af00ef85ad693bc3877299f2ac978ce75f2e`（M8 #621 PASS；父提交 `9cc116d975e06246c6c9d61db8a173364d16a73b`，L4-SK-02 / #620）。** L4U-DOC-02。
+> 本回写只把 A 层勾选对齐 #602–#621 与 [`m8-a-layer-checklist-2026-10-14.md`](m8-a-layer-checklist-2026-10-14.md)。B-01…B-05、C-01…C-04 保持 `[ ]`。禁止把未实现项打成 `[x]`。
+> 与评估页同一结论：工程 **L4**（可回归的拒答产品），Skill **L3**，**不是 L5**。注册 G1 / A1 / T1 / R1 仍 `status=TBD` / `counted_as_pass=false`。RESULT-Y **丙**。`value=` 不是产品率。
+> A-EV-03 仍是 `[ ]`：未实现，不是勾选滞后。
+> 水平评估见 [`module-level-assessment-2026-10-12.md`](module-level-assessment-2026-10-12.md)（文首 As-of 横幅为现行档）。前沿参考见 [`module-level-frontier-refs-ABC-2026-10-12.md`](module-level-frontier-refs-ABC-2026-10-12.md)。
+> 2026-10-12 原文性质（历史）：只读规划清单。不开功能票、不改生产代码、不改 `PRODUCTION_RETRIEVAL_MODE`、不改 `RESULT-Y` / `PREREG-Y`。标尺 L1–L5 同评估文档。整体档取主链木桶（Function Call / RAG / AI Agent）。
 
 ## 0. 怎么读
 
@@ -10,7 +13,7 @@
 
 | 层 | 目标产品档 | 面试口径（职级，不是产品 L） | 前提 |
 |---|---|---|---|
-| **A. If-landed** | L4 | 中级场能站稳（硅谷 L4 / Meta E4；上海约 P6 / 字节 2-1） | as-is L3 |
+| **A. If-landed** | L4 | 中级场能站稳（硅谷 L4 / Meta E4；上海约 P6 / 字节 2-1） | 2026-10-12 前提是 as-is L3。HEAD 上除 A-EV-03 外已勾，工程档 L4，不是 L5 |
 | **B. 顶尖 demo 包** | 仍是产品 L4 的上沿；面试里是中级场最能打的 demo | 同上职级，评委记住拒答与负结果 | A 已落地 |
 | **C. 领域标杆** | 产品 L5 | senior 场能站住（硅谷 L5 / Meta E5；上海约 P7 / 字节 2-2） | A + B 已落地，且 C 全齐 |
 
@@ -18,38 +21,40 @@
 
 路线 Y：`RESULT-Y` 已落档为丙。同一次预注册禁止第二次正式主跑充数。B 层的时序/patch 项是**夹具演示**，不等于乙。C 层「成立的 patch 实验」须另开预注册或合法新尺；乙成立后仍不得称优于 RARR·KPR。
 
-勾选状态：本页落盘时全部为 `[ ]`（未实现、未开票）。
+勾选状态：2026-10-12 落盘时全部为 `[ ]`。2026-10-15 起，已合入 #602–#620 的 A 层项改为 `[x]`，并写明 PR 与 squash；未实现项保持 `[ ]`。M8 清单本身是 #621，不是单独的 A-* 行。
 
 ---
 
 ## A. If-landed（组会票序 · 产品 L3 → L4）
 
-情景：组会票序 FC→Skill→RAG→Agent→UI→Eval；RAG 同时吸收 temporal/patch 与 sufficiency/abstain。详见评估文档 §2.4。
+情景（2026-10-12）：组会票序 FC→Skill→RAG→Agent→UI→Eval；RAG 同时吸收 temporal/patch 与 sufficiency/abstain。详见评估文档 §2.4。HEAD 上该情景除 A-EV-03 外已合入，见下表「见 M8 指针」。
 
 | ID | 模块 | 项 | 验收形状（一句话） |
 |---|---|---|---|
-| A-FC-01 | Function Call | `[ ]` schema 再验 + illegal reason code | 非法 args → typed reason code；有限自纠；耗尽 fail-closed |
-| A-FC-02 | Function Call | `[ ]` API `strict`（若端点支持） | `chat.completions` 侧能拒非法 schema；业务语义仍再验 |
-| A-FC-03 | Function Call | `[ ]` 权限 L0 / L1 / L2 | 读检索 / 写观测需批 / 禁动生产臂，各≥1 测 |
-| A-SK-01 | Skill | `[ ]` hooks `failClosed` | 样板：exit 2 deny + `failClosed: true` |
-| A-SK-02 | Skill | `[ ]` 3–5 个中文业务 skill | 财报 / 事件 / patch diff / 策略 walkthrough 等；`SKILL.md` + 可选 `scripts/` |
-| A-SK-03 | Skill | `[ ]` references 真加载或改掉假承诺 | 独立只读工具，或修正 frontmatter「用 `read_source` 读 references」 |
-| A-RAG-01 | RAG | `[ ]` sufficient-context → abstain / 再检索 | retrieve 边标签；不足不硬答 |
-| A-RAG-02 | RAG | `[ ]` CRAG grade 边 | Correct / Incorrect / Ambiguous → refine 或 abstain（挂 retrieve，不另起网络回退） |
-| A-RAG-03 | RAG | `[ ]` temporal / patch 元数据过滤 | `patch_id` / 有效期等；过滤先于或并入 RRF；不换库 |
-| A-RAG-04 | RAG | `[ ]` hybrid+rerank 可测字段 | 每 hit 暴露可测分；manifest 记 rerank ON/OFF ablation |
-| A-AG-01 | Agent | `[ ]` verify → repair \| abstain | 短环；state 含 `evidence_ids` / `grade` / `retry_count` |
-| A-AG-02 | Agent | `[ ]` 命名 abstention reason codes | 证据不足等可枚举；进轨迹 |
-| A-AG-03 | Agent | `[ ]` 失败轨迹可复放 | checkpoint / 等价复放；不另起 runtime |
-| A-UI-01 | UI | `[ ]` Query → Hits → Attribution → Unknown \| Override | 分数与 reason code 可见；职人视图仍不泄角色名 |
-| A-UI-02 | UI | `[ ]` verified \| partial \| abstain 徽章 | 绑定真实闸，不绑装饰 |
-| A-EV-01 | Eval | `[ ]` golden + Recall@k / MRR 分列表 | 臂对比可重复跑；本清单不预填数字 |
-| A-EV-02 | Eval | `[ ]` citation 进 CI | claim 对不齐 turn-scoped evidence registry → fail |
-| A-EV-03 | Eval | `[ ]` SLI 5 聚合（可选但建议） | 轨迹目录 → e2e P95 + fallback rate；显式切 BM25 ≠ `bm25_fallback` |
+| A-FC-01 | Function Call | `[x]` schema 再验 + illegal reason code | 非法 args → typed reason code；有限自纠；耗尽 fail-closed。见 M8 指针：L4-FC-01 [#609](https://github.com/luxingjiang1993/FreshLatch/pull/609) `5ab6ca3e077e61ecee6181e41c31ea33e430c1ec` |
+| A-FC-02 | Function Call | `[x]` API `strict`（若端点支持） | `chat.completions` 侧能拒非法 schema；业务语义仍再验。见 M8 指针：L4-FC-02 [#610](https://github.com/luxingjiang1993/FreshLatch/pull/610) `005a7e2b9aa21e4364ef412a64f39bcb1daa71de`。端点不支持则书面声明仅运行时再验，仍算本项 |
+| A-FC-03 | Function Call | `[x]` 权限分层（实现名 `tool_tier_0/1/2`，不是 HumanLatch 的 L0） | 读检索 / 写观测需批 / 禁动生产臂，各≥1 测。见 M8 指针：L4-FC-03 [#611](https://github.com/luxingjiang1993/FreshLatch/pull/611) `17d9ddb89e09d13dff6069ab42c149866039c35b` |
+| A-SK-01 | Skill | `[x]` hooks `failClosed` | 样板：exit 2 deny + `failClosed: true`。见 M8 指针：L4-SK-01 [#619](https://github.com/luxingjiang1993/FreshLatch/pull/619) `27acda75cefa11e6a4327aeb22febbd17ddcb4b9`。默认不启用；Skill 综合仍 L3 |
+| A-SK-02 | Skill | `[x]` 3–5 个中文业务 skill | 财报 / 事件 / patch diff / 策略 walkthrough；在盘未挂 Runner。见 M8 指针：L4-SK-02 [#620](https://github.com/luxingjiang1993/FreshLatch/pull/620) `9cc116d975e06246c6c9d61db8a173364d16a73b` |
+| A-SK-03 | Skill | `[x]` references 真加载或改掉假承诺 | `load_skill_reference` 读 `skills/{slug}/references/{name}.md`。见 M8 指针：L4-SK-03 [#618](https://github.com/luxingjiang1993/FreshLatch/pull/618) `bb6f3e20e6346b24514c69f9b72498fa7ee7e163` |
+| A-RAG-01 | RAG | `[x]` sufficient-context → abstain / 再检索 | retrieve 边标签；不足不硬答。见 M8 指针：L4-RAG-01 [#602](https://github.com/luxingjiang1993/FreshLatch/pull/602) `e7b44f469ab32ac89926af66c557c82cb246f7bb` |
+| A-RAG-02 | RAG | `[x]` CRAG grade 边 | Correct / Incorrect / Ambiguous → refine 或 abstain（挂 retrieve，不另起网络回退）。见 M8 指针：L4-RAG-02 [#604](https://github.com/luxingjiang1993/FreshLatch/pull/604) `aa7f2a5537f0a5236bde8337dc73fd16d55c4c0f`。Ambiguous 不是 B-02 的 `conflicting_evidence` |
+| A-RAG-03 | RAG | `[x]` temporal / patch 元数据过滤 | `patch_id` / 有效期；过滤先于 RRF；不换库。见 M8 指针：L4-RAG-03 [#606](https://github.com/luxingjiang1993/FreshLatch/pull/606) `1ac137d15d5c1fe52c596276f1e549fc75d793f4`。本勾不等于 B-04 |
+| A-RAG-04 | RAG | `[x]` hybrid+rerank 可测字段 | 每 hit 暴露可测分；记 rerank ON/OFF。见 M8 指针：L4-RAG-04 [#605](https://github.com/luxingjiang1993/FreshLatch/pull/605) `42df3c7371d0d4add7ce7594c3df9adb5edda8a1`。不改 `PRODUCTION_RETRIEVAL_MODE` |
+| A-AG-01 | Agent | `[x]` verify → repair \| abstain | 短环；state 含 `evidence_ids` / `grade` / `retry_count`。见 M8 指针：L4-AG-01 [#612](https://github.com/luxingjiang1993/FreshLatch/pull/612) `99b285e50df7194c510ce09433ec0b0eeba8ea18` |
+| A-AG-02 | Agent | `[x]` 命名 abstention reason codes | 证据不足等可枚举；进轨迹。见 M8 指针：L4-AG-02 [#613](https://github.com/luxingjiang1993/FreshLatch/pull/613) `9da579a37dd24daec49eaf5aa43f4780ac465119` |
+| A-AG-03 | Agent | `[x]` 失败轨迹可复放 | JSONL 复放；不另起 runtime，LangGraph 不进 `run_loop`。见 M8 指针：L4-AG-03 [#614](https://github.com/luxingjiang1993/FreshLatch/pull/614) `9b55ff7ac84a2820243b88207432f8a91a49472e`。本勾不等于 B-05 |
+| A-UI-01 | UI | `[x]` Query → Hits → Attribution → Unknown \| Override | 分数与 reason code 可见；职人视图仍不泄角色名。见 M8 指针：L4-UI-01 [#615](https://github.com/luxingjiang1993/FreshLatch/pull/615) `dc551f01c94a6a1b20977fe7a09d8b4467b30868` |
+| A-UI-02 | UI | `[x]` verified \| partial \| abstain 徽章 | 绑定真实闸，不绑装饰。见 M8 指针：L4-UI-02 [#616](https://github.com/luxingjiang1993/FreshLatch/pull/616) `3c3ac7a6fdb89288a5ad868ad733cfe13669cb46` |
+| A-EV-01 | Eval | `[x]` golden + Recall@k / MRR 分列表 | 臂对比可重复跑；不预填新数字，不抬注册地板。见 M8 指针：L4-EV-01 [#617](https://github.com/luxingjiang1993/FreshLatch/pull/617) `2aba5500069ac813ba8ab3254258e5093e1d48c7`。`replaces_frozen_baseline=false`。不是因为仓内早已有 Recall 函数而空勾，见文末歧义 §5 |
+| A-EV-02 | Eval | `[x]` citation 进 CI | claim 对不齐 turn-scoped evidence registry → fail。见 M8 指针：L4-FC-CITE [#607](https://github.com/luxingjiang1993/FreshLatch/pull/607) `b0c66bf68f9c9a668ee12ac932e422e10c8a163c` 与 L4-EV-02 [#608](https://github.com/luxingjiang1993/FreshLatch/pull/608) `b131d562e76b8ea38e8437dc643a088055258d35`。夹具绿不是注册 A1 新地板 |
+| A-EV-03 | Eval | `[ ]` SLI 5 聚合（可选但建议） | 轨迹目录 → e2e P95 + fallback rate；显式切 BM25 ≠ `bm25_fallback`。**仍未实现**（`src/` 无该聚合）。M8 写明 optional、不挡 PASS。这是开着的缺口，不是勾选滞后。不计入注册 G1/A1/T1/R1 |
 
-**A 层完成判据**：主链木桶 L4；Skill 可为 L3。整体对外口径：可回归的拒答产品。
+另有已合、但不单列成 A-* 行的指针：L4-EV-T1-CASE [#603](https://github.com/luxingjiang1993/FreshLatch/pull/603) `7547e9f15d57ddbec018f69d56cd01940e0f5c17`（冻结名次上的 T1 个案锁，不改注册 T1 地板）。M8 记录页是 [#621](https://github.com/luxingjiang1993/FreshLatch/pull/621) `9af5af00ef85ad693bc3877299f2ac978ce75f2e`。
 
-只落地来源 A 或只落地来源 B：主链木桶仍停在 L3（见评估文档总表）。
+**A 层完成判据**：主链木桶 L4；Skill 可为 L3。整体对外口径：可回归的拒答产品。HEAD 上除 A-EV-03 外已满足该工程判据。A-EV-03 不挡它。满足 A 层判据不是 L5。
+
+只落地来源 A 或只落地来源 B：在 2026-10-12 反事实里主链木桶仍停在 L3（见评估文档总表）。该句不描述 HEAD。
 
 ---
 
@@ -92,10 +97,10 @@ C-04 若再跑仍为丙：闸门可以很满，综合档停在 **L4**，实验�
 
 | 已完成层 | 产品综合档 | 面试一句话 |
 |---|---|---|
-| 仅 as-is | L3 | 复验闸 + hybrid+rerank + 预注册负结果 |
-| A | L4 | 可回归的拒答产品 |
+| 仅 2026-10-12 as-is（已过期） | L3 | 复验闸 + hybrid+rerank + 预注册负结果 |
+| A（HEAD：除 A-EV-03 外已勾；B/C 仍 `[ ]`） | **L4**（Skill L3；不是 L5） | 可回归的拒答产品；注册仍 TBD；RESULT-Y 丙 |
 | A + B | L4 上沿（面试顶尖 demo） | 当场拒、指到句、复放失败；末页诚实放丙 |
-| A + B + C（含成立的 patch 实验） | L5 | 时序 / patch / 金融级证据闸 / HITL 成熟 |
+| A + B + C（含成立的 patch 实验） | L5 | 时序 / patch / 金融级证据闸 / HITL 成熟。HEAD 未到这一行 |
 | A + B + C 但 patch 实验仍负 | L4 | 不得称领域标杆 |
 
 本清单覆盖不到 Staff 场（硅谷 L6、阿里 P8、字节 3-1）：多团队在用、线上事故与路线拍板不在本页。
@@ -139,9 +144,9 @@ A 的完整实践/论文表原在组会两源整合附件（`freshlatch-module-f
 
 ### 5. A-EV-01 易被误判「早已完成」
 
-`src/freshlatch/eval/retrieve_*.py` 已有 Recall@k / MRR 函数与历史报告。清单仍标 `[ ]` 是因为缺的是**可重复的同 pin · 同 gold · 分列表 · 可进回归**的形状，不是从零写指标。
+`src/freshlatch/eval/retrieve_*.py` 在 2026-10-12 已有 Recall@k / MRR 函数与历史报告。当时清单标 `[ ]`，是因为缺的是**可重复的同 pin · 同 gold · 分列表 · 可进回归**的形状，不是从零写指标。
 
-开票验收须写清：金标路径、code pin、臂列表、输出表落点、是否进 CI（与 ADR-0005「零 LLM gate」语义如何并存）。写糊则禁止以「仓里早就有 Recall」为由空勾。
+2026-10-15 的 `[x]` 只对应 L4-EV-01 #617 的臂表（`replaces_frozen_baseline=false`，smoke 可重复，不替换冻结 `neural-rerank/per-query.json`，不把注册 R1/T1 的 `counted_as_pass` 改成 true）。禁止回头把「仓里早就有 Recall」当成勾选理由。夹具或臂表变绿不等于注册地板变了。
 
 ### 6. 非 bug、但是限（摘码时自知）
 
@@ -165,9 +170,9 @@ A 的完整实践/论文表原在组会两源整合附件（`freshlatch-module-f
 
 | 文档 | 角色 |
 |---|---|
-| [`module-level-assessment-2026-10-12.md`](module-level-assessment-2026-10-12.md) | as-is / if-landed 档位与证据 |
-| 本清单 | A/B/C 缺口勾选；后续开票用 ID；**开票前歧义见上一节** |
+| [`module-level-assessment-2026-10-12.md`](module-level-assessment-2026-10-12.md) | 现行档在文首 As-of 横幅与 §1 / §3；§4 五轴是 2026-10-12 快照 |
+| 本清单 | A/B/C 缺口勾选；A 层（除 A-EV-03）已按 #602–#620 回写；B/C 仍空；**开票前歧义见上一节** |
 | [`module-level-frontier-refs-ABC-2026-10-12.md`](module-level-frontier-refs-ABC-2026-10-12.md) | 各 ID 的 GitHub / 论文 / 产品可摘 pattern（只摘 fields/modes） |
 | draft PR #580 架构评估 | 另文；接线建议（检索臂进工具返回等）可作 A 的前置小票，不替代本清单 |
 
-本页**不开票**。勾选变为 `[x]` 须对应已合并实现或已关闭验收，不得空勾。
+本页**不开票**。勾选变为 `[x]` 须对应已合并实现或已关闭验收，不得空勾。2026-10-15 的 A 层 `[x]` 都指到上表 PR / squash。B-01…B-05 与 C-01…C-04 在本回写时仍是 `[ ]`。
