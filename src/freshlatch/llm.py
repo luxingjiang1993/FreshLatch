@@ -21,6 +21,51 @@ if not isinstance(_default_base, str) or not _default_base:
     raise RuntimeError("default_llm 缺少 base_url")
 DASHSCOPE_BASE_URL = _default_base
 
+# 未标记 accepts_tools_strict 时是否传 function.strict。结论写在 LLMClient.chat。
+DEFAULT_ENDPOINT_ACCEPTS_TOOLS_STRICT = True
+
+
+def endpoint_accepts_tools_strict(client: Any) -> bool:
+    """读端点标记。显式 True/False 覆盖缺省;缺省见 LLMClient.chat 的探测结论。"""
+    chat = getattr(client, "chat", None)
+    completions = getattr(chat, "completions", None) if chat is not None else None
+    for node in (completions, chat, client):
+        if node is None or not hasattr(node, "accepts_tools_strict"):
+            continue
+        flag = getattr(node, "accepts_tools_strict")
+        if flag is True or flag is False:
+            return flag
+    return DEFAULT_ENDPOINT_ACCEPTS_TOOLS_STRICT
+
+
+def tools_for_request(tools: list, *, accepts_strict: bool) -> list:
+    """按端点是否接受 strict 做发送副本,不改调用方持有的 schema。
+
+    接受时在 function 副本写入 strict=true,parameters 里已有的
+    additionalProperties 原样保留。拒绝时去掉 strict,请求不假装已经 strict。
+    """
+    bound: list = []
+    for tool in tools:
+        if not isinstance(tool, dict) or tool.get("type") != "function":
+            bound.append(tool)
+            continue
+        function = tool.get("function")
+        if not isinstance(function, dict):
+            bound.append(tool)
+            continue
+        function_copy = dict(function)
+        parameters = function_copy.get("parameters")
+        if isinstance(parameters, dict):
+            function_copy["parameters"] = dict(parameters)
+        if accepts_strict:
+            function_copy["strict"] = True
+        else:
+            function_copy.pop("strict", None)
+        tool_copy = dict(tool)
+        tool_copy["function"] = function_copy
+        bound.append(tool_copy)
+    return bound
+
 
 @dataclass
 class DecodingParams:
@@ -95,13 +140,34 @@ class LLMClient:
     def chat(self, messages: list, *, tools: list | None = None,
              decoding: DecodingParams | None = None,
              response_format: dict | None = None) -> object:
+        """把 messages 发给当前客户端的 chat.completions。
+
+        A-FC-02: tools 的 function.strict 已有探测结论。这不是召回率,也不是通过率。
+
+        默认端点是 MODEL_REGISTRY 里的 DashScope compatible-mode,模型 qwen-flash。
+        2026-10-14 对该端点发了两次 chat.completions(temperature=0):
+        一次是最小 function,strict=true 且 additionalProperties=false;
+        一次是现有 retrieve schema,可选字段仍不全部列入 required,并加上 strict=true。
+        两次都返回正常完成,没有参数错误。n=2,只说明该字段被接受,不报方差。
+
+        客户端、chat 或 completions 上没有 accepts_tools_strict 标记时,按上述结论
+        在即将发送的 function 副本里写入 strict=true。已有的 additionalProperties: false
+        保持原样,不改写必填列表。
+
+        声明分支: 上述对象把 accepts_tools_strict 标为 False(端点拒绝该字段)时,
+        请求不写 strict,不假装已经 strict。
+        dimension、evidence id、as_of 在两条分支上都仅运行时再验(L4-FC-01)。
+        """
         d = decoding or DecodingParams()
         self.decoding_log.append(d)
         kwargs: dict[str, Any] = {"model": d.model, "messages": messages, "temperature": d.temperature}
         if d.seed is not None:
             kwargs["seed"] = d.seed
         if tools is not None:
-            kwargs["tools"] = tools
+            kwargs["tools"] = tools_for_request(
+                tools,
+                accepts_strict=endpoint_accepts_tools_strict(self.client),
+            )
         if response_format is not None:
             kwargs["response_format"] = response_format
         resp = self.client.chat.completions.create(**kwargs)
