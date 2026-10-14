@@ -6,7 +6,6 @@
 
 from __future__ import annotations
 
-import hashlib
 import json
 import os
 import subprocess
@@ -16,7 +15,7 @@ from pathlib import Path
 import pytest
 
 from freshlatch.eval.__main__ import main
-from freshlatch.eval.retrieve_eval import run_arm_metric_table
+from freshlatch.eval.retrieve_eval import run_arm_metric_table, sha256_lf
 from freshlatch.store.base import PRODUCTION_RETRIEVAL_MODE
 from freshlatch.store.neural_rerank import NEURAL_RERANK_K
 from freshlatch.store.pipeline import RRF_K
@@ -252,6 +251,24 @@ def test_empty_pin_rejected(tmp_path: Path) -> None:
         )
 
 
+def test_gold_sha256_same_after_crlf(tmp_path: Path) -> None:
+    """Windows checkout 把夹具变成 CRLF 时，gold_sha256 仍按 LF 口径。"""
+    raw = FIXTURE.read_bytes().replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+    lf_path = tmp_path / "lf.json"
+    crlf_path = tmp_path / "crlf.json"
+    lf_path.write_bytes(raw)
+    crlf_path.write_bytes(raw.replace(b"\n", b"\r\n"))
+    left = run_arm_metric_table(
+        gold_path=lf_path, out_dir=tmp_path / "lf-out", code_pin="pin",
+    )
+    right = run_arm_metric_table(
+        gold_path=crlf_path, out_dir=tmp_path / "crlf-out", code_pin="pin",
+    )
+    assert left["gold_sha256"] == right["gold_sha256"]
+    assert left["gold_sha256"] == sha256_lf(raw)
+    assert left["rows"] == right["rows"]
+
+
 def test_frozen_baseline_sha_matches_prereg() -> None:
     prereg = PREREG.read_text(encoding="utf-8")
     listed = (
@@ -259,12 +276,12 @@ def test_frozen_baseline_sha_matches_prereg() -> None:
         "8fb4f1271b844c979b28bf351cf22ecbad354e3f5f35f7d2e1e7d760efb8e526"
     )
     assert listed in prereg
-    summary_sha = hashlib.sha256(SUMMARY.read_bytes()).hexdigest()
+    summary_sha = sha256_lf(SUMMARY.read_bytes())
     assert summary_sha == FROZEN_SHA256["docs/evidence/neural-rerank/summary.json"]
-    per_query_sha = hashlib.sha256(PER_QUERY.read_bytes()).hexdigest()
+    per_query_sha = sha256_lf(PER_QUERY.read_bytes())
     assert per_query_sha == FROZEN_SHA256["docs/evidence/neural-rerank/per-query.json"]
     for rel, digest in FROZEN_SHA256.items():
-        assert hashlib.sha256((ROOT / rel).read_bytes()).hexdigest() == digest
+        assert sha256_lf((ROOT / rel).read_bytes()) == digest
 
 
 def test_retrieval_constants_unchanged() -> None:

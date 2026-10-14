@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 from freshlatch.models import EMBED_MODEL
 from freshlatch.store.base import InMemoryStore, chunk_evidence_id
-from freshlatch.store.checksum import aggregate_checksum, sha256_hex
+from freshlatch.store.checksum import aggregate_checksum, normalize_newlines, sha256_hex
 from freshlatch.store.ingest import ingest_into, load_corpus
 from freshlatch.store.query_transform import DIMENSION_ZH, transform_claim_query
 
@@ -950,6 +950,11 @@ def _float_vec(value: object, label: str) -> list[float]:
         raise ValueError(f"{label} 的向量不是数字") from exc
 
 
+def sha256_lf(data: bytes) -> str:
+    """CRLF 与单独 CR 先折成 LF，再 sha256。与质量闸冻结指纹同口径。"""
+    return sha256_hex(normalize_newlines(data, "lf"))
+
+
 def _fmt_metric(value: float) -> str:
     """固定小数写法，同一 float 每次相同。"""
     if value == 0.0:
@@ -1212,7 +1217,7 @@ def run_arm_metric_table(
         "code_pin": pin,
         "fixture_version": str(fixture["version"]),
         "gold_path": _display_path(gold),
-        "gold_sha256": sha256_hex(gold.read_bytes()),
+        "gold_sha256": sha256_lf(gold.read_bytes()),
         "k": k,
         "level": "smoke",
         "n": len(fixture["queries"]),
