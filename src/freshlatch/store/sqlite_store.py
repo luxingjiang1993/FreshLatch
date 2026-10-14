@@ -23,7 +23,7 @@ from freshlatch.store.base import (
     filter_retrieve_pool,
     normalize_tenant_id,
 )
-from freshlatch.store.pipeline import run_pipeline
+from freshlatch.store.pipeline import filter_patch_metadata, meta_text, run_pipeline
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS documents (
@@ -56,6 +56,9 @@ CREATE TABLE IF NOT EXISTS chunks (
     tenant_id TEXT NOT NULL DEFAULT 'default',  -- I2 可选;缺省 default
     poison INTEGER NOT NULL DEFAULT 0,          -- I2 显式投毒标签
     untrusted INTEGER NOT NULL DEFAULT 0,
+    patch_id TEXT,       -- 可选;空则补丁过滤器跳过该块
+    valid_from TEXT,     -- 可选;YYYY-MM-DD,空则不设下界
+    valid_to TEXT,       -- 可选;YYYY-MM-DD,空则不设上界
     PRIMARY KEY (chunk_id)
 );
 CREATE INDEX IF NOT EXISTS idx_chunks_filter ON chunks (as_of, source_type, doc_id);
@@ -139,6 +142,13 @@ _TRUST_ADDED_COLUMNS = (
     ("untrusted", "INTEGER NOT NULL DEFAULT 0"),
 )
 
+# 旧库缺补丁元数据列时补齐。已有行保持 NULL,过滤器对空字段是空操作。
+_PATCH_ADDED_COLUMNS = (
+    ("patch_id", "TEXT"),
+    ("valid_from", "TEXT"),
+    ("valid_to", "TEXT"),
+)
+
 
 class SQLiteStore(RetrievalStore):
     def __init__(self, path: str | Path) -> None:
@@ -148,6 +158,7 @@ class SQLiteStore(RetrievalStore):
             conn.executescript(SCHEMA)
             self._ensure_latch_log_columns(conn)
             self._ensure_trust_columns(conn)
+            self._ensure_patch_columns(conn)
 
     @staticmethod
     def _ensure_latch_log_columns(conn: sqlite3.Connection) -> None:
@@ -163,6 +174,13 @@ class SQLiteStore(RetrievalStore):
             for name, decl in _TRUST_ADDED_COLUMNS:
                 if name not in existing:
                     conn.execute(f"ALTER TABLE {table} ADD COLUMN {name} {decl}")
+
+    @staticmethod
+    def _ensure_patch_columns(conn: sqlite3.Connection) -> None:
+        existing = {row[1] for row in conn.execute("PRAGMA table_info(chunks)")}
+        for name, decl in _PATCH_ADDED_COLUMNS:
+            if name not in existing:
+                conn.execute(f"ALTER TABLE chunks ADD COLUMN {name} {decl}")
 
     @contextmanager
     def _conn(self) -> Iterator[sqlite3.Connection]:
@@ -236,15 +254,17 @@ class SQLiteStore(RetrievalStore):
                 "INSERT OR REPLACE INTO chunks ("
                 "doc_id, chunk_id, clause_id, title, text, source_type, as_of, "
                 "doc_version, checksum, tokens, parent_id, hypo_questions, vec, "
-                "tenant_id, poison, untrusted) "
-                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                "tenant_id, poison, untrusted, patch_id, valid_from, valid_to) "
+                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                 [
                     (c.doc_id, c.chunk_id, c.clause_id, c.title, c.text,
                      c.source_type, c.as_of, c.doc_version, c.checksum,
                      c.tokens, c.parent_id, c.hypo_questions,
                      self._vec_to_store(conn, c),
                      normalize_tenant_id(c.tenant_id), int(bool(c.poison)),
-                     int(bool(c.untrusted)))
+                     int(bool(c.untrusted)),
+                     meta_text(c.patch_id), meta_text(c.valid_from),
+                     meta_text(c.valid_to))
                     for c in chunks
                 ],
             )
@@ -312,6 +332,8 @@ class SQLiteStore(RetrievalStore):
         source_type: str | None = None,
         top_k: int = 10,
         tenant_id: str | None = None,
+        patch_id: str | None = None,
+        valid_at: str | None = None,
     ) -> list[Chunk]:
         sql, params = "SELECT * FROM chunks", []
         if as_of is not None:
@@ -326,6 +348,8 @@ class SQLiteStore(RetrievalStore):
             [self._row_to_chunk(r) for r in rows],
             tenant_id=tenant_id,
         )
+        # 补丁与有效期先于 BM25 / dense / RRF。不写入 as_of 的 WHERE。
+        pool = filter_patch_metadata(pool, patch_id=patch_id, valid_at=valid_at)
         from freshlatch.store.neural_rerank import RERANK_MODE_NONE, rerank_hybrid_candidates
         from freshlatch.store.pipeline import RRF_K, rank_dense, recall_bm25, rrf_fuse
 
@@ -578,4 +602,7 @@ class SQLiteStore(RetrievalStore):
             tenant_id=normalize_tenant_id(r["tenant_id"]),
             poison=bool(r["poison"]),
             untrusted=bool(r["untrusted"]),
+            patch_id=meta_text(r["patch_id"]),
+            valid_from=meta_text(r["valid_from"]),
+            valid_to=meta_text(r["valid_to"]),
         )

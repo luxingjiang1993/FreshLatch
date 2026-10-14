@@ -85,6 +85,50 @@ def tokenize(text: str) -> list[str]:
     return [t for t in jieba.lcut(text) if t.strip()]
 
 
+def meta_text(value: str | None) -> str | None:
+    """空白视为未填写。补丁过滤器只认非空文本。"""
+    if value is None:
+        return None
+    text = value.strip()
+    return text or None
+
+
+def filter_patch_metadata(
+    chunks: list[Chunk],
+    *,
+    patch_id: str | None = None,
+    valid_at: str | None = None,
+) -> list[Chunk]:
+    """补丁身份与有效期。必须在 BM25、dense 与 RRF 之前收窄候选池。
+
+    查询未给 patch_id 与 valid_at 时返回原列表。
+    块上 patch_id、valid_from、valid_to 皆空时该块保留。
+    指定 patch_id 时,只剔除 patch_id 非空且不相等的块。
+    指定 valid_at 时,valid_from / valid_to 按 YYYY-MM-DD 字符串闭区间比较。
+    不读 doc_version,不读 as_of。
+    """
+    wanted = meta_text(patch_id)
+    moment = meta_text(valid_at)
+    if wanted is None and moment is None:
+        return chunks
+    kept: list[Chunk] = []
+    for chunk in chunks:
+        got_patch = meta_text(chunk.patch_id)
+        start = meta_text(chunk.valid_from)
+        end = meta_text(chunk.valid_to)
+        if got_patch is None and start is None and end is None:
+            kept.append(chunk)
+            continue
+        if wanted is not None and got_patch is not None and got_patch != wanted:
+            continue
+        if moment is not None and start is not None and moment < start:
+            continue
+        if moment is not None and end is not None and moment > end:
+            continue
+        kept.append(chunk)
+    return kept
+
+
 def recall_bm25(
     query: str,
     pool: list[Chunk],

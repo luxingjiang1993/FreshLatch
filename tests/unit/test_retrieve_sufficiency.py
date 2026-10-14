@@ -27,8 +27,8 @@ REPO = Path(__file__).resolve().parents[2]
 EVIDENCE_ID = "fix-memo#p1@T1"
 T0_ONLY_ID = "fix-memo#p1@T0"
 
+# L4-RAG-03 允许给 Chunk 加可选字段。生产臂字面量不在本表里放开。
 _DO_NOT_TOUCH = (
-    "src/freshlatch/store/base.py",
     "src/freshlatch/gates/rule_gate.py",
     "src/freshlatch/roles/loop.py",
     "docs/evidence/patch-events/RESULT-Y.md",
