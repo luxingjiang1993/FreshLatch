@@ -136,7 +136,7 @@ def test_production_enums_not_extended_with_triad_buckets():
     for bucket in TRIAD_BUCKETS:
         assert bucket not in VALID_ACTIONS
         assert bucket not in DISPOSITIONS
-    # HumanLatch 仍只有 discard|renew
-    assert VALID_ACTIONS == ("discard", "renew")
+    # 评测三桶仍不进 HumanLatch。产品动词另有 disputed,不是这三桶。
+    assert VALID_ACTIONS == ("discard", "renew", "disputed")
     # disposition 仍只有三值包结论
     assert DISPOSITIONS == frozenset({"可发", "需补丁", "勿发"})

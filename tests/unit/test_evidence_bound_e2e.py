@@ -368,8 +368,8 @@ def test_v15_prelock_library_fixture_equivalent(tmp_path: Path):
 
 
 def test_v15_valid_actions_and_default_arm():
-    """HumanLatch 仍仅 discard|renew。生产默认是 hybrid+rerank。"""
-    assert VALID_ACTIONS == ("discard", "renew")
+    """补丁动词不进 HumanLatch。生产默认是 hybrid+rerank。disputed 是人审台账动词。"""
+    assert VALID_ACTIONS == ("discard", "renew", "disputed")
     assert "confirm_patch" not in VALID_ACTIONS
     assert PRODUCTION_RETRIEVAL_MODE == "hybrid+rerank"
 

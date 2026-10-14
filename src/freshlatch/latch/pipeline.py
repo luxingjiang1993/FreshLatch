@@ -2,6 +2,8 @@
 
 图形状(§5.5):START → prepare_review → await_review(interrupt) → execute → END。
 - 一轮复验 = 一个 thread_id(`reverify-round-{ts}`),轮次级单 interrupt,resume 值 = 整个决定列表。
+- 决定列表保留 discard / renew,并接受 disputed。disputed 只在 execute 落 latch_log。
+- 再打开 disputed 走 reopen_disputed,读台账,不恢复 Agent 循环,不做 time-travel。
 - interrupt 前代码幂等、零副作用;全部落档副作用在 execute(= gates/human_latch.apply_decisions)。
 - 重跑 = 人点按钮 → 新 thread(`reverify-{claim_id}-{ts}`)单主张迷你复验(Lead+规则闸),
   结果挂 rerun_log 时间线;即使 Lead 判 fresh,规则闸查作废名单强制打回。
@@ -18,7 +20,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Callable, TypedDict
 
-from freshlatch.gates.human_latch import apply_decisions
+from freshlatch.gates.human_latch import apply_decisions, read_disputed_reopen
 from freshlatch.models import Claim
 
 CHECKPOINT_KEEP = 5  # 同一主张保留的最近 thread 数(ADR-0006 §9)
@@ -198,6 +200,13 @@ class HumanLatch:
             graph = self._graph(saver)
             result = graph.invoke(Command(resume=decisions), self._config(thread_id))
         return result.get("results", [])
+
+    def reopen_disputed(self, claim_id: str) -> dict:
+        """再打开 disputed 结论与审计轨迹。
+
+        只读 latch_log。不 invoke 图,不调用 Runner,不写冻结 gold / floors。
+        """
+        return read_disputed_reopen(self.store, claim_id)
 
     def review_state(self, thread_id: str) -> dict | None:
         """进程重启后查询 thread 是否还在等人(只看 get_state,不恢复;#11 §5.10)。"""

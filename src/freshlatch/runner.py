@@ -31,7 +31,12 @@ from freshlatch.store.pipeline import (
     index_hit_scores,
     reset_hit_score_book,
 )
-from freshlatch.tools import FOCUS_DIMENSIONS
+from freshlatch.tools import (
+    FOCUS_DIMENSIONS,
+    REASON_TOOL_TIER_DENIED,
+    TOOL_TIER_2,
+    tool_tier_of,
+)
 
 # 运维开关。未设开关时用 PRODUCTION_RETRIEVAL_MODE（精排是 bge-reranker-base）。
 # set_retrieval_switch("bm25") 一键回退到 bm25,last_retrieval_mode 记 bm25,不记 bm25_fallback。
@@ -85,6 +90,8 @@ def parse_failure_replay(path: str | Path) -> dict:
     每个主张取最后一条 lead_loop_end 的 evidence_ids、grade、retry_count。
     reason_code 只保留 ABSTENTION_REASONS 里的符号,调用卫生码不充当拒答原因。
     工具步是文件顺序上的 lead_step。不执行 LangGraph time-travel。
+    只读扩展:hits_empty 记 retrieve 是否空命中;tool_tier_2_denials 只抄
+    tool_tier_2 且 reason_code 为 tool_tier_denied 的拒绝观察。不另造事件类型。
     """
     trajectory = Path(path)
     claims: dict[str, dict] = {}
@@ -100,6 +107,8 @@ def parse_failure_replay(path: str | Path) -> dict:
                 "grade": None,
                 "retry_count": None,
                 "reason_code": None,
+                "hits_empty": None,
+                "tool_tier_2_denials": [],
             }
             claims[claim_id] = row
             order.append(claim_id)
@@ -118,16 +127,91 @@ def parse_failure_replay(path: str | Path) -> dict:
         row = bucket(claim_id)
         if event.get("type") == "lead_step" and isinstance(event.get("tool"), str):
             row["tool_steps"].append(_replay_tool_step(event))
+            if event.get("tool") == "retrieve":
+                _note_retrieve_hits(row, event.get("result"))
+        elif event.get("type") == "retrieve":
+            _note_retrieve_hits(row, event)
+        denial = _replay_tool_tier_2_denial(event)
+        if denial is not None:
+            row["tool_tier_2_denials"].append(denial)
         if event.get("type") == "lead_loop_end":
             raw_ids = event.get("evidence_ids", [])
             row["evidence_ids"] = list(raw_ids) if isinstance(raw_ids, list) else []
             row["grade"] = event.get("grade")
             row["retry_count"] = event.get("retry_count")
             row["reason_code"] = named_abstention_reason(event.get("reason_code"))
+            # 结束事件上的非空 evidence 说明这次不是检索空。空列表本身不算空命中信号。
+            if _id_list_nonempty(row["evidence_ids"]):
+                row["hits_empty"] = False
     return {
         "path": str(trajectory),
         "claims": [claims[claim_id] for claim_id in order],
     }
+
+
+def _id_list_nonempty(values: object) -> bool:
+    if not isinstance(values, list):
+        return False
+    return any(isinstance(item, str) and item for item in values)
+
+
+def _note_retrieve_hits(row: dict, payload: object) -> None:
+    """根据 retrieve 事件或 retrieve 工具回执更新 hits_empty。非检索观察不改。"""
+    if not isinstance(payload, dict):
+        return
+    nonempty = False
+    empty = False
+    if "evidence_ids" in payload and isinstance(payload.get("evidence_ids"), list):
+        if _id_list_nonempty(payload.get("evidence_ids")):
+            nonempty = True
+        else:
+            empty = True
+    blocks = payload.get("blocks")
+    if isinstance(blocks, list):
+        if _id_list_nonempty([
+            block.get("evidence_id") if isinstance(block, dict) else None
+            for block in blocks
+        ]):
+            nonempty = True
+        else:
+            empty = True
+    hits = payload.get("hits")
+    if isinstance(hits, list):
+        if hits:
+            nonempty = True
+        else:
+            empty = True
+    elif hits == 0:
+        empty = True
+    elif isinstance(hits, int) and hits > 0:
+        nonempty = True
+    if nonempty:
+        row["hits_empty"] = False
+    elif empty and row.get("hits_empty") is not False:
+        row["hits_empty"] = True
+
+
+def _replay_tool_tier_2_denial(event: dict) -> dict | None:
+    """只抄 tool_tier_2 的拒绝观察。其它档与卫生码不进这个列表。"""
+    payloads = [event]
+    result = event.get("result")
+    if isinstance(result, dict):
+        payloads.append(result)
+    for payload in payloads:
+        if payload.get("reason_code") != REASON_TOOL_TIER_DENIED:
+            continue
+        tool = payload.get("tool") if isinstance(payload.get("tool"), str) else event.get("tool")
+        tier = payload.get("tool_tier")
+        if not isinstance(tier, str) or not tier:
+            tier = tool_tier_of(tool) if isinstance(tool, str) else None
+        if tier != TOOL_TIER_2:
+            continue
+        return {
+            "tool": tool if isinstance(tool, str) else None,
+            "tool_tier": TOOL_TIER_2,
+            "reason_code": REASON_TOOL_TIER_DENIED,
+        }
+    return None
 
 
 def _replay_tool_step(event: dict) -> dict:

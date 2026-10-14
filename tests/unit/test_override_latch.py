@@ -61,8 +61,8 @@ def _rows(store: SQLiteStore, claim_id: str) -> list[dict]:
 
 
 def test_actions_remain_discard_or_renew():
-    """动词封闭集不变,不出现 override action。"""
-    assert VALID_ACTIONS == ("discard", "renew")
+    """discard/renew 仍在。disputed 不是 override action。"""
+    assert VALID_ACTIONS == ("discard", "renew", "disputed")
     assert "override" not in VALID_ACTIONS
 
 

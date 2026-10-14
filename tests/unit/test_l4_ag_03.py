@@ -1,19 +1,15 @@
 """L4-AG-03: 失败轨迹 JSONL 可确定性复放。
 
 夹具是脚本化假 LLM 与 Runner,不调用付费接口。
-人审图 latch/pipeline.py 不在本票改动范围内。
+复放仍不把 langgraph 引进 run_loop。人审 disputed 住 HumanLatch,不写进 runner。
 """
 
 from __future__ import annotations
 
 import ast
 import json
-import os
-import subprocess
 from pathlib import Path
 from types import SimpleNamespace
-
-import pytest
 
 from freshlatch.guardrails import Guardrails
 from freshlatch.models import Claim
@@ -276,45 +272,37 @@ def test_dump_does_not_add_replay_event_or_langgraph():
         assert modules, path.name
         assert not any("langgraph" in name for name in modules)
     assert PRODUCTION_RETRIEVAL_MODE == "hybrid+rerank"
-    assert "disputed" not in LATCH_PATH.read_text(encoding="utf-8")
+    latch_text = LATCH_PATH.read_text(encoding="utf-8")
+    assert "time_travel" not in latch_text
+    assert "run_loop" not in latch_text
 
 
-def _git_base_ref() -> str | None:
-    """解析对比基线。浅克隆没有 origin/main 时返回 None,不 fetch。"""
-    candidates = ["origin/main"]
-    extra = os.environ.get("GITHUB_BASE_REF", "").strip()
-    if extra:
-        candidates.append(f"origin/{extra}")
-    seen: list[str] = []
-    for ref in candidates:
-        if ref in seen:
-            continue
-        seen.append(ref)
-        probe = subprocess.run(
-            ["git", "rev-parse", "--verify", "--quiet", f"{ref}^{{commit}}"],
-            cwd=REPO,
-            capture_output=True,
-            text=True,
-        )
-        if probe.returncode == 0:
-            return ref
-    return None
+def test_latch_reopen_does_not_call_agent_loop():
+    """L4-B-05:人审图可再打开 disputed,复放仍不进 Agent 循环。"""
+    text = LATCH_PATH.read_text(encoding="utf-8")
+    assert "reopen_disputed" in text
+    assert "time_travel" not in text
+    assert "run_loop" not in text
+    loop_text = LOOP_PATH.read_text(encoding="utf-8")
+    runner_text = RUNNER_PATH.read_text(encoding="utf-8")
+    assert "disputed" not in loop_text
+    assert "disputed" not in runner_text
 
 
 def test_latch_pipeline_human_review_unchanged():
-    """验收 2:人审图职责不变。缺 base 时 skip,不把浅克隆当成失败。"""
-    base = _git_base_ref()
-    if base is None:
-        pytest.skip("origin/main 缺失,跳过 latch/pipeline.py diff")
-    diff = subprocess.run(
-        ["git", "diff", "--exit-code", base, "--", "src/freshlatch/latch/pipeline.py"],
-        cwd=REPO,
-        capture_output=True,
-        text=True,
-    )
-    if diff.returncode not in (0, 1):
-        pytest.skip(
-            "无法对 base 做 git diff,跳过人审图检查: " + (diff.stderr or "").strip()
-        )
-    assert diff.stdout.strip() == ""
-    assert diff.returncode == 0
+    """人审图仍不把 langgraph 引进 run_loop。disputed 再打开不走时间旅行。"""
+    text = LATCH_PATH.read_text(encoding="utf-8")
+    assert "reopen_disputed" in text
+    assert "time_travel" not in text
+    runner_text = RUNNER_PATH.read_text(encoding="utf-8")
+    loop_text = LOOP_PATH.read_text(encoding="utf-8")
+    for path, source in ((RUNNER_PATH, runner_text), (LOOP_PATH, loop_text)):
+        tree = ast.parse(source)
+        modules: list[str] = []
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                modules.extend(alias.name for alias in node.names)
+            elif isinstance(node, ast.ImportFrom) and node.module:
+                modules.append(node.module)
+        assert modules, path.name
+        assert not any("langgraph" in name for name in modules)

@@ -292,7 +292,8 @@ def test_human_verbs_status_enum_and_no_role_names(tmp_path, monkeypatch):
         assert 'id="view-craftsman" class="on"' in html
         for role in _ROLE_NAMES:
             assert role not in html
-        assert "disputed" not in html
+        assert "disputed" not in set(get_args(Status))
+        assert "action:'disputed'" in html
         assert "action: 'discard'" in html or 'action: "discard"' in html
         assert "action:'renew'" in html or "action: 'renew'" in html or 'action:"renew"' in html
         assert "作废" in html

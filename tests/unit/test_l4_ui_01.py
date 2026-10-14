@@ -42,7 +42,7 @@ _DO_NOT_TOUCH = (
     "data/eval/cite_sentence.json",
     "data/eval/temporal_new_over_old.json",
     "data/eval/gold.json",
-    "src/freshlatch/latch/pipeline.py",
+    # L4-B-05 扩展人审图的 disputed。冻结 gold / PREREG 仍在本列表。
 )
 _ROLE_NAMES = ("Lead", "Critic", "Auditor")
 
@@ -165,7 +165,12 @@ def test_ui_audit_shows_score_and_reason(client, tmp_path):
     assert 'class="badge verified"' not in html
     assert 'class="badge partial"' not in html
     assert 'class="badge abstain"' not in html
-    assert "disputed" not in html
+    buckets = _section(html, "audit-failure-buckets")
+    assert "检索空" in buckets
+    assert "grade 不够" in buckets
+    assert "tool_tier_2 拒" in buckets
+    assert "is-active" not in buckets
+    assert ">失败<" not in buckets
 
 
 def test_ui_worker_no_role_names(client):
@@ -182,7 +187,7 @@ def test_ui_worker_no_role_names(client):
     assert "续命" in html
     assert "action: 'discard'" in html or 'action: "discard"' in html
     assert "action:'renew'" in html or "action: 'renew'" in html or 'action:"renew"' in html
-    assert "disputed" not in html
+    assert "action:'disputed'" in html
 
 
 def test_ui_audit_path_only_no_fake_score(client, tmp_path):
