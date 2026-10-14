@@ -142,6 +142,14 @@ _Avoid_: 证据链接、出处编号、chunk_id(对外)
 retrieve 按离散快照时点 `as_of ∈ {T0,T1}`(及可选 `source_type` / `doc_version`)收窄语料的过滤;不是日历生效/失效窗。日历时间窗不进本期检索契约。
 _Avoid_: 时间窗(含糊)、effective_from、expires_at、日历过滤
 
+**检索充分性 (retrieve sufficiency)**:
+一次 retrieve 观察上的封闭标签:`sufficient` | `insufficient`。该观察里至少一条 `evidence_id` 以 `@T1` 结尾为 `sufficient`;零块或没有 `@T1` 块为 `insufficient`。不是相关度分,不是分类器,不联网补证。
+_Avoid_: 相关度、CRAG grade、置信度
+
+**insufficient_evidence**:
+检索观察不足时的拒因码。本轮未见可引用的 `@T1` 块,不得写 `fresh`。规则闸「无 `t1_evidence_ids` 不得 fresh」(`NO_T1_EVIDENCE`)仍在,且不放宽;本码把这次拒答前移到检索观察。
+_Avoid_: 未知、缺口文案、把本码写成闸错误码 `NO_T1_EVIDENCE`
+
 **主张查询变换 (claim→query transform)**:
 检索入口把主张(及可选登记维度/`focus` 封闭枚举映射)变成 retrieve 的 `query` 的确定性/可配变换;评测可对比变换前后召回。Lead/Critic 等角色不得自由改写检索串。
 _Avoid_: Lead 改写查询、query rewrite(Agent 品味)、HyDE(未拍板前)
