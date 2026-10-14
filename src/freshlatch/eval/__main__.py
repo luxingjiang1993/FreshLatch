@@ -1,4 +1,4 @@
-"""CLI:`python -m freshlatch.eval run|control|control-c|report|quality-gate`(§4.1)。
+"""CLI:`python -m freshlatch.eval run|control|control-c|report|quality-gate|arm-table`(§4.1)。
 
 run --gold data/eval/gold.json [--runs N]   金标对账(LLM,手动/milestone 触发,不进 CI)
 control                                      无工具假绿对照(旧仪器;判 alive = 假绿,对照成立)
@@ -97,6 +97,26 @@ def build_parser(pack: PackPaths | None = None) -> argparse.ArgumentParser:
         help="预注册文件，冻结路径为 docs/evidence/quality-gate/PREREG.md",
     )
 
+    p_arm = sub.add_parser(
+        "arm-table",
+        help="同 pin、同 gold 的 Recall@k / MRR 分臂表（小夹具，零 LLM）",
+    )
+    p_arm.add_argument(
+        "--gold",
+        default="tests/eval/fixtures/l4_ev_01_arm_gold.json",
+        help="固定小夹具。不读 224 题，不读 data/eval/gold.json",
+    )
+    p_arm.add_argument(
+        "--out",
+        default="docs/evidence/l4-ev-01-arm-table",
+        help="写出 arm-table.md 与 arm-table.json 的目录",
+    )
+    p_arm.add_argument(
+        "--pin",
+        default=None,
+        help="写入表内的 code_pin。缺省则读 git HEAD",
+    )
+
     return ap
 
 
@@ -109,6 +129,26 @@ def main(argv: list[str] | None = None) -> None:
 
         code = run_quality_gate(offline=bool(args.offline), prereg=args.prereg)
         raise SystemExit(code)
+
+    if args.cmd == "arm-table":
+        from freshlatch.eval.retrieve_eval import run_arm_metric_table
+
+        try:
+            payload = run_arm_metric_table(
+                gold_path=Path(args.gold),
+                out_dir=Path(args.out),
+                code_pin=args.pin,
+            )
+        except ValueError as exc:
+            print(str(exc), file=sys.stderr)
+            raise SystemExit(1) from exc
+        print(
+            f"arm-table n={payload['n']} k={payload['k']} "
+            f"arms={len(payload['rows'])} pin={payload['code_pin']}"
+        )
+        print(f"markdown: {payload['markdown_path']}")
+        print(f"json: {payload['json_path']}")
+        return
 
     if args.cmd == "report":
         raw = json.loads(Path(args.raw_json).read_text(encoding="utf-8"))
