@@ -48,7 +48,14 @@ from freshlatch.roles.retrieve_sufficiency import (
     may_continue_fresh_write,
 )
 from freshlatch.runner import ClaimDecision, RunContext
-from freshlatch.tools import FOCUS_DIMENSIONS, LEAD_TOOLS_W3, optional_tenant_id, tool_specs
+from freshlatch.tools import (
+    FOCUS_DIMENSIONS,
+    LEAD_TOOLS_W3,
+    REASON_ILLEGAL_DIMENSION,
+    illegal_call_payload,
+    optional_tenant_id,
+    tool_specs,
+)
 
 LEAD_PERSONA = """你是 Lead Reverifier,FreshLatch 的复验主官。你的任务是把一条已签发主张从「曾经为真」改成「现在仍可复验」。
 
@@ -216,8 +223,11 @@ class LeadReverifier:
         self.ctx.lead_steps_used = loop.steps_used
         self.decision.dimension_objection = self._objection  # ADR-0012:未清异议随判定移交闸侧挂卡
         self.ctx.emit({"type": "lead_loop_end", "claim_id": self.claim.claim_id,
-                       "steps_used": loop.steps_used, "finished": loop.finished})
-        if not self.decision.reason and self.decision.status == "unknown":
+                       "steps_used": loop.steps_used, "finished": loop.finished,
+                       "failed": loop.failed, "failure_reason": loop.failure_reason})
+        if loop.failed and self.decision.status == "unknown" and not self.decision.reason:
+            self.decision.reason = f"非法调用自纠耗尽({loop.failure_reason}),fail-closed"
+        elif not self.decision.reason and self.decision.status == "unknown":
             self.decision.reason = "证据不足,未下结论(unknown)"
         if not self.decision.reason:
             # fresh 判定模型通常把理由写在工具调用前的 assistant 文本里,抓回作落档理由
@@ -506,8 +516,12 @@ class LeadReverifier:
         # 非法值整 call 拒绝、回列词表;每次重试消耗 Lead 步数预算(循环每轮计一步)。
         dimension = args.get("dimension")
         if dimension not in FOCUS_DIMENSIONS:
-            return {"error": "dimension 只能是 %s 之一;收到: %r"
-                              % ("/".join(FOCUS_DIMENSIONS), dimension)}
+            # 整 call 拒绝并回列词表。reason_code 与循环层非法调用同一形状,不落判定。
+            return illegal_call_payload(
+                reason_code=REASON_ILLEGAL_DIMENSION,
+                error="dimension 只能是 %s 之一;收到: %r"
+                      % ("/".join(FOCUS_DIMENSIONS), dimension),
+            )
         # ADR-0012 受理层维度预检(#27):机械跨检先于 Auditor 触发,调闸层同一纯函数
         # (单一真相不复制)。登记维度值不进错误文案(ADR-0011 红线);打回不落判定、
         # 零 Auditor 调用——#26 的同错确认(dimension_match=true)不再喂给 Lead。

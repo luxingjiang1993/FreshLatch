@@ -30,7 +30,7 @@ T0_ONLY_ID = "fix-memo#p1@T0"
 # L4-RAG-03 允许给 Chunk 加可选字段。生产臂字面量不在本表里放开。
 _DO_NOT_TOUCH = (
     "src/freshlatch/gates/rule_gate.py",
-    "src/freshlatch/roles/loop.py",
+    # L4-FC-01 起 loop.py 承载非法调用自纠,不再列入未改路径。
     "docs/evidence/patch-events/RESULT-Y.md",
     "docs/evidence/patch-events/PREREG-Y.md",
     "docs/evidence/quality-gate/PREREG.md",

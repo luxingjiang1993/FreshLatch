@@ -162,6 +162,18 @@ _Avoid_: 金标引用集、全库 id、跨主张白名单
 传入的 evidence_id 不在本轮 TurnRegistry 时的拒因码。该 call 被拒绝,不写 `fresh`。轨迹与工具回执使用同一符号。不是 `insufficient_evidence`(那是本轮未见可引用的 `@T1` 块)。
 _Avoid_: `insufficient_evidence`、自由文本拒因、把 registry 外的 id 写成 fresh
 
+**unknown_tool**:
+模型发出的工具名不在本轮白名单时的拒因码。观察回给模型。与 `illegal_tool_args` 共用非法调用自纠预算(`ILLEGAL_CALL_REPAIR_BUDGET` = 2)。前 2 次回灌后循环继续;第 3 次非法调用 fail-closed,轨迹留下 reason code 与耗尽记录,不再请求模型,不抛 `UnknownToolGuard`。
+_Avoid_: 未分类异常拆循环、用步数软收尾冒充这次失败、把白名单外名字执行掉
+
+**illegal_tool_args**:
+工具名在白名单内,但参数未通过 schema 再验时的拒因码。覆盖缺必填、类型不符、多余字段、参数不是对象、参数 JSON 无法解析,以及不支持的调用类型。不执行该工具。自纠预算与 `unknown_tool` 共用。
+_Avoid_: `illegal_dimension`、把参数错误当成工具已执行、无限重试
+
+**illegal_dimension**:
+`mark_stale` 的 `dimension` 不在封闭六值枚举时的拒因码。整 call 拒绝并回列词表,不落判定,不触发 Auditor。这是业务再验,不是 JSON 类型错误,不占用非法调用自纠预算。
+_Avoid_: 默认填 `cost_model`、只改错误文案却落档、把本码写成 `illegal_tool_args`
+
 **CRAG grade (retrieve grade)**:
 一次 retrieve 观察上的封闭三态:`correct` | `incorrect` | `ambiguous`。挂在检索边,不在 Agent 循环里另算。夹具可在命中块上注入 `crag_grade`;无注入时的确定性规则只看 id 后缀:至少一条 `@T1` 为 `correct`,否则为 `incorrect`。`ambiguous` 只来自注入,意思是这份观察不够支持继续写判定。不是分类器,不联网,不读正文打分。轨迹紧凑记号为 `grade=correct` / `grade=incorrect` / `grade=ambiguous`。
 _Avoid_: 相关度分、LLM judge、置信度、把两条 T1 矛盾叫成 ambiguous

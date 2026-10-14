@@ -7,6 +7,8 @@ spawn_auditor 符号保留但 ADR-0009 废止:Auditor 走闸路径单轮判定,�
 
 from __future__ import annotations
 
+import json
+
 FOCUS_DIMENSIONS: tuple[str, ...] = (
     "competitor_pricing",   # 竞品价格:主张前提建立在竞品定价/价格对标数据上;
     "regulatory_stance",    # 监管口径:主张前提建立在监管政策/官方口径上;
@@ -136,6 +138,85 @@ def optional_tenant_id(args: dict) -> str | None:
 def tool_specs(names: list[str]) -> list[dict]:
     """按白名单取 OpenAI schema;白名单外的名字在本层就炸,不留给模型。"""
     return [_TOOL_DEFS[n] for n in names]
+
+
+# -- 非法调用拒因(A-FC-01)------------------------------------------------------
+# 循环把这些码回灌给模型。自纠预算在 run_loop,不在本模块。
+
+REASON_UNKNOWN_TOOL = "unknown_tool"
+REASON_ILLEGAL_TOOL_ARGS = "illegal_tool_args"
+REASON_ILLEGAL_DIMENSION = "illegal_dimension"
+
+# schema 向模型声明必填,但既有受理函数已经接受缺省。循环层不再因此拒绝。
+# mark_stale.claim_id: Critic 签名与受理函数都不读它;Lead 缺省仍由受理函数整 call 拒绝。
+_RUNTIME_OPTIONAL_REQUIRED = {
+    ("mark_stale", "claim_id"),
+}
+
+_JSON_TYPE_CHECKS = {
+    "string": lambda value: isinstance(value, str),
+    "array": lambda value: isinstance(value, list),
+    "object": lambda value: isinstance(value, dict) and not isinstance(value, list),
+    "number": lambda value: isinstance(value, (int, float)) and not isinstance(value, bool),
+    "integer": lambda value: isinstance(value, int) and not isinstance(value, bool),
+    "boolean": lambda value: isinstance(value, bool),
+}
+
+
+def illegal_call_payload(*, reason_code: str, error: str) -> dict:
+    """非法调用回给模型的观察。reason_code 与 error 同时在场。"""
+    return {"error": error, "reason_code": reason_code}
+
+
+def parse_tool_arguments(raw: str | None) -> tuple[dict | None, str | None]:
+    """把工具参数 JSON 解析成对象。失败时返回中文错误,不抛给循环拆掉运行。"""
+    text = raw if raw else "{}"
+    try:
+        parsed = json.loads(text)
+    except json.JSONDecodeError as exc:
+        return None, f"工具参数不是合法 JSON: {exc.msg}"
+    if not isinstance(parsed, dict):
+        return None, f"工具参数必须是对象,收到: {type(parsed).__name__}"
+    return parsed, None
+
+
+def tool_schema_error(spec: dict, args: dict) -> str | None:
+    """对照已发给模型的 JSON schema 再验。合法返回 None,不执行工具。
+
+    只验必填、声明过的类型、additionalProperties=false。
+    业务枚举(如 dimension)仍由工具处理函数整 call 拒绝。
+    """
+    params = spec["function"]["parameters"]
+    properties = params.get("properties") or {}
+    required = list(params.get("required") or [])
+    name = spec["function"]["name"]
+    if params.get("additionalProperties") is False:
+        extra = [key for key in args if key not in properties]
+        if extra:
+            return f"非法参数字段: {extra};允许: {sorted(properties)}"
+    missing = [
+        key for key in required
+        if key not in args and (name, key) not in _RUNTIME_OPTIONAL_REQUIRED
+    ]
+    if missing:
+        return f"缺少必填参数: {missing}"
+    for key, value in args.items():
+        prop = properties.get(key)
+        if not isinstance(prop, dict):
+            continue
+        expected = prop.get("type")
+        if not isinstance(expected, str):
+            continue
+        check = _JSON_TYPE_CHECKS.get(expected)
+        if check is None:
+            continue
+        if not check(value):
+            return f"参数 {key} 类型应为 {expected},收到: {type(value).__name__}"
+        items = prop.get("items") if expected == "array" else None
+        item_type = items.get("type") if isinstance(items, dict) else None
+        if item_type == "string" and any(not isinstance(item, str) for item in value):
+            return f"参数 {key} 的元素必须是字符串"
+    return None
 
 
 # -- 角色白名单(阶段挂载视图)----------------------------------------------------
