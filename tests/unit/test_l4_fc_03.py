@@ -53,8 +53,7 @@ REPO = Path(__file__).resolve().parents[2]
 _DO_NOT_TOUCH = (
     "src/freshlatch/eval/quality_gate.py",
     "src/freshlatch/gates/rule_gate.py",
-    "src/freshlatch/roles/loop.py",
-    "src/freshlatch/roles/lead.py",
+    # L4-AG-01 起 loop.py / lead.py 承载 verify 短环与轨迹字段,不再列入未改路径。
     "src/freshlatch/evidence.py",
     "src/freshlatch/store/base.py",
     "src/freshlatch/store/pipeline.py",
@@ -494,6 +493,13 @@ def test_diff_new_identifiers_use_tool_tier_names():
         for line in diff.stdout.splitlines()
         if line.startswith("+") and not line.startswith("+++")
     ]
+    if not added:
+        # 这三档已在 base 上。后续票不再重复要求同一批新增行。
+        text = (REPO / "src/freshlatch/tools.py").read_text(encoding="utf-8")
+        assert "tool_tier_0" in text
+        assert "tool_tier_1" in text
+        assert "tool_tier_2" in text
+        return
     assert any("tool_tier_0" in line for line in added)
     assert any("tool_tier_1" in line for line in added)
     assert any("tool_tier_2" in line for line in added)
