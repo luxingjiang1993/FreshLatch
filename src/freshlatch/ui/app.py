@@ -56,9 +56,11 @@ from freshlatch.publish_hook import (  # noqa: E402
     checksums_fresh,
 )
 from freshlatch.sheet import (  # noqa: E402
+    PATCH_VISIBILITY_FIELDS,
     UI_BADGE_ABSTAIN,
     UI_BADGE_PARTIAL,
     UI_BADGE_VERIFIED,
+    annotate_audit_patch_visibility,
     export_client_memo_gated,
     project_audit,
     project_claim,
@@ -215,8 +217,9 @@ def _ui_badge_rows() -> list[dict]:
 
 
 def _audit_for_ui() -> dict:
-    """审计投影。badges 与职人槽同一份只读列表。"""
+    """审计投影。badges 与职人槽同一份只读列表。补丁四列只读,不改检索。"""
     audit = project_audit(_state.get("trajectory"))
+    annotate_audit_patch_visibility(audit, _store())
     audit["badges"] = _ui_badge_rows()
     return audit
 
@@ -901,6 +904,22 @@ def _format_audit_score(value: float) -> str:
     return format(value, ".12g")
 
 
+def _patch_visibility_html(hit: dict) -> str:
+    """命中行上的 as_of / patch_id / valid_from / valid_to。空值写「无」。"""
+    esc = html.escape
+    parts: list[str] = []
+    for key in PATCH_VISIBILITY_FIELDS:
+        raw = hit.get(key)
+        shown = raw.strip() if isinstance(raw, str) and raw.strip() else ""
+        label = esc(shown) if shown else "无"
+        css = "hit-" + key.replace("_", "-")
+        parts.append(
+            f'<span class="{css}" data-{css}="{esc(shown, quote=True)}">'
+            f"{esc(key)} {label}</span>"
+        )
+    return " · ".join(parts)
+
+
 def _span_link(item: dict, role: str) -> str:
     """句锚链接。可见文本含 evidence id 与句 id。"""
     esc = html.escape
@@ -991,7 +1010,10 @@ def _render_audit_body(audit: dict) -> str:
                     any_number = True
                     parts.append(f"{arm} {_format_audit_score(float(value))}")
                 score_html = " · ".join(parts) if any_number else "分 无"
-            items.append(f"<li><code>{evidence_id}</code> · {score_html}</li>")
+            items.append(
+                f"<li><code>{evidence_id}</code> · {_patch_visibility_html(hit)}"
+                f" · {score_html}</li>"
+            )
         hits_html = "<ul>" + "".join(items) + "</ul>"
 
     attribution = audit.get("attribution_ids") or []

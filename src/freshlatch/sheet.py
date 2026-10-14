@@ -91,6 +91,8 @@ def project_audit(trajectory: str | Path | None) -> dict[str, Any]:
     字段:query、hits(含 scores)、attribution_ids、unknown_reason、badges、
     claim_spans(句 id 锚,支撑句与反对句分列)。
     scores 只抄 RAG-04 已有的 bm25 / dense / rrf / rerank;缺臂留空。
+    命中行若事件里已有 as_of / patch_id / valid_from / valid_to,原样抄上。
+    没有这些键时不补空键,避免改旧轨迹的命中字典。
     unknown_reason 只经由 parse_failure_replay,不另写 reason 拼写。
     文件不是轨迹 JSONL,或没有这些字段时,对应项为空,不编造分数。
     badges 是 UiBadge 只读列表,语义见 project_ui_badges;缺字段时为 []。
@@ -118,22 +120,32 @@ def project_audit(trajectory: str | Path | None) -> dict[str, Any]:
 
     queries: list[str] = []
     hit_scores: dict[str, dict[str, float | None] | None] = {}
+    hit_meta: dict[str, dict[str, str]] = {}
     hit_order: list[str] = []
 
     def add_query(value: object) -> None:
         if isinstance(value, str) and value.strip() and value not in queries:
             queries.append(value)
 
-    def add_hit(evidence_id: object, scores_raw: object) -> None:
+    def add_hit(
+        evidence_id: object,
+        scores_raw: object,
+        meta_raw: object = None,
+    ) -> None:
         if not isinstance(evidence_id, str) or not evidence_id:
             return
         copied = _copy_hit_scores(scores_raw)
+        incoming = _copy_visible_patch(meta_raw)
         if evidence_id not in hit_scores:
             hit_order.append(evidence_id)
             hit_scores[evidence_id] = copied
+            hit_meta[evidence_id] = incoming
             return
         if hit_scores[evidence_id] is None and copied is not None:
             hit_scores[evidence_id] = copied
+        stored = hit_meta.setdefault(evidence_id, {})
+        for key, value in incoming.items():
+            stored.setdefault(key, value)
 
     for event in events:
         if event.get("type") == "retrieve":
@@ -145,7 +157,7 @@ def project_audit(trajectory: str | Path | None) -> dict[str, Any]:
             if isinstance(raw_hits, list):
                 for row in raw_hits:
                     if isinstance(row, dict):
-                        add_hit(row.get("evidence_id"), row.get("scores"))
+                        add_hit(row.get("evidence_id"), row.get("scores"), row)
             ids = event.get("evidence_ids")
             if isinstance(ids, list):
                 for evidence_id in ids:
@@ -158,7 +170,7 @@ def project_audit(trajectory: str | Path | None) -> dict[str, Any]:
                 if isinstance(blocks, list):
                     for block in blocks:
                         if isinstance(block, dict):
-                            add_hit(block.get("evidence_id"), block.get("scores"))
+                            add_hit(block.get("evidence_id"), block.get("scores"), block)
             args = event.get("args")
             if isinstance(args, dict):
                 add_query(args.get("query"))
@@ -183,16 +195,84 @@ def project_audit(trajectory: str | Path | None) -> dict[str, Any]:
     parsed = bool(queries or hit_order or attribution or reason or claim_spans)
     out["parsed"] = parsed
     out["query"] = queries
-    out["hits"] = [
-        {"evidence_id": evidence_id, "scores": hit_scores[evidence_id]}
-        for evidence_id in hit_order
-    ]
+    hits: list[dict[str, Any]] = []
+    for evidence_id in hit_order:
+        row: dict[str, Any] = {
+            "evidence_id": evidence_id,
+            "scores": hit_scores[evidence_id],
+        }
+        extra = hit_meta.get(evidence_id) or {}
+        if extra:
+            row.update(extra)
+        hits.append(row)
+    out["hits"] = hits
     out["attribution_ids"] = attribution
     out["unknown_reason"] = reason
     out["claim_spans"] = claim_spans
     # 与审计字段分开算:只读徽章,不回写 status。
     out["badges"] = project_ui_badges(path)
     return out
+
+
+# 审计命中行展示的四列。过滤仍走 filter_patch_metadata,这里只读。
+PATCH_VISIBILITY_FIELDS = ("as_of", "patch_id", "valid_from", "valid_to")
+
+
+def _copy_visible_patch(raw: object) -> dict[str, str]:
+    """事件里已经写出的非空补丁列。缺键或空白不补空字符串。"""
+    if not isinstance(raw, dict):
+        return {}
+    copied: dict[str, str] = {}
+    for key in PATCH_VISIBILITY_FIELDS:
+        value = raw.get(key)
+        if isinstance(value, str) and value.strip():
+            copied[key] = value.strip()
+    return copied
+
+
+def _chunk_patch_fields(store: RetrievalStore, evidence_id: object) -> dict[str, str | None]:
+    """按 evidence_id 读库内块。不调用 retrieve,不收窄候选池。"""
+    from freshlatch.evidence_id import parse_evidence_id
+    from freshlatch.store.pipeline import meta_text
+
+    empty: dict[str, str | None] = {key: None for key in PATCH_VISIBILITY_FIELDS}
+    parsed = parse_evidence_id(evidence_id)
+    if parsed is None:
+        return empty
+    doc_id, anchor, as_of = parsed
+    empty["as_of"] = as_of
+    chunk = store.get_chunk(doc_id, anchor, as_of=as_of)
+    if chunk is None:
+        return empty
+    return {
+        "as_of": meta_text(chunk.as_of) or as_of,
+        "patch_id": meta_text(chunk.patch_id),
+        "valid_from": meta_text(chunk.valid_from),
+        "valid_to": meta_text(chunk.valid_to),
+    }
+
+
+def annotate_audit_patch_visibility(audit: dict[str, Any], store: RetrievalStore) -> dict[str, Any]:
+    """给审计命中补上 as_of / patch_id / valid_from / valid_to。
+
+    轨迹里已有的非空值保留。缺的列从库内块读。库里也没有时,
+    as_of 用证据主键的快照后缀,其余三列为 None,界面显示「无」。
+    不改检索,不改 Claim.status。
+    """
+    hits = audit.get("hits")
+    if not isinstance(hits, list):
+        return audit
+    for hit in hits:
+        if not isinstance(hit, dict):
+            continue
+        looked = _chunk_patch_fields(store, hit.get("evidence_id"))
+        for key in PATCH_VISIBILITY_FIELDS:
+            current = hit.get(key)
+            if isinstance(current, str) and current.strip():
+                hit[key] = current.strip()
+                continue
+            hit[key] = looked.get(key)
+    return audit
 
 
 def project_ui_badges(

@@ -159,7 +159,7 @@ retrieve 按离散快照时点 `as_of ∈ {T0,T1}`(及可选 `source_type` / `do
 _Avoid_: 把 `as_of` 当成日历窗、用 `doc_version` 充当补丁身份、effective_from、expires_at
 
 **补丁元数据过滤 (patch metadata filter)**:
-在 BM25、dense 召回以及 RRF 之前,按块上可选的 `patch_id`、`valid_from`、`valid_to` 收窄候选池。查询未给 `patch_id` 与 `valid_at`,或块上这三个字段皆空时,本过滤器是空操作,候选 id 序列与未加字段时相同。指定 `patch_id` 时只剔除 `patch_id` 非空且不相等的块。指定 `valid_at` 时只对写了边界的块做闭区间比较,日期文本用 `YYYY-MM-DD`。不复用 `doc_version`。不改 `as_of` 的 T0/T1 WHERE。
+在 BM25、dense 召回以及 RRF 之前,按块上可选的 `patch_id`、`valid_from`、`valid_to` 收窄候选池。查询未给 `patch_id` 与 `valid_at`,或块上这三个字段皆空时,本过滤器是空操作,候选 id 序列与未加字段时相同。指定 `patch_id` 时只剔除 `patch_id` 非空且不相等的块。指定 `valid_at` 时只对写了边界的块做闭区间比较,日期文本用 `YYYY-MM-DD`。不复用 `doc_version`。不改 `as_of` 的 T0/T1 WHERE。审计命中行只读展示 `as_of`、`patch_id`、`valid_from`、`valid_to`;空值显示「无」,不另开过滤路径。
 _Avoid_: 语义分乘时间分、训练型时序臂、把本过滤说成注册指标变化、用 `doc_version` 过滤补丁
 
 **检索充分性 (retrieve sufficiency)**:
