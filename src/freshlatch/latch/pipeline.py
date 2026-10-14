@@ -56,6 +56,40 @@ class LatchRound:
         return self.thread_id is not None
 
 
+# 写观测放行的签发印记。只有本模块的 HumanLatch.approve_write_tool 持有。
+_GRANT_ISSUED = object()
+
+
+@dataclass(frozen=True)
+class ToolReviewGrant:
+    """本轮人审对一次写观测工具调用的放行。
+
+    不是新的人审动作,不写 latch_log,也不扩展 discard|renew。
+    直接构造不会通过签发印记检查。
+    """
+
+    tool_name: str
+    claim_id: str
+    issued: object = field(default=None, repr=False, compare=False)
+
+    def __post_init__(self) -> None:
+        if self.issued is not _GRANT_ISSUED:
+            raise HumanLatchError("写观测放行只能由人审路径签发")
+
+
+def human_review_allows_tool(approval: object | None, tool_name: str) -> bool:
+    """这次写观测是否已由本轮人审放行。
+
+    只认 ToolReviewGrant,且工具名必须一致。
+    裸真值、字典、作废或续命的决定行都不放行。
+    """
+    if not isinstance(approval, ToolReviewGrant):
+        return False
+    if not isinstance(tool_name, str) or not tool_name:
+        return False
+    return approval.tool_name == tool_name and bool(approval.claim_id)
+
+
 def _pending_item(c: Claim) -> dict:
     return {"claim_id": c.claim_id, "statement": c.statement,
             "status": c.status, "reason": c.reason}
@@ -176,6 +210,25 @@ class HumanLatch:
             return None
         return {"thread_id": thread_id, "next": list(snap.next),
                 "pending": (snap.values or {}).get("pending", [])}
+
+    def approve_write_tool(self, tool_name: str, *, claim_id: str) -> ToolReviewGrant:
+        """在既有待审轮次上放行一次写观测工具。
+
+        eval 模式不签发。主张不在本轮待审清单不签发。
+        只接受 tool_tier_1。读工具不必走这里;禁档不能靠本方法放行。
+        """
+        from freshlatch.tools import TOOL_TIER_1, tool_tier_of
+
+        if self.mode == "eval":
+            raise HumanLatchError("eval 模式代码级跳过 HumanLatch(ADR-0006 §7)")
+        if claim_id not in self._pending_ids:
+            raise HumanLatchError("主张不在本轮待审清单,写观测不得放行")
+        if not isinstance(tool_name, str) or not tool_name.strip():
+            raise HumanLatchError("写观测放行必须带工具名")
+        name = tool_name.strip()
+        if tool_tier_of(name) != TOOL_TIER_1:
+            raise HumanLatchError(f"只有 {TOOL_TIER_1} 可以经人审放行,收到: {name}")
+        return ToolReviewGrant(name, claim_id, issued=_GRANT_ISSUED)
 
     # -- 重跑:单主张迷你复验(人点按钮触发,不自动;§5.3)------------------------------
 

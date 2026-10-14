@@ -174,6 +174,18 @@ _Avoid_: `illegal_dimension`、把参数错误当成工具已执行、无限重�
 `mark_stale` 的 `dimension` 不在封闭六值枚举时的拒因码。整 call 拒绝并回列词表,不落判定,不触发 Auditor。这是业务再验,不是 JSON 类型错误,不占用非法调用自纠预算。
 _Avoid_: 默认填 `cost_model`、只改错误文案却落档、把本码写成 `illegal_tool_args`
 
+**tool_tier_0**:
+工具权限档:读与检索。`retrieve`、`read_source`、`list_memories` 等无批即可调用。本档不等于 HumanLatch 的人审 L0(规则闸文首原词,语义不改)。
+_Avoid_: 用人审出口的名字称呼本档、把读工具说成需要作废或续命
+
+**tool_tier_1**:
+工具权限档:写观测。改主张、缺口或记忆标记的工具(`reverify_claim`、`mark_stale`、`mark_gap`、`flag_*`、`propose_quarantine` 等)必须经既有 HumanLatch 待审轮次放行。未批则拒绝,reason code 为 `tool_tier_denied`,并留下轨迹观察;不调用工具。本档不等于 HumanLatch 的人审 L0。
+_Avoid_: 未批仍执行、另开一套审批产品、静默放过
+
+**tool_tier_2**:
+工具权限档:生产臂与已禁调用。模型调用 fail-closed,不进入默认 `LEAD_TOOLS_W3`。人审放行也不能执行。本档不等于 HumanLatch 的人审 L0。
+_Avoid_: 挂进 Lead 默认白名单、用审批把禁档放行
+
 **CRAG grade (retrieve grade)**:
 一次 retrieve 观察上的封闭三态:`correct` | `incorrect` | `ambiguous`。挂在检索边,不在 Agent 循环里另算。夹具可在命中块上注入 `crag_grade`;无注入时的确定性规则只看 id 后缀:至少一条 `@T1` 为 `correct`,否则为 `incorrect`。`ambiguous` 只来自注入,意思是这份观察不够支持继续写判定。不是分类器,不联网,不读正文打分。轨迹紧凑记号为 `grade=correct` / `grade=incorrect` / `grade=ambiguous`。
 _Avoid_: 相关度分、LLM judge、置信度、把两条 T1 矛盾叫成 ambiguous

@@ -5,6 +5,18 @@
   (langgraph 均为函数内延迟导入,eval 路径零依赖)。
 """
 
-from freshlatch.latch.pipeline import HumanLatch, HumanLatchError, LatchRound
+from freshlatch.latch.pipeline import (
+    HumanLatch,
+    HumanLatchError,
+    LatchRound,
+    ToolReviewGrant,
+    human_review_allows_tool,
+)
 
-__all__ = ["HumanLatch", "HumanLatchError", "LatchRound"]
+__all__ = [
+    "HumanLatch",
+    "HumanLatchError",
+    "LatchRound",
+    "ToolReviewGrant",
+    "human_review_allows_tool",
+]
