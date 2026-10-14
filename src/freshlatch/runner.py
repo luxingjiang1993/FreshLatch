@@ -15,6 +15,7 @@ from freshlatch.guardrails import BUDGET_EXHAUSTED_MESSAGE, Guardrails
 from freshlatch.llm import DecodingParams, LLMClient
 from freshlatch.models import AsOf, Claim
 from freshlatch.roles.auditor import EVIDENCE_PACKET_SCHEMA_VERSION
+from freshlatch.roles.loop import named_abstention_reason
 from freshlatch.skills_loader import load_skill_body
 from freshlatch.store.base import (
     EXECUTABLE_RETRIEVAL_MODES,
@@ -76,6 +77,72 @@ def list_retrieve_zero_hits(events: list[dict]) -> list[dict]:
             "hits": 0,
         })
     return out
+
+
+def parse_failure_replay(path: str | Path) -> dict:
+    """从轨迹 JSONL 确定性读回失败复放。只读文件,不改 HumanLatch checkpoint。
+
+    每个主张取最后一条 lead_loop_end 的 evidence_ids、grade、retry_count。
+    reason_code 只保留 ABSTENTION_REASONS 里的符号,调用卫生码不充当拒答原因。
+    工具步是文件顺序上的 lead_step。不执行 LangGraph time-travel。
+    """
+    trajectory = Path(path)
+    claims: dict[str, dict] = {}
+    order: list[str] = []
+
+    def bucket(claim_id: str) -> dict:
+        row = claims.get(claim_id)
+        if row is None:
+            row = {
+                "claim_id": claim_id,
+                "tool_steps": [],
+                "evidence_ids": [],
+                "grade": None,
+                "retry_count": None,
+                "reason_code": None,
+            }
+            claims[claim_id] = row
+            order.append(claim_id)
+        return row
+
+    for line in trajectory.read_text(encoding="utf-8").splitlines():
+        text = line.strip()
+        if not text:
+            continue
+        event = json.loads(text)
+        if not isinstance(event, dict):
+            continue
+        claim_id = event.get("claim_id")
+        if not isinstance(claim_id, str) or not claim_id:
+            continue
+        row = bucket(claim_id)
+        if event.get("type") == "lead_step" and isinstance(event.get("tool"), str):
+            row["tool_steps"].append(_replay_tool_step(event))
+        if event.get("type") == "lead_loop_end":
+            raw_ids = event.get("evidence_ids", [])
+            row["evidence_ids"] = list(raw_ids) if isinstance(raw_ids, list) else []
+            row["grade"] = event.get("grade")
+            row["retry_count"] = event.get("retry_count")
+            row["reason_code"] = named_abstention_reason(event.get("reason_code"))
+    return {
+        "path": str(trajectory),
+        "claims": [claims[claim_id] for claim_id in order],
+    }
+
+
+def _replay_tool_step(event: dict) -> dict:
+    """工具步只抄事件上已有的复放字段。reason_code 非枚举成员则不抄。"""
+    step: dict = {"step": event.get("step"), "tool": event["tool"]}
+    if "evidence_ids" in event and isinstance(event["evidence_ids"], list):
+        step["evidence_ids"] = list(event["evidence_ids"])
+    if "grade" in event:
+        step["grade"] = event["grade"]
+    if "retry_count" in event:
+        step["retry_count"] = event["retry_count"]
+    code = named_abstention_reason(event.get("reason_code"))
+    if code:
+        step["reason_code"] = code
+    return step
 
 
 @dataclass
@@ -553,6 +620,8 @@ class Runner:
     ) -> None:
         """落盘轨迹 JSONL。
 
+        ctx.events 原样写入。失败复放所需的 evidence_ids、grade、retry_count、
+        reason_code 已在 lead_step / lead_loop_end 上,这里不改写、不另起事件类型。
         claim_final 生产终态字段集保持不变。若传入 i1_labels（评测挂标），
         在 claim_final **之后**追加 type=i1_eval_labels 行（字段名对齐 I1 JSONL），
         不把三分法写入 claim_final / 生产 status。
@@ -565,6 +634,7 @@ class Runner:
                                 "invalidation_list": sorted(self.ctx.invalidation_list),
                                 "soft_close_message": BUDGET_EXHAUSTED_MESSAGE},
                                ensure_ascii=False) + "\n")
+            # 失败路径字段随事件原样落盘,parse_failure_replay 只读这些行。
             for ev in self.ctx.events:
                 f.write(json.dumps(ev, ensure_ascii=False, default=str) + "\n")
             for c in claims:
