@@ -1,6 +1,6 @@
 ---
 name: reverify
-description: Lead Reverifier 的任务方法与教义:把已签发主张从「曾经为真」复验成「现在仍可复验」。由 Runner 在每次 Lead 会话启动时整份注入正文(半套渐进式披露:references 由循环内 read_source 按需读取)。加载时点:Lead Reverifier 被 spawn 时,每主张一次。
+description: Lead Reverifier 的任务方法与教义:把已签发主张从「曾经为真」复验成「现在仍可复验」。由 Runner 在每次 Lead 会话启动时整份注入 SKILL.md 正文。references 不进该注入,由 load_skill_reference 按 skills/{slug}/references/{name}.md 只读。加载时点:Lead Reverifier 被 spawn 时,每主张一次。
 metadata: 角色=Lead Reverifier;形态=裸 ReAct 循环 ≤18 步;输入=待复验主张 + 作废/隔离名单;输出=reverify_claim / mark_stale / mark_gap / finish_reverify;判定口径单一真相见 freshness_audit/references/verdict-rubric.md
 ---
 

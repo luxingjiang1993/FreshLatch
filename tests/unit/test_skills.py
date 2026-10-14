@@ -11,6 +11,7 @@ from pathlib import Path
 
 import pytest
 
+from freshlatch.skills_loader import load_skill_body, load_skill_reference
 from freshlatch.tools import (
     CRITIC_TOOLS, FOCUS_DIMENSIONS, LEAD_TOOLS_W3, AUDITOR_TOOLS, FORENSIC_TOOLS,
 )
@@ -125,3 +126,91 @@ def test_doctrine_correction_table_present(slug):
     assert "以工具层返回为准" in section.group(0) or "以代码" in section.group(0), (
         "对照表须注明错误文案以代码为准(文案唯一真相在代码)"
     )
+
+
+# -- L4-SK-03:references 承诺与加载器一致 ------------------------------------
+
+_FALSE_REFERENCE_CLAIM = "references 由循环内 read_source 按需读取"
+_REFERENCE_ONLY = "名单的存储真相是 SQLite"
+
+
+def test_reverify_frontmatter_matches_reference_loader():
+    """frontmatter 承诺的只读入口真能读到一个 reference,且不再把这件事交给 read_source。"""
+    text = (SKILLS_DIR / "reverify" / "SKILL.md").read_text(encoding="utf-8")
+    desc = _frontmatter(text)["description"]
+    assert _FALSE_REFERENCE_CLAIM not in text
+    assert "read_source" not in desc
+    assert "load_skill_reference" in desc
+    assert "skills/{slug}/references/{name}.md" in desc
+
+    got = load_skill_reference("reverify", "rerun-rules")
+    assert got and _REFERENCE_ONLY in got
+
+    body = load_skill_body("reverify")
+    assert body and _REFERENCE_ONLY not in body
+    assert "load_skill_reference" not in body
+    assert "load_skill_reference" not in LEAD_TOOLS_W3
+
+
+def test_load_skill_body_still_reads_only_skill_md(tmp_path):
+    """load_skill_body 只返回 SKILL.md 正文;reference 由另一函数读取。"""
+    skill = tmp_path / "reverify"
+    (skill / "references").mkdir(parents=True)
+    (skill / "SKILL.md").write_text(
+        "---\nname: reverify\ndescription: 夹具\n---\n\n正文标记\n",
+        encoding="utf-8",
+    )
+    (skill / "references" / "verdict-basis.md").write_text(
+        "引用哨兵\n", encoding="utf-8",
+    )
+
+    body = load_skill_body("reverify", skills_root=tmp_path)
+    assert body == "正文标记"
+    assert load_skill_reference("reverify", "verdict-basis", skills_root=tmp_path) == "引用哨兵"
+
+    empty = skill / "references" / "rerun-rules.md"
+    empty.write_text("  \n", encoding="utf-8")
+    assert load_skill_reference("reverify", "rerun-rules", skills_root=tmp_path) is None
+
+
+def test_load_skill_reference_rejects_symlink_escape(tmp_path):
+    """references 目录或文件指向 skills 根之外时,不读取。"""
+    skills_root = tmp_path / "skills"
+    skill = skills_root / "reverify"
+    skill.mkdir(parents=True)
+    outside = tmp_path / "escaped"
+    outside.mkdir()
+    (outside / "verdict-basis.md").write_text("外部哨兵", encoding="utf-8")
+    (skill / "references").symlink_to(outside)
+    assert load_skill_reference(
+        "reverify", "verdict-basis", skills_root=skills_root,
+    ) is None
+
+    (skill / "references").unlink()
+    ref_dir = skill / "references"
+    ref_dir.mkdir()
+    (ref_dir / "verdict-basis.md").symlink_to(outside / "verdict-basis.md")
+    assert load_skill_reference(
+        "reverify", "verdict-basis", skills_root=skills_root,
+    ) is None
+
+
+@pytest.mark.parametrize("slug,name", [
+    ("reverify", "../SKILL"),
+    ("reverify", "verdict-basis/../../etc"),
+    ("reverify", "rerun-rules.md"),
+    ("../skills", "rerun-rules"),
+    ("reverify", "no-such-ref"),
+    ("no_such_skill", "rerun-rules"),
+])
+def test_load_skill_reference_rejects_unsafe_or_missing(slug, name):
+    assert load_skill_reference(slug, name) is None
+
+
+def test_runner_default_skill_injection_unchanged():
+    """默认注入仍是三次 load_skill_body,不调用 reference 加载器。"""
+    src = (REPO_ROOT / "src/freshlatch/runner.py").read_text(encoding="utf-8")
+    assert "load_skill_reference" not in src
+    assert src.count('load_skill_body("reverify")') == 1
+    assert src.count('load_skill_body("devil_advocate")') == 1
+    assert src.count('load_skill_body("freshness_audit")') == 1
