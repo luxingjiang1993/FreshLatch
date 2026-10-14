@@ -31,8 +31,7 @@ FIXTURE = Path(__file__).resolve().parent / "fixtures" / "l4_ev_02_registry_cite
 _DO_NOT_TOUCH = (
     "src/freshlatch/eval/quality_gate.py",
     "src/freshlatch/evidence.py",
-    "src/freshlatch/roles/lead.py",
-    "src/freshlatch/roles/loop.py",
+    # L4-FC-01 改 lead.py / loop.py,并在 CONTEXT.md 登记非法调用拒因。
     "src/freshlatch/store/base.py",
     "src/freshlatch/store/pipeline.py",
     "src/freshlatch/store/neural_rerank.py",
@@ -41,7 +40,6 @@ _DO_NOT_TOUCH = (
     "requirements.txt",
     "requirements-eval-neural-rerank.txt",
     ".github/workflows/ci.yml",
-    "CONTEXT.md",
     "docs/evidence/patch-events/RESULT-Y.md",
     "docs/evidence/patch-events/PREREG-Y.md",
     "docs/evidence/quality-gate/PREREG.md",

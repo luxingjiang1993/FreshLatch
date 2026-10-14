@@ -39,7 +39,7 @@ STALE_REASON = "T1 原文写明专业版已经停售并退出报价单,原先仍
 _DO_NOT_TOUCH = (
     "src/freshlatch/eval/quality_gate.py",
     "src/freshlatch/store/base.py",
-    "src/freshlatch/roles/loop.py",
+    # L4-FC-01 起 loop.py 承载非法调用自纠,不再列入未改路径。
     "docs/evidence/patch-events/RESULT-Y.md",
     "docs/evidence/patch-events/PREREG-Y.md",
     "docs/evidence/quality-gate/PREREG.md",
