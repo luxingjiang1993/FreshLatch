@@ -49,9 +49,9 @@ Matt `/to-tickets` may create this file; `/enrich-tickets` fills **Agent Guards*
 - notes: 依赖 L4-RAG-01 的 `insufficient_evidence` 已在 main。本票拒因是另一枚码 `cite_outside_registry`。不依赖 FC-01
 
 ### Evidence *(after Matt `/implement`)*
-- typecheck: （实现后补）
-- tests: （实现后补）
-- paths: （实现后补）
+- typecheck: `python -m compileall -q src/freshlatch/evidence.py src/freshlatch/roles/lead.py` exit 0；`ruff check` 上述文件与 `tests/unit/test_l4_fc_cite.py` exit 0
+- tests: `pytest tests/unit/test_l4_fc_cite.py` 及相邻 lead/critic/sufficiency 回归 exit 0。离线质量闸 exit 0。G1 value=1.0；A1 recall value=0.42857142857142855；A1 precision value=0.6；T1 value=0.3333333333333333；R1 Recall@10 value=0.9732142857142857；R1 MRR@10 value=0.8381855867346939；各行 counted_as_pass=false
+- paths: `evidence.py` · `roles/lead.py` · `tests/unit/test_l4_fc_cite.py` · `CONTEXT.md` · `tasks/L4-FC-CITE.md` ok
 
 ## Handoff
-`L4-FC-CITE | 工单已落盘 | 实现前 | TurnRegistry + cite_outside_registry`
+`L4-FC-CITE | done | cite_outside_registry 拒 registry 外 id | 成功判定轨迹带 evidence_ids | 质量闸 token 未动`
