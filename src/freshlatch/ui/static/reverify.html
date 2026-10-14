@@ -15,6 +15,13 @@
  .claim.sel{outline:2px solid #0969da}
  .claim.voided{opacity:.55;background:#f0f0f2}
  .badge{font-size:12px;font-weight:600;margin-left:8px}
+ .badge.verified{background:#dcfce7;color:#166534;border-radius:999px;padding:1px 8px}
+ .badge.partial{background:#fef9c3;color:#854d0e;border-radius:999px;padding:1px 8px}
+ .badge.abstain{background:#fee2e2;color:#991b1b;border-radius:999px;padding:1px 8px}
+ /* 服务端槽给 TestClient 断言。可见徽章画在主张卡上,避免首屏再叠一条。 */
+ #craftsman-badges{position:absolute;width:1px;height:1px;margin:0;padding:0;overflow:hidden;
+                   clip:rect(0,0,0,0);white-space:nowrap;border:0}
+ #craftsman-badges:empty{display:none}
  .reason{font-size:13px;color:#57606a;margin-top:4px;white-space:pre-wrap}
  .ev{font-size:12px;margin-top:4px}
  .ev a{color:#0969da;cursor:pointer;text-decoration:none;margin-right:8px}
@@ -221,6 +228,7 @@
  <div id="claim-ledger-body">尚无人审作废/续命记录。</div>
  <button type="button" class="export-md" onclick="exportClaimLedgerMd()">导出台账 Markdown</button>
 </details>
+<div id="craftsman-badges" aria-hidden="true">__CRAFTSMAN_BADGES__</div>
 <main>
  <section id="claims"><p style="color:#57606a">加载中……</p></section>
  <section id="pane"><p style="color:#57606a">← 点击主张的证据 id,这里显示 T0/T1 原文并高亮锚点段落</p></section>
@@ -289,6 +297,7 @@ async function pollBudget(){
   try{
     const j = await (await fetch('/api/claims')).json();
     if(j.budget) renderBudget(j.budget);
+    if(j.audit) STATE.audit = j.audit;
     // 拉单路径会跑跨轮腐烂;同步主张状态,避免语料变更后卡片仍显示 fresh
     if(j.claims){ STATE.claims = j.claims; renderClaims(); }
   }catch(e){}
@@ -298,6 +307,7 @@ async function reloadClaimsFromServer(){
   // 打开/渲染复验单的统一拉单口:服务端 rot_claims 真写库后再投影
   const j = await (await fetch('/api/claims')).json();
   if(j.claims) STATE.claims = j.claims;
+  if(j.audit) STATE.audit = j.audit;
   if(j.latch) STATE.latch = j.latch;
   if(j.budget) renderBudget(j.budget);
   absorbDetailExtras(j);
@@ -380,14 +390,38 @@ function renderAuditMarkup(){
        +' temp='+esc(String(d.temperature))+' '+esc(String(d.recorded_at||''))+'</div>';
   }
   h += '<div style="margin-top:6px;color:#8250df">查询、命中、判定依据与未知原因只在审计视图展开;'
-     + '职人视图只用主张状态与作废/续命/重跑。</div>';
+     + '职人视图用主张状态、只读徽章与作废/续命/重跑。</div>';
   return h;
+}
+function uiBadgeHtml(badge){
+  // 只读三值。null 与其它字符串不渲染,避免把 status 词画成徽章。
+  if(badge!=="verified" && badge!=="partial" && badge!=="abstain") return "";
+  return '<span class="badge '+badge+'">'+badge+'</span>';
+}
+function renderCraftsmanBadgeSlot(){
+  const box = document.getElementById("craftsman-badges");
+  if(!box) return;
+  if(VIEW_MODE !== "craftsman"){
+    box.style.display = "none";
+    return;
+  }
+  box.style.display = "";
+  const rows = (STATE.audit && Array.isArray(STATE.audit.badges)) ? STATE.audit.badges : [];
+  let h = "";
+  for(const row of rows){
+    const span = uiBadgeHtml(row && row.badge);
+    if(!span) continue;
+    const cid = esc(String((row && row.claim_id) || ""));
+    h += '<div class="claim ui-badge-card" data-claim-id="'+cid+'"><b>'+cid+'</b>'+span+'</div>';
+  }
+  box.innerHTML = h;
 }
 function renderViewChrome(){
   const panel = document.getElementById("audit-panel");
   if(VIEW_MODE === "audit") panel.classList.add("visible");
   else panel.classList.remove("visible");
   document.getElementById("audit-body").innerHTML = renderAuditMarkup();
+  renderCraftsmanBadgeSlot();
 }
 
 async function boot(){
@@ -890,6 +924,7 @@ async function discardPatchDraft(cid){
   document.getElementById('status').textContent = '已丢弃改稿草案: '+cid;
 }
 function renderClaims(){
+  renderCraftsmanBadgeSlot();
   renderPackBadge();
   renderDispositionBar();
   renderT1Checksums();
@@ -919,6 +954,7 @@ function renderClaims(){
     h += '<div class="claim'+(c.voided?' voided':'')+'" id="c-'+c.claim_id+'" style="border-left-color:'+color+'" '
        + 'onclick="pickClaim(&quot;'+c.claim_id+'&quot;)">'
        + '<b>'+c.claim_id+'</b><span class="badge" style="color:'+color+'">'+label+'</span>';
+    if(VIEW_MODE === "craftsman") h += uiBadgeHtml(c.badge);
     if(c.voided) h += '<span class="badge" style="color:#8250df">'+BADGE.void[0]
                     + (c.voided_at?(' · '+esc(c.voided_at)):'') + '</span>';
     if(c.last_confirmed_at) h += '<span class="badge" style="color:#1a7f37">续命 · '

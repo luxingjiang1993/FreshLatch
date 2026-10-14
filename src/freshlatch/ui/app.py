@@ -56,9 +56,13 @@ from freshlatch.publish_hook import (  # noqa: E402
     checksums_fresh,
 )
 from freshlatch.sheet import (  # noqa: E402
+    UI_BADGE_ABSTAIN,
+    UI_BADGE_PARTIAL,
+    UI_BADGE_VERIFIED,
     export_client_memo_gated,
     project_audit,
     project_claim,
+    project_ui_badges,
 )
 from freshlatch.store.checksum import make_checksum_fn  # noqa: E402
 from freshlatch.gates.basis_rot import rot_claims  # noqa: E402
@@ -193,6 +197,67 @@ def _claim_to_dict(store: SQLiteStore, c) -> dict:
     return project_claim(store, c)
 
 
+_UI_BADGE_TOKENS = frozenset({
+    UI_BADGE_VERIFIED,
+    UI_BADGE_PARTIAL,
+    UI_BADGE_ABSTAIN,
+})
+_CRAFTSMAN_BADGES_TOKEN = "__CRAFTSMAN_BADGES__"
+
+
+def _ui_badge_rows() -> list[dict]:
+    """当前会话的只读 UiBadge。不改主张 status。"""
+    return project_ui_badges(
+        _state.get("trajectory"),
+        list(_state.get("claims") or []),
+    )
+
+
+def _audit_for_ui() -> dict:
+    """审计投影。badges 与职人槽同一份只读列表。"""
+    audit = project_audit(_state.get("trajectory"))
+    audit["badges"] = _ui_badge_rows()
+    return audit
+
+
+def _claims_for_ui(store: SQLiteStore) -> list[dict]:
+    """主张投影加只读 badge。不改 _claim_to_dict,导出对账仍与 project_claim 相等。"""
+    rows = [_claim_to_dict(store, claim) for claim in _state["claims"]]
+    by_id = {item["claim_id"]: item["badge"] for item in _ui_badge_rows()}
+    for row in rows:
+        row["badge"] = by_id.get(row["claim_id"])
+    return rows
+
+
+def _one_claim_for_ui(store: SQLiteStore, claim: Claim) -> dict:
+    row = _claim_to_dict(store, claim)
+    by_id = {item["claim_id"]: item["badge"] for item in _ui_badge_rows()}
+    row["badge"] = by_id.get(claim.claim_id)
+    return row
+
+
+def _render_craftsman_badges(rows: list[dict]) -> str:
+    """职人视图服务端徽章槽。只渲染三值;null 不占位。"""
+    parts: list[str] = []
+    for row in rows:
+        badge = row.get("badge")
+        if badge not in _UI_BADGE_TOKENS:
+            continue
+        claim_id = html.escape(str(row.get("claim_id") or ""))
+        parts.append(
+            '<div class="claim ui-badge-card" data-claim-id="'
+            + claim_id
+            + '"><b>'
+            + claim_id
+            + '</b><span class="badge '
+            + badge
+            + '">'
+            + badge
+            + "</span></div>"
+        )
+    return "".join(parts)
+
+
 def _source_label() -> str:
     """发前来源短标签(包 id + T1 入口;非编排角色名)。"""
     pack = ACTIVE_PACK
@@ -300,9 +365,9 @@ def api_claims() -> dict:
     extras = _detail_extras(store)
     return {
         "question": _state["question"],
-        "claims": [_claim_to_dict(store, c) for c in _state["claims"]],
+        "claims": _claims_for_ui(store),
         "trajectory": str(_state["trajectory"]) if _state["trajectory"] else None,
-        "audit": project_audit(_state.get("trajectory")),
+        "audit": _audit_for_ui(),
         "running": _state["running"],
         "latch": _state["latch"],
         # DEM-5:零命中告警投影;UI 只展示,不得据此改写 status
@@ -607,9 +672,9 @@ def api_reverify() -> JSONResponse:
     store = _store()
     extras = _detail_extras(store)
     return JSONResponse({
-        "claims": [_claim_to_dict(store, c) for c in _state["claims"]],
+        "claims": _claims_for_ui(store),
         "trajectory": str(result.trajectory_path),
-        "audit": project_audit(result.trajectory_path),
+        "audit": _audit_for_ui(),
         "retrieval_used": result.retrieval_used,
         "steps_by_claim": result.steps_by_claim,
         "decoding": result.decoding.__dict__,
@@ -662,7 +727,7 @@ def api_latch_decide(req: DecideRequest) -> JSONResponse:
     extras = _detail_extras(store)
     return JSONResponse({
         "results": results,
-        "claims": [_claim_to_dict(store, c) for c in _state["claims"]],
+        "claims": _claims_for_ui(store),
         "latch": _state["latch"],
         "run": run_row,
         "patch_events_written": len(patch_rows),
@@ -684,7 +749,7 @@ def api_latch_rerun(req: RerunRequest) -> JSONResponse:
         entry = _latch().rerun(claim)
     except HumanLatchError as e:
         return JSONResponse({"error": str(e)}, status_code=400)
-    return JSONResponse({"entry": entry, "claim": _claim_to_dict(_store(), claim)})
+    return JSONResponse({"entry": entry, "claim": _one_claim_for_ui(_store(), claim)})
 
 
 @app.get("/api/latch/status")
@@ -734,7 +799,7 @@ def api_patch_propose(req: ProposePatchRequest) -> JSONResponse:
     extras = _detail_extras(store)
     return JSONResponse({
         **result.to_dict(),
-        "claims": [_claim_to_dict(store, c) for c in _state["claims"]],
+        "claims": _claims_for_ui(store),
         **extras,
     })
 
@@ -775,7 +840,7 @@ def api_patch_confirm(req: ConfirmPatchRequest) -> JSONResponse:
     extras = _detail_extras(store)
     return JSONResponse({
         **result.to_dict(),
-        "claims": [_claim_to_dict(store, c) for c in _state["claims"]],
+        "claims": _claims_for_ui(store),
         "run": run_row,
         **extras,
     })
@@ -795,7 +860,7 @@ def api_patch_discard_draft(req: DiscardPatchDraftRequest) -> JSONResponse:
         "ok": True,
         "claim_id": req.claim_id,
         "discarded": discarded,
-        "claims": [_claim_to_dict(store, c) for c in _state["claims"]],
+        "claims": _claims_for_ui(store),
         **extras,
     })
 
@@ -899,7 +964,9 @@ def index(view: str = Query(default="")) -> str:
         page = page.replace('id="view-craftsman" class="on"', 'id="view-craftsman"')
         page = page.replace('id="view-audit"', 'id="view-audit" class="on"', 1)
         page = page.replace('id="audit-panel"', 'id="audit-panel" class="visible"', 1)
-    audit = project_audit(_state.get("trajectory"))
+    audit = _audit_for_ui()
+    badge_html = _render_craftsman_badges(audit["badges"]) if mode == "craftsman" else ""
+    page = page.replace(_CRAFTSMAN_BADGES_TOKEN, badge_html)
     return page.replace(_AUDIT_BODY_TOKEN, _render_audit_body(audit))
 
 

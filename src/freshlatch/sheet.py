@@ -77,14 +77,22 @@ def project_claim(store: RetrievalStore, claim: Claim) -> dict[str, Any]:
     }
 
 
+# 职人视图只读徽章。不是 Claim.status,也不写入主张。
+UI_BADGE_VERIFIED = "verified"
+UI_BADGE_PARTIAL = "partial"
+UI_BADGE_ABSTAIN = "abstain"
+# stale / void 已有机器结论,不套 partial。
+_UI_BADGE_SKIP_PARTIAL = frozenset({"stale", "void"})
+
+
 def project_audit(trajectory: str | Path | None) -> dict[str, Any]:
     """只读轨迹投影成审计面。不改闸,不改 Claim.status。
 
-    字段:query、hits(含 scores)、attribution_ids、unknown_reason。
+    字段:query、hits(含 scores)、attribution_ids、unknown_reason、badges。
     scores 只抄 RAG-04 已有的 bm25 / dense / rrf / rerank;缺臂留空。
     unknown_reason 只经由 parse_failure_replay,不另写 reason 拼写。
     文件不是轨迹 JSONL,或没有这些字段时,对应项为空,不编造分数。
-    badges 留给 L4-UI-02,本函数恒为空列表,不从轨迹里读徽章。
+    badges 是 UiBadge 只读列表,语义见 project_ui_badges;缺字段时为 []。
     """
     path_text = None if trajectory is None else str(trajectory)
     out: dict[str, Any] = {
@@ -175,7 +183,144 @@ def project_audit(trajectory: str | Path | None) -> dict[str, Any]:
     ]
     out["attribution_ids"] = attribution
     out["unknown_reason"] = reason
+    # 与审计字段分开算:只读徽章,不回写 status。
+    out["badges"] = project_ui_badges(path)
     return out
+
+
+def project_ui_badges(
+    trajectory: str | Path | None,
+    claims: list[Claim] | None = None,
+) -> list[dict[str, str]]:
+    """本轮轨迹(加可选主张状态)→ UiBadge 列表。不写 Claim.status。
+
+    verified: 本轮记录为 fresh,且 rule_gate 对同一 evidence id 与
+    auditor_verdict 放行绿灯(足以续验且未拒答)。
+    partial: 有本轮 evidence id,但够不上 verified,且不是拒答。
+    abstain: parse_failure_replay 的 reason_code 属于拒答族。拒答优先。
+    旧轨迹缺这些字段时不产生条目;调用方对缺主张保持 null,不编造。
+    """
+    if trajectory is None:
+        return []
+    path = Path(trajectory)
+    events = _load_audit_events(path)
+    if events is None:
+        return []
+    return _ui_badges_from_events(path, events, claims)
+
+
+def _ui_badges_from_events(
+    path: Path,
+    events: list[dict],
+    claims: list[Claim] | None,
+) -> list[dict[str, str]]:
+    from freshlatch.runner import parse_failure_replay
+
+    replay = parse_failure_replay(path)
+    reasons: dict[str, str] = {}
+    for row in replay.get("claims") or []:
+        claim_id = row.get("claim_id")
+        code = row.get("reason_code")
+        if isinstance(claim_id, str) and claim_id and isinstance(code, str) and code:
+            reasons[claim_id] = code
+
+    order: list[str] = []
+    evidence: dict[str, list[str]] = {}
+    recorded_status: dict[str, str] = {}
+    auditor: dict[str, str] = {}
+
+    def touch(claim_id: object) -> str | None:
+        if not isinstance(claim_id, str) or not claim_id:
+            return None
+        if claim_id not in evidence:
+            order.append(claim_id)
+            evidence[claim_id] = []
+        return claim_id
+
+    def add_id(claim_id: str, value: object) -> None:
+        if isinstance(value, str) and value and value not in evidence[claim_id]:
+            evidence[claim_id].append(value)
+
+    def add_ids(claim_id: str, values: object) -> None:
+        if not isinstance(values, list):
+            return
+        for value in values:
+            add_id(claim_id, value)
+
+    for event in events:
+        claim_id = touch(event.get("claim_id"))
+        if claim_id is None:
+            continue
+        kind = event.get("type")
+        if kind == "retrieve":
+            add_ids(claim_id, event.get("evidence_ids"))
+            raw_hits = event.get("hits")
+            if isinstance(raw_hits, list):
+                for hit in raw_hits:
+                    if isinstance(hit, dict):
+                        add_id(claim_id, hit.get("evidence_id"))
+        elif kind == "lead_step":
+            add_ids(claim_id, event.get("evidence_ids"))
+            if event.get("tool") == "retrieve":
+                result = event.get("result")
+                if isinstance(result, dict):
+                    blocks = result.get("blocks")
+                    if isinstance(blocks, list):
+                        for block in blocks:
+                            if isinstance(block, dict):
+                                add_id(claim_id, block.get("evidence_id"))
+        elif kind == "lead_loop_end":
+            add_ids(claim_id, event.get("evidence_ids"))
+        elif kind in ("claim_final", "claim_result"):
+            add_ids(claim_id, event.get("evidence_ids"))
+            recorded = event.get("status")
+            if isinstance(recorded, str) and recorded:
+                recorded_status[claim_id] = recorded
+            verdict = event.get("auditor_verdict")
+            if isinstance(verdict, str) and verdict:
+                auditor[claim_id] = verdict
+
+    memory = {claim.claim_id: claim for claim in (claims or [])}
+    badges: list[dict[str, str]] = []
+    for claim_id in order:
+        # 拒答族优先:即便主张状态仍是 fresh,也不得投影成 verified。
+        if reasons.get(claim_id):
+            badges.append({"claim_id": claim_id, "badge": UI_BADGE_ABSTAIN})
+            continue
+        ids = evidence.get(claim_id) or []
+        recorded = recorded_status.get(claim_id)
+        if recorded is None and claim_id in memory:
+            recorded = memory[claim_id].status
+        verdict = auditor.get(claim_id)
+        if recorded == "fresh" and _fresh_gate_allows(claim_id, ids, verdict):
+            badges.append({"claim_id": claim_id, "badge": UI_BADGE_VERIFIED})
+            continue
+        if ids and recorded not in _UI_BADGE_SKIP_PARTIAL:
+            badges.append({"claim_id": claim_id, "badge": UI_BADGE_PARTIAL})
+    return badges
+
+
+def _fresh_gate_allows(
+    claim_id: str,
+    evidence_ids: list[str],
+    auditor_verdict: str | None,
+) -> bool:
+    """只读调用 rule_gate。临时 Claim 不写回调用方的主张。"""
+    from freshlatch.gates.rule_gate import GateContext, GateDecision, rule_gate
+
+    probe = Claim(
+        claim_id=claim_id,
+        statement="",
+        status="unknown",
+        t1_evidence_ids=list(evidence_ids),
+    )
+    decision = GateDecision(
+        status="fresh",
+        t1_evidence_ids=list(evidence_ids),
+        auditor_verdict=auditor_verdict,
+    )
+    result = rule_gate(probe, decision, GateContext())
+    return bool(result.allowed and result.green)
 
 
 def _load_audit_events(path: Path) -> list[dict] | None:
