@@ -123,7 +123,8 @@ def _chunk(clause_id: str) -> Chunk:
         chunk_id=f"fix-memo-{clause_id}",
         clause_id=clause_id,
         title="备忘",
-        text=f"T1 原文确认条款 {clause_id} 仍可点回。",
+        # 主张含 299。span 里逐字带上同一数字,引用成功才不会被数字闸拒掉。
+        text=f"T1 原文确认条款 {clause_id} 定价仍为 299,仍可点回。",
         source_type="public",
         as_of="T1",
         doc_version="v1",
