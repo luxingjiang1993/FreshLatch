@@ -202,6 +202,10 @@ _Avoid_: `conflicting_evidence`、fresh、相关度阈值
 拒答原因的封闭枚举。轨迹事件上的 `reason_code` 只有落在这一份里才是拒答原因。成员与已经发出的码是同一符号:`insufficient_evidence`(本轮未见可引用的 `@T1`)、`cite_outside_registry`(引用不在本轮 TurnRegistry)、`grade_incorrect_exhausted`、`grade_ambiguous`。UI 只读这一份。自由文本可以留在 `error`,不能单独充当原因。
 _Avoid_: 另写平行拼写、把错误文案当成原因码、把 `unknown_tool` / `illegal_tool_args` / `illegal_dimension` / `NO_T1_EVIDENCE` 并进本枚举
 
+**失败轨迹可复放 (failure replay)**:
+失败运行的轨迹 JSONL 可确定性读回工具步、`evidence_ids`、`grade`、`retry_count` 与 abstention reason。人审仍用 HumanLatch checkpoint。不把 LangGraph time-travel 引进 `run_loop`。
+_Avoid_: 另造平行事件类型、把 time-travel 当默认复验、人审动词 `disputed`
+
 **hit 可测分 (hit scores)**:
 一次 retrieve 观察里每个 hit 的 `scores`,四个字段 `bm25`、`dense`、`rrf`、`rerank`。值是当次 BM25、余弦、RRF 与精排已经算出的数;该臂没算的字段为空。不进入排序,不改融合公式,也不当 fresh 阈值。
 _Avoid_: 单一相关度、CRAG grade、用这些分拟合通过线
