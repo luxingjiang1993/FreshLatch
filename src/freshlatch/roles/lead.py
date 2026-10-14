@@ -28,6 +28,7 @@ from freshlatch.gates.support_review import (
 from freshlatch.gates.rule_gate import (ERR_DIMENSION_CROSSCHECK_MISMATCH,
                                         dimension_crosscheck_mismatch)
 from freshlatch.models import Claim
+from freshlatch.claim_span import build_claim_span_event
 from freshlatch.numeric_gate import (
     REASON_NUMERIC_MISMATCH,
     check_verbatim_numbers,
@@ -418,13 +419,24 @@ class LeadReverifier:
         return payload
 
     def _emit_cite_judgment(self, status: str, evidence_ids: list[str]) -> None:
-        """成功判定写入轨迹:所用 evidence_id 列表。Runner._dump_trajectory 消费 ctx.events。"""
+        """成功判定写入轨迹:所用 evidence_id 列表。Runner._dump_trajectory 消费 ctx.events。
+
+        同一次另写 claim_span(句 id)。cite_registry_judgment 的字段保持原样。
+        """
+        copied = list(evidence_ids)
         self.ctx.emit({
             "type": "cite_registry_judgment",
             "claim_id": self.claim.claim_id,
             "status": status,
-            "evidence_ids": list(evidence_ids),
+            "evidence_ids": copied,
         })
+        self.ctx.emit(build_claim_span_event(
+            claim_id=self.claim.claim_id,
+            claim_text=self.claim.statement,
+            status=status,
+            evidence_ids=copied,
+            blocks=self._seen_blocks,
+        ))
 
     def _t_reverify_claim(self, args: dict) -> dict:
         status = args.get("status")

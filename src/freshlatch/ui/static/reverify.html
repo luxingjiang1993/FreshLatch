@@ -41,6 +41,11 @@
  .doc .clause{margin:8px 0;padding:6px 8px;border-radius:4px;cursor:pointer}
  .doc .clause:hover{background:#f6f8fa}
  .doc .clause.hit{background:#fff8c5;outline:2px solid #d4a72c}
+ a.span-support{color:#1a7f37;cursor:pointer;margin-right:6px}
+ a.span-oppose{color:#cf222e;cursor:pointer;margin-right:6px}
+ .claim-span-support,.claim-span-oppose{margin-top:2px}
+ .src-sentence.support-hit{background:#dafbe1;outline:2px solid #1a7f37}
+ .src-sentence.oppose-hit{background:#ffebe9;outline:2px solid #cf222e}
  mark{background:#fff8c5;padding:1px 3px;border-radius:3px}
  .asof{font-size:11px;color:#fff;background:#57606a;border-radius:4px;padding:1px 6px;margin-right:6px}
  .tabs button{padding:4px 12px;border:1px solid #d0d7de;background:#fff;cursor:pointer}
@@ -263,6 +268,8 @@ let T1SRC = {kind:'none', ready:false, paste_status:'none', synthetic:false,
              network_enabled:false, message:'', cards:[]};
 let PASTE_DRAFT_TEXT = '';  // 重绘三卡时保留粘贴框内容
 let CURRENT_ANCHOR = null;  // 用户在右栏当前选中的小节(手动选择优先于证据锚点)
+let CURRENT_SENTENCE = "";  // 句 id。空表示只点到条款,不涂句子
+let CURRENT_SPAN_ROLE = "";
 let PENDING_DECISIONS = []; // 本轮已选的人审决定(批量提交)
 let MODAL_CLAIM = null;
 let RENEW_CLAIM = null;
@@ -350,6 +357,51 @@ function auditScoreText(scores){
   }
   return any ? parts.join(' · ') : '分 无';
 }
+function spanLinkHtml(item, role){
+  // 可见文本是 evidence_id#句 id。点选走 openClaimSpan,不靠字符偏移。
+  const css = role === "support" ? "span-support" : "span-oppose";
+  const evidenceId = String(item.evidence_id || "");
+  const sentenceId = String(item.sentence_id || "");
+  const anchor = String(item.anchor || (evidenceId + "#" + sentenceId));
+  const text = String(item.text || "");
+  return '<a class="'+css+'" data-role="'+role+'" data-evidence-id="'+esc(evidenceId)
+    +'" data-sentence-id="'+esc(sentenceId)+'" href="#'+esc(anchor)
+    +'" onclick="openClaimSpan(this);return false;">'+esc(anchor)+'</a> '+esc(text);
+}
+function renderClaimSpans(audit){
+  const spans = (audit && Array.isArray(audit.claim_spans)) ? audit.claim_spans : [];
+  if(!spans.length) return '<div id="audit-claim-spans"><b>主张句</b> · 无</div>';
+  let h = '<div id="audit-claim-spans"><b>主张句</b><ul>';
+  for(const row of spans){
+    const cid = esc(String(row.claim_id || ""));
+    const flag = row.unsupported ? "true" : "false";
+    const support = Array.isArray(row.support) ? row.support : [];
+    const oppose = Array.isArray(row.oppose) ? row.oppose : [];
+    const supportHtml = support.length
+      ? support.map(item => spanLinkHtml(item, "support")).join(" ")
+      : "无";
+    const opposeHtml = oppose.length
+      ? oppose.map(item => spanLinkHtml(item, "oppose")).join(" ")
+      : "无";
+    h += '<li class="claim-span-card" data-claim-id="'+cid+'" data-unsupported="'+flag+'">'
+      + '<div class="claim-span-text">'+esc(String(row.claim_text || ""))+'</div>'
+      + '<div class="claim-span-support"><b>支撑句</b> · '+supportHtml+'</div>'
+      + '<div class="claim-span-oppose"><b>反对句</b> · '+opposeHtml+'</div></li>';
+  }
+  h += '</ul></div>';
+  return h;
+}
+function openClaimSpan(el){
+  if(!el) return false;
+  const eid = el.getAttribute("data-evidence-id") || "";
+  const sentenceId = el.getAttribute("data-sentence-id") || "";
+  const role = el.getAttribute("data-role") || "support";
+  const at = eid.lastIndexOf("@");
+  const asOf = at >= 0 ? eid.slice(at + 1) : "T1";
+  const bare = (eid.split("@")[0] || "").split("#");
+  showSource(bare[0], bare[1], asOf, sentenceId, role);
+  return false;
+}
 function renderAuditMarkup(){
   // 与服务端 _render_audit_body 同一组标签。缺字段写「无」。
   const audit = STATE.audit || {};
@@ -382,6 +434,7 @@ function renderAuditMarkup(){
      + '</div>';
   h += '<div id="audit-unknown"><b>未知原因</b> · '
      + (reason ? ('<code>'+esc(reason)+'</code>') : '无') + '</div>';
+  h += renderClaimSpans(audit);
   if(STATE.retrieval_used != null)
     h += '<div style="margin-top:4px">检索次数(本轮): '+esc(String(STATE.retrieval_used))+'</div>';
   if(STATE.decoding){
@@ -389,7 +442,8 @@ function renderAuditMarkup(){
     h += '<div style="margin-top:4px">解码: '+esc(String(d.model||''))
        +' temp='+esc(String(d.temperature))+' '+esc(String(d.recorded_at||''))+'</div>';
   }
-  h += '<div style="margin-top:6px;color:#8250df">查询、命中、判定依据与未知原因只在审计视图展开;'
+  h += '<div style="margin-top:6px;color:#8250df">查询、命中、判定依据、未知原因与主张句只在审计视图展开;'
+     + '支撑句与反对句分列,按句 id 点回原文。'
      + '职人视图用主张状态、只读徽章与作废/续命/重跑。</div>';
   return h;
 }
@@ -1006,24 +1060,44 @@ function pickClause(anchor){
   document.getElementById('anchor-'+anchor)?.classList.add('hit');
   CURRENT_ANCHOR = anchor;
 }
-async function showSource(docId, anchor, asOf){
+async function showSource(docId, anchor, asOf, sentenceId, role){
   const j = await (await fetch('/api/source/'+encodeURIComponent(docId)+'?as_of='+(asOf||'T1'))).json();
   if(j.error){ document.getElementById('pane').innerHTML = '<p>'+esc(j.error)+'</p>'; return; }
+  const want = sentenceId || "";
+  CURRENT_SENTENCE = want;
+  CURRENT_SPAN_ROLE = role || "";
+  const paint = role === "oppose" ? "oppose-hit" : "support-hit";
   let h = '<h3>'+esc(j.title)+' <span class="asof">'+j.as_of+'</span> <span class="asof">'+esc(j.source_type)+'</span></h3>';
   h += '<div class="tabs" style="margin-bottom:8px">'
-     + '<button class="'+((asOf||'T1')==='T0'?'on':'')+'" onclick="showSource(&quot;'+docId+'&quot;,CURRENT_ANCHOR,&quot;T0&quot;)">T0 签发时</button>'
-     + '<button class="'+((asOf||'T1')==='T1'?'on':'')+'" onclick="showSource(&quot;'+docId+'&quot;,CURRENT_ANCHOR,&quot;T1&quot;)">T1 复验时刻</button></div>';
+     + '<button class="'+((asOf||'T1')==='T0'?'on':'')+'" onclick="showSource(&quot;'+docId+'&quot;,CURRENT_ANCHOR,&quot;T0&quot;,CURRENT_SENTENCE,CURRENT_SPAN_ROLE)">T0 签发时</button>'
+     + '<button class="'+((asOf||'T1')==='T1'?'on':'')+'" onclick="showSource(&quot;'+docId+'&quot;,CURRENT_ANCHOR,&quot;T1&quot;,CURRENT_SENTENCE,CURRENT_SPAN_ROLE)">T1 复验时刻</button></div>';
   h += '<div class="doc">';
   for(const s of j.sections){
     const hit = s.anchor === anchor;
     h += '<div class="clause'+(hit?' hit':'')+'" id="anchor-'+s.anchor+'" onclick="pickClause(&quot;'+s.anchor+'&quot;)">'
-       + '<code>## '+esc(s.anchor)+'</code>' + esc(s.text.replace('## '+s.anchor,'')) + '</div>';
+       + '<code>## '+esc(s.anchor)+'</code>';
+    const sentences = Array.isArray(s.sentences) ? s.sentences : [];
+    if(sentences.length){
+      for(const sent of sentences){
+        const sid = String(sent.sentence_id || "");
+        const on = want && sid === want && hit;
+        h += '<span class="src-sentence'+(on ? (' '+paint) : '')+'" id="sent-'+s.anchor+'-'+sid
+           +'" data-sentence-id="'+esc(sid)+'">'+esc(String(sent.text || ""))+'</span>';
+      }
+    } else {
+      h += esc(s.text.replace('## '+s.anchor,''));
+    }
+    h += '</div>';
   }
   h += '</div>';
   CURRENT_ANCHOR = anchor;
   document.getElementById('pane').innerHTML = h;
-  const target = document.getElementById('anchor-'+anchor);
-  if(target) target.scrollIntoView({behavior:'smooth', block:'center'});
+  const sentEl = want ? document.getElementById('sent-'+anchor+'-'+want) : null;
+  if(sentEl) sentEl.scrollIntoView({behavior:'smooth', block:'center'});
+  else {
+    const target = document.getElementById('anchor-'+anchor);
+    if(target) target.scrollIntoView({behavior:'smooth', block:'center'});
+  }
 }
 async function runReverify(){
   const btn = document.getElementById('btn-run');
