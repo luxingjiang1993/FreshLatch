@@ -116,16 +116,20 @@ _Avoid_: 记忆准确率、隔离率
 ## 复验主链
 
 **复验单 (Reverify Sheet)**:
-一次复验的主界面与产出物:每条主张的原文点回、判定、理由、人审动作。不是聊天框。默认「职人视图」只用主张状态与人动作语言;同一页可切到「审计视图」看查询、带分的命中、判定所用 evidence id 与 Unknown 的 reason code。审计面用中性标签。
+一次复验的主界面与产出物:每条主张的原文点回、判定、理由、人审动作。不是聊天框。默认「职人视图」用主张状态、只读 UiBadge 与人动作语言;同一页可切到「审计视图」看查询、带分的命中、判定所用 evidence id 与 Unknown 的 reason code。审计面用中性标签。
 _Avoid_: 报告、看板
 
 **职人视图 / 审计视图**:
-复验单同一界面的两种信息密度:职人视图是默认成交面,不展示角色专名;审计视图展开轨迹投影(查询、命中与分、判定依据、未知原因),标签用「复验 / 反证 / 闸」这类中性词。不改变闸与人闩语义。
+复验单同一界面的两种信息密度:职人视图是默认成交面,不展示角色专名,并按本轮真状态显示只读 UiBadge;审计视图展开轨迹投影(查询、命中与分、判定依据、未知原因),标签用「复验 / 反证 / 闸」这类中性词。不改变闸与人闩语义。
 _Avoid_: 简单模式/专家模式、调试页、在职人视图或审计标签里写角色专名
 
 **审计面**:
-审计视图上的只读轨迹投影。字段为 `query`、带分的 `hits`(`scores` 的 bm25 / dense / rrf / rerank,缺臂为空)、`attribution_ids`、`unknown_reason`。reason 只读 abstention reason 枚举,不另写拼写。缺字段显示空或「无」,不编造分数。不改 `Claim.status`。`badges` 键留给后续徽章票,本投影不渲染 verified / partial / abstain。人审动词仍只有 `discard` / `renew`。
+审计视图上的只读轨迹投影。字段为 `query`、带分的 `hits`(`scores` 的 bm25 / dense / rrf / rerank,缺臂为空)、`attribution_ids`、`unknown_reason`。reason 只读 abstention reason 枚举,不另写拼写。缺字段显示空或「无」,不编造分数。不改 `Claim.status`。`badges` 是只读 UiBadge 列表;缺字段时为空,不编造。人审动词仍只有 `discard` / `renew`。
 _Avoid_: 角色专名、假分、人审动词 `disputed`、把 UiBadge 写进 Claim.status
+
+**UiBadge**:
+职人视图上的只读徽章,取值 `verified` | `partial` | `abstain`。`verified` 表示本轮闸允许的 fresh:证据足以续验且未拒答。`partial` 表示有本轮 evidence id,但不足以 `verified`。`abstain` 表示拒答原因属于既有 abstention reason 枚举。旧轨迹缺字段时不渲染。不写入 `Claim.status`。
+_Avoid_: 把 verified / partial / abstain 写进 Claim.status、人审动词 disputed、用角色专名当徽章文案
 
 **客户向复验备忘 (Client Memo)**:
 可转发附件形态的复验产出:课题问题句、生成时间、免责声明、三分栏(仍成立/已作废/缺口)、每条 claim_id 与一句话理由、可点回的 evidence_id(格式 `doc_id#anchor@as_of`,本批不做字符级偏移 span)。不含 Agent 轨迹、不含「建议进入/不进入」类商业裁决。与内部审计/复验单导出分离。

@@ -136,7 +136,7 @@ def test_ui_audit_shows_score_and_reason(client, tmp_path):
     assert projected["attribution_ids"] == [EVIDENCE_ID]
     assert projected["unknown_reason"] == REASON_INSUFFICIENT_EVIDENCE
     assert projected["unknown_reason"] in ABSTENTION_REASONS
-    assert projected["badges"] == []
+    assert projected["badges"] == [{"claim_id": "c-ui", "badge": "abstain"}]
     hit = projected["hits"][0]
     assert hit["evidence_id"] == EVIDENCE_ID
     assert hit["scores"]["bm25"] == BM25_SCORE
@@ -159,8 +159,10 @@ def test_ui_audit_shows_score_and_reason(client, tmp_path):
     assert REASON_INSUFFICIENT_EVIDENCE in _section(html, "audit-unknown")
     for role in _ROLE_NAMES:
         assert role not in html
-    for badge in ("verified", "partial", "abstain"):
-        assert badge not in html
+    # 审计响应不把三徽章 class 画进页面;职人槽由 L4-UI-02 覆盖。
+    assert 'class="badge verified"' not in html
+    assert 'class="badge partial"' not in html
+    assert 'class="badge abstain"' not in html
     assert "disputed" not in html
 
 
