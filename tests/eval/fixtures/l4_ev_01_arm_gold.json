@@ -1,0 +1,59 @@
+{
+  "version": "l4-ev-01-smoke",
+  "level": "smoke",
+  "k": 10,
+  "queries": [
+    {
+      "id": "q-dense-den",
+      "query": "营收增长",
+      "as_of": "T1",
+      "relevant": ["den#b1@T1"],
+      "query_vec": [0.0, 1.0]
+    },
+    {
+      "id": "q-dense-lex",
+      "query": "条款乙附注",
+      "as_of": "T1",
+      "relevant": ["lex#a1@T1"],
+      "query_vec": [1.0, 0.0]
+    }
+  ],
+  "chunks": [
+    {
+      "doc_id": "lex",
+      "clause_id": "a1",
+      "as_of": "T1",
+      "title": "主营",
+      "text": "营收增长来自主营业务",
+      "source_type": "fixture",
+      "doc_version": "v0",
+      "checksum": "lex",
+      "tokens": 8,
+      "vec": [1.0, 0.0]
+    },
+    {
+      "doc_id": "den",
+      "clause_id": "b1",
+      "as_of": "T1",
+      "title": "附注",
+      "text": "条款乙附注载明口径",
+      "source_type": "fixture",
+      "doc_version": "v0",
+      "checksum": "den",
+      "tokens": 8,
+      "vec": [0.0, 1.0]
+    },
+    {
+      "doc_id": "noise",
+      "clause_id": "n1",
+      "as_of": "T1",
+      "title": "杂讯",
+      "text": "营收杂讯与无关旁注",
+      "source_type": "fixture",
+      "doc_version": "v0",
+      "checksum": "noise",
+      "tokens": 8,
+      "vec": [0.2, 0.8]
+    }
+  ]
+}

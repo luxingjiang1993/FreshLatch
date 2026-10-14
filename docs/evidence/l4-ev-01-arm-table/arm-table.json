@@ -1,0 +1,44 @@
+{
+  "code_pin": "0678d7610da01943b77904de88543574b884fac4",
+  "fixture_version": "l4-ev-01-smoke",
+  "gold_path": "tests/eval/fixtures/l4_ev_01_arm_gold.json",
+  "gold_sha256": "bf2eafa1bcffb5ff0afe5e2ab3f14216ea455c604d56beb00563df518595dad8",
+  "k": 10,
+  "level": "smoke",
+  "n": 2,
+  "neural_rerank_env": "0",
+  "neural_rerank_k": 10,
+  "production_retrieval_mode": "hybrid+rerank",
+  "replaces_frozen_baseline": false,
+  "rows": [
+    {
+      "arm": "bm25",
+      "mrr": 0.0,
+      "observed_rerank_mode": "none",
+      "observed_retrieval_mode": "bm25",
+      "recall_at_k": 0.0
+    },
+    {
+      "arm": "dense",
+      "mrr": 1.0,
+      "observed_rerank_mode": "none",
+      "observed_retrieval_mode": "dense",
+      "recall_at_k": 1.0
+    },
+    {
+      "arm": "hybrid",
+      "mrr": 0.41666666666666663,
+      "observed_rerank_mode": "none",
+      "observed_retrieval_mode": "hybrid",
+      "recall_at_k": 1.0
+    },
+    {
+      "arm": "hybrid+rerank",
+      "mrr": 0.41666666666666663,
+      "observed_rerank_mode": "lexical_fallback",
+      "observed_retrieval_mode": "hybrid+rerank",
+      "recall_at_k": 1.0
+    }
+  ],
+  "rrf_k": 60
+}

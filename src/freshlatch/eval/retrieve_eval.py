@@ -2,6 +2,7 @@
 
 查询表在看指标之前由规则派生,不许按召回结果增删行。
 n 为冒烟级,不声称统计显著,不报方差。BM25 确定性,无 temperature/seed。
+L4-EV-01 的分臂表入口是 ``run_arm_metric_table``，只列 Recall@k 与 MRR。
 """
 
 from __future__ import annotations
@@ -853,3 +854,384 @@ def run_rerank_compare(
         "production_mode": PRODUCTION_RETRIEVAL_MODE,
         "corpus_scope": scope,
     }
+
+
+# L4-EV-01：同 pin、同 gold 的分臂表。不调用 arm_pass_line，不写冻结基线。
+ARM_TABLE_ARMS = ("bm25", "dense", "hybrid", "hybrid+rerank")
+ARM_TABLE_MARKDOWN = "arm-table.md"
+ARM_TABLE_JSON = "arm-table.json"
+_ARM_TABLE_BANNED = ("通过", "失败", "counted_as_pass", "SESOI", "status=", "门槛")
+_ARM_TABLE_BLOCKED_GOLD = (
+    ("data", "eval", "gold.json"),
+    ("data", "eval", "guard_should.json"),
+    ("data", "eval", "cite_sentence.json"),
+    ("data", "eval", "temporal_new_over_old.json"),
+    ("data", "exp", "x1"),
+    ("docs", "evidence", "neural-rerank"),
+)
+_ARM_TABLE_BLOCKED_OUT = (
+    ("docs", "evidence", "neural-rerank"),
+    ("docs", "evidence", "patch-events"),
+    ("docs", "evidence", "quality-gate"),
+    ("data", "exp", "x1"),
+    ("data", "eval"),
+)
+_CHUNK_KEYS = (
+    "doc_id",
+    "clause_id",
+    "as_of",
+    "title",
+    "text",
+    "source_type",
+    "doc_version",
+    "checksum",
+    "tokens",
+    "vec",
+)
+_QUERY_KEYS = ("id", "query", "as_of", "relevant", "query_vec")
+
+
+def _path_parts(path: Path | str) -> tuple[str, ...]:
+    """按 ``/`` 与 ``\\`` 切段，并折叠 ``.`` / ``..``。不访问磁盘。"""
+    text = str(path).replace("\\", "/").strip()
+    stack: list[str] = []
+    for part in text.split("/"):
+        if part in ("", "."):
+            continue
+        if part == "..":
+            if stack:
+                stack.pop()
+            continue
+        stack.append(part)
+    return tuple(stack)
+
+
+def _path_contains(path: Path | str, needle: tuple[str, ...]) -> bool:
+    parts = _path_parts(path)
+    width = len(needle)
+    if width == 0 or len(parts) < width:
+        return False
+    for index in range(len(parts) - width + 1):
+        if parts[index:index + width] == needle:
+            return True
+    return False
+
+
+def _reject_arm_table_paths(gold_path: Path, out_dir: Path) -> None:
+    """受保护金标与冻结目录不能当本表的输入或输出。"""
+    for needle in _ARM_TABLE_BLOCKED_GOLD:
+        if _path_contains(gold_path, needle):
+            joined = "/".join(needle)
+            raise ValueError(f"拒绝读取受保护路径 {joined}")
+    for needle in _ARM_TABLE_BLOCKED_OUT:
+        if _path_contains(out_dir, needle):
+            joined = "/".join(needle)
+            raise ValueError(f"拒绝把分臂表写进 {joined}")
+
+
+def _require_keys(row: dict, keys: tuple[str, ...], label: str) -> None:
+    missing = [key for key in keys if key not in row or row[key] is None]
+    if missing:
+        raise ValueError(f"{label} 缺字段 {missing}")
+
+
+def _as_of_value(value: object, label: str) -> str:
+    if value not in ("T0", "T1"):
+        raise ValueError(f"{label} as_of 必须为 T0 或 T1")
+    return str(value)
+
+
+def _float_vec(value: object, label: str) -> list[float]:
+    if not isinstance(value, list) or not value:
+        raise ValueError(f"{label} 的向量必须是非空数组")
+    try:
+        return [float(item) for item in value]
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f"{label} 的向量不是数字") from exc
+
+
+def _fmt_metric(value: float) -> str:
+    """固定小数写法，同一 float 每次相同。"""
+    if value == 0.0:
+        return "0"
+    text = format(value, ".12f").rstrip("0").rstrip(".")
+    return text or "0"
+
+
+def _one_observed(values: set[str], label: str) -> str:
+    if len(values) != 1:
+        raise ValueError(f"{label} 在各 query 上不一致: {sorted(values)}")
+    return next(iter(values))
+
+
+def _read_code_pin(code_pin: str | None) -> str:
+    if code_pin is not None:
+        text = str(code_pin).strip()
+        if not text:
+            raise ValueError("code_pin 为空")
+        return text
+    import subprocess
+
+    proc = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    pin = (proc.stdout or "").strip()
+    if proc.returncode != 0 or len(pin) != 40:
+        raise ValueError("读不到 git HEAD。请传 --pin")
+    return pin
+
+
+def _display_path(path: Path) -> str:
+    try:
+        shown = path.resolve().relative_to(Path.cwd().resolve())
+    except ValueError:
+        shown = path
+    return shown.as_posix()
+
+
+def _load_arm_table_fixture(gold_path: Path) -> dict:
+    """小夹具。必须自带 chunk 向量与 query 向量，本函数不调用 embedding。"""
+    raw = _load_json(gold_path)
+    for key in ("level", "k", "queries", "chunks", "version"):
+        if key not in raw or raw[key] is None:
+            raise ValueError(f"夹具缺字段 {key}")
+    if raw["level"] != "smoke":
+        raise ValueError("分臂表夹具 level 必须为 smoke")
+    if isinstance(raw["k"], bool) or not isinstance(raw["k"], int) or raw["k"] < 1:
+        raise ValueError("夹具 k 必须是正整数")
+    queries = raw["queries"]
+    chunks = raw["chunks"]
+    if not isinstance(queries, list) or not queries:
+        raise ValueError("夹具 queries 必须是非空数组")
+    if not isinstance(chunks, list) or not chunks:
+        raise ValueError("夹具 chunks 必须是非空数组")
+    seen_ids: set[str] = set()
+    seen_queries: set[str] = set()
+    dim: int | None = None
+    for index, row in enumerate(queries):
+        label = f"queries[{index}]"
+        if not isinstance(row, dict):
+            raise ValueError(f"{label} 必须是对象")
+        _require_keys(row, _QUERY_KEYS, label)
+        qid = str(row["id"])
+        if qid in seen_ids:
+            raise ValueError(f"query id 重复: {qid}")
+        seen_ids.add(qid)
+        query = str(row["query"])
+        if query in seen_queries:
+            raise ValueError(f"query 文本重复: {query}")
+        seen_queries.add(query)
+        _as_of_value(row["as_of"], label)
+        relevant = row["relevant"]
+        if not isinstance(relevant, list) or not relevant:
+            raise ValueError(f"{label} relevant 必须是非空数组")
+        if not all(isinstance(item, str) and item for item in relevant):
+            raise ValueError(f"{label} relevant 必须是非空字符串")
+        vec = _float_vec(row["query_vec"], label)
+        dim = len(vec) if dim is None else dim
+        if len(vec) != dim:
+            raise ValueError(f"{label} 向量维度与其它 query 不一致")
+    seen_evidence: set[str] = set()
+    for index, row in enumerate(chunks):
+        label = f"chunks[{index}]"
+        if not isinstance(row, dict):
+            raise ValueError(f"{label} 必须是对象")
+        _require_keys(row, _CHUNK_KEYS, label)
+        _as_of_value(row["as_of"], label)
+        if isinstance(row["tokens"], bool) or not isinstance(row["tokens"], int):
+            raise ValueError(f"{label} tokens 必须是整数")
+        vec = _float_vec(row["vec"], label)
+        if dim is None or len(vec) != dim:
+            raise ValueError(f"{label} 向量维度与 query 不一致")
+        evidence = f"{row['doc_id']}#{row['clause_id']}@{row['as_of']}"
+        if evidence in seen_evidence:
+            raise ValueError(f"chunk 主键重复: {evidence}")
+        seen_evidence.add(evidence)
+    return raw
+
+
+def _arm_table_store(fixture: dict):
+    """用夹具里的 vec 建内存库。query 向量按 query 文本注入，不打网。"""
+    from freshlatch.store.base import Chunk, Document
+    from freshlatch.store.pipeline import pack_vec
+
+    store = InMemoryStore()
+    grouped: dict[tuple[str, str], list] = {}
+    for row in fixture["chunks"]:
+        chunk_id = f"{row['doc_id']}-{row['clause_id']}"
+        chunk = Chunk(
+            doc_id=str(row["doc_id"]),
+            chunk_id=chunk_id,
+            clause_id=str(row["clause_id"]),
+            title=str(row["title"]),
+            text=str(row["text"]),
+            source_type=str(row["source_type"]),
+            as_of=row["as_of"],
+            doc_version=str(row["doc_version"]),
+            checksum=str(row["checksum"]),
+            tokens=int(row["tokens"]),
+            vec=pack_vec(_float_vec(row["vec"], str(row["doc_id"]))),
+        )
+        grouped.setdefault((chunk.doc_id, chunk.as_of), []).append(chunk)
+    for (doc_id, as_of), group in grouped.items():
+        store.add_document(
+            Document(
+                doc_id=doc_id,
+                as_of=as_of,
+                source_type=group[0].source_type,
+                title=group[0].title,
+                doc_version=group[0].doc_version,
+                checksum=group[0].checksum,
+                full_text="\n".join(item.text for item in group),
+            ),
+            group,
+        )
+    vectors = {
+        str(row["query"]): _float_vec(row["query_vec"], str(row["id"]))
+        for row in fixture["queries"]
+    }
+
+    def embed(query: str) -> list[float]:
+        if query not in vectors:
+            raise ValueError(f"夹具缺少 query 向量: {query}")
+        return vectors[query]
+
+    store.query_embedder = embed
+    return store
+
+
+def _render_arm_table_markdown(payload: dict) -> str:
+    lines = [
+        "# Recall@k / MRR 分臂表",
+        "",
+        f"- level: {payload['level']}",
+        f"- k: {payload['k']}",
+        f"- n: {payload['n']}",
+        f"- code_pin: {payload['code_pin']}",
+        f"- gold_path: {payload['gold_path']}",
+        f"- gold_sha256: {payload['gold_sha256']}",
+        f"- fixture_version: {payload['fixture_version']}",
+        f"- production_retrieval_mode: {payload['production_retrieval_mode']}",
+        f"- rrf_k: {payload['rrf_k']}",
+        f"- neural_rerank_k: {payload['neural_rerank_k']}",
+        f"- neural_rerank_env: {payload['neural_rerank_env']}",
+        "- 解码: 夹具内向量，无 temperature，无 seed",
+        "- 检索 top_k 等于 k",
+        "- replaces_frozen_baseline: false",
+        "- 冻结基线文件不在本目录重写",
+        "",
+        "| arm | Recall@k | MRR | observed_retrieval_mode | observed_rerank_mode |",
+        "| --- | --- | --- | --- | --- |",
+    ]
+    for row in payload["rows"]:
+        lines.append(
+            "| {arm} | {recall} | {mrr} | {retrieval} | {rerank} |".format(
+                arm=row["arm"],
+                recall=_fmt_metric(row["recall_at_k"]),
+                mrr=_fmt_metric(row["mrr"]),
+                retrieval=row["observed_retrieval_mode"],
+                rerank=row["observed_rerank_mode"],
+            )
+        )
+    lines.append("")
+    return "\n".join(lines)
+
+
+def _reject_banned_arm_table_text(text: str) -> None:
+    for token in _ARM_TABLE_BANNED:
+        if token in text:
+            raise ValueError(f"分臂表不得包含 {token}")
+
+
+def run_arm_metric_table(
+    *,
+    gold_path: Path,
+    out_dir: Path,
+    code_pin: str | None = None,
+) -> dict:
+    """同 pin、同 gold，按臂列出 Recall@k 与 MRR。
+
+    打分调用已有 ``recall_at_k`` / ``mrr_at_k`` / ``_mean``。
+    不调用 ``arm_pass_line``。不写 ``docs/evidence/neural-rerank/``。
+    """
+    import os
+
+    from freshlatch.store.base import PRODUCTION_RETRIEVAL_MODE
+    from freshlatch.store.neural_rerank import NEURAL_RERANK_ENV, NEURAL_RERANK_K
+    from freshlatch.store.pipeline import (
+        RRF_K,
+        HitScoreBook,
+        activate_hit_score_book,
+        reset_hit_score_book,
+    )
+
+    gold = Path(gold_path)
+    out = Path(out_dir)
+    _reject_arm_table_paths(gold, out)
+    if not gold.is_file():
+        raise ValueError(f"夹具不存在: {gold.as_posix()}")
+    if out.exists() and not out.is_dir():
+        raise ValueError(f"输出路径不是目录: {out.as_posix()}")
+    pin = _read_code_pin(code_pin)
+    fixture = _load_arm_table_fixture(gold)
+    k = int(fixture["k"])
+    store = _arm_table_store(fixture)
+    recalls = {arm: [] for arm in ARM_TABLE_ARMS}
+    mrrs = {arm: [] for arm in ARM_TABLE_ARMS}
+    seen_retrieval = {arm: set() for arm in ARM_TABLE_ARMS}
+    seen_rerank = {arm: set() for arm in ARM_TABLE_ARMS}
+    book_token = activate_hit_score_book(HitScoreBook())
+    try:
+        for row in fixture["queries"]:
+            relevant = [str(item) for item in row["relevant"]]
+            for arm in ARM_TABLE_ARMS:
+                store.bind_eval_retrieval_mode(arm)
+                hits = store.retrieve(str(row["query"]), as_of=row["as_of"], top_k=k)
+                ranked = [chunk_evidence_id(chunk) for chunk in hits]
+                recalls[arm].append(recall_at_k(ranked, relevant, k))
+                mrrs[arm].append(mrr_at_k(ranked, relevant, k))
+                seen_retrieval[arm].add(str(getattr(store, "last_retrieval_mode", "")))
+                seen_rerank[arm].add(str(getattr(store, "last_rerank_mode", "")))
+            store.bind_eval_retrieval_mode(None)
+    finally:
+        reset_hit_score_book(book_token)
+    env_value = os.environ.get(NEURAL_RERANK_ENV)
+    rows = []
+    for arm in ARM_TABLE_ARMS:
+        rows.append({
+            "arm": arm,
+            "recall_at_k": _mean(recalls[arm]),
+            "mrr": _mean(mrrs[arm]),
+            "observed_retrieval_mode": _one_observed(seen_retrieval[arm], arm),
+            "observed_rerank_mode": _one_observed(seen_rerank[arm], arm),
+        })
+    payload = {
+        "code_pin": pin,
+        "fixture_version": str(fixture["version"]),
+        "gold_path": _display_path(gold),
+        "gold_sha256": sha256_hex(gold.read_bytes()),
+        "k": k,
+        "level": "smoke",
+        "n": len(fixture["queries"]),
+        "neural_rerank_env": "unset" if env_value is None else str(env_value),
+        "neural_rerank_k": NEURAL_RERANK_K,
+        "production_retrieval_mode": PRODUCTION_RETRIEVAL_MODE,
+        "replaces_frozen_baseline": False,
+        "rows": rows,
+        "rrf_k": RRF_K,
+    }
+    markdown = _render_arm_table_markdown(payload)
+    document = json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
+    _reject_banned_arm_table_text(markdown)
+    _reject_banned_arm_table_text(document)
+    out.mkdir(parents=True, exist_ok=True)
+    markdown_path = out / ARM_TABLE_MARKDOWN
+    json_path = out / ARM_TABLE_JSON
+    markdown_path.write_text(markdown, encoding="utf-8", newline="\n")
+    json_path.write_text(document, encoding="utf-8", newline="\n")
+    payload["markdown_path"] = str(markdown_path)
+    payload["json_path"] = str(json_path)
+    return payload
