@@ -10,6 +10,9 @@ ILLEGAL_CALL_REPAIR_BUDGET。耗尽后 fail-closed 并留下轨迹,不以 Unknow
 verify 短环只读工具观察上已经写好的 grade(RAG-02 的边),不在这里重算。
 Incorrect 且 retry 未耗尽时做一次有限 repair(再检索或改判定草稿);
 retry 耗尽或 grade 仍不足则 abstain,不把 fresh 交给执行器。
+
+拒答原因是封闭枚举 ABSTENTION_REASONS。成员只引用已经发出的常量,
+不在这里另写拼写。自由文本错误可以留在 error 里,不能单独充当 reason_code。
 """
 
 from __future__ import annotations
@@ -18,6 +21,12 @@ import json
 from dataclasses import dataclass, field
 from typing import Callable
 
+from freshlatch.evidence import CITE_OUTSIDE_REGISTRY
+from freshlatch.roles.retrieve_grade import (
+    REASON_GRADE_AMBIGUOUS,
+    REASON_GRADE_INCORRECT_EXHAUSTED,
+)
+from freshlatch.roles.retrieve_sufficiency import REASON_INSUFFICIENT_EVIDENCE
 from freshlatch.tools import (
     REASON_ILLEGAL_TOOL_ARGS,
     REASON_UNKNOWN_TOOL,
@@ -37,6 +46,21 @@ VERIFY_REPAIR_TOOL = "__verify_repair__"
 VERIFY_ABSTAIN_TOOL = "__verify_abstain__"
 _GRADE_VALUES = frozenset({"correct", "incorrect", "ambiguous"})
 
+# 拒答原因。与 RAG-01 / FC-CITE / RAG-02 已发出的码是同一符号。UI 只读这一份。
+ABSTENTION_REASONS: frozenset[str] = frozenset({
+    REASON_INSUFFICIENT_EVIDENCE,
+    CITE_OUTSIDE_REGISTRY,
+    REASON_GRADE_INCORRECT_EXHAUSTED,
+    REASON_GRADE_AMBIGUOUS,
+})
+
+
+def named_abstention_reason(value: object) -> str | None:
+    """观察上的码属于已写明枚举时返回该符号。自由文本与空值返回 None。"""
+    if isinstance(value, str) and value in ABSTENTION_REASONS:
+        return value
+    return None
+
 
 @dataclass
 class LoopResult:
@@ -53,6 +77,8 @@ class LoopResult:
     retry_count: int = 0
     abstained: bool = False
     grade_reason_code: str | None = None
+    # 已落入 ABSTENTION_REASONS 的拒答码。自由文本不进这个字段。
+    abstention_reason: str | None = None
     repair_note: str | None = None
 
 
@@ -234,8 +260,15 @@ def _observe(
     reason_code: str | None = None,
 ) -> None:
     record = {"step": result.steps_used, "tool": name, "args": args, "result": out}
+    named = None
+    if isinstance(out, dict):
+        named = named_abstention_reason(out.get("reason_code"))
     if reason_code:
         record["reason_code"] = reason_code
+    elif named:
+        record["reason_code"] = named
+    if named:
+        result.abstention_reason = named
     result.tool_trace.append(record)
     if on_event:
         on_event(record)
@@ -313,8 +346,14 @@ def _note_verify(
     result.evidence_ids = _evidence_ids_from(out)
     reason = out.get("grade_reason_code")
     result.grade_reason_code = reason if isinstance(reason, str) and reason else None
+    named = named_abstention_reason(result.grade_reason_code)
+    if named is None:
+        named = named_abstention_reason(out.get("reason_code"))
+    if named:
+        result.abstention_reason = named
     if grade == "correct":
         result.abstained = False
+        result.abstention_reason = None
         return
     if _is_rule_incorrect(out, grade):
         return
@@ -350,17 +389,25 @@ def _mark_abstain(
     if result.abstained:
         return
     result.abstained = True
+    code = named_abstention_reason(result.abstention_reason)
+    if code is None:
+        code = named_abstention_reason(result.grade_reason_code)
+    if code:
+        result.abstention_reason = code
+    payload = {
+        "abstain": True,
+        "evidence_ids": list(result.evidence_ids),
+        "grade": result.grade,
+        "retry_count": result.retry_count,
+        "grade_reason_code": result.grade_reason_code,
+    }
+    if code:
+        payload["reason_code"] = code
     _emit_verify(
         result,
         on_event,
         tool=VERIFY_ABSTAIN_TOOL,
-        payload={
-            "abstain": True,
-            "evidence_ids": list(result.evidence_ids),
-            "grade": result.grade,
-            "retry_count": result.retry_count,
-            "grade_reason_code": result.grade_reason_code,
-        },
+        payload=payload,
     )
 
 
@@ -380,6 +427,9 @@ def _emit_verify(
         "grade": result.grade,
         "retry_count": result.retry_count,
     }
+    code = named_abstention_reason(payload.get("reason_code"))
+    if code:
+        record["reason_code"] = code
     result.tool_trace.append(record)
     if on_event:
         on_event(record)
@@ -401,7 +451,7 @@ def _fresh_blocked(result: LoopResult, name: str, args: dict) -> bool:
 
 
 def _abstain_fresh_result(result: LoopResult) -> dict:
-    """fresh 不交给执行器。reason 只转发观察上已有的码,不新造枚举。"""
+    """fresh 不交给执行器。reason_code 只接受枚举成员,不把自由文本当成拒因。"""
     out: dict = {
         "abstain": True,
         "grade": result.grade,
@@ -409,8 +459,11 @@ def _abstain_fresh_result(result: LoopResult) -> dict:
         "retry_count": result.retry_count,
         "error": "abstain: grade 不足,不得写 fresh",
     }
-    if result.grade_reason_code:
-        out["reason_code"] = result.grade_reason_code
+    code = named_abstention_reason(result.abstention_reason)
+    if code is None:
+        code = named_abstention_reason(result.grade_reason_code)
+    if code:
+        out["reason_code"] = code
     if result.grade:
         out["grade_token"] = f"grade={result.grade}"
     return out
