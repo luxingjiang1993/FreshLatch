@@ -7,6 +7,7 @@ HumanLatch 端点(W3 起,§5.5)为同步 def 端点:FastAPI 线程池执行,同�
 
 from __future__ import annotations
 
+import html
 import os
 from pathlib import Path
 
@@ -56,6 +57,7 @@ from freshlatch.publish_hook import (  # noqa: E402
 )
 from freshlatch.sheet import (  # noqa: E402
     export_client_memo_gated,
+    project_audit,
     project_claim,
 )
 from freshlatch.store.checksum import make_checksum_fn  # noqa: E402
@@ -85,6 +87,8 @@ MAIN_BUTTON_TEXT = "开始复验"  # 文案白名单(红线 2):主按钮唯一�
 VIEW_MODE_DEFAULT = "craftsman"  # DEM-6:默认职人视图(去角色化成交面)
 # HTML 模板占位:index() 注入 VIEW_MODE_DEFAULT,避免 Python/JS 默认值漂移
 _VIEW_MODE_TOKEN = "__VIEW_MODE_DEFAULT__"
+# 审计面初值占位。index() 用轨迹投影替换,缺字段写「无」。
+_AUDIT_BODY_TOKEN = "__AUDIT_BODY__"
 EMPTY_LATCH = {"thread_id": None, "pending": []}  # 人审轮状态收口(不各处字面造 dict)
 # DEM-4:步数/检索预算进度;天花板与 Guardrails 默认对齐(α-demo 可见性 ≠ latch 证明)
 _G = Guardrails()
@@ -298,6 +302,7 @@ def api_claims() -> dict:
         "question": _state["question"],
         "claims": [_claim_to_dict(store, c) for c in _state["claims"]],
         "trajectory": str(_state["trajectory"]) if _state["trajectory"] else None,
+        "audit": project_audit(_state.get("trajectory")),
         "running": _state["running"],
         "latch": _state["latch"],
         # DEM-5:零命中告警投影;UI 只展示,不得据此改写 status
@@ -604,6 +609,7 @@ def api_reverify() -> JSONResponse:
     return JSONResponse({
         "claims": [_claim_to_dict(store, c) for c in _state["claims"]],
         "trajectory": str(result.trajectory_path),
+        "audit": project_audit(result.trajectory_path),
         "retrieval_used": result.retrieval_used,
         "steps_by_claim": result.steps_by_claim,
         "decoding": result.decoding.__dict__,
@@ -814,17 +820,87 @@ _UI_STATIC = Path(__file__).resolve().parent / "static"
 HTML_PAGE = (_UI_STATIC / "reverify.html").read_text(encoding="utf-8")
 
 
-@app.get("/", response_class=HTMLResponse)
-def index() -> str:
-    # 注入单一真相默认视图,避免 Python 常量与 JS 初值漂移
-    html = HTML_PAGE.replace(_VIEW_MODE_TOKEN, VIEW_MODE_DEFAULT)
-    if VIEW_MODE_DEFAULT == "craftsman":
-        # 职人默认:审计钮无 on;职人钮保持模板内 class="on"
-        pass
+def _format_audit_score(value: float) -> str:
+    """有限数字的短写法。不补小数位,避免把空臂写成 0。"""
+    return format(value, ".12g")
+
+
+def _render_audit_body(audit: dict) -> str:
+    """审计面 HTML。缺查询、缺分、缺依据、缺 reason 都写「无」。"""
+    from freshlatch.store.pipeline import HIT_SCORE_FIELDS
+
+    esc = html.escape
+    path = audit.get("path")
+    parsed = bool(audit.get("parsed"))
+    if not path and not parsed:
+        return "尚无本轮轨迹。完成复验后此处显示查询、命中、判定依据与未知原因。"
+
+    queries = audit.get("query") or []
+    if queries:
+        query_html = "；".join(esc(str(item)) for item in queries)
     else:
-        html = html.replace('id="view-craftsman" class="on"', 'id="view-craftsman"')
-        html = html.replace('id="view-audit"', 'id="view-audit" class="on"', 1)
-    return html
+        query_html = "无"
+
+    hits = audit.get("hits") or []
+    if not hits:
+        hits_html = "无"
+    else:
+        items: list[str] = []
+        for hit in hits:
+            evidence_id = esc(str(hit.get("evidence_id") or ""))
+            scores = hit.get("scores")
+            if not isinstance(scores, dict):
+                score_html = "分 无"
+            else:
+                parts: list[str] = []
+                any_number = False
+                for arm in HIT_SCORE_FIELDS:
+                    value = scores.get(arm)
+                    if isinstance(value, bool) or not isinstance(value, (int, float)):
+                        parts.append(f"{arm} 无")
+                        continue
+                    any_number = True
+                    parts.append(f"{arm} {_format_audit_score(float(value))}")
+                score_html = " · ".join(parts) if any_number else "分 无"
+            items.append(f"<li><code>{evidence_id}</code> · {score_html}</li>")
+        hits_html = "<ul>" + "".join(items) + "</ul>"
+
+    attribution = audit.get("attribution_ids") or []
+    if attribution:
+        attribution_html = " ".join(f"<code>{esc(str(item))}</code>" for item in attribution)
+    else:
+        attribution_html = "无"
+
+    reason = audit.get("unknown_reason")
+    if isinstance(reason, str) and reason:
+        reason_html = f"<code>{esc(reason)}</code>"
+    else:
+        reason_html = "无"
+
+    path_html = ""
+    if path:
+        path_html = f'<div id="audit-path">轨迹路径 · <code>{esc(str(path))}</code></div>'
+    return (
+        path_html
+        + f'<div id="audit-query"><b>查询</b> · {query_html}</div>'
+        + f'<div id="audit-hits"><b>命中</b> · {hits_html}</div>'
+        + f'<div id="audit-attribution"><b>判定依据</b> · {attribution_html}</div>'
+        + f'<div id="audit-unknown"><b>未知原因</b> · {reason_html}</div>'
+    )
+
+
+@app.get("/", response_class=HTMLResponse)
+def index(view: str = Query(default="")) -> str:
+    # 注入单一真相默认视图,避免 Python 常量与 JS 初值漂移。
+    # view=audit 只改呈现,不改闸。审计正文来自 project_audit。
+    mode = "audit" if view == "audit" else VIEW_MODE_DEFAULT
+    page = HTML_PAGE.replace(_VIEW_MODE_TOKEN, mode)
+    if mode != "craftsman":
+        page = page.replace('id="view-craftsman" class="on"', 'id="view-craftsman"')
+        page = page.replace('id="view-audit"', 'id="view-audit" class="on"', 1)
+        page = page.replace('id="audit-panel"', 'id="audit-panel" class="visible"', 1)
+    audit = project_audit(_state.get("trajectory"))
+    return page.replace(_AUDIT_BODY_TOKEN, _render_audit_body(audit))
 
 
 # 发前列表壳:改编 mission_control 列表→详情 IA;字段换 Run/disposition(#173)

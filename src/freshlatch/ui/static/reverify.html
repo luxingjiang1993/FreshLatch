@@ -171,7 +171,7 @@
   <div class="budget-row">
    <span class="budget-label">步数</span>
    <div class="budget-track"><div id="bar-steps" class="budget-fill"></div></div>
-   <span id="budget-steps-text" class="budget-text" title="当前 Lead 会话 / lead_max_steps">0/0</span>
+   <span id="budget-steps-text" class="budget-text" title="当前步数 / lead_max_steps">0/0</span>
   </div>
   <div class="budget-row">
    <span class="budget-label">检索</span>
@@ -186,8 +186,8 @@
  <button class="big" id="btn-run" onclick="runReverify()">开始复验</button>
 </header>
 <div id="audit-panel" aria-live="polite">
- <b>审计视图</b> · Lead / Critic 工具轨迹与工程角色信息(排障/面试用;不改变作废·续命·闸语义)
- <div id="audit-body" style="margin-top:6px">尚无本轮轨迹。完成复验后此处显示轨迹路径与解码参数。</div>
+ <b>审计视图</b> · 复验 / 反证 / 闸(排障用;不改变作废·续命·闸语义)
+ <div id="audit-body" style="margin-top:6px">__AUDIT_BODY__</div>
  <label id="audit-override-filter">
   <input type="checkbox" id="filter-override" onchange="renderClaims()">
   只看 override=true(人对抗落档前机器判定;不是模型变好,不作通过线)
@@ -247,7 +247,7 @@
 <script>
 let STATE = {claims: [], question: "", latch: {thread_id: null, pending: []},
              retrieve_zero_hits: [],
-             trajectory: null, retrieval_used: null, decoding: null,
+             trajectory: null, audit: null, retrieval_used: null, decoding: null,
              budget: null, disposition: null, run_status: null,
              active_run_id: null, t1_checksums: [], gate_results: [],
              archived_t1_ids: [], patch_drafts: {}};
@@ -266,7 +266,7 @@ let budgetPoll = null;  // DEM-4:复验中轮询预算
 let VIEW_MODE = "__VIEW_MODE_DEFAULT__";
 const STATUS_RUNNING_CRAFTSMAN = "复验中……";
 const STATUS_DONE_CRAFTSMAN = "复验完成";
-const STATUS_RUNNING_AUDIT = "复验中(端到端真主链:Lead 循环 + 规则闸)……";
+const STATUS_RUNNING_AUDIT = "复验中(端到端真主链:复验循环 + 规则闸)……";
 const STATUS_DONE_AUDIT = "复验完成";  // 详情拼在 audit 面板,状态栏保持短句
 function esc(s){return s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}
 const BADGE = {fresh:["绿 · 仍成立","#1a7f37"],stale:["红 · 已失效","#cf222e"],
@@ -315,7 +315,7 @@ function setViewMode(mode){
   if(STATE.trajectory){
     document.getElementById("status").textContent =
       (VIEW_MODE === "audit")
-        ? (STATUS_DONE_AUDIT + " · 见下方 Agent 轨迹")
+        ? (STATUS_DONE_AUDIT + " · 见下方工具轨迹")
         : STATUS_DONE_CRAFTSMAN;
   } else if(document.getElementById("status").textContent.indexOf("复验中") === 0){
     // 复验进行中切视图:同步 running 文案密度
@@ -323,16 +323,55 @@ function setViewMode(mode){
       (VIEW_MODE === "audit") ? STATUS_RUNNING_AUDIT : STATUS_RUNNING_CRAFTSMAN;
   }
 }
-function renderViewChrome(){
-  const panel = document.getElementById("audit-panel");
-  if(VIEW_MODE === "audit") panel.classList.add("visible");
-  else panel.classList.remove("visible");
-  const body = document.getElementById("audit-body");
-  if(!STATE.trajectory){
-    body.innerHTML = "尚无本轮轨迹。完成复验后此处显示 Agent 轨迹路径与 Lead/Critic 工程信息。";
-    return;
+function auditScoreText(scores){
+  // 四个臂与 HIT_SCORE_FIELDS 一致。缺臂写「无」,不补 0。
+  if(!scores || typeof scores !== 'object') return '分 无';
+  const arms = ['bm25','dense','rrf','rerank'];
+  let any = false;
+  const parts = [];
+  for(const name of arms){
+    const val = scores[name];
+    if(typeof val === 'number' && isFinite(val)){
+      any = true;
+      parts.push(name+' '+val);
+    } else {
+      parts.push(name+' 无');
+    }
   }
-  let h = '<div>工具轨迹路径:<code>'+esc(String(STATE.trajectory))+'</code></div>';
+  return any ? parts.join(' · ') : '分 无';
+}
+function renderAuditMarkup(){
+  // 与服务端 _render_audit_body 同一组标签。缺字段写「无」。
+  const audit = STATE.audit || {};
+  const path = audit.path || STATE.trajectory;
+  const parsed = !!audit.parsed;
+  if(!path && !parsed){
+    return '尚无本轮轨迹。完成复验后此处显示查询、命中、判定依据与未知原因。';
+  }
+  const queries = Array.isArray(audit.query) ? audit.query : [];
+  const hits = Array.isArray(audit.hits) ? audit.hits : [];
+  const attrs = Array.isArray(audit.attribution_ids) ? audit.attribution_ids : [];
+  const reason = (typeof audit.unknown_reason === 'string' && audit.unknown_reason)
+    ? audit.unknown_reason : '';
+  let h = '';
+  if(path) h += '<div id="audit-path">轨迹路径 · <code>'+esc(String(path))+'</code></div>';
+  h += '<div id="audit-query"><b>查询</b> · '
+     + (queries.length ? queries.map(q=>esc(String(q))).join('；') : '无') + '</div>';
+  if(!hits.length){
+    h += '<div id="audit-hits"><b>命中</b> · 无</div>';
+  } else {
+    h += '<div id="audit-hits"><b>命中</b> · <ul>';
+    for(const hit of hits){
+      h += '<li><code>'+esc(String(hit.evidence_id||''))+'</code> · '
+         + esc(auditScoreText(hit.scores))+'</li>';
+    }
+    h += '</ul></div>';
+  }
+  h += '<div id="audit-attribution"><b>判定依据</b> · '
+     + (attrs.length ? attrs.map(e=>'<code>'+esc(String(e))+'</code>').join(' ') : '无')
+     + '</div>';
+  h += '<div id="audit-unknown"><b>未知原因</b> · '
+     + (reason ? ('<code>'+esc(reason)+'</code>') : '无') + '</div>';
   if(STATE.retrieval_used != null)
     h += '<div style="margin-top:4px">检索次数(本轮): '+esc(String(STATE.retrieval_used))+'</div>';
   if(STATE.decoding){
@@ -340,9 +379,15 @@ function renderViewChrome(){
     h += '<div style="margin-top:4px">解码: '+esc(String(d.model||''))
        +' temp='+esc(String(d.temperature))+' '+esc(String(d.recorded_at||''))+'</div>';
   }
-  h += '<div style="margin-top:6px;color:#8250df">角色信息仅审计视图可见;'
-     + '职人视图成交面只用主张状态与作废/续命/重跑。</div>';
-  body.innerHTML = h;
+  h += '<div style="margin-top:6px;color:#8250df">查询、命中、判定依据与未知原因只在审计视图展开;'
+     + '职人视图只用主张状态与作废/续命/重跑。</div>';
+  return h;
+}
+function renderViewChrome(){
+  const panel = document.getElementById("audit-panel");
+  if(VIEW_MODE === "audit") panel.classList.add("visible");
+  else panel.classList.remove("visible");
+  document.getElementById("audit-body").innerHTML = renderAuditMarkup();
 }
 
 async function boot(){
@@ -527,11 +572,11 @@ function renderZeroHitBanner(){
   return h;
 }
 function renderUnknownPathNote(){
-  // DEM-5 旁注:unknown 仍须 Lead 显式落档(与 UI 提示解耦)
+  // DEM-5 旁注:unknown 仍须显式落档(与界面提示解耦)
   return '<div id="retrieve-unknown-note">'
-       + '缺口(unknown)仍须 Lead 经 <code>mark_gap</code> / '
+       + '缺口(unknown)仍须经 <code>mark_gap</code> / '
        + '<code>reverify_claim(unknown)</code> 显式落档;'
-       + 'UI 零命中提示不得自动改写判定。</div>';
+       + '界面零命中提示不得自动改写判定。</div>';
 }
 function renderBanner(){
   const el = document.getElementById('banner-wrap');
@@ -947,7 +992,7 @@ async function showSource(docId, anchor, asOf){
 async function runReverify(){
   const btn = document.getElementById('btn-run');
   btn.disabled = true;
-  // DEM-6:职人默认成交面不用 Lead/轨迹作状态文案;审计视图才露工程角色
+  // 职人默认成交面不用角色专名;审计视图才展开查询/命中/依据/原因
   document.getElementById('status').textContent =
     (VIEW_MODE === "audit") ? STATUS_RUNNING_AUDIT : STATUS_RUNNING_CRAFTSMAN;
   if(budgetPoll) clearInterval(budgetPoll);
@@ -957,7 +1002,8 @@ async function runReverify(){
     if(j.error){ document.getElementById('status').textContent = j.error; return; }
     STATE.claims = j.claims; STATE.latch = j.latch; PENDING_DECISIONS = [];
     STATE.retrieve_zero_hits = j.retrieve_zero_hits || [];
-    STATE.trajectory = j.trajectory; STATE.retrieval_used = j.retrieval_used;
+    STATE.trajectory = j.trajectory; STATE.audit = j.audit || null;
+    STATE.retrieval_used = j.retrieval_used;
     STATE.decoding = j.decoding;
     absorbDetailExtras(j);
     if(j.budget) renderBudget(j.budget);
@@ -970,7 +1016,7 @@ async function runReverify(){
         STATUS_DONE_AUDIT + ' · 步数 '+b.steps_used+'/'+b.lead_max_steps
         +' · 检索 '+b.retrieval_used+'/'+b.retrieval_budget
         +(zc?(' · 零命中 '+zc+' 次'):'')
-        +' · 见下方 Agent 轨迹';
+        +' · 见下方工具轨迹';
     } else {
       document.getElementById('status').textContent =
         STATUS_DONE_CRAFTSMAN
