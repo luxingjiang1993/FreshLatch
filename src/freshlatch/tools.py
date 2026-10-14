@@ -3,11 +3,18 @@
 默认 Lead 白名单是 LEAD_TOOLS_W3(含 spawn_critic,不含 spawn_auditor)。
 spawn_auditor 符号保留但 ADR-0009 废止:Auditor 走闸路径单轮判定,不经 Lead spawn。
 未挂载 = 模型物理上不可见,不需要「返回未实装」的运行时分支。
+
+工具权限三档(与人审出口不是同一个词):
+tool_tier_0 读检索,无批可调用;
+tool_tier_1 写观测,必须经 latch 里既有 HumanLatch 轮次放行;
+tool_tier_2 生产臂与已禁调用,fail-closed,不进默认 Lead 白名单。
+分档执行入口是 dispatch_tiered_tool。
 """
 
 from __future__ import annotations
 
 import json
+from collections.abc import Callable
 
 FOCUS_DIMENSIONS: tuple[str, ...] = (
     "competitor_pricing",   # 竞品价格:主张前提建立在竞品定价/价格对标数据上;
@@ -240,3 +247,131 @@ FORENSIC_TOOLS: tuple[str, ...] = (
     "flag_dead", "flag_contradiction", "flag_unverified",  # 标记问题记忆
     "propose_quarantine",  # 提议隔离
 )
+
+
+# -- 工具权限三档(A-FC-03)------------------------------------------------------
+# 档名只用 tool_tier_*。人审出口仍住规则闸与 HumanLatch,本模块不改那个词。
+
+TOOL_TIER_0 = "tool_tier_0"
+TOOL_TIER_1 = "tool_tier_1"
+TOOL_TIER_2 = "tool_tier_2"
+REASON_TOOL_TIER_DENIED = "tool_tier_denied"
+
+# 夹具名:禁动生产臂。不进 _TOOL_DEFS,tool_specs 挂不上,也不进任何角色白名单。
+FIXTURE_TOOL_TIER_2 = "arm_production"
+
+# 读与检索。不改主张、缺口或记忆标记。
+_TOOL_TIER_0_NAMES: tuple[str, ...] = (
+    "retrieve",
+    "read_source",
+    "list_memories",
+    "finish_reverify",
+    "spawn_critic",
+    "spawn_forensic",
+)
+# 写观测:主张 / 缺口 / 记忆标记,以及 Critic、Auditor 的写结论。
+_TOOL_TIER_1_NAMES: tuple[str, ...] = (
+    "reverify_claim",
+    "mark_stale",
+    "mark_gap",
+    "flag_contradiction",
+    "flag_dead",
+    "flag_unverified",
+    "propose_quarantine",
+    "report_finding",
+    "verdict",
+)
+# 已禁调用与生产臂夹具。默认 Lead 白名单不得出现这些名字。
+_TOOL_TIER_2_NAMES: tuple[str, ...] = (
+    "spawn_auditor",
+    FIXTURE_TOOL_TIER_2,
+)
+
+TOOL_TIERS: dict[str, str] = {
+    **{name: TOOL_TIER_0 for name in _TOOL_TIER_0_NAMES},
+    **{name: TOOL_TIER_1 for name in _TOOL_TIER_1_NAMES},
+    **{name: TOOL_TIER_2 for name in _TOOL_TIER_2_NAMES},
+}
+
+_ROLE_TOOL_WHITELISTS: tuple[tuple[str, ...], ...] = (
+    LEAD_TOOLS_W1,
+    LEAD_TOOLS_W3,
+    LEAD_TOOLS_W9,
+    CRITIC_TOOLS,
+    AUDITOR_TOOLS,
+    FORENSIC_TOOLS,
+)
+
+_unclassified = sorted(set(_TOOL_DEFS) - set(TOOL_TIERS))
+if _unclassified:
+    raise RuntimeError(f"工具未分档: {_unclassified}")
+_banned_mounted = sorted(
+    name
+    for whitelist in _ROLE_TOOL_WHITELISTS
+    for name in whitelist
+    if TOOL_TIERS.get(name) == TOOL_TIER_2
+)
+if _banned_mounted:
+    raise RuntimeError(f"{TOOL_TIER_2} 不得挂进角色白名单: {_banned_mounted}")
+_mounted_names = {name for whitelist in _ROLE_TOOL_WHITELISTS for name in whitelist}
+if "web_search" in _mounted_names or "web_search" in _TOOL_DEFS:
+    raise RuntimeError("web_search 不得进入工具表或白名单")
+
+
+def tool_tier_of(name: str) -> str | None:
+    """工具权限档。未登记的名字返回 None,调度时 fail-closed。"""
+    return TOOL_TIERS.get(name)
+
+
+def dispatch_tiered_tool(
+    name: str,
+    args: dict,
+    handler: Callable[[dict], dict],
+    *,
+    approval: object | None = None,
+    trajectory: list | None = None,
+) -> dict:
+    """按权限档执行一次工具调用。
+
+    tool_tier_0 直接执行。tool_tier_1 只在人审路径已签发本次工具的放行时执行。
+    tool_tier_2 与未分级名字一律拒绝,不调用 handler。
+    拒绝观察写入 trajectory,reason_code 为 tool_tier_denied。裸真值不算放行。
+    """
+    from freshlatch.latch.pipeline import human_review_allows_tool
+
+    records = trajectory if trajectory is not None else []
+    tier = tool_tier_of(name)
+    if tier == TOOL_TIER_2 or tier is None:
+        return _record_tier_denial(records, name, tier)
+    if tier == TOOL_TIER_1 and not human_review_allows_tool(approval, name):
+        return _record_tier_denial(records, name, tier)
+    result = handler(args)
+    records.append({
+        "type": "tool_tier_observation",
+        "tool": name,
+        "tool_tier": tier,
+        "ok": True,
+        "result": result,
+    })
+    return result
+
+
+def _record_tier_denial(records: list, name: str, tier: str | None) -> dict:
+    """拒绝一次调用。不执行工具,观察留在调用方轨迹上。"""
+    if tier == TOOL_TIER_2:
+        error = f"{name} 属于 {TOOL_TIER_2},禁止调用"
+    elif tier == TOOL_TIER_1:
+        error = f"{name} 属于 {TOOL_TIER_1},未过人审"
+    else:
+        error = f"未分级工具 {name} 拒绝执行"
+    observation = {
+        "type": "tool_tier_observation",
+        "tool": name,
+        "tool_tier": tier,
+        "ok": False,
+        "fail_closed": tier != TOOL_TIER_1,
+        "reason_code": REASON_TOOL_TIER_DENIED,
+        "error": error,
+    }
+    records.append(observation)
+    return observation
