@@ -564,3 +564,15 @@ L4-FC-03（Gate，可与 FC-01 并行，必须在 M4）
 旁路从 L4-SK-03 开始，任何时候都能插进，不替换上面的第 1 步。
 
 M8 之前若只完成了 1–3，对外仍然是 L3：拒答边开始出现，权限分层、短环和审计面还没有。
+
+## 11. M8 之后（可选，不挡本页开工）
+
+现有注册 G1 / A1 / T1 / R1 继续只做无回归锁：`status=TBD`，`counted_as_pass=false`，禁止事后改地板 token 或改金标 / `neural-rerank/per-query.json` 刷分。
+
+若对外或产品需要「成功率」主尺，在 **M8 完成之后** 另开预注册页（新段名，不动本页地板），分别量产品行为，例如：
+
+- 拒答行为率（主张该拒时系统真走出 refuse / abstain，不是 gold-bucket-agreement）
+- 线上 citation（claim 的 evidence id ⊆ 本轮 registry 的对错率，不是 `cite_sentence.json` 的 C∩R）
+- 时序 / 新旧排序（活检索或独立夹具语料上的 conflict_pair / new-over-old；不替换冻结 per-query 来抬注册 T1）
+
+仍不发明 SESOI；合格线由主人在看到结果前拍板。本附录不加实现票，不勾缺口清单，不派 Ronin。
