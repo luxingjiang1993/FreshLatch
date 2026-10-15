@@ -4,6 +4,7 @@
 须主人已明文「跑」且 CLI ``--authorize-run``。只写 patch-establishment/。
 禁止 LM Studio。禁止 exact-match 冒充正式 NLI。不改 floors/gold/x1/生产臂。
 ``second_formal_y=false``。不得标 L5。
+写 RESULT / 注册分之前调用 ``assert_formal_run_allowed``。``local-lms`` 失败关闭。
 """
 
 from __future__ import annotations
@@ -50,6 +51,7 @@ from freshlatch.eval.patch_establishment import (
     build_scaffold,
     file_sha256,
 )
+from freshlatch.formal_run_gate import assert_formal_run_allowed
 from freshlatch.models import DEFAULT_MODEL, MODEL_REGISTRY, NLI_MODEL
 from freshlatch.store.base import PRODUCTION_RETRIEVAL_MODE
 
@@ -542,7 +544,12 @@ def write_measured(
     code_pin: str,
     authorize_run: bool,
 ) -> dict[str, Any]:
-    """写入 measurement / RESULT / primary-tc。须 authorize。分数只在有 primary 后写。"""
+    """写入 measurement / RESULT / primary-tc。须 authorize。分数只在有 primary 后写。
+
+    写入前过正式跑闸。``local-lms`` 与未知 profile 在落盘前失败关闭。
+    ``FRESHLATCH_ALLOW_NON_RESULT_DEBUG`` 不放行这次写入。
+    """
+    assert_formal_run_allowed()
     if not authorize_run:
         raise RuntimeError("拒绝写分：缺 --authorize-run")
     base = Path(root)

@@ -18,7 +18,8 @@ LM Studio 不校验密钥。覆盖后的 ``env_key`` 为 ``None``。``LLMClient`
 C-04 正式生成器没有独立槽位。正式模块继续读 ``MODEL_REGISTRY["default_llm"]``
 与 ``DEFAULT_MODEL``，并在调用时显式传入模型名。本模块不改这两处常量，
 不改 RESULT，不改 manifest。``nli`` 与三家 ``judge_*`` 在锁定集合里，
-local-lms 不能换掉它们。正式跑前拒绝 local-lms 写入是后续闸，不在这里做。
+local-lms 不能换掉它们。正式跑前拒绝 local-lms 写入在
+``freshlatch.formal_run_gate.assert_formal_run_allowed``。本模块不放行那次写入。
 """
 
 from __future__ import annotations

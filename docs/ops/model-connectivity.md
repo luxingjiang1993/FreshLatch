@@ -62,7 +62,7 @@ GitHub Actions 只跑 `pytest`（零 LLM）。流水线**不**传 `--probe-http`
 
 退出码 0 只说明当前进程的 env 与 registry 解析（以及你显式打开的 GET `/models`）通过。它**不是**正式评测许可。
 
-正式 C-04 / RESULT 仍须 profile 为 `cloud`。写入前要断言 profile 不是 `local-lms`、locked slot 未被覆盖。那道闸是 **S7**，见 [`docs/plans/model-unified-mgmt/01-plan.md`](../plans/model-unified-mgmt/01-plan.md) 的 S7。本脚本不实现闸，不写 RESULT，也不在 `local-lms` 下放行正式跑。
+正式 C-04 / RESULT 仍须 profile 为 `cloud`。写入前的闸是 S7 的 `assert_formal_run_allowed`：profile 不是 `local-lms`，locked slot 未被覆盖，失败即停。见 [`model-profiles.md`](model-profiles.md) 的「正式跑前闸」。本脚本不调用那道闸，不写 RESULT，也不在 `local-lms` 下放行正式跑。
 
 解析规则与 overlay / locked 名单见 [`model-profiles.md`](model-profiles.md)。适配结论见 [`model-fit-report.md`](model-fit-report.md)（S5）。
 
