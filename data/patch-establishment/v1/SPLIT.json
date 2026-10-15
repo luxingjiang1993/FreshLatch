@@ -1,0 +1,7803 @@
+{
+  "built_n": 91,
+  "by_stratum": {
+    "删除": {
+      "bad": 4,
+      "bad_target": 13,
+      "built": 16,
+      "correct": 12,
+      "correct_target": 12,
+      "gap": 9,
+      "target": 25
+    },
+    "数值": {
+      "bad": 13,
+      "bad_target": 13,
+      "built": 25,
+      "correct": 12,
+      "correct_target": 12,
+      "gap": 0,
+      "target": 25
+    },
+    "日期": {
+      "bad": 13,
+      "bad_target": 13,
+      "built": 25,
+      "correct": 12,
+      "correct_target": 12,
+      "gap": 0,
+      "target": 25
+    },
+    "条款替换": {
+      "bad": 13,
+      "bad_target": 13,
+      "built": 25,
+      "correct": 12,
+      "correct_target": 12,
+      "gap": 0,
+      "target": 25
+    }
+  },
+  "counts_as_establishment": false,
+  "excluded_sets": [
+    "n400",
+    "pilot"
+  ],
+  "excluded_split": "docs/evidence/patch-events/SPLIT-pe-v2-route-y.json",
+  "formal": [
+    {
+      "claim_id": "a105",
+      "construction_gold": "坏",
+      "edit_type": "数值",
+      "operator": 0,
+      "sign": "plus"
+    },
+    {
+      "claim_id": "a106",
+      "construction_gold": "正确",
+      "edit_type": "数值",
+      "operator": null,
+      "sign": null
+    },
+    {
+      "claim_id": "a107",
+      "construction_gold": "坏",
+      "edit_type": "数值",
+      "operator": 1,
+      "sign": "plus"
+    },
+    {
+      "claim_id": "a108",
+      "construction_gold": "正确",
+      "edit_type": "数值",
+      "operator": null,
+      "sign": null
+    },
+    {
+      "claim_id": "a109",
+      "construction_gold": "坏",
+      "edit_type": "数值",
+      "operator": 2,
+      "sign": "plus"
+    },
+    {
+      "claim_id": "a110",
+      "construction_gold": "正确",
+      "edit_type": "数值",
+      "operator": null,
+      "sign": null
+    },
+    {
+      "claim_id": "a111",
+      "construction_gold": "坏",
+      "edit_type": "数值",
+      "operator": 3,
+      "sign": "plus"
+    },
+    {
+      "claim_id": "a112",
+      "construction_gold": "正确",
+      "edit_type": "数值",
+      "operator": null,
+      "sign": null
+    },
+    {
+      "claim_id": "a113",
+      "construction_gold": "坏",
+      "edit_type": "数值",
+      "operator": 0,
+      "sign": "minus"
+    },
+    {
+      "claim_id": "a114",
+      "construction_gold": "正确",
+      "edit_type": "数值",
+      "operator": null,
+      "sign": null
+    },
+    {
+      "claim_id": "a115",
+      "construction_gold": "坏",
+      "edit_type": "数值",
+      "operator": 1,
+      "sign": "minus"
+    },
+    {
+      "claim_id": "a116",
+      "construction_gold": "正确",
+      "edit_type": "数值",
+      "operator": null,
+      "sign": null
+    },
+    {
+      "claim_id": "a117",
+      "construction_gold": "坏",
+      "edit_type": "数值",
+      "operator": 2,
+      "sign": "minus"
+    },
+    {
+      "claim_id": "a118",
+      "construction_gold": "正确",
+      "edit_type": "数值",
+      "operator": null,
+      "sign": null
+    },
+    {
+      "claim_id": "a119",
+      "construction_gold": "坏",
+      "edit_type": "数值",
+      "operator": 3,
+      "sign": "minus"
+    },
+    {
+      "claim_id": "a120",
+      "construction_gold": "正确",
+      "edit_type": "数值",
+      "operator": null,
+      "sign": null
+    },
+    {
+      "claim_id": "a121",
+      "construction_gold": "坏",
+      "edit_type": "数值",
+      "operator": 0,
+      "sign": "plus"
+    },
+    {
+      "claim_id": "a122",
+      "construction_gold": "正确",
+      "edit_type": "数值",
+      "operator": null,
+      "sign": null
+    },
+    {
+      "claim_id": "a123",
+      "construction_gold": "坏",
+      "edit_type": "数值",
+      "operator": 1,
+      "sign": "plus"
+    },
+    {
+      "claim_id": "a124",
+      "construction_gold": "正确",
+      "edit_type": "数值",
+      "operator": null,
+      "sign": null
+    },
+    {
+      "claim_id": "a125",
+      "construction_gold": "坏",
+      "edit_type": "数值",
+      "operator": 2,
+      "sign": "plus"
+    },
+    {
+      "claim_id": "a126",
+      "construction_gold": "正确",
+      "edit_type": "数值",
+      "operator": null,
+      "sign": null
+    },
+    {
+      "claim_id": "a127",
+      "construction_gold": "坏",
+      "edit_type": "数值",
+      "operator": 3,
+      "sign": "plus"
+    },
+    {
+      "claim_id": "a128",
+      "construction_gold": "正确",
+      "edit_type": "数值",
+      "operator": null,
+      "sign": null
+    },
+    {
+      "claim_id": "a129",
+      "construction_gold": "坏",
+      "edit_type": "数值",
+      "operator": 0,
+      "sign": "minus"
+    },
+    {
+      "claim_id": "b105",
+      "construction_gold": "坏",
+      "edit_type": "日期",
+      "operator": 0,
+      "sign": "plus"
+    },
+    {
+      "claim_id": "b106",
+      "construction_gold": "正确",
+      "edit_type": "日期",
+      "operator": null,
+      "sign": null
+    },
+    {
+      "claim_id": "b107",
+      "construction_gold": "坏",
+      "edit_type": "日期",
+      "operator": 1,
+      "sign": "plus"
+    },
+    {
+      "claim_id": "b108",
+      "construction_gold": "正确",
+      "edit_type": "日期",
+      "operator": null,
+      "sign": null
+    },
+    {
+      "claim_id": "b109",
+      "construction_gold": "坏",
+      "edit_type": "日期",
+      "operator": 2,
+      "sign": "plus"
+    },
+    {
+      "claim_id": "b110",
+      "construction_gold": "正确",
+      "edit_type": "日期",
+      "operator": null,
+      "sign": null
+    },
+    {
+      "claim_id": "b111",
+      "construction_gold": "坏",
+      "edit_type": "日期",
+      "operator": 3,
+      "sign": "plus"
+    },
+    {
+      "claim_id": "b112",
+      "construction_gold": "正确",
+      "edit_type": "日期",
+      "operator": null,
+      "sign": null
+    },
+    {
+      "claim_id": "b113",
+      "construction_gold": "坏",
+      "edit_type": "日期",
+      "operator": 0,
+      "sign": "minus"
+    },
+    {
+      "claim_id": "b114",
+      "construction_gold": "正确",
+      "edit_type": "日期",
+      "operator": null,
+      "sign": null
+    },
+    {
+      "claim_id": "b115",
+      "construction_gold": "坏",
+      "edit_type": "日期",
+      "operator": 1,
+      "sign": "minus"
+    },
+    {
+      "claim_id": "b116",
+      "construction_gold": "正确",
+      "edit_type": "日期",
+      "operator": null,
+      "sign": null
+    },
+    {
+      "claim_id": "b117",
+      "construction_gold": "坏",
+      "edit_type": "日期",
+      "operator": 2,
+      "sign": "minus"
+    },
+    {
+      "claim_id": "b118",
+      "construction_gold": "正确",
+      "edit_type": "日期",
+      "operator": null,
+      "sign": null
+    },
+    {
+      "claim_id": "b119",
+      "construction_gold": "坏",
+      "edit_type": "日期",
+      "operator": 3,
+      "sign": "minus"
+    },
+    {
+      "claim_id": "b120",
+      "construction_gold": "正确",
+      "edit_type": "日期",
+      "operator": null,
+      "sign": null
+    },
+    {
+      "claim_id": "b121",
+      "construction_gold": "坏",
+      "edit_type": "日期",
+      "operator": 0,
+      "sign": "plus"
+    },
+    {
+      "claim_id": "b122",
+      "construction_gold": "正确",
+      "edit_type": "日期",
+      "operator": null,
+      "sign": null
+    },
+    {
+      "claim_id": "b123",
+      "construction_gold": "坏",
+      "edit_type": "日期",
+      "operator": 1,
+      "sign": "plus"
+    },
+    {
+      "claim_id": "b124",
+      "construction_gold": "正确",
+      "edit_type": "日期",
+      "operator": null,
+      "sign": null
+    },
+    {
+      "claim_id": "b125",
+      "construction_gold": "坏",
+      "edit_type": "日期",
+      "operator": 2,
+      "sign": "plus"
+    },
+    {
+      "claim_id": "b126",
+      "construction_gold": "正确",
+      "edit_type": "日期",
+      "operator": null,
+      "sign": null
+    },
+    {
+      "claim_id": "b127",
+      "construction_gold": "坏",
+      "edit_type": "日期",
+      "operator": 3,
+      "sign": "plus"
+    },
+    {
+      "claim_id": "b128",
+      "construction_gold": "正确",
+      "edit_type": "日期",
+      "operator": null,
+      "sign": null
+    },
+    {
+      "claim_id": "b129",
+      "construction_gold": "坏",
+      "edit_type": "日期",
+      "operator": 0,
+      "sign": "minus"
+    },
+    {
+      "claim_id": "c105",
+      "construction_gold": "坏",
+      "edit_type": "条款替换",
+      "operator": 0,
+      "sign": "plus"
+    },
+    {
+      "claim_id": "c106",
+      "construction_gold": "正确",
+      "edit_type": "条款替换",
+      "operator": null,
+      "sign": null
+    },
+    {
+      "claim_id": "c107",
+      "construction_gold": "坏",
+      "edit_type": "条款替换",
+      "operator": 1,
+      "sign": "plus"
+    },
+    {
+      "claim_id": "c108",
+      "construction_gold": "正确",
+      "edit_type": "条款替换",
+      "operator": null,
+      "sign": null
+    },
+    {
+      "claim_id": "c109",
+      "construction_gold": "坏",
+      "edit_type": "条款替换",
+      "operator": 2,
+      "sign": "plus"
+    },
+    {
+      "claim_id": "c110",
+      "construction_gold": "正确",
+      "edit_type": "条款替换",
+      "operator": null,
+      "sign": null
+    },
+    {
+      "claim_id": "c111",
+      "construction_gold": "坏",
+      "edit_type": "条款替换",
+      "operator": 3,
+      "sign": "plus"
+    },
+    {
+      "claim_id": "c112",
+      "construction_gold": "正确",
+      "edit_type": "条款替换",
+      "operator": null,
+      "sign": null
+    },
+    {
+      "claim_id": "c113",
+      "construction_gold": "坏",
+      "edit_type": "条款替换",
+      "operator": 0,
+      "sign": "minus"
+    },
+    {
+      "claim_id": "c114",
+      "construction_gold": "正确",
+      "edit_type": "条款替换",
+      "operator": null,
+      "sign": null
+    },
+    {
+      "claim_id": "c115",
+      "construction_gold": "坏",
+      "edit_type": "条款替换",
+      "operator": 1,
+      "sign": "minus"
+    },
+    {
+      "claim_id": "c116",
+      "construction_gold": "正确",
+      "edit_type": "条款替换",
+      "operator": null,
+      "sign": null
+    },
+    {
+      "claim_id": "c117",
+      "construction_gold": "坏",
+      "edit_type": "条款替换",
+      "operator": 2,
+      "sign": "minus"
+    },
+    {
+      "claim_id": "c118",
+      "construction_gold": "正确",
+      "edit_type": "条款替换",
+      "operator": null,
+      "sign": null
+    },
+    {
+      "claim_id": "c119",
+      "construction_gold": "坏",
+      "edit_type": "条款替换",
+      "operator": 3,
+      "sign": "minus"
+    },
+    {
+      "claim_id": "c120",
+      "construction_gold": "正确",
+      "edit_type": "条款替换",
+      "operator": null,
+      "sign": null
+    },
+    {
+      "claim_id": "c121",
+      "construction_gold": "坏",
+      "edit_type": "条款替换",
+      "operator": 0,
+      "sign": "plus"
+    },
+    {
+      "claim_id": "c122",
+      "construction_gold": "正确",
+      "edit_type": "条款替换",
+      "operator": null,
+      "sign": null
+    },
+    {
+      "claim_id": "c123",
+      "construction_gold": "坏",
+      "edit_type": "条款替换",
+      "operator": 1,
+      "sign": "plus"
+    },
+    {
+      "claim_id": "c124",
+      "construction_gold": "正确",
+      "edit_type": "条款替换",
+      "operator": null,
+      "sign": null
+    },
+    {
+      "claim_id": "c125",
+      "construction_gold": "坏",
+      "edit_type": "条款替换",
+      "operator": 2,
+      "sign": "plus"
+    },
+    {
+      "claim_id": "c126",
+      "construction_gold": "正确",
+      "edit_type": "条款替换",
+      "operator": null,
+      "sign": null
+    },
+    {
+      "claim_id": "c127",
+      "construction_gold": "坏",
+      "edit_type": "条款替换",
+      "operator": 3,
+      "sign": "plus"
+    },
+    {
+      "claim_id": "c128",
+      "construction_gold": "正确",
+      "edit_type": "条款替换",
+      "operator": null,
+      "sign": null
+    },
+    {
+      "claim_id": "c129",
+      "construction_gold": "坏",
+      "edit_type": "条款替换",
+      "operator": 0,
+      "sign": "minus"
+    },
+    {
+      "claim_id": "d164",
+      "construction_gold": "坏",
+      "edit_type": "删除",
+      "operator": 0,
+      "sign": "plus"
+    },
+    {
+      "claim_id": "d079",
+      "construction_gold": "正确",
+      "edit_type": "删除",
+      "operator": null,
+      "sign": null
+    },
+    {
+      "claim_id": "d156",
+      "construction_gold": "坏",
+      "edit_type": "删除",
+      "operator": 1,
+      "sign": "plus"
+    },
+    {
+      "claim_id": "d080",
+      "construction_gold": "正确",
+      "edit_type": "删除",
+      "operator": null,
+      "sign": null
+    },
+    {
+      "claim_id": "d081",
+      "construction_gold": "坏",
+      "edit_type": "删除",
+      "operator": 2,
+      "sign": "plus"
+    },
+    {
+      "claim_id": "d082",
+      "construction_gold": "正确",
+      "edit_type": "删除",
+      "operator": null,
+      "sign": null
+    },
+    {
+      "claim_id": "d172",
+      "construction_gold": "坏",
+      "edit_type": "删除",
+      "operator": 3,
+      "sign": "plus"
+    },
+    {
+      "claim_id": "d083",
+      "construction_gold": "正确",
+      "edit_type": "删除",
+      "operator": null,
+      "sign": null
+    },
+    {
+      "claim_id": "d084",
+      "construction_gold": "正确",
+      "edit_type": "删除",
+      "operator": null,
+      "sign": null
+    },
+    {
+      "claim_id": "d085",
+      "construction_gold": "正确",
+      "edit_type": "删除",
+      "operator": null,
+      "sign": null
+    },
+    {
+      "claim_id": "d086",
+      "construction_gold": "正确",
+      "edit_type": "删除",
+      "operator": null,
+      "sign": null
+    },
+    {
+      "claim_id": "d087",
+      "construction_gold": "正确",
+      "edit_type": "删除",
+      "operator": null,
+      "sign": null
+    },
+    {
+      "claim_id": "d088",
+      "construction_gold": "正确",
+      "edit_type": "删除",
+      "operator": null,
+      "sign": null
+    },
+    {
+      "claim_id": "d089",
+      "construction_gold": "正确",
+      "edit_type": "删除",
+      "operator": null,
+      "sign": null
+    },
+    {
+      "claim_id": "d090",
+      "construction_gold": "正确",
+      "edit_type": "删除",
+      "operator": null,
+      "sign": null
+    },
+    {
+      "claim_id": "d091",
+      "construction_gold": "正确",
+      "edit_type": "删除",
+      "operator": null,
+      "sign": null
+    }
+  ],
+  "gap_n": 9,
+  "layer_target": 25,
+  "measurement_status": "unmeasured",
+  "quota_note": "配额目标不改小。删除层坏槽在算子不改、claim_id 字典序下无法凑满；缺额写入 shortfalls 与 gaps，不补合成主张，不把未建成的槽算进 formal。",
+  "remainder_rule": "correct=floor(layer/2); bad=ceil(layer/2)",
+  "role": "frozen_corpus_unrun",
+  "run_status": "unrun",
+  "second_formal_y": false,
+  "selection": "claim_id lexicographic within stratum leftover; ConstructError skips to the next claim; operators unchanged",
+  "shortfalls": [
+    {
+      "claim_id": "d079",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d080",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d081",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d082",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d083",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d084",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d085",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d086",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d087",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d088",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d089",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d090",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d091",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d092",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d093",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d094",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d095",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d096",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d097",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d098",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d099",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d100",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d101",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d102",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d103",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d104",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d105",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d106",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d107",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d108",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d109",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d110",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d111",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d112",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d113",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d114",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d115",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d116",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d117",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d118",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d119",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d120",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d121",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d122",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d123",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d124",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d125",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d126",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d127",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d128",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d129",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d130",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d131",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d132",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d133",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d134",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d135",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d136",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d137",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d138",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d139",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d140",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d141",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d142",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d143",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d144",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d145",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d146",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d147",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d148",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d149",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d150",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d152",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d155",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d156",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d157",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d159",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d161",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d163",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d080",
+      "edit_type": "删除",
+      "operator": 1,
+      "reason": "证据支持该删除"
+    },
+    {
+      "claim_id": "d081",
+      "edit_type": "删除",
+      "operator": 1,
+      "reason": "证据支持该删除"
+    },
+    {
+      "claim_id": "d082",
+      "edit_type": "删除",
+      "operator": 1,
+      "reason": "证据支持该删除"
+    },
+    {
+      "claim_id": "d083",
+      "edit_type": "删除",
+      "operator": 1,
+      "reason": "证据支持该删除"
+    },
+    {
+      "claim_id": "d084",
+      "edit_type": "删除",
+      "operator": 1,
+      "reason": "证据支持该删除"
+    },
+    {
+      "claim_id": "d085",
+      "edit_type": "删除",
+      "operator": 1,
+      "reason": "证据支持该删除"
+    },
+    {
+      "claim_id": "d086",
+      "edit_type": "删除",
+      "operator": 1,
+      "reason": "证据支持该删除"
+    },
+    {
+      "claim_id": "d087",
+      "edit_type": "删除",
+      "operator": 1,
+      "reason": "证据支持该删除"
+    },
+    {
+      "claim_id": "d088",
+      "edit_type": "删除",
+      "operator": 1,
+      "reason": "证据支持该删除"
+    },
+    {
+      "claim_id": "d089",
+      "edit_type": "删除",
+      "operator": 1,
+      "reason": "证据支持该删除"
+    },
+    {
+      "claim_id": "d090",
+      "edit_type": "删除",
+      "operator": 1,
+      "reason": "证据支持该删除"
+    },
+    {
+      "claim_id": "d091",
+      "edit_type": "删除",
+      "operator": 1,
+      "reason": "证据支持该删除"
+    },
+    {
+      "claim_id": "d092",
+      "edit_type": "删除",
+      "operator": 1,
+      "reason": "证据支持该删除"
+    },
+    {
+      "claim_id": "d093",
+      "edit_type": "删除",
+      "operator": 1,
+      "reason": "证据支持该删除"
+    },
+    {
+      "claim_id": "d094",
+      "edit_type": "删除",
+      "operator": 1,
+      "reason": "证据支持该删除"
+    },
+    {
+      "claim_id": "d095",
+      "edit_type": "删除",
+      "operator": 1,
+      "reason": "证据支持该删除"
+    },
+    {
+      "claim_id": "d096",
+      "edit_type": "删除",
+      "operator": 1,
+      "reason": "证据支持该删除"
+    },
+    {
+      "claim_id": "d097",
+      "edit_type": "删除",
+      "operator": 1,
+      "reason": "证据支持该删除"
+    },
+    {
+      "claim_id": "d098",
+      "edit_type": "删除",
+      "operator": 1,
+      "reason": "证据支持该删除"
+    },
+    {
+      "claim_id": "d099",
+      "edit_type": "删除",
+      "operator": 1,
+      "reason": "证据支持该删除"
+    },
+    {
+      "claim_id": "d100",
+      "edit_type": "删除",
+      "operator": 1,
+      "reason": "证据支持该删除"
+    },
+    {
+      "claim_id": "d101",
+      "edit_type": "删除",
+      "operator": 1,
+      "reason": "证据支持该删除"
+    },
+    {
+      "claim_id": "d102",
+      "edit_type": "删除",
+      "operator": 1,
+      "reason": "证据支持该删除"
+    },
+    {
+      "claim_id": "d103",
+      "edit_type": "删除",
+      "operator": 1,
+      "reason": "证据支持该删除"
+    },
+    {
+      "claim_id": "d104",
+      "edit_type": "删除",
+      "operator": 1,
+      "reason": "证据支持该删除"
+    },
+    {
+      "claim_id": "d105",
+      "edit_type": "删除",
+      "operator": 1,
+      "reason": "证据支持该删除"
+    },
+    {
+      "claim_id": "d106",
+      "edit_type": "删除",
+      "operator": 1,
+      "reason": "证据支持该删除"
+    },
+    {
+      "claim_id": "d107",
+      "edit_type": "删除",
+      "operator": 1,
+      "reason": "证据支持该删除"
+    },
+    {
+      "claim_id": "d108",
+      "edit_type": "删除",
+      "operator": 1,
+      "reason": "证据支持该删除"
+    },
+    {
+      "claim_id": "d109",
+      "edit_type": "删除",
+      "operator": 1,
+      "reason": "证据支持该删除"
+    },
+    {
+      "claim_id": "d110",
+      "edit_type": "删除",
+      "operator": 1,
+      "reason": "证据支持该删除"
+    },
+    {
+      "claim_id": "d111",
+      "edit_type": "删除",
+      "operator": 1,
+      "reason": "证据支持该删除"
+    },
+    {
+      "claim_id": "d112",
+      "edit_type": "删除",
+      "operator": 1,
+      "reason": "证据支持该删除"
+    },
+    {
+      "claim_id": "d113",
+      "edit_type": "删除",
+      "operator": 1,
+      "reason": "证据支持该删除"
+    },
+    {
+      "claim_id": "d114",
+      "edit_type": "删除",
+      "operator": 1,
+      "reason": "证据支持该删除"
+    },
+    {
+      "claim_id": "d115",
+      "edit_type": "删除",
+      "operator": 1,
+      "reason": "证据支持该删除"
+    },
+    {
+      "claim_id": "d116",
+      "edit_type": "删除",
+      "operator": 1,
+      "reason": "证据支持该删除"
+    },
+    {
+      "claim_id": "d117",
+      "edit_type": "删除",
+      "operator": 1,
+      "reason": "证据支持该删除"
+    },
+    {
+      "claim_id": "d118",
+      "edit_type": "删除",
+      "operator": 1,
+      "reason": "证据支持该删除"
+    },
+    {
+      "claim_id": "d119",
+      "edit_type": "删除",
+      "operator": 1,
+      "reason": "证据支持该删除"
+    },
+    {
+      "claim_id": "d120",
+      "edit_type": "删除",
+      "operator": 1,
+      "reason": "证据支持该删除"
+    },
+    {
+      "claim_id": "d121",
+      "edit_type": "删除",
+      "operator": 1,
+      "reason": "证据支持该删除"
+    },
+    {
+      "claim_id": "d122",
+      "edit_type": "删除",
+      "operator": 1,
+      "reason": "证据支持该删除"
+    },
+    {
+      "claim_id": "d123",
+      "edit_type": "删除",
+      "operator": 1,
+      "reason": "证据支持该删除"
+    },
+    {
+      "claim_id": "d124",
+      "edit_type": "删除",
+      "operator": 1,
+      "reason": "证据支持该删除"
+    },
+    {
+      "claim_id": "d125",
+      "edit_type": "删除",
+      "operator": 1,
+      "reason": "证据支持该删除"
+    },
+    {
+      "claim_id": "d126",
+      "edit_type": "删除",
+      "operator": 1,
+      "reason": "证据支持该删除"
+    },
+    {
+      "claim_id": "d127",
+      "edit_type": "删除",
+      "operator": 1,
+      "reason": "证据支持该删除"
+    },
+    {
+      "claim_id": "d128",
+      "edit_type": "删除",
+      "operator": 1,
+      "reason": "证据支持该删除"
+    },
+    {
+      "claim_id": "d129",
+      "edit_type": "删除",
+      "operator": 1,
+      "reason": "证据支持该删除"
+    },
+    {
+      "claim_id": "d130",
+      "edit_type": "删除",
+      "operator": 1,
+      "reason": "证据支持该删除"
+    },
+    {
+      "claim_id": "d131",
+      "edit_type": "删除",
+      "operator": 1,
+      "reason": "证据支持该删除"
+    },
+    {
+      "claim_id": "d132",
+      "edit_type": "删除",
+      "operator": 1,
+      "reason": "证据支持该删除"
+    },
+    {
+      "claim_id": "d133",
+      "edit_type": "删除",
+      "operator": 1,
+      "reason": "证据支持该删除"
+    },
+    {
+      "claim_id": "d134",
+      "edit_type": "删除",
+      "operator": 1,
+      "reason": "证据支持该删除"
+    },
+    {
+      "claim_id": "d135",
+      "edit_type": "删除",
+      "operator": 1,
+      "reason": "证据支持该删除"
+    },
+    {
+      "claim_id": "d136",
+      "edit_type": "删除",
+      "operator": 1,
+      "reason": "证据支持该删除"
+    },
+    {
+      "claim_id": "d137",
+      "edit_type": "删除",
+      "operator": 1,
+      "reason": "证据支持该删除"
+    },
+    {
+      "claim_id": "d138",
+      "edit_type": "删除",
+      "operator": 1,
+      "reason": "证据支持该删除"
+    },
+    {
+      "claim_id": "d139",
+      "edit_type": "删除",
+      "operator": 1,
+      "reason": "证据支持该删除"
+    },
+    {
+      "claim_id": "d140",
+      "edit_type": "删除",
+      "operator": 1,
+      "reason": "证据支持该删除"
+    },
+    {
+      "claim_id": "d141",
+      "edit_type": "删除",
+      "operator": 1,
+      "reason": "证据支持该删除"
+    },
+    {
+      "claim_id": "d142",
+      "edit_type": "删除",
+      "operator": 1,
+      "reason": "证据支持该删除"
+    },
+    {
+      "claim_id": "d143",
+      "edit_type": "删除",
+      "operator": 1,
+      "reason": "证据支持该删除"
+    },
+    {
+      "claim_id": "d144",
+      "edit_type": "删除",
+      "operator": 1,
+      "reason": "证据支持该删除"
+    },
+    {
+      "claim_id": "d145",
+      "edit_type": "删除",
+      "operator": 1,
+      "reason": "证据支持该删除"
+    },
+    {
+      "claim_id": "d146",
+      "edit_type": "删除",
+      "operator": 1,
+      "reason": "证据支持该删除"
+    },
+    {
+      "claim_id": "d147",
+      "edit_type": "删除",
+      "operator": 1,
+      "reason": "证据支持该删除"
+    },
+    {
+      "claim_id": "d148",
+      "edit_type": "删除",
+      "operator": 1,
+      "reason": "证据支持该删除"
+    },
+    {
+      "claim_id": "d149",
+      "edit_type": "删除",
+      "operator": 1,
+      "reason": "证据支持该删除"
+    },
+    {
+      "claim_id": "d150",
+      "edit_type": "删除",
+      "operator": 1,
+      "reason": "证据支持该删除"
+    },
+    {
+      "claim_id": "d152",
+      "edit_type": "删除",
+      "operator": 1,
+      "reason": "证据支持该删除"
+    },
+    {
+      "claim_id": "d155",
+      "edit_type": "删除",
+      "operator": 1,
+      "reason": "证据支持该删除"
+    },
+    {
+      "claim_id": "d083",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d084",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d085",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d086",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d087",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d088",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d089",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d090",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d091",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d092",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d093",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d094",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d095",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d096",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d097",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d098",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d099",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d100",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d101",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d102",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d103",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d104",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d105",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d106",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d107",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d108",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d109",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d110",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d111",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d112",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d113",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d114",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d115",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d116",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d117",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d118",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d119",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d120",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d121",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d122",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d123",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d124",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d125",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d126",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d127",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d128",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d129",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d130",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d131",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d132",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d133",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d134",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d135",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d136",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d137",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d138",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d139",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d140",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d141",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d142",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d143",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d144",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d145",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d146",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d147",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d148",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d149",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d150",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d152",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d155",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d157",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d159",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d161",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d163",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d165",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d167",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d169",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d171",
+      "edit_type": "删除",
+      "operator": 3,
+      "reason": "没有不改变事实的修饰"
+    },
+    {
+      "claim_id": "d084",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d085",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d086",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d087",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d088",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d089",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d090",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d091",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d092",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d093",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d094",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d095",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d096",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d097",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d098",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d099",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d100",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d101",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d102",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d103",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d104",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d105",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d106",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d107",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d108",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d109",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d110",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d111",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d112",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d113",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d114",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d115",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d116",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d117",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d118",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d119",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d120",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d121",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d122",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d123",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d124",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d125",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d126",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d127",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d128",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d129",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d130",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d131",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d132",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d133",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d134",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d135",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d136",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d137",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d138",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d139",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d140",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d141",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d142",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d143",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d144",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d145",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d146",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d147",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d148",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d149",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d150",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d152",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d155",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d157",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d159",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d161",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d163",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d165",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d167",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d169",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d171",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d173",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d175",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d177",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d180",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d182",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d184",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d186",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d187",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d189",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d190",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d192",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d194",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d196",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d197",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d198",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d200",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d201",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d202",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d203",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d204",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d205",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d206",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d208",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d209",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d210",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d211",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d212",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d213",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d215",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d216",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d217",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d219",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "d085",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d086",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d087",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d088",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d089",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d090",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d091",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d092",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d093",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d094",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d095",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d096",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d097",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d098",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d099",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d100",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d101",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d102",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d103",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d104",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d105",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d106",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d107",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d108",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d109",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d110",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d111",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d112",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d113",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d114",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d115",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d116",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d117",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d118",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d119",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d120",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d121",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d122",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d123",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d124",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d125",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d126",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d127",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d128",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d129",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d130",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d131",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d132",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d133",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d134",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d135",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d136",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d137",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d138",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d139",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d140",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d141",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d142",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d143",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d144",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d145",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d146",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d147",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d148",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d149",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d150",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d152",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d155",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d157",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d159",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d161",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d163",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d165",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d167",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d169",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d171",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d173",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d175",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d177",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d180",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d182",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d184",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d186",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d187",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d189",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d190",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d192",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d194",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d196",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d197",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d198",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d200",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d201",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d202",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d203",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d204",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d205",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d206",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d208",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d209",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d210",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d211",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d212",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d213",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d215",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d216",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d217",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d219",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "d086",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d087",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d088",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d089",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d090",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d091",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d092",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d093",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d094",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d095",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d096",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d097",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d098",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d099",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d100",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d101",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d102",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d103",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d104",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d105",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d106",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d107",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d108",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d109",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d110",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d111",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d112",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d113",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d114",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d115",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d116",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d117",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d118",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d119",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d120",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d121",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d122",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d123",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d124",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d125",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d126",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d127",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d128",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d129",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d130",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d131",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d132",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d133",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d134",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d135",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d136",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d137",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d138",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d139",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d140",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d141",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d142",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d143",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d144",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d145",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d146",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d147",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d148",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d149",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d150",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d152",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d155",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d157",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d159",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d161",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d163",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d165",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d167",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d169",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d171",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d173",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d175",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d177",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d180",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d182",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d184",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d186",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d187",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d189",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d190",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d192",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d194",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d196",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d197",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d198",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d200",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d201",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d202",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d203",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d204",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d205",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d206",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d208",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d209",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d210",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d211",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d212",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d213",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d215",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d216",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d217",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d219",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "d087",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d088",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d089",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d090",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d091",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d092",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d093",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d094",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d095",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d096",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d097",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d098",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d099",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d100",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d101",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d102",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d103",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d104",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d105",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d106",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d107",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d108",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d109",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d110",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d111",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d112",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d113",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d114",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d115",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d116",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d117",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d118",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d119",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d120",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d121",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d122",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d123",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d124",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d125",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d126",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d127",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d128",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d129",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d130",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d131",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d132",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d133",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d134",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d135",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d136",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d137",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d138",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d139",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d140",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d141",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d142",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d143",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d144",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d145",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d146",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d147",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d148",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d149",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d150",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d152",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d155",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d157",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d159",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d161",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d163",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d165",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d167",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d169",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d171",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d173",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d175",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d177",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d180",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d182",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d184",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d186",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d187",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d189",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d190",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d192",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d194",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d196",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d197",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d198",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d200",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d201",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d202",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d203",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d204",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d205",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d206",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d208",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d209",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d210",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d211",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d212",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d213",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d215",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d216",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d217",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d219",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "d088",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d089",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d090",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d091",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d092",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d093",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d094",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d095",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d096",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d097",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d098",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d099",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d100",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d101",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d102",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d103",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d104",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d105",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d106",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d107",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d108",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d109",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d110",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d111",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d112",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d113",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d114",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d115",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d116",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d117",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d118",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d119",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d120",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d121",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d122",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d123",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d124",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d125",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d126",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d127",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d128",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d129",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d130",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d131",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d132",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d133",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d134",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d135",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d136",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d137",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d138",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d139",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d140",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d141",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d142",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d143",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d144",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d145",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d146",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d147",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d148",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d149",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d150",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d152",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d155",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d157",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d159",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d161",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d163",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d165",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d167",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d169",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d171",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d173",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d175",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d177",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d180",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d182",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d184",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d186",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d187",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d189",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d190",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d192",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d194",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d196",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d197",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d198",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d200",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d201",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d202",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d203",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d204",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d205",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d206",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d208",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d209",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d210",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d211",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d212",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d213",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d215",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d216",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d217",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d219",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "d089",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d090",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d091",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d092",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d093",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d094",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d095",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d096",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d097",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d098",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d099",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d100",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d101",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d102",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d103",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d104",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d105",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d106",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d107",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d108",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d109",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d110",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d111",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d112",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d113",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d114",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d115",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d116",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d117",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d118",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d119",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d120",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d121",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d122",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d123",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d124",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d125",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d126",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d127",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d128",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d129",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d130",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d131",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d132",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d133",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d134",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d135",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d136",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d137",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d138",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d139",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d140",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d141",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d142",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d143",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d144",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d145",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d146",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d147",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d148",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d149",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d150",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d152",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d155",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d157",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d159",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d161",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d163",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d165",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d167",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d169",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d171",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d173",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d175",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d177",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d180",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d182",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d184",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d186",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d187",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d189",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d190",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d192",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d194",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d196",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d197",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d198",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d200",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d201",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d202",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d203",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d204",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d205",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d206",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d208",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d209",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d210",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d211",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d212",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d213",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d215",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d216",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d217",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d219",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "d090",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d091",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d092",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d093",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d094",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d095",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d096",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d097",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d098",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d099",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d100",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d101",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d102",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d103",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d104",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d105",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d106",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d107",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d108",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d109",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d110",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d111",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d112",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d113",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d114",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d115",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d116",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d117",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d118",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d119",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d120",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d121",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d122",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d123",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d124",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d125",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d126",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d127",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d128",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d129",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d130",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d131",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d132",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d133",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d134",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d135",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d136",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d137",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d138",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d139",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d140",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d141",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d142",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d143",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d144",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d145",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d146",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d147",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d148",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d149",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d150",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d152",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d155",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d157",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d159",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d161",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d163",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d165",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d167",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d169",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d171",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d173",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d175",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d177",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d180",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d182",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d184",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d186",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d187",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d189",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d190",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d192",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d194",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d196",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d197",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d198",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d200",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d201",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d202",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d203",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d204",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d205",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d206",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d208",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d209",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d210",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d211",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d212",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d213",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d215",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d216",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d217",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d219",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "d091",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d092",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d093",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d094",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d095",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d096",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d097",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d098",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d099",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d100",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d101",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d102",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d103",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d104",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d105",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d106",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d107",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d108",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d109",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d110",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d111",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d112",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d113",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d114",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d115",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d116",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d117",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d118",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d119",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d120",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d121",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d122",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d123",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d124",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d125",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d126",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d127",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d128",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d129",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d130",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d131",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d132",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d133",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d134",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d135",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d136",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d137",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d138",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d139",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d140",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d141",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d142",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d143",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d144",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d145",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d146",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d147",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d148",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d149",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d150",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d152",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d155",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d157",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d159",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d161",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d163",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d165",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d167",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d169",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d171",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d173",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d175",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d177",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d180",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d182",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d184",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d186",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d187",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d189",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d190",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d192",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d194",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d196",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d197",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d198",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d200",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d201",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d202",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d203",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d204",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d205",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d206",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d208",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d209",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d210",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d211",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d212",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d213",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d215",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d216",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d217",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d219",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "语料不足"
+    },
+    {
+      "claim_id": "d092",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d093",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d094",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d095",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d096",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d097",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d098",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d099",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d100",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d101",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d102",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d103",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d104",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d105",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d106",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d107",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d108",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d109",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d110",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d111",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d112",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d113",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d114",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d115",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d116",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d117",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d118",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d119",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d120",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d121",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d122",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d123",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d124",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d125",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d126",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d127",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d128",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d129",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d130",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d131",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d132",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d133",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d134",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d135",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d136",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d137",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d138",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d139",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d140",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d141",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d142",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d143",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d144",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d145",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d146",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d147",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d148",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d149",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d150",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d152",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d155",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d157",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d159",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d161",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d163",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d165",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d167",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d169",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d171",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d173",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d175",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d177",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d180",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d182",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d184",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d186",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d187",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d189",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d190",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d192",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d194",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d196",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d197",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d198",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d200",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d201",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d202",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d203",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d204",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d205",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d206",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d208",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d209",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d210",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d211",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d212",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d213",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d215",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d216",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d217",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "d219",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "没有 T1 仍然肯定的限定"
+    },
+    {
+      "claim_id": "",
+      "edit_type": "删除",
+      "operator": 0,
+      "reason": "语料不足"
+    }
+  ],
+  "status": "frozen_corpus_unrun",
+  "target_n": 100
+}
