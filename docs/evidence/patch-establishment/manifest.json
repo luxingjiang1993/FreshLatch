@@ -21,22 +21,22 @@
     ]
   },
   "decoding": {
-    "model": null,
-    "note": "scaffold, no LLM, temperature/seed/model unused",
-    "seed": null,
-    "temperature": null
+    "model": "qwen-flash",
+    "note": "formal C-04; qwen-flash + mDeBERTa; Amendment-02",
+    "seed": 20261007,
+    "temperature": 0.0
   },
   "establishment": {
-    "ci95_high": null,
-    "ci95_low": null,
+    "ci95_high": 0.38235294117647056,
+    "ci95_low": -0.07407407407407407,
     "counted_as_pass": false,
-    "false_accept_rate": null,
-    "k": null,
-    "n": null,
+    "false_accept_rate": 0.1515151515151515,
+    "k": 33,
+    "n": 91,
     "numeric_line": "unregistered",
-    "point_estimate": null,
+    "point_estimate": 0.1515151515151515,
     "sesoi": null,
-    "status": "unmeasured"
+    "status": "not_established"
   },
   "firewall": {
     "b04_counts_as_establishment": false,
@@ -48,16 +48,16 @@
     "production_arm_unchanged": true,
     "second_formal_y": false
   },
-  "level": "scaffold",
-  "manifest_status": "schema_frozen_unmeasured",
+  "level": "formal_measured",
+  "manifest_status": "schema_frozen_measured",
   "model": {
     "generator_model": "qwen-flash",
     "generator_sha256": null,
-    "measurement_status": "unmeasured",
+    "measurement_status": "measured",
     "nli_model": "MoritzLaurer/mDeBERTa-v3-base-xnli-multilingual-nli-2mil7",
     "nli_sha256": null,
-    "seed": null,
-    "temperature": null
+    "seed": 20261007,
+    "temperature": 0.0
   },
   "production_retrieval_mode": "hybrid+rerank",
   "replaces_frozen_baseline": false,

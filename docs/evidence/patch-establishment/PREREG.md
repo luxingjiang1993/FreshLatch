@@ -110,7 +110,7 @@ Trust=Gate。合并前,以及任何「跑」之前,主人看这一页,而不是�
 5. `measurement.json` 仍是 `run_status=unrun`、`measurement_status=unmeasured`、`counted_as_pass=false`。分数仍 null。`sesoi` 仍 null。
 6. 历史结果丙没有被改判。`second_formal_y=false`。不得称优于 RARR·KPR。不得标产品 L5。
 7. 离线质量闸的 `value=` 与合入本页之前一致。
-8. 文末「激活批注」已写，并勾上「主人写激活批注」。批注如实写 `SPLIT.json` 的 `built_n=91`、`gap_n=9`。目标 n=100 是配额锁，不是已建成的 formal 针。`establishment.n` 仍是 null。「主人明文「跑」」未勾。文末「模型锁定批注」已把 `generator_model` 与 `nli_model` 从 `MODEL_REGISTRY` 锁入 manifest。`generator_sha256` 与 `nli_sha256` 仍是 null。`built_n` 仍是 91。不得「跑」，不得往 `RESULT.md` 填分数。
+8. 文末「激活批注」已写，并勾上「主人写激活批注」。批注如实写 `SPLIT.json` 的 `built_n=91`、`gap_n=9`。目标 n=100 是配额锁，不是已建成的 formal 针。`establishment.n` 仍是 null。文末「模型锁定批注」已把 `generator_model` 与 `nli_model` 从 `MODEL_REGISTRY` 锁入 manifest。`generator_sha256` 与 `nli_sha256` 仍是 null。`built_n` 仍是 91。主人明文「跑」与 Amendment-02 见文末；分数只在正式针完成后写入 `RESULT.md`。
 
 主人点头之前,不要把 `measurement_status` 改成已测量,不要往成立格填数字,不要改质量闸地板,不要开跑。
 
@@ -156,9 +156,9 @@ Trust=Gate。合并前,以及任何「跑」之前,主人看这一页,而不是�
 - [ ] 生成器 `generator_sha256` 与 NLI `nli_sha256` 写入 manifest（当前仍为 null；不发明 hash；temperature、seed 仍 null）
 - [x] 主人确认比较对象与数字线：比较 A,数字线 L1,n=100（2026-10-15）
 - [x] 主人写激活批注（2026-10-15；见下方「激活批注」；`built_n=91`；`gap_n=9`；目标 n=100 未满额建成；`run_status=unrun`；`sesoi=null`；分数仍 null；本项不是「跑」，不是成立）
-- [ ] 主人明文「跑」
+- [x] 主人明文「跑」（2026-10-15；主人 Oriental Ronin 明文「跑」；本勾授权正式针，不是成立）
 
-清单仍未齐。不得「跑」。Trust=Gate。合并与开跑都要主人另行点头。激活批注之后,仍须主人明文「跑」才可进入正式针。正式针若将来开跑,也不得把本次建成的 91 假装成已建成 n=100。
+清单：`generator_sha256` / `nli_sha256` 仍为 null（不发明 hash）；主人已明文「跑」（见上勾与 Amendment-02）。Trust=Gate。正式针 `establishment.n` 取建成 91，不得把 91 假装成已建成 n=100。
 
 ### 激活批注
 
@@ -189,3 +189,32 @@ Trust=Gate。合并前,以及任何「跑」之前,主人看这一页,而不是�
 - `run_status=unrun`。`measurement_status=unmeasured`。`sesoi=null`。本页不发明 SESOI。
 - 不改 floors。不改 gold。不改 x1。不改默认生产臂。`PRODUCTION_RETRIEVAL_MODE` 仍是 `hybrid+rerank`。
 - 激活批注里「型号两格仍是 null」记录的是本批注之前的状态。型号两格以本批注为准。hash 两格仍是 null。清单仍未齐，因为 hash 未写，且主人未明文「跑」。不得「跑」。
+
+## Amendment-02 · 开跑前解码与 bootstrap 锁（日期：2026-10-15 · 早于任何非空分数）
+
+状态：主人已明文「跑」；本 Amendment 在看见任何非空分数之前锁死解码与 bootstrap。假阳性 id 与止损 id 不增删。`sesoi` 仍 null。本页不发明 SESOI。不得把数字线叫做 SESOI。
+
+本 Amendment 不改比较对象（比较 A）与数字线 L1（`criteria.numeric_line=registered:interval_gt0`）。不改 `target_n=100`。`built_n=91` / `gap_n=9` 如实报告；测量时 `establishment.n` 取实际建成数 91，不得把 91 假装成 100。
+
+### 解码与选取（继承 PE 仪器常数 · 开跑前写死）
+
+- `generator_model` = `qwen-flash`（`MODEL_REGISTRY["default_llm"]`）。禁止 LM Studio / 本地 profile 充当正式分。
+- `nli_model` = `MoritzLaurer/mDeBERTa-v3-base-xnli-multilingual-nli-2mil7`。禁止 exact-match 回退充当正式 NLI。
+- `temperature` = `0`（与 `MODEL_REGISTRY["default_llm"].temperature` 一致）。
+- `Decoding.seed` = `20261007`（与 `freshlatch.eval.patch_events_metrics.SEED` 一致）。API seed = `None`。
+- bootstrap 次数 = `10000`（与 `N_BOOT` 一致）。随机流名仍用 `named_streams()` 的 `bootstrap`。
+- 固定 `k` := T 自然放行数。`k_min` = `10`：若 T 自然放行数 < 10，则主比较无定义，`counted_as_pass=false`，不得标成立。
+- 主比较只认 T−C。B1/B2 本针不发送、不进成立格（报告格省略）。
+- `generator_sha256` 与 `nli_sha256` 仍允许 null（不发明 hash）。
+
+### 丙防火墙（重申）
+
+- `second_formal_y=false`。STOP-SAME-YARDSTICK。
+- 不得改判历史结果丙。不得写回 `RESULT-Y.md` / `PREREG-Y.md`。
+- 不得标产品 L5。不得称优于 RARR·KPR。
+- 不改 floors / gold / x1 / 默认生产臂。
+
+### 止损
+
+- 正式针一次。未成立 → 收口；禁止同页二跑、加 n、改尺充数。
+- 成立 → 仍不得标 L5、不得改判历史丙、不得称优于 RARR·KPR。

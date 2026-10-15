@@ -1,4 +1,6 @@
 {
+  "built_n": 91,
+  "code_pin": "8b4c6f1ecc8e6db55e31959b8bab283921998a96",
   "conclusion_dir": "docs/evidence/patch-establishment/",
   "criteria": {
     "false_positive": [
@@ -22,22 +24,22 @@
     ]
   },
   "decoding": {
-    "model": null,
-    "note": "scaffold, no LLM, temperature/seed/model unused",
-    "seed": null,
-    "temperature": null
+    "model": "qwen-flash",
+    "note": "formal C-04; qwen-flash + mDeBERTa; Amendment-02",
+    "seed": 20261007,
+    "temperature": 0.0
   },
   "establishment": {
-    "ci95_high": null,
-    "ci95_low": null,
+    "ci95_high": 0.38235294117647056,
+    "ci95_low": -0.07407407407407407,
     "counted_as_pass": false,
-    "false_accept_rate": null,
-    "k": null,
-    "n": null,
+    "false_accept_rate": 0.1515151515151515,
+    "k": 33,
+    "n": 91,
     "numeric_line": "unregistered",
-    "point_estimate": null,
+    "point_estimate": 0.1515151515151515,
     "sesoi": null,
-    "status": "unmeasured"
+    "status": "not_established"
   },
   "firewall": {
     "b04_counts_as_establishment": false,
@@ -49,10 +51,36 @@
     "production_arm_unchanged": true,
     "second_formal_y": false
   },
-  "level": "scaffold",
-  "measurement_status": "unmeasured",
+  "gap_n": 9,
+  "generations": {
+    "n_lines": 182,
+    "path": "docs/evidence/patch-establishment/formal-generations.jsonl",
+    "sha256": "8593bf784d75edbb910c59b1342a998bf567cb3728b3c1b6be11701f3d5025da"
+  },
+  "level": "formal_measured",
+  "measurement_status": "measured",
+  "primary": {
+    "ci95_high": 0.38235294117647056,
+    "ci95_low": -0.07407407407407407,
+    "defined": true,
+    "established": false,
+    "k": 33,
+    "k_min": 10,
+    "n": 91,
+    "name": "T-C",
+    "point": 0.1515151515151515,
+    "reason": null
+  },
   "production_retrieval_mode": "hybrid+rerank",
   "replaces_frozen_baseline": false,
-  "run_status": "unrun",
-  "schema_version": "l4-c-04-v1"
+  "run_status": "ran",
+  "schema_version": "l4-c-04-v1",
+  "spend_estimate_yuan": {
+    "approx_from_char_proxy": 0.03,
+    "currency": "CNY",
+    "model": "qwen-flash",
+    "note": "DashScope list price ≤128K: in¥0.15/M out¥1.5/M; exact billing may differ; under ¥10 hard cap",
+    "upper_bound_pre_run": 0.0814
+  },
+  "target_n": 100
 }
