@@ -1,4 +1,4 @@
-"""CLI:`python -m freshlatch.eval run|control|control-c|report|quality-gate|arm-table|temporal-prereg|patch-establishment`(§4.1)。
+"""CLI:`python -m freshlatch.eval run|control|control-c|report|quality-gate|arm-table|temporal-prereg|patch-establishment|public-pack`(§4.1)。
 
 run --gold data/eval/gold.json [--runs N]   金标对账(LLM,手动/milestone 触发,不进 CI)
 control                                      无工具假绿对照(旧仪器;判 alive = 假绿,对照成立)
@@ -172,6 +172,26 @@ def build_parser(pack: PackPaths | None = None) -> argparse.ArgumentParser:
         help="只估 token/¥，不调用 API、不写分",
     )
 
+    p_pub = sub.add_parser(
+        "public-pack",
+        help="固定公开 eval 包本地回放（零付费 API，冒烟层）",
+    )
+    p_pub.add_argument(
+        "--pack",
+        default=None,
+        help="固定夹具。缺省为 tests/eval/fixtures/a_p7_public_eval_pack.json",
+    )
+    p_pub.add_argument(
+        "--out",
+        default=None,
+        help="写出 RESULT.json 的目录。不得指向 docs/evidence/ 或 data/",
+    )
+    p_pub.add_argument(
+        "--verify",
+        action="store_true",
+        help="回放并核对 content_hash 与规范 JSON 的 sha256",
+    )
+
     return ap
 
 
@@ -184,6 +204,36 @@ def main(argv: list[str] | None = None) -> None:
 
         code = run_quality_gate(offline=bool(args.offline), prereg=args.prereg)
         raise SystemExit(code)
+
+    # 公开包不打开 SQLite，也不构造 LLM 客户端。
+    if args.cmd == "public-pack":
+        from freshlatch.eval.public_pack import (
+            replay_public_pack,
+            verify_content_hash,
+            write_result,
+        )
+
+        try:
+            pack = Path(args.pack) if args.pack else None
+            result = replay_public_pack(pack)
+        except ValueError as exc:
+            print(str(exc), file=sys.stderr)
+            raise SystemExit(1) from exc
+        if not verify_content_hash(result):
+            print("content_hash mismatch", file=sys.stderr)
+            raise SystemExit(1)
+        if args.out:
+            try:
+                written = write_result(result, Path(args.out))
+            except ValueError as exc:
+                print(str(exc), file=sys.stderr)
+                raise SystemExit(1) from exc
+            print(f"RESULT: {written.as_posix()}")
+        if args.verify:
+            print(f"content_hash={result['content_hash']} verify=ok")
+            return
+        print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
+        return
 
     if args.cmd == "arm-table":
         from freshlatch.eval.retrieve_eval import run_arm_metric_table
