@@ -105,7 +105,7 @@ Trust=Gate。合并前,以及任何「跑」之前,主人看这一页,而不是�
 
 1. 第 2 节九条假阳性判据与第 3 节四条止损仍在,id 没有增删。
 2. 第 1–3 节脚手架原句仍含 `numeric_line=unregistered`。文末 Amendment-01 把 `criteria.numeric_line` 锁为 `registered:interval_gt0`,`sesoi` 仍 null,不得把该线叫做 SESOI。测量分数仍 null。
-3. 第 4 节的 manifest 字段行仍在。`manifest.json` 里实验语料 sha256、模型 hash、权重 hash 仍是 null。B-04 的 `counts_as_establishment=false`。
+3. 第 4 节的 manifest 字段行仍在。`manifest.json` 里模型 hash、权重 hash 仍是 null。实验语料 path 与 sha256 已按 Amendment-01 清单写入，`role=frozen_corpus_unrun`，`measurement_status=unmeasured`，`counts_as_establishment=false`。B-04 的 `counts_as_establishment=false`。
 4. 第 5 节仍写不改默认臂、不改 floors。`PRODUCTION_RETRIEVAL_MODE` 仍是 `hybrid+rerank`。
 5. `measurement.json` 仍是 `run_status=unrun`、`measurement_status=unmeasured`、`counted_as_pass=false`。
 6. 历史结果丙没有被改判。`second_formal_y=false`。不得称优于 RARR·KPR。不得标产品 L5。
@@ -115,14 +115,14 @@ Trust=Gate。合并前,以及任何「跑」之前,主人看这一页,而不是�
 
 ## Amendment-01 · 开跑前数字线（日期：2026-10-15 · 早于任何非空分数）
 
-状态：协议已锁（比较 A · 数字线 L1 · n=100）/ 未激活。本 Amendment 只是开跑前协议锁,不是激活,不是开跑,不写任何非空分数。实验语料未冻、激活清单未齐、主人未明文「跑」之前不得开跑。
+状态：协议已锁（比较 A · 数字线 L1 · n=100）/ 未激活。本 Amendment 只是开跑前协议锁,不是激活,不是开跑,不写任何非空分数。实验语料 path 与 sha256 已写入 manifest，但仍 `measurement_status=unmeasured`。激活清单未齐、主人未明文「跑」之前不得开跑。
 
 第 1–8 节的假阳性 id 与止损 id 不增删、不改写。第 3 节「本期没有这份 amendment」与「numeric_line=unregistered」留在原处,作为看见本 Amendment 之前的脚手架锁句。本 Amendment 在任何非空分数出现之前补上比较对象与数字线,不涂掉那些原句,也不把门槛叫做 SESOI。
 
 ### 比较对象
 
 - 臂：T（attested / fail-closed）对 C（无证据改写）。B1/B2 若保留则只作报告,不进成立格。
-- 语料：新实验语料,不是 `data/corpus/pe_v2` 正式 Y 名单。path 与 sha256 仍为 null,开跑前才写入 manifest `sources.experiment_corpus`。当前未冻,因此不得「跑」。
+- 语料：新实验语料,不是 `data/corpus/pe_v2` 正式 Y 名单。path 与 sha256 已写入 manifest `sources.experiment_corpus`（`data/patch-establishment/v1`）。语料已冻，`measurement_status=unmeasured`，因此仍不得「跑」。
 - 选取：固定 k := T 自然放行数。正式针 n=100（已锁）。pilot 另计,不进成立格。k_min、bootstrap 次数、种子、模型与 temperature 主人未锁;未锁参数不是已生效门槛,也不得在看见分数之后补写。
 - `second_formal_y=false`。这不是 `PREREG-Y` 同尺再填。STOP-SAME-YARDSTICK 仍有效。
 
@@ -150,7 +150,7 @@ Trust=Gate。合并前,以及任何「跑」之前,主人看这一页,而不是�
 
 ### 激活前清单
 
-- [ ] 实验语料路径与 sha256 写入 manifest `sources.experiment_corpus`（当前 path=null,sha256=null,本项未完成）
+- [x] 实验语料路径与 sha256 写入 manifest `sources.experiment_corpus`（path=`data/patch-establishment/v1`，sha256 已写入；`role=frozen_corpus_unrun`；`measurement_status=unmeasured`；`counts_as_establishment=false`；本项不是激活，不是「跑」，不是成立）
 - [ ] 生成器与 NLI（若用）的型号与 hash 写入 manifest（当前仍为 null）
 - [x] 主人确认比较对象与数字线：比较 A,数字线 L1,n=100（2026-10-15）
 - [ ] 主人写激活批注

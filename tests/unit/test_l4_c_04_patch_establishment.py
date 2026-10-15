@@ -11,11 +11,20 @@ from pathlib import Path
 import pytest
 
 from freshlatch.eval.__main__ import main
+from freshlatch.eval.patch_events_construct import (
+    STRATA,
+    _alternate,
+    _take_slot,
+    construct_from_pins,
+    load_claims,
+)
 from freshlatch.eval.patch_establishment import (
     FALSE_POSITIVE_IDS,
+    FROZEN_CORPUS_REL,
     STOP_IDS,
     banned_needles,
     build_scaffold,
+    experiment_corpus_sha256,
     manifest_field_line,
     require_prereg,
     validate_scaffold,
@@ -188,7 +197,12 @@ def test_committed_scaffold_is_unmeasured_and_frozen_bytes_hold(tmp_path: Path) 
     assert manifest["criteria"]["numeric_line"] == "registered:interval_gt0"
     assert manifest["criteria"]["sesoi"] is None
     assert manifest["establishment"]["numeric_line"] == "unregistered"
-    assert manifest["sources"]["experiment_corpus"]["path"] is None
+    corpus = manifest["sources"]["experiment_corpus"]
+    assert corpus["path"] == FROZEN_CORPUS_REL
+    assert corpus["role"] == "frozen_corpus_unrun"
+    assert corpus["measurement_status"] == "unmeasured"
+    assert corpus["counts_as_establishment"] is False
+    assert corpus["sha256"] == experiment_corpus_sha256(ROOT)
     assert measurement["establishment"]["false_accept_rate"] is None
     assert measurement["establishment"]["point_estimate"] is None
     assert measurement["firewall"]["product_l5"] is False
@@ -203,7 +217,8 @@ def test_committed_scaffold_is_unmeasured_and_frozen_bytes_hold(tmp_path: Path) 
     assert manifest["retrieval"]["mode"] == "hybrid+rerank"
     assert manifest["retrieval"]["weight_sha256"] is None
     assert manifest["model"]["generator_sha256"] is None
-    assert manifest["sources"]["experiment_corpus"]["sha256"] is None
+    assert manifest["establishment"]["n"] is None
+    assert manifest["establishment"]["sesoi"] is None
     assert manifest["sources"]["b04_fixtures"]["counts_as_establishment"] is False
     assert manifest["sources"]["result_y"]["sha256"] == FROZEN_SHA256[
         "docs/evidence/patch-events/RESULT-Y.md"
@@ -257,6 +272,19 @@ def test_validate_rejects_invented_sesoi_scores_and_l5() -> None:
     scored_line = deepcopy(manifest)
     scored_line["establishment"]["numeric_line"] = "registered:interval_gt0"
     cases.append(scored_line)
+    cleared = deepcopy(manifest)
+    cleared["sources"]["experiment_corpus"]["path"] = None
+    cleared["sources"]["experiment_corpus"]["sha256"] = None
+    cases.append(cleared)
+    pointed = deepcopy(manifest)
+    pointed["sources"]["experiment_corpus"]["path"] = "data/corpus/pe_v2"
+    cases.append(pointed)
+    x1 = deepcopy(manifest)
+    x1["sources"]["experiment_corpus"]["path"] = "data/exp/x1"
+    cases.append(x1)
+    forged = deepcopy(manifest)
+    forged["sources"]["experiment_corpus"]["sha256"] = "0" * 64
+    cases.append(forged)
     for broken in cases:
         with pytest.raises(ValueError):
             validate_scaffold(broken, measurement, root=ROOT)
@@ -348,3 +376,109 @@ def test_subprocess_cli(tmp_path: Path) -> None:
     assert "product_l5=false" in proc.stdout
     for needle in banned_needles():
         assert needle not in proc.stdout
+
+
+def _leftover_pins() -> list[dict[str, str]]:
+    """按层内 claim_id 字典序、余数槽和未改算子重放名单。"""
+    route = json.loads(
+        (ROOT / "docs/evidence/patch-events/SPLIT-pe-v2-route-y.json").read_text(encoding="utf-8")
+    )
+    excluded = {str(row["claim_id"]) for row in route["n400"]} | {
+        str(row["claim_id"]) for row in route["pilot"]
+    }
+    docket = json.loads((ROOT / "data/pe_v2_docket.json").read_text(encoding="utf-8"))
+    by_dim = {name: set() for name in STRATA}
+    for row in docket["claims"]:
+        cid = str(row["claim_id"])
+        if cid in excluded:
+            continue
+        by_dim[str(row["dimension"])].add(cid)
+    views = [
+        view
+        for view in load_claims(ROOT / "data/pe_v2_docket.json", ROOT / "data/corpus/pe_v2")
+        if view.claim_id not in excluded
+    ]
+    slots = _alternate(13, 12)
+    pins: list[dict[str, str]] = []
+    for name in STRATA:
+        pool = [view for view in views if view.claim_id in by_dim[name]]
+        bad_index = 0
+        structural_skip: set[str] = set()
+        for gold in slots:
+            edit, pool, bad_index, _skipped = _take_slot(
+                pool, name, gold, bad_index, structural_skip
+            )
+            if edit is None:
+                continue
+            pins.append(
+                {
+                    "claim_id": edit.record["claim_id"],
+                    "edit_type": name,
+                    "construction_gold": edit.record["construction_gold"],
+                }
+            )
+    return pins
+
+
+def test_frozen_corpus_is_disjoint_unrun_and_rebuilt_offline() -> None:
+    prereg = PREREG.read_text(encoding="utf-8")
+    assert "- [x] 实验语料路径与 sha256 写入 manifest `sources.experiment_corpus`" in prereg
+    assert "- [ ] 主人写激活批注" in prereg
+    assert "- [ ] 主人明文「跑」" in prereg
+    base = ROOT / FROZEN_CORPUS_REL
+    split = json.loads((base / "SPLIT.json").read_text(encoding="utf-8"))
+    assert split["second_formal_y"] is False
+    assert split["run_status"] == "unrun"
+    assert split["measurement_status"] == "unmeasured"
+    assert split["counts_as_establishment"] is False
+    assert split["role"] == "frozen_corpus_unrun"
+    assert split["target_n"] == 100
+    assert split["remainder_rule"] == "correct=floor(layer/2); bad=ceil(layer/2)"
+    formal = split["formal"]
+    bare = [
+        {
+            "claim_id": row["claim_id"],
+            "edit_type": row["edit_type"],
+            "construction_gold": row["construction_gold"],
+        }
+        for row in formal
+    ]
+    assert bare == _leftover_pins()
+    route = json.loads(
+        (ROOT / "docs/evidence/patch-events/SPLIT-pe-v2-route-y.json").read_text(encoding="utf-8")
+    )
+    banned = {str(row["claim_id"]) for row in route["n400"]} | {
+        str(row["claim_id"]) for row in route["pilot"]
+    }
+    ids = [row["claim_id"] for row in formal]
+    assert set(ids).isdisjoint(banned)
+    assert split["built_n"] == len(ids)
+    assert split["gap_n"] == 100 - len(ids)
+    assert split["gap_n"] > 0
+    assert split["by_stratum"]["删除"]["bad_target"] == 13
+    assert split["by_stratum"]["删除"]["bad"] < 13
+    provenance = json.loads((base / "PROVENANCE.json").read_text(encoding="utf-8"))
+    prov_by = {row["claim_id"]: row for row in provenance["claims"]}
+    for cid in ids:
+        row = prov_by[cid]
+        for folder, key in (("t0", "source_t0_file"), ("t1", "source_t1_file")):
+            copied = (base / "corpus" / folder / f"{cid}.md").read_bytes()
+            source = (ROOT / row[key]).read_bytes()
+            assert copied == source
+    records = construct_from_pins(
+        base / "docket.json",
+        base / "corpus",
+        bare,
+    )
+    lines = [
+        json.loads(line)
+        for line in (base / "CONSTRUCTED.jsonl").read_text(encoding="utf-8").splitlines()
+        if line
+    ]
+    assert lines == records
+    blob = (base / "CONSTRUCTED.jsonl").read_text(encoding="utf-8")
+    for token in ("compare_primary", "point_estimate", "false_accept_rate", "ci95_low", "sesoi"):
+        assert token not in blob
+    for row in records:
+        assert "score" not in row
+        assert "decision" not in row

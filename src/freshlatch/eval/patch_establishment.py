@@ -3,6 +3,8 @@
 口径锁在 ``docs/evidence/patch-establishment/PREREG.md``。
 本期不开跑、不打分、不发明 SESOI。
 Amendment-01 只把判据行锁成 ``registered:interval_gt0``,成立格分数仍全是 null。
+冻结语料可以写入 ``sources.experiment_corpus`` 的 path 与 sha256；
+``measurement_status`` 仍是 unmeasured，分数仍是 null。
 不改 ``PRODUCTION_RETRIEVAL_MODE``。不写路线 Y 的历史成立格,不写质量闸地板。
 """
 
@@ -164,6 +166,12 @@ GOLD_FILES = (
     "data/eval/temporal_new_over_old.json",
 )
 X1_QUESTIONS = "data/exp/x1/questions.json"
+# 新实验语料只许落在这棵树。不得指向 pe_v2 正式名单，也不得指向 x1。
+FROZEN_CORPUS_REL = "data/patch-establishment/v1"
+CORPUS_ROLE_FROZEN = "frozen_corpus_unrun"
+CORPUS_ROLE_EMPTY = "unmeasured"
+_ROUTE_Y_SPLIT = Path("docs/evidence/patch-events/SPLIT-pe-v2-route-y.json")
+_STRATUM_NAMES = ("数值", "日期", "条款替换", "删除")
 B04_FILES = (
     "tests/fixtures/l4_b_04/b04-price-blank-filler.md",
     "tests/fixtures/l4_b_04/b04-price-blank.md",
@@ -253,6 +261,41 @@ def file_sha256(path: Path) -> str:
     return sha256_hex(normalize_newlines(path.read_bytes(), "lf"))
 
 
+def frozen_corpus_files(root: Path) -> list[Path]:
+    """冻结树里的全部文件。目录未建时返回空列表。"""
+    base = Path(root) / FROZEN_CORPUS_REL
+    if not base.is_dir():
+        return []
+    return [path for path in base.rglob("*") if path.is_file()]
+
+
+def experiment_corpus_sha256(root: Path) -> str:
+    """对冻结树做 aggregate checksum。``newline=lf``。"""
+    files = frozen_corpus_files(root)
+    if not files:
+        raise ValueError("冻结实验语料目录没有文件")
+    return aggregate_checksum(files, root=Path(root), newline="lf")
+
+
+def _experiment_corpus_block(root: Path) -> dict:
+    """盘上有冻结树就写入 path 与 sha256。没有则保持 null。分数不在这里。"""
+    if not frozen_corpus_files(root):
+        return {
+            "path": None,
+            "sha256": None,
+            "role": CORPUS_ROLE_EMPTY,
+            "measurement_status": MEASUREMENT_STATUS,
+            "counts_as_establishment": False,
+        }
+    return {
+        "path": FROZEN_CORPUS_REL,
+        "sha256": experiment_corpus_sha256(root),
+        "role": CORPUS_ROLE_FROZEN,
+        "measurement_status": MEASUREMENT_STATUS,
+        "counts_as_establishment": False,
+    }
+
+
 def _read_anchor(root: Path, rel: str) -> dict:
     path = root / rel
     if not path.is_file():
@@ -318,13 +361,7 @@ def _source_block(root: Path) -> dict:
         "counts_as_establishment": False,
         "files": files,
     }
-    sources["experiment_corpus"] = {
-        "path": None,
-        "sha256": None,
-        "role": "unmeasured",
-        "measurement_status": MEASUREMENT_STATUS,
-        "counts_as_establishment": False,
-    }
+    sources["experiment_corpus"] = _experiment_corpus_block(root)
     return sources
 
 
@@ -597,13 +634,103 @@ def _require_sources(sources: object, root: Path) -> None:
         if row.get("counts_as_establishment") is not False:
             raise ValueError("B-04 单文件不得进入成立格")
         _require_equal(row.get("sha256"), file_sha256(root / rel), f"b04 {rel}")
-    corpus = sources.get("experiment_corpus")
+    _require_experiment_corpus(sources.get("experiment_corpus"), root)
+
+
+def _reject_experiment_corpus_path(path: str) -> None:
+    """只接受冻结树。``data/corpus/pe_v2`` 与 ``data/exp/x1`` 因此被拒绝。"""
+    normal = "/".join(_path_parts(path))
+    if normal != FROZEN_CORPUS_REL:
+        raise ValueError("experiment_corpus 必须落在 data/patch-establishment/v1")
+
+
+def _require_experiment_corpus(corpus: object, root: Path) -> None:
+    """path 与 sha256 可以是冻结树，也可以在树不存在时同为 null。分数仍不在本块。"""
     if not isinstance(corpus, dict):
         raise ValueError("experiment_corpus 必须是对象")
-    if corpus.get("sha256") is not None or corpus.get("path") is not None:
-        raise ValueError("实验语料本期必须是 unmeasured")
     _require_equal(corpus.get("measurement_status"), MEASUREMENT_STATUS, "experiment_corpus")
     _require_equal(corpus.get("counts_as_establishment"), False, "experiment_corpus counts")
+    path = corpus.get("path")
+    digest = corpus.get("sha256")
+    on_disk = bool(frozen_corpus_files(root))
+    if path is None and digest is None:
+        if on_disk:
+            raise ValueError("冻结实验语料已在盘上, path 与 sha256 不得为 null")
+        _require_equal(corpus.get("role"), CORPUS_ROLE_EMPTY, "experiment_corpus role")
+        return
+    if not isinstance(path, str) or not isinstance(digest, str):
+        raise ValueError("experiment_corpus path 与 sha256 必须同时填写或同时为 null")
+    _reject_experiment_corpus_path(path)
+    _require_equal(corpus.get("role"), CORPUS_ROLE_FROZEN, "experiment_corpus role")
+    if not on_disk:
+        raise ValueError("experiment_corpus 指向的冻结目录没有文件")
+    _require_equal(digest, experiment_corpus_sha256(root), "experiment_corpus sha256")
+    _require_frozen_roster(root)
+
+
+def _require_frozen_roster(root: Path) -> None:
+    """配额目标保持 100。与路线 Y 的 n400、pilot 无交。second_formal_y 必须为 false。"""
+    base = Path(root) / FROZEN_CORPUS_REL
+    split_path = base / "SPLIT.json"
+    docket_path = base / "docket.json"
+    if not split_path.is_file() or not docket_path.is_file():
+        raise ValueError("冻结实验语料缺 SPLIT.json 或 docket.json")
+    split = json.loads(split_path.read_text(encoding="utf-8"))
+    docket = json.loads(docket_path.read_text(encoding="utf-8"))
+    _require_equal(split.get("second_formal_y"), False, "corpus second_formal_y")
+    _require_equal(split.get("target_n"), 100, "corpus target_n")
+    _require_equal(split.get("run_status"), RUN_STATUS, "corpus run_status")
+    _require_equal(split.get("measurement_status"), MEASUREMENT_STATUS, "corpus measurement_status")
+    _require_equal(split.get("counts_as_establishment"), False, "corpus counts")
+    _require_equal(split.get("role"), CORPUS_ROLE_FROZEN, "corpus role")
+    formal = split.get("formal")
+    if not isinstance(formal, list) or not formal:
+        raise ValueError("formal 必须是非空列表")
+    ids = [str(row.get("claim_id") or "") for row in formal]
+    if any(not item for item in ids):
+        raise ValueError("formal claim_id 缺失")
+    if len(ids) != len(set(ids)):
+        raise ValueError("formal claim_id 重复")
+    if split.get("built_n") != len(ids) or split.get("gap_n") != 100 - len(ids):
+        raise ValueError("built_n / gap_n 与 formal 不一致")
+    claims = docket.get("claims") if isinstance(docket, dict) else None
+    if not isinstance(claims, list):
+        raise ValueError("docket.claims 必须是列表")
+    docket_ids = {str(row.get("claim_id") or "") for row in claims}
+    if docket_ids != set(ids):
+        raise ValueError("docket 与 formal 主张不一致")
+    route = json.loads((Path(root) / _ROUTE_Y_SPLIT).read_text(encoding="utf-8"))
+    banned = {str(row["claim_id"]) for row in route.get("n400") or []} | {
+        str(row["claim_id"]) for row in route.get("pilot") or []
+    }
+    if set(ids) & banned:
+        raise ValueError("实验语料与路线 Y 正式名单相交")
+    for cid in ids:
+        for folder in ("t0", "t1"):
+            path = base / "corpus" / folder / f"{cid}.md"
+            if not path.is_file():
+                raise ValueError(f"冻结语料缺正文: corpus/{folder}/{cid}.md")
+    by_stratum = split.get("by_stratum")
+    if not isinstance(by_stratum, dict):
+        raise ValueError("by_stratum 必须是对象")
+    for name in _STRATUM_NAMES:
+        block = by_stratum.get(name)
+        if not isinstance(block, dict):
+            raise ValueError(f"缺层 {name}")
+        if block.get("target") != 25:
+            raise ValueError(f"{name} 目标被改小")
+        if block.get("correct_target") != 12 or block.get("bad_target") != 13:
+            raise ValueError(f"{name} 余数目标被改")
+        got = [row for row in formal if row.get("edit_type") == name]
+        correct = sum(1 for row in got if row.get("construction_gold") == "正确")
+        bad = sum(1 for row in got if row.get("construction_gold") == "坏")
+        if (
+            block.get("built") != len(got)
+            or block.get("correct") != correct
+            or block.get("bad") != bad
+            or block.get("gap") != 25 - len(got)
+        ):
+            raise ValueError(f"{name} 计数与 formal 不一致")
 
 
 def _dump(payload: dict) -> str:

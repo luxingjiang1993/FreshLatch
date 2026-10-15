@@ -1,0 +1,3819 @@
+{
+  "claims": [
+    {
+      "claim_id": "a105",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/a105.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/a105.md",
+      "stratum": "数值",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/a105.md",
+      "t0_sha256": "91c86c0d46b06831292a2b7e07327b0423a292fc9d7be3cf93a1a08ee48791c4",
+      "t0_source": {
+        "category": "地方法规",
+        "filename_date": "",
+        "offset": 1512,
+        "source_filename": "云南省巍山彝族回族自治县红河源保护管理条例_.docx",
+        "source_id": "2aeae7970f9c01ab",
+        "source_sha256": "42da544df7a2051ce43497353f24210205ff6e5f318df9b3c7e99fa7708b7514",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "云南省巍山彝族回族自治县红河源保护管理条例"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/a105.md",
+      "t1_sha256": "b69a9d6389b1080b612b252005253a5458ef71772072057d4c6b2a1e1ab0a152",
+      "t1_source": [
+        {
+          "category": "地方法规",
+          "filename_date": "",
+          "offset": 1512,
+          "source_filename": "云南省巍山彝族回族自治县红河源保护管理条例_.docx",
+          "source_id": "2aeae7970f9c01ab",
+          "source_sha256": "42da544df7a2051ce43497353f24210205ff6e5f318df9b3c7e99fa7708b7514",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "云南省巍山彝族回族自治县红河源保护管理条例"
+        }
+      ]
+    },
+    {
+      "claim_id": "a106",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/a106.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/a106.md",
+      "stratum": "数值",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/a106.md",
+      "t0_sha256": "65f3b951453d002a37df795ce78339f3ee860f804344a24b317d788352cad49b",
+      "t0_source": {
+        "category": "地方法规",
+        "filename_date": "",
+        "offset": 3954,
+        "source_filename": "云南省德宏傣族景颇族自治州村庄规划建设管理条例_.docx",
+        "source_id": "7aa0b6c43cc98168",
+        "source_sha256": "2aef60b716d8324e2d2de537ee71179659d98d05ff8972353ca5cf783ae1606e",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "云南省德宏傣族景颇族自治州村庄规划建设管理条例"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/a106.md",
+      "t1_sha256": "ae83f99004ec7f52f5846aab1853e77da48dca353d9907f4fc3ad759d37ce42d",
+      "t1_source": [
+        {
+          "category": "地方法规",
+          "filename_date": "",
+          "offset": 3954,
+          "source_filename": "云南省德宏傣族景颇族自治州村庄规划建设管理条例_.docx",
+          "source_id": "7aa0b6c43cc98168",
+          "source_sha256": "2aef60b716d8324e2d2de537ee71179659d98d05ff8972353ca5cf783ae1606e",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "云南省德宏傣族景颇族自治州村庄规划建设管理条例"
+        }
+      ]
+    },
+    {
+      "claim_id": "a107",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/a107.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/a107.md",
+      "stratum": "数值",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/a107.md",
+      "t0_sha256": "24be47e25eb59cf934994d6489e2b5524378e5ae5a57f8226de606353ec50b81",
+      "t0_source": {
+        "category": "地方法规",
+        "filename_date": "",
+        "offset": 2088,
+        "source_filename": "云南省怒江傈僳族自治州特色畜禽资源保护与利用条例_.docx",
+        "source_id": "52034c1b244e3b4a",
+        "source_sha256": "a0b1eae3aeb7bf166d71b80e5165b9ee6c572a166ad1f076d7324f1df9858ab0",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "云南省怒江傈僳族自治州特色畜禽资源保护与利用条例"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/a107.md",
+      "t1_sha256": "ccda3b0a03a2bf5e291e6ba65a656a624363f681c416f3700b756598a45e5a7e",
+      "t1_source": [
+        {
+          "category": "地方法规",
+          "filename_date": "",
+          "offset": 2088,
+          "source_filename": "云南省怒江傈僳族自治州特色畜禽资源保护与利用条例_.docx",
+          "source_id": "52034c1b244e3b4a",
+          "source_sha256": "a0b1eae3aeb7bf166d71b80e5165b9ee6c572a166ad1f076d7324f1df9858ab0",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "云南省怒江傈僳族自治州特色畜禽资源保护与利用条例"
+        }
+      ]
+    },
+    {
+      "claim_id": "a108",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/a108.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/a108.md",
+      "stratum": "数值",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/a108.md",
+      "t0_sha256": "04ddc550e830533a8123f864e2a5e5dcdaa51c81ecbcd298efe6581efab04340",
+      "t0_source": {
+        "category": "地方法规",
+        "filename_date": "",
+        "offset": 4081,
+        "source_filename": "云南省文山壮族苗族自治州城乡规划建设管理条例_.docx",
+        "source_id": "bdb8a5c56c5133b6",
+        "source_sha256": "e0a113d8607a5df339823ea45cb5bc0fcda83af7d2a420a49cf136660ce3a965",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "云南省文山壮族苗族自治州城乡规划建设管理条例"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/a108.md",
+      "t1_sha256": "67d27a1d48b266d819caed60b93af21734cc08833d680827d4372cf4c08ba7ce",
+      "t1_source": [
+        {
+          "category": "地方法规",
+          "filename_date": "",
+          "offset": 4081,
+          "source_filename": "云南省文山壮族苗族自治州城乡规划建设管理条例_.docx",
+          "source_id": "bdb8a5c56c5133b6",
+          "source_sha256": "e0a113d8607a5df339823ea45cb5bc0fcda83af7d2a420a49cf136660ce3a965",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "云南省文山壮族苗族自治州城乡规划建设管理条例"
+        }
+      ]
+    },
+    {
+      "claim_id": "a109",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/a109.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/a109.md",
+      "stratum": "数值",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/a109.md",
+      "t0_sha256": "2b553124d181a9ec34d2e9758d58567f24145bb5596ba8c77fb29c18e03045b7",
+      "t0_source": {
+        "category": "地方法规",
+        "filename_date": "",
+        "offset": 2884,
+        "source_filename": "云南省文山壮族苗族自治州广南历史文化名城保护管理条例_.docx",
+        "source_id": "094271f7aa1a2575",
+        "source_sha256": "355b5b315d6614642e4c5e5300442f4c4b82c09e63c1a953bcdb0ae035290749",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "云南省文山壮族苗族自治州广南历史文化名城保护管理条例"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/a109.md",
+      "t1_sha256": "a3fe1a67bc9f2a0f10eb6fa68c47696819e590bc3ec67acdee09fcc740be107d",
+      "t1_source": [
+        {
+          "category": "地方法规",
+          "filename_date": "",
+          "offset": 2884,
+          "source_filename": "云南省文山壮族苗族自治州广南历史文化名城保护管理条例_.docx",
+          "source_id": "094271f7aa1a2575",
+          "source_sha256": "355b5b315d6614642e4c5e5300442f4c4b82c09e63c1a953bcdb0ae035290749",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "云南省文山壮族苗族自治州广南历史文化名城保护管理条例"
+        }
+      ]
+    },
+    {
+      "claim_id": "a110",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/a110.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/a110.md",
+      "stratum": "数值",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/a110.md",
+      "t0_sha256": "c305ccbea635da084b71fccff811013bd4013efbfc515049500ab56d7cf35a3a",
+      "t0_source": {
+        "category": "地方法规",
+        "filename_date": "",
+        "offset": 2998,
+        "source_filename": "云南省文山壮族苗族自治州广南坝美旅游区管理条例_.docx",
+        "source_id": "52f5fdb20f0a2414",
+        "source_sha256": "fc3f859583731ff014387c11b24d03001b7cbbe3e95b72966e9bbd4254f4de4c",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "云南省文山壮族苗族自治州广南坝美旅游区管理条例"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/a110.md",
+      "t1_sha256": "c4703e4625b3149d5d0fc895ddab2e281d211470bffd33dc3af6995889d511ac",
+      "t1_source": [
+        {
+          "category": "地方法规",
+          "filename_date": "",
+          "offset": 2998,
+          "source_filename": "云南省文山壮族苗族自治州广南坝美旅游区管理条例_.docx",
+          "source_id": "52f5fdb20f0a2414",
+          "source_sha256": "fc3f859583731ff014387c11b24d03001b7cbbe3e95b72966e9bbd4254f4de4c",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "云南省文山壮族苗族自治州广南坝美旅游区管理条例"
+        }
+      ]
+    },
+    {
+      "claim_id": "a111",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/a111.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/a111.md",
+      "stratum": "数值",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/a111.md",
+      "t0_sha256": "8d7ca0a08c3a4e65f08879f627568c16cc31225eaca985647292af2c98f64579",
+      "t0_source": {
+        "category": "地方法规",
+        "filename_date": "",
+        "offset": 3294,
+        "source_filename": "云南省文山壮族苗族自治州水工程管理条例_.docx",
+        "source_id": "3fa34f807d3d73d8",
+        "source_sha256": "4567c01b35d4f56072a45a7fdaadc8cc296400f0d124fca801e6cbcb2ef62d7a",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "云南省文山壮族苗族自治州水工程管理条例"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/a111.md",
+      "t1_sha256": "b6a0c77fbd4df11026463a5717620a3b19499a9ac559b89132a37056cf67f1ea",
+      "t1_source": [
+        {
+          "category": "地方法规",
+          "filename_date": "",
+          "offset": 3294,
+          "source_filename": "云南省文山壮族苗族自治州水工程管理条例_.docx",
+          "source_id": "3fa34f807d3d73d8",
+          "source_sha256": "4567c01b35d4f56072a45a7fdaadc8cc296400f0d124fca801e6cbcb2ef62d7a",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "云南省文山壮族苗族自治州水工程管理条例"
+        }
+      ]
+    },
+    {
+      "claim_id": "a112",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/a112.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/a112.md",
+      "stratum": "数值",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/a112.md",
+      "t0_sha256": "2a0b2eebfae2e9adcb00e92dcc120fb77062da523ef1867425765e93c0141e40",
+      "t0_source": {
+        "category": "地方法规",
+        "filename_date": "",
+        "offset": 2144,
+        "source_filename": "云南省文山壮族苗族自治州水资源条例_.docx",
+        "source_id": "d7f68b620a319bab",
+        "source_sha256": "c504a4adeaa12d4bd85366011fd46456e94f79c43bcb8fdcc33b7d9bcf8e949d",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "云南省文山壮族苗族自治州水资源条例"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/a112.md",
+      "t1_sha256": "eefdf0c2287ec112b9ec691c58b9a67fbcd7f6d4cc22eb1e1eb926d5db281582",
+      "t1_source": [
+        {
+          "category": "地方法规",
+          "filename_date": "",
+          "offset": 2144,
+          "source_filename": "云南省文山壮族苗族自治州水资源条例_.docx",
+          "source_id": "d7f68b620a319bab",
+          "source_sha256": "c504a4adeaa12d4bd85366011fd46456e94f79c43bcb8fdcc33b7d9bcf8e949d",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "云南省文山壮族苗族自治州水资源条例"
+        }
+      ]
+    },
+    {
+      "claim_id": "a113",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/a113.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/a113.md",
+      "stratum": "数值",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/a113.md",
+      "t0_sha256": "f313a01b02bd461dfc32a20a2210298aa36d5030f022166dc307e152a11e9ef4",
+      "t0_source": {
+        "category": "地方法规",
+        "filename_date": "",
+        "offset": 3365,
+        "source_filename": "云南省文山壮族苗族自治州矿产资源管理条例_.docx",
+        "source_id": "14f1ba61bcfa9e69",
+        "source_sha256": "0becf236854c87f4b67589a5844a6597a956ede834ed0d1a847829960add3b9f",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "云南省文山壮族苗族自治州矿产资源管理条例"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/a113.md",
+      "t1_sha256": "9c14429c9ddab13ce29736a7659071cfaa58e1803e85145c235214f6dae286ee",
+      "t1_source": [
+        {
+          "category": "地方法规",
+          "filename_date": "",
+          "offset": -1,
+          "source_filename": "云南省文山壮族苗族自治州矿产资源管理条例_.docx",
+          "source_id": "14f1ba61bcfa9e69",
+          "source_sha256": "0becf236854c87f4b67589a5844a6597a956ede834ed0d1a847829960add3b9f",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "云南省文山壮族苗族自治州矿产资源管理条例"
+        }
+      ]
+    },
+    {
+      "claim_id": "a114",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/a114.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/a114.md",
+      "stratum": "数值",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/a114.md",
+      "t0_sha256": "95ee1662d241577ce5fa1828f702bda9d85464af246820bb37344cb39192cc79",
+      "t0_source": {
+        "category": "地方法规",
+        "filename_date": "",
+        "offset": 4261,
+        "source_filename": "云南省新平彝族傣族自治县水资源条例_.docx",
+        "source_id": "414afe256fecafe4",
+        "source_sha256": "daace5ade0274dfce2351e1094fbb628a4eed294d9b85f25fec6a10fb1fc946f",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "云南省新平彝族傣族自治县水资源条例"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/a114.md",
+      "t1_sha256": "b9342381a4a975cf8eb73ad21ac3dac003f6c0edd9e471511a39125283976445",
+      "t1_source": [
+        {
+          "category": "地方法规",
+          "filename_date": "",
+          "offset": 4261,
+          "source_filename": "云南省新平彝族傣族自治县水资源条例_.docx",
+          "source_id": "414afe256fecafe4",
+          "source_sha256": "daace5ade0274dfce2351e1094fbb628a4eed294d9b85f25fec6a10fb1fc946f",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "云南省新平彝族傣族自治县水资源条例"
+        }
+      ]
+    },
+    {
+      "claim_id": "a115",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/a115.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/a115.md",
+      "stratum": "数值",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/a115.md",
+      "t0_sha256": "40ee72dfd3f3a381fde6c042a507f0f01a153d8650e3345f34cf999283f53910",
+      "t0_source": {
+        "category": "地方法规",
+        "filename_date": "",
+        "offset": 4175,
+        "source_filename": "云南省无线电电磁环境保护条例_.docx",
+        "source_id": "8de6d6f1baca529e",
+        "source_sha256": "d580b27c3d0260f9e0e81041288c34f85309fab1e3799149791cf2a851d64038",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "云南省无线电电磁环境保护条例"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/a115.md",
+      "t1_sha256": "9c44b2cdcee3f1895967af2fd0cb56f9ead3a2a4c9a627fdda415329d2dcbf76",
+      "t1_source": [
+        {
+          "category": "地方法规",
+          "filename_date": "",
+          "offset": 4175,
+          "source_filename": "云南省无线电电磁环境保护条例_.docx",
+          "source_id": "8de6d6f1baca529e",
+          "source_sha256": "d580b27c3d0260f9e0e81041288c34f85309fab1e3799149791cf2a851d64038",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "云南省无线电电磁环境保护条例"
+        }
+      ]
+    },
+    {
+      "claim_id": "a116",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/a116.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/a116.md",
+      "stratum": "数值",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/a116.md",
+      "t0_sha256": "7ce0ff475ef8c1267d01013e4c9b8e728244cbab845cb5666d961f0756b7ec28",
+      "t0_source": {
+        "category": "地方法规",
+        "filename_date": "",
+        "offset": 1578,
+        "source_filename": "云南省景东彝族自治县县乡公路管理条例_.docx",
+        "source_id": "cc9b3b156d398933",
+        "source_sha256": "09dedc2f0248f21a50d277b07673bc122482a162ac231c48673bb6ef5c2b4c0f",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "云南省景东彝族自治县县乡公路管理条例"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/a116.md",
+      "t1_sha256": "0c0f81567003858d5c6048105492d8fa9b4ab41c25eb881833d5b992f0238862",
+      "t1_source": [
+        {
+          "category": "地方法规",
+          "filename_date": "",
+          "offset": 1578,
+          "source_filename": "云南省景东彝族自治县县乡公路管理条例_.docx",
+          "source_id": "cc9b3b156d398933",
+          "source_sha256": "09dedc2f0248f21a50d277b07673bc122482a162ac231c48673bb6ef5c2b4c0f",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "云南省景东彝族自治县县乡公路管理条例"
+        }
+      ]
+    },
+    {
+      "claim_id": "a117",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/a117.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/a117.md",
+      "stratum": "数值",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/a117.md",
+      "t0_sha256": "5332d1abf650b2a027f8b9631a8f86c5c0965015966eac687b2410861d502604",
+      "t0_source": {
+        "category": "地方法规",
+        "filename_date": "",
+        "offset": 2968,
+        "source_filename": "云南省景东彝族自治县城镇建设管理条例_.docx",
+        "source_id": "36309199c7fc4d2a",
+        "source_sha256": "0789b3707edca48b58dca62cef367e828170794bd6c59da47cb91cbaeb27921d",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "云南省景东彝族自治县城镇建设管理条例"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/a117.md",
+      "t1_sha256": "8ea39c9f3b71888ac5e671a2f413b013b2be42628c6c0d378a7ad0b6f0f49323",
+      "t1_source": [
+        {
+          "category": "地方法规",
+          "filename_date": "",
+          "offset": 2968,
+          "source_filename": "云南省景东彝族自治县城镇建设管理条例_.docx",
+          "source_id": "36309199c7fc4d2a",
+          "source_sha256": "0789b3707edca48b58dca62cef367e828170794bd6c59da47cb91cbaeb27921d",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "云南省景东彝族自治县城镇建设管理条例"
+        }
+      ]
+    },
+    {
+      "claim_id": "a118",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/a118.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/a118.md",
+      "stratum": "数值",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/a118.md",
+      "t0_sha256": "7a630f2a0038004f07985ac61e12421bdc79822935584c5becc3ef84a4cc4611",
+      "t0_source": {
+        "category": "地方法规",
+        "filename_date": "",
+        "offset": 3041,
+        "source_filename": "云南省景东彝族自治县林业管理条例_.docx",
+        "source_id": "66b5f588ad77bec7",
+        "source_sha256": "ac8643ec63eabc9b776a03517f044f5426f6125c95dd9354bfcb59f49c3deab9",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "云南省景东彝族自治县林业管理条例"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/a118.md",
+      "t1_sha256": "052497444939cbe6c678402b253b0007ee7e64b4eb9d810ba916c398108dd448",
+      "t1_source": [
+        {
+          "category": "地方法规",
+          "filename_date": "",
+          "offset": 3041,
+          "source_filename": "云南省景东彝族自治县林业管理条例_.docx",
+          "source_id": "66b5f588ad77bec7",
+          "source_sha256": "ac8643ec63eabc9b776a03517f044f5426f6125c95dd9354bfcb59f49c3deab9",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "云南省景东彝族自治县林业管理条例"
+        }
+      ]
+    },
+    {
+      "claim_id": "a119",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/a119.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/a119.md",
+      "stratum": "数值",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/a119.md",
+      "t0_sha256": "a17a9fdcb479bed3491f6405620f941b86bd4937e3acd04188c9fec47aec5574",
+      "t0_source": {
+        "category": "地方法规",
+        "filename_date": "",
+        "offset": 2039,
+        "source_filename": "云南省景东彝族自治县水资源条例_.docx",
+        "source_id": "d7201be74cb37478",
+        "source_sha256": "335492a8cad7cac98d481f10582bce914ed0563fc78e9471147592864fce62d5",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "云南省景东彝族自治县水资源条例"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/a119.md",
+      "t1_sha256": "07346e406ccb1f1f1aed10b5f1ff5fe652e2832ca0f34f39d034ec45dbd470ab",
+      "t1_source": [
+        {
+          "category": "地方法规",
+          "filename_date": "",
+          "offset": 2039,
+          "source_filename": "云南省景东彝族自治县水资源条例_.docx",
+          "source_id": "d7201be74cb37478",
+          "source_sha256": "335492a8cad7cac98d481f10582bce914ed0563fc78e9471147592864fce62d5",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "云南省景东彝族自治县水资源条例"
+        }
+      ]
+    },
+    {
+      "claim_id": "a120",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/a120.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/a120.md",
+      "stratum": "数值",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/a120.md",
+      "t0_sha256": "2464bd93e30098ad17e3a4183bf97573b7edf72e6f09f053c87d7aedca94dba3",
+      "t0_source": {
+        "category": "地方法规",
+        "filename_date": "",
+        "offset": 1567,
+        "source_filename": "云南省景东彝族自治县环境保护条例_.docx",
+        "source_id": "df5fde160739364a",
+        "source_sha256": "76bc09be5c82ad96a98d7df10cbc9250632c04e4cbd61901bb785050d3623758",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "云南省景东彝族自治县环境保护条例"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/a120.md",
+      "t1_sha256": "87249930c55e4bdf848183be2496e31de381ab8a550a959fb82ca01818afb2c3",
+      "t1_source": [
+        {
+          "category": "地方法规",
+          "filename_date": "",
+          "offset": 1567,
+          "source_filename": "云南省景东彝族自治县环境保护条例_.docx",
+          "source_id": "df5fde160739364a",
+          "source_sha256": "76bc09be5c82ad96a98d7df10cbc9250632c04e4cbd61901bb785050d3623758",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "云南省景东彝族自治县环境保护条例"
+        }
+      ]
+    },
+    {
+      "claim_id": "a121",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/a121.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/a121.md",
+      "stratum": "数值",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/a121.md",
+      "t0_sha256": "e6f29a20a6277a866e8812794281fea16126691b7c18c7ea7e048f32644003e7",
+      "t0_source": {
+        "category": "地方法规",
+        "filename_date": "",
+        "offset": 2519,
+        "source_filename": "云南省景谷傣族彝族自治县农村公路条例_.docx",
+        "source_id": "d0fc01fd08e9467e",
+        "source_sha256": "afe87cd66f188d46a5ee88dc5073f3fdf190b6df58209fc5a4d9da2c01ccc720",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "云南省景谷傣族彝族自治县农村公路条例"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/a121.md",
+      "t1_sha256": "27175959e270c669f486874f33a0c3c036380db4c95ac67ab32729facc52b60a",
+      "t1_source": [
+        {
+          "category": "地方法规",
+          "filename_date": "",
+          "offset": 2519,
+          "source_filename": "云南省景谷傣族彝族自治县农村公路条例_.docx",
+          "source_id": "d0fc01fd08e9467e",
+          "source_sha256": "afe87cd66f188d46a5ee88dc5073f3fdf190b6df58209fc5a4d9da2c01ccc720",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "云南省景谷傣族彝族自治县农村公路条例"
+        }
+      ]
+    },
+    {
+      "claim_id": "a122",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/a122.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/a122.md",
+      "stratum": "数值",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/a122.md",
+      "t0_sha256": "5d2fea289984dfe4ec5fa0b0c5b4b140b822afdd067370c40577e60997914406",
+      "t0_source": {
+        "category": "地方法规",
+        "filename_date": "",
+        "offset": 2132,
+        "source_filename": "云南省景谷傣族彝族自治县水资源管理条例_.docx",
+        "source_id": "248d0866bc65da49",
+        "source_sha256": "ba6d407f9b9d2a7ffad03cd77ed4a7ff3f20fcee463d480cf6c122ccfcb430e8",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "云南省景谷傣族彝族自治县水资源管理条例"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/a122.md",
+      "t1_sha256": "436eef83419b9716ca0892e24557a903d1043cb14f80dba838b0e9305f4949fe",
+      "t1_source": [
+        {
+          "category": "地方法规",
+          "filename_date": "",
+          "offset": 2132,
+          "source_filename": "云南省景谷傣族彝族自治县水资源管理条例_.docx",
+          "source_id": "248d0866bc65da49",
+          "source_sha256": "ba6d407f9b9d2a7ffad03cd77ed4a7ff3f20fcee463d480cf6c122ccfcb430e8",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "云南省景谷傣族彝族自治县水资源管理条例"
+        }
+      ]
+    },
+    {
+      "claim_id": "a123",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/a123.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/a123.md",
+      "stratum": "数值",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/a123.md",
+      "t0_sha256": "c06235729b7aab523ee95efeae146329b2d8402f6fdae3442016ddbdd9b41225",
+      "t0_source": {
+        "category": "地方法规",
+        "filename_date": "",
+        "offset": 1494,
+        "source_filename": "云南省景谷傣族彝族自治县环境污染防治条例_.docx",
+        "source_id": "33315ef1ab815c5e",
+        "source_sha256": "56bc1120f70691357622a3d0e1a7a74f41736fcc6377d84ba1a04ecb56b240ed",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "云南省景谷傣族彝族自治县环境污染防治条例"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/a123.md",
+      "t1_sha256": "021886ed15bfca398e1aeb562e6d0e3487c3cdd88e1985ba417e27b8cd51cc7e",
+      "t1_source": [
+        {
+          "category": "地方法规",
+          "filename_date": "",
+          "offset": 1494,
+          "source_filename": "云南省景谷傣族彝族自治县环境污染防治条例_.docx",
+          "source_id": "33315ef1ab815c5e",
+          "source_sha256": "56bc1120f70691357622a3d0e1a7a74f41736fcc6377d84ba1a04ecb56b240ed",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "云南省景谷傣族彝族自治县环境污染防治条例"
+        }
+      ]
+    },
+    {
+      "claim_id": "a124",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/a124.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/a124.md",
+      "stratum": "数值",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/a124.md",
+      "t0_sha256": "0d81fc4ccf4e6ca1efd5be09bf3480aa9d4ae8ef6acb7bdf47f6a328570b55cc",
+      "t0_source": {
+        "category": "地方法规",
+        "filename_date": "",
+        "offset": 4217,
+        "source_filename": "云南省曲靖城市管理条例_.docx",
+        "source_id": "3e62ca3fcadbed44",
+        "source_sha256": "f8844061cd5bc2fba5a7a551133fb81a4b71af08638c8033656dec383049582c",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "云南省曲靖城市管理条例"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/a124.md",
+      "t1_sha256": "3ccb3ec204a9c964eb47407de0aadfe0a07c05c9445747e2f8440e778a9eb827",
+      "t1_source": [
+        {
+          "category": "地方法规",
+          "filename_date": "",
+          "offset": 4217,
+          "source_filename": "云南省曲靖城市管理条例_.docx",
+          "source_id": "3e62ca3fcadbed44",
+          "source_sha256": "f8844061cd5bc2fba5a7a551133fb81a4b71af08638c8033656dec383049582c",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "云南省曲靖城市管理条例"
+        }
+      ]
+    },
+    {
+      "claim_id": "a125",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/a125.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/a125.md",
+      "stratum": "数值",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/a125.md",
+      "t0_sha256": "b26210282e53b6a73e038e24c66cc89909bc7adbdfc93358766da881f3a6a18c",
+      "t0_source": {
+        "category": "地方法规",
+        "filename_date": "",
+        "offset": 2602,
+        "source_filename": "云南省楚雄彝族自治州公路条例_.docx",
+        "source_id": "704ceea05aebafe1",
+        "source_sha256": "c80c428614df2a3e6985868dc3e6c6f89095e6cca29aa7a9ac16beecb1624602",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "云南省楚雄彝族自治州公路条例"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/a125.md",
+      "t1_sha256": "d9188979ac0c591e4c1ff372c237925777de5d170d97c91fc3c01f5d9880a8be",
+      "t1_source": [
+        {
+          "category": "地方法规",
+          "filename_date": "",
+          "offset": 2602,
+          "source_filename": "云南省楚雄彝族自治州公路条例_.docx",
+          "source_id": "704ceea05aebafe1",
+          "source_sha256": "c80c428614df2a3e6985868dc3e6c6f89095e6cca29aa7a9ac16beecb1624602",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "云南省楚雄彝族自治州公路条例"
+        }
+      ]
+    },
+    {
+      "claim_id": "a126",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/a126.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/a126.md",
+      "stratum": "数值",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/a126.md",
+      "t0_sha256": "86ef136ec41eed039516595c1c06d200f88b9afc1d8f467eca5fcbeebb2f7a2d",
+      "t0_source": {
+        "category": "地方法规",
+        "filename_date": "",
+        "offset": 2332,
+        "source_filename": "云南省楚雄彝族自治州小型水利条例_.docx",
+        "source_id": "b01802d77a03fdaa",
+        "source_sha256": "276fe23fe1e5e055b93f5ff1b532d0c8ac30271293feb573aef701bbe253c4fb",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "云南省楚雄彝族自治州小型水利条例"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/a126.md",
+      "t1_sha256": "efc7e2d3b7d417e9d44e68b6fd9c67c015b909bcce5ba42127609064f1fffe39",
+      "t1_source": [
+        {
+          "category": "地方法规",
+          "filename_date": "",
+          "offset": 2332,
+          "source_filename": "云南省楚雄彝族自治州小型水利条例_.docx",
+          "source_id": "b01802d77a03fdaa",
+          "source_sha256": "276fe23fe1e5e055b93f5ff1b532d0c8ac30271293feb573aef701bbe253c4fb",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "云南省楚雄彝族自治州小型水利条例"
+        }
+      ]
+    },
+    {
+      "claim_id": "a127",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/a127.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/a127.md",
+      "stratum": "数值",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/a127.md",
+      "t0_sha256": "e9ff326164fb33af082c2edd322ae679d988b98cb75894a962bcbf4fcb5334bd",
+      "t0_source": {
+        "category": "地方法规",
+        "filename_date": "",
+        "offset": 3154,
+        "source_filename": "云南省楚雄彝族自治州恐龙化石保护条例_.docx",
+        "source_id": "48b0c8ae62ad605e",
+        "source_sha256": "2d9728aeedd5327925671eb61102f9263a83001d7769a06a5fc0fe98f95cfefc",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "云南省楚雄彝族自治州恐龙化石保护条例"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/a127.md",
+      "t1_sha256": "d61b3f1c091a656cb3a6e85e1ad2f035e6b4ad350cf09fa0d40c5687f5b3c6d5",
+      "t1_source": [
+        {
+          "category": "地方法规",
+          "filename_date": "",
+          "offset": 3154,
+          "source_filename": "云南省楚雄彝族自治州恐龙化石保护条例_.docx",
+          "source_id": "48b0c8ae62ad605e",
+          "source_sha256": "2d9728aeedd5327925671eb61102f9263a83001d7769a06a5fc0fe98f95cfefc",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "云南省楚雄彝族自治州恐龙化石保护条例"
+        }
+      ]
+    },
+    {
+      "claim_id": "a128",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/a128.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/a128.md",
+      "stratum": "数值",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/a128.md",
+      "t0_sha256": "92e086a2628aeb3f6bf97c2e3f5879fc300eeb609d298ffbfeba72296154662c",
+      "t0_source": {
+        "category": "地方法规",
+        "filename_date": "",
+        "offset": 4008,
+        "source_filename": "云南省楚雄彝族自治州青山嘴水库管理条例_.docx",
+        "source_id": "4a796db229def607",
+        "source_sha256": "b3427890517f43b3ec4401e14da5a00c69459a9262292708f81f0d4a4fb91e14",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "云南省楚雄彝族自治州青山嘴水库管理条例"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/a128.md",
+      "t1_sha256": "a8b2d95b20aeda3a5d16c6ef95eb477d4d3d43086ef3d84e53eb7512b320d030",
+      "t1_source": [
+        {
+          "category": "地方法规",
+          "filename_date": "",
+          "offset": 4008,
+          "source_filename": "云南省楚雄彝族自治州青山嘴水库管理条例_.docx",
+          "source_id": "4a796db229def607",
+          "source_sha256": "b3427890517f43b3ec4401e14da5a00c69459a9262292708f81f0d4a4fb91e14",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "云南省楚雄彝族自治州青山嘴水库管理条例"
+        }
+      ]
+    },
+    {
+      "claim_id": "a129",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/a129.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/a129.md",
+      "stratum": "数值",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/a129.md",
+      "t0_sha256": "28bfc564d5cbc9a2e03a5082799a899668d38f1c96e1a65bd3ff8274a5587ab4",
+      "t0_source": {
+        "category": "地方法规",
+        "filename_date": "",
+        "offset": 2866,
+        "source_filename": "云南省殡葬管理条例_.docx",
+        "source_id": "4180abfa817485ad",
+        "source_sha256": "da46773ba613f4a125e98be104e4a7be33bce43103b135d9b54d9800785b7da0",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "云南省殡葬管理条例"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/a129.md",
+      "t1_sha256": "5c17237af1e0e56db38f0e3073d1e507a42658393a10ecd3ca8f54e565dbe025",
+      "t1_source": [
+        {
+          "category": "地方法规",
+          "filename_date": "",
+          "offset": 2866,
+          "source_filename": "云南省殡葬管理条例_.docx",
+          "source_id": "4180abfa817485ad",
+          "source_sha256": "da46773ba613f4a125e98be104e4a7be33bce43103b135d9b54d9800785b7da0",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "云南省殡葬管理条例"
+        }
+      ]
+    },
+    {
+      "claim_id": "b105",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/b105.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/b105.md",
+      "stratum": "日期",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/b105.md",
+      "t0_sha256": "14c9882dbc96360cf8f5450465b10e641cbd90268b81c09da5d76cc77ae9c7e8",
+      "t0_source": {
+        "category": "司法解释",
+        "filename_date": "2009-11-16",
+        "offset": 114,
+        "source_filename": "最高人民法院关于审理非法制造、买卖、运输枪支、弹药、爆炸物等刑事案件具体应用法律若干问题的解释_20091116.docx",
+        "source_id": "64c838d54dbe416b",
+        "source_sha256": "7cd0f9de39cecf175d99aa55d53060d970a27ae53f266cbbfa86180ad3a3c38a",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "最高人民法院关于审理非法制造、买卖、运输枪支、弹药、爆炸物等刑事案件具体应用法律若干问题的解释"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/b105.md",
+      "t1_sha256": "376f127601ab3740064d073f1492512a182b94fcb1b3c3e7ae2d34dc96e37852",
+      "t1_source": [
+        {
+          "category": "司法解释",
+          "filename_date": "2009-11-16",
+          "offset": 21,
+          "source_filename": "最高人民法院关于审理非法制造、买卖、运输枪支、弹药、爆炸物等刑事案件具体应用法律若干问题的解释_20091116.docx",
+          "source_id": "64c838d54dbe416b",
+          "source_sha256": "7cd0f9de39cecf175d99aa55d53060d970a27ae53f266cbbfa86180ad3a3c38a",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院关于审理非法制造、买卖、运输枪支、弹药、爆炸物等刑事案件具体应用法律若干问题的解释"
+        },
+        {
+          "category": "司法解释",
+          "filename_date": "2009-11-16",
+          "offset": 114,
+          "source_filename": "最高人民法院关于审理非法制造、买卖、运输枪支、弹药、爆炸物等刑事案件具体应用法律若干问题的解释_20091116.docx",
+          "source_id": "64c838d54dbe416b",
+          "source_sha256": "7cd0f9de39cecf175d99aa55d53060d970a27ae53f266cbbfa86180ad3a3c38a",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院关于审理非法制造、买卖、运输枪支、弹药、爆炸物等刑事案件具体应用法律若干问题的解释"
+        }
+      ]
+    },
+    {
+      "claim_id": "b106",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/b106.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/b106.md",
+      "stratum": "日期",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/b106.md",
+      "t0_sha256": "46fe64445f5f0ea58f323386423ed0ed70b60c1d9524217cd92b4f6d3f183d45",
+      "t0_source": {
+        "category": "司法解释",
+        "filename_date": "2010-03-17",
+        "offset": 121,
+        "source_filename": "最高人民法院关于对被判处死刑的被告人未提出上诉、共同犯罪的部分被告人或者附带民事诉讼原告人提出上诉的案件应适用何种程序审理的批复_20100317.docx",
+        "source_id": "d3381aef9de26cf7",
+        "source_sha256": "2e6a624c132fe8d46bc485d8f15bd3500e2c9ca0d05cf637b38a764aa43a093a",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "最高人民法院关于对被判处死刑的被告人未提出上诉、共同犯罪的部分被告人或者附带民事诉讼原告人提出上诉的案件应适用何种程序审理的批复"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/b106.md",
+      "t1_sha256": "0da30e31dc7881a8d47737bc16d027a9770cdfd2c5dc7e7265d28981166982f0",
+      "t1_source": [
+        {
+          "category": "司法解释",
+          "filename_date": "2010-03-17",
+          "offset": 21,
+          "source_filename": "最高人民法院关于对被判处死刑的被告人未提出上诉、共同犯罪的部分被告人或者附带民事诉讼原告人提出上诉的案件应适用何种程序审理的批复_20100317.docx",
+          "source_id": "d3381aef9de26cf7",
+          "source_sha256": "2e6a624c132fe8d46bc485d8f15bd3500e2c9ca0d05cf637b38a764aa43a093a",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院关于对被判处死刑的被告人未提出上诉、共同犯罪的部分被告人或者附带民事诉讼原告人提出上诉的案件应适用何种程序审理的批复"
+        },
+        {
+          "category": "司法解释",
+          "filename_date": "2010-03-17",
+          "offset": 121,
+          "source_filename": "最高人民法院关于对被判处死刑的被告人未提出上诉、共同犯罪的部分被告人或者附带民事诉讼原告人提出上诉的案件应适用何种程序审理的批复_20100317.docx",
+          "source_id": "d3381aef9de26cf7",
+          "source_sha256": "2e6a624c132fe8d46bc485d8f15bd3500e2c9ca0d05cf637b38a764aa43a093a",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院关于对被判处死刑的被告人未提出上诉、共同犯罪的部分被告人或者附带民事诉讼原告人提出上诉的案件应适用何种程序审理的批复"
+        }
+      ]
+    },
+    {
+      "claim_id": "b107",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/b107.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/b107.md",
+      "stratum": "日期",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/b107.md",
+      "t0_sha256": "f69ca8161d5746877ed730af6eb78568e31a9a1391e9a0d7cc3dc455ca248cfb",
+      "t0_source": {
+        "category": "司法解释",
+        "filename_date": "2011-01-25",
+        "offset": 194,
+        "source_filename": "最高人民检察院关于对涉嫌盗窃的不满十六周岁未成年人采取刑事拘留强制措施是否违法问题的批复_20110125.docx",
+        "source_id": "c345ef48f844a661",
+        "source_sha256": "a6bb1d836351a28425f8e2a33cde3659004c3a2a3c083daa5f76dfdaea7e282d",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "最高人民检察院关于对涉嫌盗窃的不满十六周岁未成年人采取刑事拘留强制措施是否违法问题的批复"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/b107.md",
+      "t1_sha256": "48f8070221c40c52027570c2a357b365d6a6ff7008e78f8e586537fd2e0e32fe",
+      "t1_source": [
+        {
+          "category": "司法解释",
+          "filename_date": "2011-01-25",
+          "offset": 113,
+          "source_filename": "最高人民检察院关于对涉嫌盗窃的不满十六周岁未成年人采取刑事拘留强制措施是否违法问题的批复_20110125.docx",
+          "source_id": "c345ef48f844a661",
+          "source_sha256": "a6bb1d836351a28425f8e2a33cde3659004c3a2a3c083daa5f76dfdaea7e282d",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民检察院关于对涉嫌盗窃的不满十六周岁未成年人采取刑事拘留强制措施是否违法问题的批复"
+        },
+        {
+          "category": "司法解释",
+          "filename_date": "2011-01-25",
+          "offset": 194,
+          "source_filename": "最高人民检察院关于对涉嫌盗窃的不满十六周岁未成年人采取刑事拘留强制措施是否违法问题的批复_20110125.docx",
+          "source_id": "c345ef48f844a661",
+          "source_sha256": "a6bb1d836351a28425f8e2a33cde3659004c3a2a3c083daa5f76dfdaea7e282d",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民检察院关于对涉嫌盗窃的不满十六周岁未成年人采取刑事拘留强制措施是否违法问题的批复"
+        }
+      ]
+    },
+    {
+      "claim_id": "b108",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/b108.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/b108.md",
+      "stratum": "日期",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/b108.md",
+      "t0_sha256": "c54903042ac7fb7a190d3043224a5c4dc1c39354d27a50d0d61e6b5507a2e672",
+      "t0_source": {
+        "category": "司法解释",
+        "filename_date": "2011-02-28",
+        "offset": 429,
+        "source_filename": "最高人民法院关于适用《中华人民共和国国家赔偿法》若干问题的解释（一）_20110228.docx",
+        "source_id": "676208f614df136a",
+        "source_sha256": "fd0bddab5cfbe24142a31b972dfe45a009e2be9a7faf3ffc328041923b0e470e",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "最高人民法院关于适用《中华人民共和国国家赔偿法》若干问题的解释（一）"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/b108.md",
+      "t1_sha256": "716b58f7a0c89ca46bc567cbd690f10c6e725057613bc8e568734bdf78fb2cf4",
+      "t1_source": [
+        {
+          "category": "司法解释",
+          "filename_date": "2011-02-28",
+          "offset": 112,
+          "source_filename": "最高人民法院关于适用《中华人民共和国国家赔偿法》若干问题的解释（一）_20110228.docx",
+          "source_id": "676208f614df136a",
+          "source_sha256": "fd0bddab5cfbe24142a31b972dfe45a009e2be9a7faf3ffc328041923b0e470e",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院关于适用《中华人民共和国国家赔偿法》若干问题的解释（一）"
+        },
+        {
+          "category": "司法解释",
+          "filename_date": "2011-02-28",
+          "offset": 429,
+          "source_filename": "最高人民法院关于适用《中华人民共和国国家赔偿法》若干问题的解释（一）_20110228.docx",
+          "source_id": "676208f614df136a",
+          "source_sha256": "fd0bddab5cfbe24142a31b972dfe45a009e2be9a7faf3ffc328041923b0e470e",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院关于适用《中华人民共和国国家赔偿法》若干问题的解释（一）"
+        }
+      ]
+    },
+    {
+      "claim_id": "b109",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/b109.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/b109.md",
+      "stratum": "日期",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/b109.md",
+      "t0_sha256": "f3265c85e503b8787aaefe8dfaa77a558fa6a6730225fdbe23925842ca90147e",
+      "t0_source": {
+        "category": "司法解释",
+        "filename_date": "2011-04-25",
+        "offset": 240,
+        "source_filename": "最高人民法院关于《中华人民共和国刑法修正案(八)》时间效力问题的解释_20110425.docx",
+        "source_id": "67edc14e471d4b7e",
+        "source_sha256": "14c2dd65cf6f659293c6e75625e0e37300dd328f8283b15a382b9eeefc09c712",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "最高人民法院关于《中华人民共和国刑法修正案（八）》时间效力问题的解释"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/b109.md",
+      "t1_sha256": "9ce9ff52672d3225613690bb91f0eb144d7af7675a256ecead271d0a38efe458",
+      "t1_source": [
+        {
+          "category": "司法解释",
+          "filename_date": "2011-04-25",
+          "offset": 112,
+          "source_filename": "最高人民法院关于《中华人民共和国刑法修正案(八)》时间效力问题的解释_20110425.docx",
+          "source_id": "67edc14e471d4b7e",
+          "source_sha256": "14c2dd65cf6f659293c6e75625e0e37300dd328f8283b15a382b9eeefc09c712",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院关于《中华人民共和国刑法修正案（八）》时间效力问题的解释"
+        },
+        {
+          "category": "司法解释",
+          "filename_date": "2011-04-25",
+          "offset": 240,
+          "source_filename": "最高人民法院关于《中华人民共和国刑法修正案(八)》时间效力问题的解释_20110425.docx",
+          "source_id": "67edc14e471d4b7e",
+          "source_sha256": "14c2dd65cf6f659293c6e75625e0e37300dd328f8283b15a382b9eeefc09c712",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院关于《中华人民共和国刑法修正案（八）》时间效力问题的解释"
+        }
+      ]
+    },
+    {
+      "claim_id": "b110",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/b110.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/b110.md",
+      "stratum": "日期",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/b110.md",
+      "t0_sha256": "b54a50ac87da276ee24d2fc5f300c6bc80a64e8d09f2cbe4d7e45863efc20129",
+      "t0_source": {
+        "category": "司法解释",
+        "filename_date": "2011-09-07",
+        "offset": 969,
+        "source_filename": "最高人民法院关于人民法院委托评估、拍卖工作的若干规定_20110907.docx",
+        "source_id": "e6ce414403f60fa2",
+        "source_sha256": "987c33fcc531b2d9a66b8ceadb786f9eaa80db4f78a526af366acf7f9753ccdd",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "最高人民法院关于人民法院委托评估、拍卖工作的若干规定"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/b110.md",
+      "t1_sha256": "5ac1100e2898e9b3511d58947a23579d4059b644cf77dfe2b7b7ef64def417d5",
+      "t1_source": [
+        {
+          "category": "司法解释",
+          "filename_date": "2011-09-07",
+          "offset": 104,
+          "source_filename": "最高人民法院关于人民法院委托评估、拍卖工作的若干规定_20110907.docx",
+          "source_id": "e6ce414403f60fa2",
+          "source_sha256": "987c33fcc531b2d9a66b8ceadb786f9eaa80db4f78a526af366acf7f9753ccdd",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院关于人民法院委托评估、拍卖工作的若干规定"
+        },
+        {
+          "category": "司法解释",
+          "filename_date": "2011-09-07",
+          "offset": 969,
+          "source_filename": "最高人民法院关于人民法院委托评估、拍卖工作的若干规定_20110907.docx",
+          "source_id": "e6ce414403f60fa2",
+          "source_sha256": "987c33fcc531b2d9a66b8ceadb786f9eaa80db4f78a526af366acf7f9753ccdd",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院关于人民法院委托评估、拍卖工作的若干规定"
+        }
+      ]
+    },
+    {
+      "claim_id": "b111",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/b111.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/b111.md",
+      "stratum": "日期",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/b111.md",
+      "t0_sha256": "cdde0c648357d3851a34b3b0638eee53f2a97c36784d30ecdc0cf43d87da0453",
+      "t0_source": {
+        "category": "司法解释",
+        "filename_date": "2011-09-09",
+        "offset": 225,
+        "source_filename": "最高人民法院关于适用《中华人民共和国企业破产法》若干问题的规定（一）_20110909.docx",
+        "source_id": "54378f5941087d5f",
+        "source_sha256": "21334647ba02abccaf86d13c7b8cff53f6516bbea8f8c1594c96d4a749e381aa",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "最高人民法院关于适用《中华人民共和国企业破产法》若干问题的规定（一）"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/b111.md",
+      "t1_sha256": "92c1eeaceae4beb53ef72aa1f55c7a9461fefe6e1d8a842949d2abb2b557bda8",
+      "t1_source": [
+        {
+          "category": "司法解释",
+          "filename_date": "2011-09-09",
+          "offset": 113,
+          "source_filename": "最高人民法院关于适用《中华人民共和国企业破产法》若干问题的规定（一）_20110909.docx",
+          "source_id": "54378f5941087d5f",
+          "source_sha256": "21334647ba02abccaf86d13c7b8cff53f6516bbea8f8c1594c96d4a749e381aa",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院关于适用《中华人民共和国企业破产法》若干问题的规定（一）"
+        },
+        {
+          "category": "司法解释",
+          "filename_date": "2011-09-09",
+          "offset": 225,
+          "source_filename": "最高人民法院关于适用《中华人民共和国企业破产法》若干问题的规定（一）_20110909.docx",
+          "source_id": "54378f5941087d5f",
+          "source_sha256": "21334647ba02abccaf86d13c7b8cff53f6516bbea8f8c1594c96d4a749e381aa",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院关于适用《中华人民共和国企业破产法》若干问题的规定（一）"
+        }
+      ]
+    },
+    {
+      "claim_id": "b112",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/b112.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/b112.md",
+      "stratum": "日期",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/b112.md",
+      "t0_sha256": "9c7d6587b24f207f486a19a4bc5d53bbd7fab670af6e92bf80697e132cdfe3b2",
+      "t0_source": {
+        "category": "司法解释",
+        "filename_date": "2012-12-28",
+        "offset": 176,
+        "source_filename": "最高人民法院关于修改后的民事诉讼法施行时未结案件适用法律若干问题的规定_20121228.docx",
+        "source_id": "0aa169b7530ef47c",
+        "source_sha256": "74fcaca1f4065cbc4d7c2b16a4faa59d5f159493410eb98c6308647d967300f4",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "最高人民法院关于修改后的民事诉讼法施行时未结案件适用法律若干问题的规定"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/b112.md",
+      "t1_sha256": "96596240f15f48c0edc1ce504a7c3189f7f6464e039014fa5e2388d3e7791311",
+      "t1_source": [
+        {
+          "category": "司法解释",
+          "filename_date": "2012-12-28",
+          "offset": 114,
+          "source_filename": "最高人民法院关于修改后的民事诉讼法施行时未结案件适用法律若干问题的规定_20121228.docx",
+          "source_id": "0aa169b7530ef47c",
+          "source_sha256": "74fcaca1f4065cbc4d7c2b16a4faa59d5f159493410eb98c6308647d967300f4",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院关于修改后的民事诉讼法施行时未结案件适用法律若干问题的规定"
+        },
+        {
+          "category": "司法解释",
+          "filename_date": "2012-12-28",
+          "offset": 176,
+          "source_filename": "最高人民法院关于修改后的民事诉讼法施行时未结案件适用法律若干问题的规定_20121228.docx",
+          "source_id": "0aa169b7530ef47c",
+          "source_sha256": "74fcaca1f4065cbc4d7c2b16a4faa59d5f159493410eb98c6308647d967300f4",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院关于修改后的民事诉讼法施行时未结案件适用法律若干问题的规定"
+        }
+      ]
+    },
+    {
+      "claim_id": "b113",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/b113.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/b113.md",
+      "stratum": "日期",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/b113.md",
+      "t0_sha256": "05f7b4e6cf63bc5ed2d562c5e621320715396c1686ad52fa956211fccf08e24f",
+      "t0_source": {
+        "category": "司法解释",
+        "filename_date": "2013-07-26",
+        "offset": 2523,
+        "source_filename": "最高人民法院关于人民法院办理自赔案件程序的规定_20130726.docx",
+        "source_id": "8df5a575fc6348f9",
+        "source_sha256": "9c0c008304efd95e8aa86a6f21f137c2fded85ad966e975098bffaf95c8145bf",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "最高人民法院关于人民法院办理自赔案件程序的规定"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/b113.md",
+      "t1_sha256": "8be32618f383f5b2ca2725d294e178cd3471441349df728448f056184f1b6d80",
+      "t1_source": [
+        {
+          "category": "司法解释",
+          "filename_date": "2013-07-26",
+          "offset": 100,
+          "source_filename": "最高人民法院关于人民法院办理自赔案件程序的规定_20130726.docx",
+          "source_id": "8df5a575fc6348f9",
+          "source_sha256": "9c0c008304efd95e8aa86a6f21f137c2fded85ad966e975098bffaf95c8145bf",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院关于人民法院办理自赔案件程序的规定"
+        },
+        {
+          "category": "司法解释",
+          "filename_date": "2013-07-26",
+          "offset": 2523,
+          "source_filename": "最高人民法院关于人民法院办理自赔案件程序的规定_20130726.docx",
+          "source_id": "8df5a575fc6348f9",
+          "source_sha256": "9c0c008304efd95e8aa86a6f21f137c2fded85ad966e975098bffaf95c8145bf",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院关于人民法院办理自赔案件程序的规定"
+        }
+      ]
+    },
+    {
+      "claim_id": "b114",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/b114.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/b114.md",
+      "stratum": "日期",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/b114.md",
+      "t0_sha256": "1e52add31d8507963859e53cfcc413daa2b9f0b91d1ce104b2bdbbe3efbde6e2",
+      "t0_source": {
+        "category": "司法解释",
+        "filename_date": "2013-12-19",
+        "offset": 3180,
+        "source_filename": "最高人民法院关于人民法院赔偿委员会适用质证程序审理国家赔偿案件的规定_20131219.docx",
+        "source_id": "b1822866020093a6",
+        "source_sha256": "289fb90d21d1160173625363e25a318712830a3a460fe86758c9e25d725343e4",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "最高人民法院关于人民法院赔偿委员会适用质证程序审理国家赔偿案件的规定"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/b114.md",
+      "t1_sha256": "165e043b2a52aad07619917dd99d3ae42d483450f3272d2db571a414a155180f",
+      "t1_source": [
+        {
+          "category": "司法解释",
+          "filename_date": "2013-12-19",
+          "offset": 113,
+          "source_filename": "最高人民法院关于人民法院赔偿委员会适用质证程序审理国家赔偿案件的规定_20131219.docx",
+          "source_id": "b1822866020093a6",
+          "source_sha256": "289fb90d21d1160173625363e25a318712830a3a460fe86758c9e25d725343e4",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院关于人民法院赔偿委员会适用质证程序审理国家赔偿案件的规定"
+        },
+        {
+          "category": "司法解释",
+          "filename_date": "2013-12-19",
+          "offset": 3180,
+          "source_filename": "最高人民法院关于人民法院赔偿委员会适用质证程序审理国家赔偿案件的规定_20131219.docx",
+          "source_id": "b1822866020093a6",
+          "source_sha256": "289fb90d21d1160173625363e25a318712830a3a460fe86758c9e25d725343e4",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院关于人民法院赔偿委员会适用质证程序审理国家赔偿案件的规定"
+        }
+      ]
+    },
+    {
+      "claim_id": "b115",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/b115.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/b115.md",
+      "stratum": "日期",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/b115.md",
+      "t0_sha256": "70d7859503a88a9555ac3f524a6c3bbcd9dfdad9d3e84ac51e13868b0cee8ec9",
+      "t0_source": {
+        "category": "司法解释",
+        "filename_date": "2013-12-27",
+        "offset": 184,
+        "source_filename": "最高人民检察院关于审查起诉期间犯罪嫌疑人脱逃或者患有严重疾病的应当如何处理的批复_20131227.docx",
+        "source_id": "d90b12013b8c5798",
+        "source_sha256": "e1a14c8e13b1dfe77d90b5513dfa2ab28127a668a658e922bb65fdf7f36f45e6",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "最高人民检察院关于审查起诉期间犯罪嫌疑人脱逃或者患有严重疾病的应当如何处理的批复"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/b115.md",
+      "t1_sha256": "8bc3ada98b3ceeb9b92980411808ab586288be4f7eddbb9a78bf6c9d673eb0ff",
+      "t1_source": [
+        {
+          "category": "司法解释",
+          "filename_date": "2013-12-27",
+          "offset": 131,
+          "source_filename": "最高人民检察院关于审查起诉期间犯罪嫌疑人脱逃或者患有严重疾病的应当如何处理的批复_20131227.docx",
+          "source_id": "d90b12013b8c5798",
+          "source_sha256": "e1a14c8e13b1dfe77d90b5513dfa2ab28127a668a658e922bb65fdf7f36f45e6",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民检察院关于审查起诉期间犯罪嫌疑人脱逃或者患有严重疾病的应当如何处理的批复"
+        },
+        {
+          "category": "司法解释",
+          "filename_date": "2013-12-27",
+          "offset": 184,
+          "source_filename": "最高人民检察院关于审查起诉期间犯罪嫌疑人脱逃或者患有严重疾病的应当如何处理的批复_20131227.docx",
+          "source_id": "d90b12013b8c5798",
+          "source_sha256": "e1a14c8e13b1dfe77d90b5513dfa2ab28127a668a658e922bb65fdf7f36f45e6",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民检察院关于审查起诉期间犯罪嫌疑人脱逃或者患有严重疾病的应当如何处理的批复"
+        }
+      ]
+    },
+    {
+      "claim_id": "b116",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/b116.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/b116.md",
+      "stratum": "日期",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/b116.md",
+      "t0_sha256": "958805dc92119e5a99e0fec60a701bc764c919530d4fb4ec4eb21698c9d171ea",
+      "t0_source": {
+        "category": "司法解释",
+        "filename_date": "2014-04-17",
+        "offset": 109,
+        "source_filename": "最高人民检察院关于强迫借贷行为适用法律问题的批复_20140417.docx",
+        "source_id": "25798948cfe3fa60",
+        "source_sha256": "86c33417f756005d7ffc66da6789e5f7f3ece570fddd322d47d58749c8875458",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "最高人民检察院关于强迫借贷行为适用法律问题的批复"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/b116.md",
+      "t1_sha256": "519df29ea53e32f1087a8c350a8b265f69dd3b3228b4753760fe9214f034cbc7",
+      "t1_source": [
+        {
+          "category": "司法解释",
+          "filename_date": "2014-04-17",
+          "offset": 22,
+          "source_filename": "最高人民检察院关于强迫借贷行为适用法律问题的批复_20140417.docx",
+          "source_id": "25798948cfe3fa60",
+          "source_sha256": "86c33417f756005d7ffc66da6789e5f7f3ece570fddd322d47d58749c8875458",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民检察院关于强迫借贷行为适用法律问题的批复"
+        },
+        {
+          "category": "司法解释",
+          "filename_date": "2014-04-17",
+          "offset": 109,
+          "source_filename": "最高人民检察院关于强迫借贷行为适用法律问题的批复_20140417.docx",
+          "source_id": "25798948cfe3fa60",
+          "source_sha256": "86c33417f756005d7ffc66da6789e5f7f3ece570fddd322d47d58749c8875458",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民检察院关于强迫借贷行为适用法律问题的批复"
+        }
+      ]
+    },
+    {
+      "claim_id": "b117",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/b117.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/b117.md",
+      "stratum": "日期",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/b117.md",
+      "t0_sha256": "3c9bb1eb16ecd8f3d472814df5297afae68c439b9d75f94a846cdcd91206e4fb",
+      "t0_source": {
+        "category": "司法解释",
+        "filename_date": "2015-02-28",
+        "offset": 2442,
+        "source_filename": "最高人民法院关于扣押与拍卖船舶适用法律若干问题的规定_20150228.docx",
+        "source_id": "646e5dd467a11bbe",
+        "source_sha256": "06a653c1588eff5c09029d7e9ccdfb5d0defcaa293d7b5de283684933a2324ca",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "最高人民法院关于扣押与拍卖船舶适用法律若干问题的规定"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/b117.md",
+      "t1_sha256": "e2c061373350d54007360ccf8a6676fbf46987b5fcaf04bd4b44c9ac9a2d8e84",
+      "t1_source": [
+        {
+          "category": "司法解释",
+          "filename_date": "2015-02-28",
+          "offset": 104,
+          "source_filename": "最高人民法院关于扣押与拍卖船舶适用法律若干问题的规定_20150228.docx",
+          "source_id": "646e5dd467a11bbe",
+          "source_sha256": "06a653c1588eff5c09029d7e9ccdfb5d0defcaa293d7b5de283684933a2324ca",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院关于扣押与拍卖船舶适用法律若干问题的规定"
+        },
+        {
+          "category": "司法解释",
+          "filename_date": "2015-02-28",
+          "offset": 2442,
+          "source_filename": "最高人民法院关于扣押与拍卖船舶适用法律若干问题的规定_20150228.docx",
+          "source_id": "646e5dd467a11bbe",
+          "source_sha256": "06a653c1588eff5c09029d7e9ccdfb5d0defcaa293d7b5de283684933a2324ca",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院关于扣押与拍卖船舶适用法律若干问题的规定"
+        }
+      ]
+    },
+    {
+      "claim_id": "b118",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/b118.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/b118.md",
+      "stratum": "日期",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/b118.md",
+      "t0_sha256": "8293a38fa3668ef2ee2a7f23d6c4c4ac85fc3277cdd9e234d8c37f4ebf987212",
+      "t0_source": {
+        "category": "司法解释",
+        "filename_date": "2015-04-15",
+        "offset": 2278,
+        "source_filename": "最高人民法院关于人民法院登记立案若干问题的规定_20150415.docx",
+        "source_id": "4e108738b88c5be8",
+        "source_sha256": "4ae7fc09e8644b6e764f0b03f7e5f32b34b720d8165d83e81abe5b78c6242400",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "最高人民法院关于人民法院登记立案若干问题的规定"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/b118.md",
+      "t1_sha256": "50333799688394863ff5c5b4d2b136e8571ed480dc00054bd28057c7aeec5d93",
+      "t1_source": [
+        {
+          "category": "司法解释",
+          "filename_date": "2015-04-15",
+          "offset": 101,
+          "source_filename": "最高人民法院关于人民法院登记立案若干问题的规定_20150415.docx",
+          "source_id": "4e108738b88c5be8",
+          "source_sha256": "4ae7fc09e8644b6e764f0b03f7e5f32b34b720d8165d83e81abe5b78c6242400",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院关于人民法院登记立案若干问题的规定"
+        },
+        {
+          "category": "司法解释",
+          "filename_date": "2015-04-15",
+          "offset": 2278,
+          "source_filename": "最高人民法院关于人民法院登记立案若干问题的规定_20150415.docx",
+          "source_id": "4e108738b88c5be8",
+          "source_sha256": "4ae7fc09e8644b6e764f0b03f7e5f32b34b720d8165d83e81abe5b78c6242400",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院关于人民法院登记立案若干问题的规定"
+        }
+      ]
+    },
+    {
+      "claim_id": "b119",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/b119.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/b119.md",
+      "stratum": "日期",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/b119.md",
+      "t0_sha256": "926afea7c272d0e58ffc5cc1cd595f9bee55f90818e2f79f78a23f364bd8d83c",
+      "t0_source": {
+        "category": "司法解释",
+        "filename_date": "2015-10-27",
+        "offset": 227,
+        "source_filename": "最高人民检察院关于地质工程勘测院和其他履行勘测职责的单位及其工作人员能否成为刑法第二百二十九条规定的有关犯罪主体的批复_20151027.docx",
+        "source_id": "3415bb80418f79cd",
+        "source_sha256": "273a243765052dd676b8d7a08e64ee516e21dcc542568878e0691ee2f8b5edf5",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "最高人民检察院关于地质工程勘测院和其他履行勘测职责的单位及其工作人员能否成为刑法第二百二十九条规定的有关犯罪主体的批复"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/b119.md",
+      "t1_sha256": "ac2f116e0024d359fb42c0f8040cfcb7c844b478d5c9c2826be354c224f11e4d",
+      "t1_source": [
+        {
+          "category": "司法解释",
+          "filename_date": "2015-10-27",
+          "offset": 152,
+          "source_filename": "最高人民检察院关于地质工程勘测院和其他履行勘测职责的单位及其工作人员能否成为刑法第二百二十九条规定的有关犯罪主体的批复_20151027.docx",
+          "source_id": "3415bb80418f79cd",
+          "source_sha256": "273a243765052dd676b8d7a08e64ee516e21dcc542568878e0691ee2f8b5edf5",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民检察院关于地质工程勘测院和其他履行勘测职责的单位及其工作人员能否成为刑法第二百二十九条规定的有关犯罪主体的批复"
+        },
+        {
+          "category": "司法解释",
+          "filename_date": "2015-10-27",
+          "offset": 227,
+          "source_filename": "最高人民检察院关于地质工程勘测院和其他履行勘测职责的单位及其工作人员能否成为刑法第二百二十九条规定的有关犯罪主体的批复_20151027.docx",
+          "source_id": "3415bb80418f79cd",
+          "source_sha256": "273a243765052dd676b8d7a08e64ee516e21dcc542568878e0691ee2f8b5edf5",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民检察院关于地质工程勘测院和其他履行勘测职责的单位及其工作人员能否成为刑法第二百二十九条规定的有关犯罪主体的批复"
+        }
+      ]
+    },
+    {
+      "claim_id": "b120",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/b120.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/b120.md",
+      "stratum": "日期",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/b120.md",
+      "t0_sha256": "69cd0ccb4ea6e7f06dac61ee70bb83ceac03025b218ff5743029ee52bc0213d6",
+      "t0_source": {
+        "category": "司法解释",
+        "filename_date": "2015-12-14",
+        "offset": 3496,
+        "source_filename": "最高人民法院、最高人民检察院关于办理危害生产安全刑事案件适用法律若干问题的解释_20151214.docx",
+        "source_id": "8b7dbb2a347a1988",
+        "source_sha256": "be85b2604d8a345a9cfd8aae55291849f1671aa0ed114f52d033516740f009b8",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "最高人民法院、最高人民检察院关于办理危害生产安全刑事案件适用法律若干问题的解释"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/b120.md",
+      "t1_sha256": "eb396ec1f3e971ee751969f6757330d11236e740e61026fb4c7f37da1e3a6bc2",
+      "t1_source": [
+        {
+          "category": "司法解释",
+          "filename_date": "2015-12-14",
+          "offset": 168,
+          "source_filename": "最高人民法院、最高人民检察院关于办理危害生产安全刑事案件适用法律若干问题的解释_20151214.docx",
+          "source_id": "8b7dbb2a347a1988",
+          "source_sha256": "be85b2604d8a345a9cfd8aae55291849f1671aa0ed114f52d033516740f009b8",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院、最高人民检察院关于办理危害生产安全刑事案件适用法律若干问题的解释"
+        },
+        {
+          "category": "司法解释",
+          "filename_date": "2015-12-14",
+          "offset": 3496,
+          "source_filename": "最高人民法院、最高人民检察院关于办理危害生产安全刑事案件适用法律若干问题的解释_20151214.docx",
+          "source_id": "8b7dbb2a347a1988",
+          "source_sha256": "be85b2604d8a345a9cfd8aae55291849f1671aa0ed114f52d033516740f009b8",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院、最高人民检察院关于办理危害生产安全刑事案件适用法律若干问题的解释"
+        }
+      ]
+    },
+    {
+      "claim_id": "b121",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/b121.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/b121.md",
+      "stratum": "日期",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/b121.md",
+      "t0_sha256": "a6c02b33488998ee75e5414bc4db2b6aa3d7a5522b20aa3900ea10cf781a1b77",
+      "t0_source": {
+        "category": "司法解释",
+        "filename_date": "2015-12-28",
+        "offset": 4017,
+        "source_filename": "最高人民法院、最高人民检察院关于办理刑事赔偿案件适用法律若干问题的解释_20151228.docx",
+        "source_id": "5e4831fcb5d87ce4",
+        "source_sha256": "4c4e4fd3b04f23001e92bcf240c3155f8f0d015ba02bdf9613653d3b9511fc49",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "最高人民法院、最高人民检察院关于办理刑事赔偿案件适用法律若干问题的解释"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/b121.md",
+      "t1_sha256": "a8888ef3c9ceb6ec02fd1ec24a19aa26db1793050d5759cc972cefe8be587d5d",
+      "t1_source": [
+        {
+          "category": "司法解释",
+          "filename_date": "2015-12-28",
+          "offset": 164,
+          "source_filename": "最高人民法院、最高人民检察院关于办理刑事赔偿案件适用法律若干问题的解释_20151228.docx",
+          "source_id": "5e4831fcb5d87ce4",
+          "source_sha256": "4c4e4fd3b04f23001e92bcf240c3155f8f0d015ba02bdf9613653d3b9511fc49",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院、最高人民检察院关于办理刑事赔偿案件适用法律若干问题的解释"
+        },
+        {
+          "category": "司法解释",
+          "filename_date": "2015-12-28",
+          "offset": 4017,
+          "source_filename": "最高人民法院、最高人民检察院关于办理刑事赔偿案件适用法律若干问题的解释_20151228.docx",
+          "source_id": "5e4831fcb5d87ce4",
+          "source_sha256": "4c4e4fd3b04f23001e92bcf240c3155f8f0d015ba02bdf9613653d3b9511fc49",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院、最高人民检察院关于办理刑事赔偿案件适用法律若干问题的解释"
+        }
+      ]
+    },
+    {
+      "claim_id": "b122",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/b122.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/b122.md",
+      "stratum": "日期",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/b122.md",
+      "t0_sha256": "4e35666ec38f5351a5a541bda145c19df31e91ddbdaa05a9d67e26ae57cd9a93",
+      "t0_source": {
+        "category": "司法解释",
+        "filename_date": "2016-02-24",
+        "offset": 4378,
+        "source_filename": "最高人民法院关于海事法院受理案件范围的规定_20160224.docx",
+        "source_id": "a62f6ec7a5918182",
+        "source_sha256": "21a98e5f0150e3d4f30c412615e9ae29cc2626b86e4813ff12e6fb24a14f894c",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "最高人民法院关于海事法院受理案件范围的规定"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/b122.md",
+      "t1_sha256": "5cb36da5aaffe24e2d88b3f1e7aed89060bf49d4d633764512d723c315c10dc8",
+      "t1_source": [
+        {
+          "category": "司法解释",
+          "filename_date": "2016-02-24",
+          "offset": 100,
+          "source_filename": "最高人民法院关于海事法院受理案件范围的规定_20160224.docx",
+          "source_id": "a62f6ec7a5918182",
+          "source_sha256": "21a98e5f0150e3d4f30c412615e9ae29cc2626b86e4813ff12e6fb24a14f894c",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院关于海事法院受理案件范围的规定"
+        },
+        {
+          "category": "司法解释",
+          "filename_date": "2016-02-24",
+          "offset": 4378,
+          "source_filename": "最高人民法院关于海事法院受理案件范围的规定_20160224.docx",
+          "source_id": "a62f6ec7a5918182",
+          "source_sha256": "21a98e5f0150e3d4f30c412615e9ae29cc2626b86e4813ff12e6fb24a14f894c",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院关于海事法院受理案件范围的规定"
+        }
+      ]
+    },
+    {
+      "claim_id": "b123",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/b123.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/b123.md",
+      "stratum": "日期",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/b123.md",
+      "t0_sha256": "2e51fb7a31acf3d675cfdacfc5939f2e98cd8d86c3f3ab494d1aa2752ccfd725",
+      "t0_source": {
+        "category": "司法解释",
+        "filename_date": "2016-02-24",
+        "offset": 1024,
+        "source_filename": "最高人民法院关于海事诉讼管辖问题的规定_20160224.docx",
+        "source_id": "d09b02547da2b807",
+        "source_sha256": "e31f0012107c1b43f6a3bd22d58440602f9ea94a34bd50e7f00c75e54d00c488",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "最高人民法院关于海事诉讼管辖问题的规定"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/b123.md",
+      "t1_sha256": "1b05467b7f86468c4ba7a7840efb3d7ccb5ab867123664e80a918d76c4693526",
+      "t1_source": [
+        {
+          "category": "司法解释",
+          "filename_date": "2016-02-24",
+          "offset": 98,
+          "source_filename": "最高人民法院关于海事诉讼管辖问题的规定_20160224.docx",
+          "source_id": "d09b02547da2b807",
+          "source_sha256": "e31f0012107c1b43f6a3bd22d58440602f9ea94a34bd50e7f00c75e54d00c488",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院关于海事诉讼管辖问题的规定"
+        },
+        {
+          "category": "司法解释",
+          "filename_date": "2016-02-24",
+          "offset": 1024,
+          "source_filename": "最高人民法院关于海事诉讼管辖问题的规定_20160224.docx",
+          "source_id": "d09b02547da2b807",
+          "source_sha256": "e31f0012107c1b43f6a3bd22d58440602f9ea94a34bd50e7f00c75e54d00c488",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院关于海事诉讼管辖问题的规定"
+        }
+      ]
+    },
+    {
+      "claim_id": "b124",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/b124.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/b124.md",
+      "stratum": "日期",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/b124.md",
+      "t0_sha256": "ba56c527098b3b21b2ff48e36f923819d7a6c0caeb7a9fe8f88b17f4434ed281",
+      "t0_source": {
+        "category": "司法解释",
+        "filename_date": "2016-04-06",
+        "offset": 5116,
+        "source_filename": "最高人民法院关于审理毒品犯罪案件适用法律若干问题的解释_20160406.docx",
+        "source_id": "9ea736b01d6a26f7",
+        "source_sha256": "f4cb2bf7236f4c8e06f9316c45b9cc294586e7184868bf5e01c4668aff6b4e4f",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "最高人民法院关于审理毒品犯罪案件适用法律若干问题的解释"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/b124.md",
+      "t1_sha256": "3db6cf87caf03cf5b1f15f78c0578185370b16d0591422ed4d5e9d30c4f2b3cd",
+      "t1_source": [
+        {
+          "category": "司法解释",
+          "filename_date": "2016-04-06",
+          "offset": 106,
+          "source_filename": "最高人民法院关于审理毒品犯罪案件适用法律若干问题的解释_20160406.docx",
+          "source_id": "9ea736b01d6a26f7",
+          "source_sha256": "f4cb2bf7236f4c8e06f9316c45b9cc294586e7184868bf5e01c4668aff6b4e4f",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院关于审理毒品犯罪案件适用法律若干问题的解释"
+        },
+        {
+          "category": "司法解释",
+          "filename_date": "2016-04-06",
+          "offset": 5116,
+          "source_filename": "最高人民法院关于审理毒品犯罪案件适用法律若干问题的解释_20160406.docx",
+          "source_id": "9ea736b01d6a26f7",
+          "source_sha256": "f4cb2bf7236f4c8e06f9316c45b9cc294586e7184868bf5e01c4668aff6b4e4f",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院关于审理毒品犯罪案件适用法律若干问题的解释"
+        }
+      ]
+    },
+    {
+      "claim_id": "b125",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/b125.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/b125.md",
+      "stratum": "日期",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/b125.md",
+      "t0_sha256": "0b0a022f01580d7e19e404a8f2c9b90a9199e1d769832276ae013305cb723a49",
+      "t0_source": {
+        "category": "司法解释",
+        "filename_date": "2016-04-13",
+        "offset": 2087,
+        "source_filename": "最高人民法院关于修改《中华人民共和国人民法院法庭规则》的决定_20160413.docx",
+        "source_id": "2fc1a226960f7906",
+        "source_sha256": "c2cf4d42794dda474f4b5b024b207fa212d8634b39b3b3880929ea46dd880938",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "最高人民法院关于修改《中华人民共和国人民法院法庭规则》的决定"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/b125.md",
+      "t1_sha256": "ab30dd3d2a7d11e4a55c4b7875aba304775dada69583ac0d078278b81d90a504",
+      "t1_source": [
+        {
+          "category": "司法解释",
+          "filename_date": "2016-04-13",
+          "offset": 109,
+          "source_filename": "最高人民法院关于修改《中华人民共和国人民法院法庭规则》的决定_20160413.docx",
+          "source_id": "2fc1a226960f7906",
+          "source_sha256": "c2cf4d42794dda474f4b5b024b207fa212d8634b39b3b3880929ea46dd880938",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院关于修改《中华人民共和国人民法院法庭规则》的决定"
+        },
+        {
+          "category": "司法解释",
+          "filename_date": "2016-04-13",
+          "offset": 2087,
+          "source_filename": "最高人民法院关于修改《中华人民共和国人民法院法庭规则》的决定_20160413.docx",
+          "source_id": "2fc1a226960f7906",
+          "source_sha256": "c2cf4d42794dda474f4b5b024b207fa212d8634b39b3b3880929ea46dd880938",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院关于修改《中华人民共和国人民法院法庭规则》的决定"
+        }
+      ]
+    },
+    {
+      "claim_id": "b126",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/b126.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/b126.md",
+      "stratum": "日期",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/b126.md",
+      "t0_sha256": "5705816ae5764321084474c5f53e98e6d9471958d8b6209fde4a01cdb1115e26",
+      "t0_source": {
+        "category": "司法解释",
+        "filename_date": "2016-04-27",
+        "offset": 1706,
+        "source_filename": "最高人民法院关于人民法院办理接收在台湾地区服刑的大陆居民回大陆服刑案件的规定_20160427.docx",
+        "source_id": "11746f9b556fdcb6",
+        "source_sha256": "6eb435ee110225142e203fcf0afdd3548330ac6771a8a1067739be20c7056206",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "最高人民法院关于人民法院办理接收在台湾地区服刑的大陆居民回大陆服刑案件的规定"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/b126.md",
+      "t1_sha256": "6e171fd56a53e50144a676454583cb638d2aeb7da1e918178b9144f73f849e95",
+      "t1_source": [
+        {
+          "category": "司法解释",
+          "filename_date": "2016-04-27",
+          "offset": 115,
+          "source_filename": "最高人民法院关于人民法院办理接收在台湾地区服刑的大陆居民回大陆服刑案件的规定_20160427.docx",
+          "source_id": "11746f9b556fdcb6",
+          "source_sha256": "6eb435ee110225142e203fcf0afdd3548330ac6771a8a1067739be20c7056206",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院关于人民法院办理接收在台湾地区服刑的大陆居民回大陆服刑案件的规定"
+        },
+        {
+          "category": "司法解释",
+          "filename_date": "2016-04-27",
+          "offset": 1706,
+          "source_filename": "最高人民法院关于人民法院办理接收在台湾地区服刑的大陆居民回大陆服刑案件的规定_20160427.docx",
+          "source_id": "11746f9b556fdcb6",
+          "source_sha256": "6eb435ee110225142e203fcf0afdd3548330ac6771a8a1067739be20c7056206",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院关于人民法院办理接收在台湾地区服刑的大陆居民回大陆服刑案件的规定"
+        }
+      ]
+    },
+    {
+      "claim_id": "b127",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/b127.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/b127.md",
+      "stratum": "日期",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/b127.md",
+      "t0_sha256": "95abe41713f2502ceb6fd47a69714fff5cc7f74f893da40838d12affca75e64f",
+      "t0_source": {
+        "category": "司法解释",
+        "filename_date": "2016-06-28",
+        "offset": 3606,
+        "source_filename": "最高人民法院关于人民法院特邀调解的规定_20160628.docx",
+        "source_id": "afa840f5e93c9406",
+        "source_sha256": "be60e03fd6e90bb0764cef8fb11910f66a0a91351d28540e5c1c8d1969413d29",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "最高人民法院关于人民法院特邀调解的规定"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/b127.md",
+      "t1_sha256": "0470c9558166dc1cce2f5c3a7d171bb610d1884199bc0ea15e5809c5576689de",
+      "t1_source": [
+        {
+          "category": "司法解释",
+          "filename_date": "2016-06-28",
+          "offset": 97,
+          "source_filename": "最高人民法院关于人民法院特邀调解的规定_20160628.docx",
+          "source_id": "afa840f5e93c9406",
+          "source_sha256": "be60e03fd6e90bb0764cef8fb11910f66a0a91351d28540e5c1c8d1969413d29",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院关于人民法院特邀调解的规定"
+        },
+        {
+          "category": "司法解释",
+          "filename_date": "2016-06-28",
+          "offset": 3606,
+          "source_filename": "最高人民法院关于人民法院特邀调解的规定_20160628.docx",
+          "source_id": "afa840f5e93c9406",
+          "source_sha256": "be60e03fd6e90bb0764cef8fb11910f66a0a91351d28540e5c1c8d1969413d29",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院关于人民法院特邀调解的规定"
+        }
+      ]
+    },
+    {
+      "claim_id": "b128",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/b128.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/b128.md",
+      "stratum": "日期",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/b128.md",
+      "t0_sha256": "178059c695cab25f5b1e88aedfa71672abaf351cc9ee7e70c673857c0340313d",
+      "t0_source": {
+        "category": "司法解释",
+        "filename_date": "2016-08-01",
+        "offset": 1118,
+        "source_filename": "最高人民法院关于审理发生在我国管辖海域相关案件若干问题的规定（一）_20160801.docx",
+        "source_id": "9a7ce4228d8658fa",
+        "source_sha256": "0adeeb0906242b44965f27c7fcc2971d85d70c58d4548d208cf7a8c3df7aa1fd",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "最高人民法院关于审理发生在我国管辖海域相关案件若干问题的规定（一）"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/b128.md",
+      "t1_sha256": "8938cd55763878ba0fa2faec2bded894ac42a4e8899331bb14da9c8a3d41079c",
+      "t1_source": [
+        {
+          "category": "司法解释",
+          "filename_date": "2016-08-01",
+          "offset": 112,
+          "source_filename": "最高人民法院关于审理发生在我国管辖海域相关案件若干问题的规定（一）_20160801.docx",
+          "source_id": "9a7ce4228d8658fa",
+          "source_sha256": "0adeeb0906242b44965f27c7fcc2971d85d70c58d4548d208cf7a8c3df7aa1fd",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院关于审理发生在我国管辖海域相关案件若干问题的规定（一）"
+        },
+        {
+          "category": "司法解释",
+          "filename_date": "2016-08-01",
+          "offset": 1118,
+          "source_filename": "最高人民法院关于审理发生在我国管辖海域相关案件若干问题的规定（一）_20160801.docx",
+          "source_id": "9a7ce4228d8658fa",
+          "source_sha256": "0adeeb0906242b44965f27c7fcc2971d85d70c58d4548d208cf7a8c3df7aa1fd",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院关于审理发生在我国管辖海域相关案件若干问题的规定（一）"
+        }
+      ]
+    },
+    {
+      "claim_id": "b129",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/b129.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/b129.md",
+      "stratum": "日期",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/b129.md",
+      "t0_sha256": "f531a15ca119e3ee1fed85b1e6a1fe204b0615a208b2912f75aac9e7924e5172",
+      "t0_source": {
+        "category": "司法解释",
+        "filename_date": "2016-08-01",
+        "offset": 3025,
+        "source_filename": "最高人民法院关于审理发生在我国管辖海域相关案件若干问题的规定（二）_20160801.docx",
+        "source_id": "017d019ced1cac68",
+        "source_sha256": "0dc6b89ad44aedb337047dbd295ef27239a1ac68c8bc46def0532722b58f6509",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "最高人民法院关于审理发生在我国管辖海域相关案件若干问题的规定（二）"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/b129.md",
+      "t1_sha256": "72f8817e9aaf80c7175f46832bebba7540119ea57eac425c601c91ab7151be95",
+      "t1_source": [
+        {
+          "category": "司法解释",
+          "filename_date": "2016-08-01",
+          "offset": 110,
+          "source_filename": "最高人民法院关于审理发生在我国管辖海域相关案件若干问题的规定（二）_20160801.docx",
+          "source_id": "017d019ced1cac68",
+          "source_sha256": "0dc6b89ad44aedb337047dbd295ef27239a1ac68c8bc46def0532722b58f6509",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院关于审理发生在我国管辖海域相关案件若干问题的规定（二）"
+        },
+        {
+          "category": "司法解释",
+          "filename_date": "2016-08-01",
+          "offset": 3025,
+          "source_filename": "最高人民法院关于审理发生在我国管辖海域相关案件若干问题的规定（二）_20160801.docx",
+          "source_id": "017d019ced1cac68",
+          "source_sha256": "0dc6b89ad44aedb337047dbd295ef27239a1ac68c8bc46def0532722b58f6509",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院关于审理发生在我国管辖海域相关案件若干问题的规定（二）"
+        }
+      ]
+    },
+    {
+      "claim_id": "c105",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/c105.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/c105.md",
+      "stratum": "条款替换",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/c105.md",
+      "t0_sha256": "d240cc12b7807594056812a72791f048a4ef167b5afd1aef3d6f5becfdbf094e",
+      "t0_source": {
+        "category": "司法解释",
+        "filename_date": "2010-02-02",
+        "offset": 1091,
+        "source_filename": "最高人民法院、最高人民检察院关于办理利用互联网、移动通讯终端、声讯台制作、复制、出版、贩卖、传播淫秽电子信息刑事案件具体应用法律若干问题的解释（二）_20100202.docx",
+        "source_id": "2e7f2621c6aa77e1",
+        "source_sha256": "8bd218ec29579a36631beb248d3844d7d5a89d9cb8561ab49ba6f4995b8e3ca0",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "最高人民法院、最高人民检察院关于办理利用互联网、移动通讯终端、声讯台制作、复制、出版、贩卖、传播淫秽电子信息刑事案件具体应用法律若干问题的解释（二）"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/c105.md",
+      "t1_sha256": "269682ca9ef8a2d4f80d0312e7360f0cc13bcb9a7aa4903d57e71e6705f35174",
+      "t1_source": [
+        {
+          "category": "司法解释",
+          "filename_date": "2010-02-02",
+          "offset": 1091,
+          "source_filename": "最高人民法院、最高人民检察院关于办理利用互联网、移动通讯终端、声讯台制作、复制、出版、贩卖、传播淫秽电子信息刑事案件具体应用法律若干问题的解释（二）_20100202.docx",
+          "source_id": "2e7f2621c6aa77e1",
+          "source_sha256": "8bd218ec29579a36631beb248d3844d7d5a89d9cb8561ab49ba6f4995b8e3ca0",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院、最高人民检察院关于办理利用互联网、移动通讯终端、声讯台制作、复制、出版、贩卖、传播淫秽电子信息刑事案件具体应用法律若干问题的解释（二）"
+        },
+        {
+          "category": "司法解释",
+          "filename_date": "2010-02-02",
+          "offset": 1772,
+          "source_filename": "最高人民法院、最高人民检察院关于办理利用互联网、移动通讯终端、声讯台制作、复制、出版、贩卖、传播淫秽电子信息刑事案件具体应用法律若干问题的解释（二）_20100202.docx",
+          "source_id": "2e7f2621c6aa77e1",
+          "source_sha256": "8bd218ec29579a36631beb248d3844d7d5a89d9cb8561ab49ba6f4995b8e3ca0",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院、最高人民检察院关于办理利用互联网、移动通讯终端、声讯台制作、复制、出版、贩卖、传播淫秽电子信息刑事案件具体应用法律若干问题的解释（二）"
+        }
+      ]
+    },
+    {
+      "claim_id": "c106",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/c106.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/c106.md",
+      "stratum": "条款替换",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/c106.md",
+      "t0_sha256": "3e56460b24d5455c94658e7dcd88771e402365b696a1b59609ee311c9da0fcae",
+      "t0_source": {
+        "category": "司法解释",
+        "filename_date": "2010-03-02",
+        "offset": 1171,
+        "source_filename": "最高人民法院、最高人民检察院关于办理非法生产、销售烟草专卖品等刑事案件具体应用法律若干问题的解释_20100302.docx",
+        "source_id": "728742dc50f4bf93",
+        "source_sha256": "e904c9f5897066d34864c64ff45a776df099083208edfb651d35f2a4bdf73685",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "最高人民法院、最高人民检察院关于办理非法生产、销售烟草专卖品等刑事案件具体应用法律若干问题的解释"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/c106.md",
+      "t1_sha256": "11427f368bc3217e9caa1b408f7496015105be1b7a0a433eb6731b032c95058a",
+      "t1_source": [
+        {
+          "category": "司法解释",
+          "filename_date": "2010-03-02",
+          "offset": 1171,
+          "source_filename": "最高人民法院、最高人民检察院关于办理非法生产、销售烟草专卖品等刑事案件具体应用法律若干问题的解释_20100302.docx",
+          "source_id": "728742dc50f4bf93",
+          "source_sha256": "e904c9f5897066d34864c64ff45a776df099083208edfb651d35f2a4bdf73685",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院、最高人民检察院关于办理非法生产、销售烟草专卖品等刑事案件具体应用法律若干问题的解释"
+        },
+        {
+          "category": "司法解释",
+          "filename_date": "2010-03-02",
+          "offset": 1322,
+          "source_filename": "最高人民法院、最高人民检察院关于办理非法生产、销售烟草专卖品等刑事案件具体应用法律若干问题的解释_20100302.docx",
+          "source_id": "728742dc50f4bf93",
+          "source_sha256": "e904c9f5897066d34864c64ff45a776df099083208edfb651d35f2a4bdf73685",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院、最高人民检察院关于办理非法生产、销售烟草专卖品等刑事案件具体应用法律若干问题的解释"
+        }
+      ]
+    },
+    {
+      "claim_id": "c107",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/c107.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/c107.md",
+      "stratum": "条款替换",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/c107.md",
+      "t0_sha256": "01660099c3be0f6af7245ae9ee0cc34ea08e0670d2704266739e9a15e70aba52",
+      "t0_source": {
+        "category": "司法解释",
+        "filename_date": "2010-03-17",
+        "offset": 349,
+        "source_filename": "最高人民法院关于对被判处死刑的被告人未提出上诉、共同犯罪的部分被告人或者附带民事诉讼原告人提出上诉的案件应适用何种程序审理的批复_20100317.docx",
+        "source_id": "d3381aef9de26cf7",
+        "source_sha256": "2e6a624c132fe8d46bc485d8f15bd3500e2c9ca0d05cf637b38a764aa43a093a",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "最高人民法院关于对被判处死刑的被告人未提出上诉、共同犯罪的部分被告人或者附带民事诉讼原告人提出上诉的案件应适用何种程序审理的批复"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/c107.md",
+      "t1_sha256": "8011e6f0a0fcd915e21275769f968c0080dd005cc26a6298a6bc411d57473772",
+      "t1_source": [
+        {
+          "category": "司法解释",
+          "filename_date": "2010-03-17",
+          "offset": 349,
+          "source_filename": "最高人民法院关于对被判处死刑的被告人未提出上诉、共同犯罪的部分被告人或者附带民事诉讼原告人提出上诉的案件应适用何种程序审理的批复_20100317.docx",
+          "source_id": "d3381aef9de26cf7",
+          "source_sha256": "2e6a624c132fe8d46bc485d8f15bd3500e2c9ca0d05cf637b38a764aa43a093a",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院关于对被判处死刑的被告人未提出上诉、共同犯罪的部分被告人或者附带民事诉讼原告人提出上诉的案件应适用何种程序审理的批复"
+        },
+        {
+          "category": "司法解释",
+          "filename_date": "2010-03-17",
+          "offset": 445,
+          "source_filename": "最高人民法院关于对被判处死刑的被告人未提出上诉、共同犯罪的部分被告人或者附带民事诉讼原告人提出上诉的案件应适用何种程序审理的批复_20100317.docx",
+          "source_id": "d3381aef9de26cf7",
+          "source_sha256": "2e6a624c132fe8d46bc485d8f15bd3500e2c9ca0d05cf637b38a764aa43a093a",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院关于对被判处死刑的被告人未提出上诉、共同犯罪的部分被告人或者附带民事诉讼原告人提出上诉的案件应适用何种程序审理的批复"
+        }
+      ]
+    },
+    {
+      "claim_id": "c108",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/c108.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/c108.md",
+      "stratum": "条款替换",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/c108.md",
+      "t0_sha256": "30dd3d8adce9d2eff73b6ba086f0a718dc0b31460baf84431f95d1a10bb8d7c8",
+      "t0_source": {
+        "category": "司法解释",
+        "filename_date": "2010-10-20",
+        "offset": 310,
+        "source_filename": "最高人民法院关于审理伪造货币等案件具体应用法律若干问题的解释（二）_20101020.docx",
+        "source_id": "70637cf176b6797d",
+        "source_sha256": "51622d767ed0c158bf575742416079f3e57c779d04d878c0c1632fa2074006af",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "最高人民法院关于审理伪造货币等案件具体应用法律若干问题的解释（二）"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/c108.md",
+      "t1_sha256": "bcfb45a768c76df854a6894c48f6e771422f081ee8167f6fa96089b73cbe9196",
+      "t1_source": [
+        {
+          "category": "司法解释",
+          "filename_date": "2010-10-20",
+          "offset": 310,
+          "source_filename": "最高人民法院关于审理伪造货币等案件具体应用法律若干问题的解释（二）_20101020.docx",
+          "source_id": "70637cf176b6797d",
+          "source_sha256": "51622d767ed0c158bf575742416079f3e57c779d04d878c0c1632fa2074006af",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院关于审理伪造货币等案件具体应用法律若干问题的解释（二）"
+        },
+        {
+          "category": "司法解释",
+          "filename_date": "2010-10-20",
+          "offset": 370,
+          "source_filename": "最高人民法院关于审理伪造货币等案件具体应用法律若干问题的解释（二）_20101020.docx",
+          "source_id": "70637cf176b6797d",
+          "source_sha256": "51622d767ed0c158bf575742416079f3e57c779d04d878c0c1632fa2074006af",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院关于审理伪造货币等案件具体应用法律若干问题的解释（二）"
+        }
+      ]
+    },
+    {
+      "claim_id": "c109",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/c109.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/c109.md",
+      "stratum": "条款替换",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/c109.md",
+      "t0_sha256": "bdb62f3251daf9272bc0ed45a4df26c4b556fa3466740956c55a61162c0ae177",
+      "t0_source": {
+        "category": "司法解释",
+        "filename_date": "2010-11-05",
+        "offset": 303,
+        "source_filename": "最高人民法院关于审理房屋登记案件若干问题的规定_20101105.docx",
+        "source_id": "9cfb6a7f995362dd",
+        "source_sha256": "f79d4cfccaa0c7663660f9fdec4c662557f2e70ac7fdcf03613f9631b5342d52",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "最高人民法院关于审理房屋登记案件若干问题的规定"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/c109.md",
+      "t1_sha256": "938aa0c1ce16e74c177344f5a3b96e6f5e6ed8fe60e567b8c313446f309d3c5d",
+      "t1_source": [
+        {
+          "category": "司法解释",
+          "filename_date": "2010-11-05",
+          "offset": 303,
+          "source_filename": "最高人民法院关于审理房屋登记案件若干问题的规定_20101105.docx",
+          "source_id": "9cfb6a7f995362dd",
+          "source_sha256": "f79d4cfccaa0c7663660f9fdec4c662557f2e70ac7fdcf03613f9631b5342d52",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院关于审理房屋登记案件若干问题的规定"
+        },
+        {
+          "category": "司法解释",
+          "filename_date": "2010-11-05",
+          "offset": 747,
+          "source_filename": "最高人民法院关于审理房屋登记案件若干问题的规定_20101105.docx",
+          "source_id": "9cfb6a7f995362dd",
+          "source_sha256": "f79d4cfccaa0c7663660f9fdec4c662557f2e70ac7fdcf03613f9631b5342d52",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院关于审理房屋登记案件若干问题的规定"
+        }
+      ]
+    },
+    {
+      "claim_id": "c110",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/c110.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/c110.md",
+      "stratum": "条款替换",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/c110.md",
+      "t0_sha256": "335bbe5fb9f31186cae84d11ee144783e319314b3815157c2728ac8caa9c3451",
+      "t0_source": {
+        "category": "司法解释",
+        "filename_date": "2011-02-28",
+        "offset": 952,
+        "source_filename": "最高人民法院关于适用《中华人民共和国国家赔偿法》若干问题的解释（一）_20110228.docx",
+        "source_id": "676208f614df136a",
+        "source_sha256": "fd0bddab5cfbe24142a31b972dfe45a009e2be9a7faf3ffc328041923b0e470e",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "最高人民法院关于适用《中华人民共和国国家赔偿法》若干问题的解释（一）"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/c110.md",
+      "t1_sha256": "74fd29943b4ffa4187298dc0e4c7423cedb9b97f195691331a2ad25075eaf4a7",
+      "t1_source": [
+        {
+          "category": "司法解释",
+          "filename_date": "2011-02-28",
+          "offset": 952,
+          "source_filename": "最高人民法院关于适用《中华人民共和国国家赔偿法》若干问题的解释（一）_20110228.docx",
+          "source_id": "676208f614df136a",
+          "source_sha256": "fd0bddab5cfbe24142a31b972dfe45a009e2be9a7faf3ffc328041923b0e470e",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院关于适用《中华人民共和国国家赔偿法》若干问题的解释（一）"
+        },
+        {
+          "category": "司法解释",
+          "filename_date": "2011-02-28",
+          "offset": 1151,
+          "source_filename": "最高人民法院关于适用《中华人民共和国国家赔偿法》若干问题的解释（一）_20110228.docx",
+          "source_id": "676208f614df136a",
+          "source_sha256": "fd0bddab5cfbe24142a31b972dfe45a009e2be9a7faf3ffc328041923b0e470e",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院关于适用《中华人民共和国国家赔偿法》若干问题的解释（一）"
+        }
+      ]
+    },
+    {
+      "claim_id": "c111",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/c111.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/c111.md",
+      "stratum": "条款替换",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/c111.md",
+      "t0_sha256": "e6c5b78e00691c4752c492e4e4494f541661a08f57a7cc3011ed8c44daacbdad",
+      "t0_source": {
+        "category": "司法解释",
+        "filename_date": "2011-03-01",
+        "offset": 413,
+        "source_filename": "最高人民法院、最高人民检察院关于办理诈骗刑事案件具体应用法律若干问题的解释_20110301.docx",
+        "source_id": "5cb8e83fc9a0620b",
+        "source_sha256": "5270b93c4cf46105a2b614edbb84447d18fae4db40e5573e4811aae2df6db23e",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "最高人民法院、最高人民检察院关于办理诈骗刑事案件具体应用法律若干问题的解释"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/c111.md",
+      "t1_sha256": "3e5401e085d033b28a1069e11185ec1666a6057cecbfaf40c926a1f84820559a",
+      "t1_source": [
+        {
+          "category": "司法解释",
+          "filename_date": "2011-03-01",
+          "offset": 413,
+          "source_filename": "最高人民法院、最高人民检察院关于办理诈骗刑事案件具体应用法律若干问题的解释_20110301.docx",
+          "source_id": "5cb8e83fc9a0620b",
+          "source_sha256": "5270b93c4cf46105a2b614edbb84447d18fae4db40e5573e4811aae2df6db23e",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院、最高人民检察院关于办理诈骗刑事案件具体应用法律若干问题的解释"
+        },
+        {
+          "category": "司法解释",
+          "filename_date": "2011-03-01",
+          "offset": 800,
+          "source_filename": "最高人民法院、最高人民检察院关于办理诈骗刑事案件具体应用法律若干问题的解释_20110301.docx",
+          "source_id": "5cb8e83fc9a0620b",
+          "source_sha256": "5270b93c4cf46105a2b614edbb84447d18fae4db40e5573e4811aae2df6db23e",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院、最高人民检察院关于办理诈骗刑事案件具体应用法律若干问题的解释"
+        }
+      ]
+    },
+    {
+      "claim_id": "c112",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/c112.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/c112.md",
+      "stratum": "条款替换",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/c112.md",
+      "t0_sha256": "eb32a370050ffd2f1715f73feaf2189a2781a51ee41e020aa00162380531ba06",
+      "t0_source": {
+        "category": "司法解释",
+        "filename_date": "2011-03-17",
+        "offset": 324,
+        "source_filename": "最高人民法院关于人民法院赔偿委员会审理国家赔偿案件程序的规定_20110317.docx",
+        "source_id": "8635bb9fac927ab0",
+        "source_sha256": "c7d7e1efe417a048d208d7963780b1b2fc4bae13fa7a207394a829e1a0916221",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "最高人民法院关于人民法院赔偿委员会审理国家赔偿案件程序的规定"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/c112.md",
+      "t1_sha256": "60bbe4c95b3cf8271b673cd81416a11964f5ceb8bf1b1f7f1778ed01eee7ef1c",
+      "t1_source": [
+        {
+          "category": "司法解释",
+          "filename_date": "2011-03-17",
+          "offset": 324,
+          "source_filename": "最高人民法院关于人民法院赔偿委员会审理国家赔偿案件程序的规定_20110317.docx",
+          "source_id": "8635bb9fac927ab0",
+          "source_sha256": "c7d7e1efe417a048d208d7963780b1b2fc4bae13fa7a207394a829e1a0916221",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院关于人民法院赔偿委员会审理国家赔偿案件程序的规定"
+        },
+        {
+          "category": "司法解释",
+          "filename_date": "2011-03-17",
+          "offset": 385,
+          "source_filename": "最高人民法院关于人民法院赔偿委员会审理国家赔偿案件程序的规定_20110317.docx",
+          "source_id": "8635bb9fac927ab0",
+          "source_sha256": "c7d7e1efe417a048d208d7963780b1b2fc4bae13fa7a207394a829e1a0916221",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院关于人民法院赔偿委员会审理国家赔偿案件程序的规定"
+        }
+      ]
+    },
+    {
+      "claim_id": "c113",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/c113.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/c113.md",
+      "stratum": "条款替换",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/c113.md",
+      "t0_sha256": "85e9cc22c99da578a9095a2f15e205cb7b9cd10144e7ab818e262f8e774b8861",
+      "t0_source": {
+        "category": "司法解释",
+        "filename_date": "2011-03-23",
+        "offset": 328,
+        "source_filename": "最高人民法院关于人民调解协议司法确认程序的若干规定_20110323.docx",
+        "source_id": "93f254b43ec90ba8",
+        "source_sha256": "8c151534db28004f851ced438d1b4e94d01561f32aa9cd54ad86221715054b36",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "最高人民法院关于人民调解协议司法确认程序的若干规定"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/c113.md",
+      "t1_sha256": "bbb5defe21d49d3e2526600146ec0433c52d9c3999af97dec9b367cfe181c097",
+      "t1_source": [
+        {
+          "category": "司法解释",
+          "filename_date": "2011-03-23",
+          "offset": 328,
+          "source_filename": "最高人民法院关于人民调解协议司法确认程序的若干规定_20110323.docx",
+          "source_id": "93f254b43ec90ba8",
+          "source_sha256": "8c151534db28004f851ced438d1b4e94d01561f32aa9cd54ad86221715054b36",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院关于人民调解协议司法确认程序的若干规定"
+        },
+        {
+          "category": "司法解释",
+          "filename_date": "2011-03-23",
+          "offset": 489,
+          "source_filename": "最高人民法院关于人民调解协议司法确认程序的若干规定_20110323.docx",
+          "source_id": "93f254b43ec90ba8",
+          "source_sha256": "8c151534db28004f851ced438d1b4e94d01561f32aa9cd54ad86221715054b36",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院关于人民调解协议司法确认程序的若干规定"
+        }
+      ]
+    },
+    {
+      "claim_id": "c114",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/c114.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/c114.md",
+      "stratum": "条款替换",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/c114.md",
+      "t0_sha256": "99515099e47d8a45fe2ece5a6324e1c80e87fda68183ae784ed004d1e66bc947",
+      "t0_source": {
+        "category": "司法解释",
+        "filename_date": "2011-04-25",
+        "offset": 383,
+        "source_filename": "最高人民法院关于死刑缓期执行限制减刑案件审理程序若干问题的规定_20110425.docx",
+        "source_id": "80f7a6a97556bfc1",
+        "source_sha256": "6d9ff1d24791de8a656e8f293918ba0e7801501681cc02175bbb896b268ad03a",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "最高人民法院关于死刑缓期执行限制减刑案件审理程序若干问题的规定"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/c114.md",
+      "t1_sha256": "c3834905e323870b68649801d8b71b51e7e47aacd33454c827a46203921c968e",
+      "t1_source": [
+        {
+          "category": "司法解释",
+          "filename_date": "2011-04-25",
+          "offset": 383,
+          "source_filename": "最高人民法院关于死刑缓期执行限制减刑案件审理程序若干问题的规定_20110425.docx",
+          "source_id": "80f7a6a97556bfc1",
+          "source_sha256": "6d9ff1d24791de8a656e8f293918ba0e7801501681cc02175bbb896b268ad03a",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院关于死刑缓期执行限制减刑案件审理程序若干问题的规定"
+        },
+        {
+          "category": "司法解释",
+          "filename_date": "2011-04-25",
+          "offset": 459,
+          "source_filename": "最高人民法院关于死刑缓期执行限制减刑案件审理程序若干问题的规定_20110425.docx",
+          "source_id": "80f7a6a97556bfc1",
+          "source_sha256": "6d9ff1d24791de8a656e8f293918ba0e7801501681cc02175bbb896b268ad03a",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院关于死刑缓期执行限制减刑案件审理程序若干问题的规定"
+        }
+      ]
+    },
+    {
+      "claim_id": "c115",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/c115.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/c115.md",
+      "stratum": "条款替换",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/c115.md",
+      "t0_sha256": "b06bf7922c400afb305884a20f42381098a306b46cbe3f5bb59c1772a74e2fe3",
+      "t0_source": {
+        "category": "司法解释",
+        "filename_date": "2011-06-10",
+        "offset": 364,
+        "source_filename": "最高人民法院关于审判人员在诉讼活动中执行回避制度若干问题的规定_20110610.docx",
+        "source_id": "008eca6772e7227f",
+        "source_sha256": "a2bb646c20067cfe1c1b2347b077d39b27536c4486d3792b2ee4c6fcb5cf1f82",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "最高人民法院关于审判人员在诉讼活动中执行回避制度若干问题的规定"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/c115.md",
+      "t1_sha256": "09b9e7ae159850be33f919577c8ceafb5f1e5a147a01f4505cc0a54a3d8e57dc",
+      "t1_source": [
+        {
+          "category": "司法解释",
+          "filename_date": "2011-06-10",
+          "offset": 364,
+          "source_filename": "最高人民法院关于审判人员在诉讼活动中执行回避制度若干问题的规定_20110610.docx",
+          "source_id": "008eca6772e7227f",
+          "source_sha256": "a2bb646c20067cfe1c1b2347b077d39b27536c4486d3792b2ee4c6fcb5cf1f82",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院关于审判人员在诉讼活动中执行回避制度若干问题的规定"
+        },
+        {
+          "category": "司法解释",
+          "filename_date": "2011-06-10",
+          "offset": 912,
+          "source_filename": "最高人民法院关于审判人员在诉讼活动中执行回避制度若干问题的规定_20110610.docx",
+          "source_id": "008eca6772e7227f",
+          "source_sha256": "a2bb646c20067cfe1c1b2347b077d39b27536c4486d3792b2ee4c6fcb5cf1f82",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院关于审判人员在诉讼活动中执行回避制度若干问题的规定"
+        }
+      ]
+    },
+    {
+      "claim_id": "c116",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/c116.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/c116.md",
+      "stratum": "条款替换",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/c116.md",
+      "t0_sha256": "563a343508e721ed3935ae1331e76d3135936048cc956b0e361c69dac144a7fb",
+      "t0_source": {
+        "category": "司法解释",
+        "filename_date": "2011-06-14",
+        "offset": 426,
+        "source_filename": "最高人民法院关于人民法院办理海峡两岸送达文书和调查取证司法互助案件的规定_20110614.docx",
+        "source_id": "e42cabe2b5be7cf9",
+        "source_sha256": "9ba7c3f1b8166ba0f32c00e86e147b991bffd71104eb89c7b3dd1757fecc6ea7",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "最高人民法院关于人民法院办理海峡两岸送达文书和调查取证司法互助案件的规定"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/c116.md",
+      "t1_sha256": "acd3adf348d8971ec86baa62d1f6ccaa0bc42e88df6c04c08e80898216ef5cda",
+      "t1_source": [
+        {
+          "category": "司法解释",
+          "filename_date": "2011-06-14",
+          "offset": 426,
+          "source_filename": "最高人民法院关于人民法院办理海峡两岸送达文书和调查取证司法互助案件的规定_20110614.docx",
+          "source_id": "e42cabe2b5be7cf9",
+          "source_sha256": "9ba7c3f1b8166ba0f32c00e86e147b991bffd71104eb89c7b3dd1757fecc6ea7",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院关于人民法院办理海峡两岸送达文书和调查取证司法互助案件的规定"
+        },
+        {
+          "category": "司法解释",
+          "filename_date": "2011-06-14",
+          "offset": 458,
+          "source_filename": "最高人民法院关于人民法院办理海峡两岸送达文书和调查取证司法互助案件的规定_20110614.docx",
+          "source_id": "e42cabe2b5be7cf9",
+          "source_sha256": "9ba7c3f1b8166ba0f32c00e86e147b991bffd71104eb89c7b3dd1757fecc6ea7",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院关于人民法院办理海峡两岸送达文书和调查取证司法互助案件的规定"
+        }
+      ]
+    },
+    {
+      "claim_id": "c117",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/c117.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/c117.md",
+      "stratum": "条款替换",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/c117.md",
+      "t0_sha256": "86268a34b1da33baffd7e0c575b71cbc17d541a4c68b2fe8ae163c08ed2a1111",
+      "t0_source": {
+        "category": "司法解释",
+        "filename_date": "2011-07-20",
+        "offset": 484,
+        "source_filename": "最高人民法院、最高人民检察院关于办理妨害武装部队制式服装、车辆号牌管理秩序等刑事案件具体应用法律若干问题的解释_20110720.docx",
+        "source_id": "3a89e0aec3e01781",
+        "source_sha256": "4290866ef8a49be1d891c58665e9da6514dd923b2456d28c3112bcc3c54b1a37",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "最高人民法院、最高人民检察院关于办理妨害武装部队制式服装、车辆号牌管理秩序等刑事案件具体应用法律若干问题的解释"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/c117.md",
+      "t1_sha256": "4cace46e3e416d3d588db1cdb878104a0f0d57ff7dfd22af5af21cb2d1a0b37a",
+      "t1_source": [
+        {
+          "category": "司法解释",
+          "filename_date": "2011-07-20",
+          "offset": 484,
+          "source_filename": "最高人民法院、最高人民检察院关于办理妨害武装部队制式服装、车辆号牌管理秩序等刑事案件具体应用法律若干问题的解释_20110720.docx",
+          "source_id": "3a89e0aec3e01781",
+          "source_sha256": "4290866ef8a49be1d891c58665e9da6514dd923b2456d28c3112bcc3c54b1a37",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院、最高人民检察院关于办理妨害武装部队制式服装、车辆号牌管理秩序等刑事案件具体应用法律若干问题的解释"
+        },
+        {
+          "category": "司法解释",
+          "filename_date": "2011-07-20",
+          "offset": 725,
+          "source_filename": "最高人民法院、最高人民检察院关于办理妨害武装部队制式服装、车辆号牌管理秩序等刑事案件具体应用法律若干问题的解释_20110720.docx",
+          "source_id": "3a89e0aec3e01781",
+          "source_sha256": "4290866ef8a49be1d891c58665e9da6514dd923b2456d28c3112bcc3c54b1a37",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院、最高人民检察院关于办理妨害武装部队制式服装、车辆号牌管理秩序等刑事案件具体应用法律若干问题的解释"
+        }
+      ]
+    },
+    {
+      "claim_id": "c118",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/c118.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/c118.md",
+      "stratum": "条款替换",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/c118.md",
+      "t0_sha256": "8e34090a28666e05295e212125c208fdc0d8ed8621c28851b811673014676a93",
+      "t0_source": {
+        "category": "司法解释",
+        "filename_date": "2011-08-01",
+        "offset": 444,
+        "source_filename": "最高人民法院、最高人民检察院关于办理危害计算机信息系统安全刑事案件应用法律若干问题的解释_20110801.docx",
+        "source_id": "8eaba6f7cfef9c69",
+        "source_sha256": "6d16eb3d2d1e6abdb01fb26427e0c8afb6d4e269db7792524ee4d58e46bb4078",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "最高人民法院、最高人民检察院关于办理危害计算机信息系统安全刑事案件应用法律若干问题的解释"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/c118.md",
+      "t1_sha256": "9ad0eb75f30c7b88ae45c62b126b8285454f99ce4cf50a97498cdc783109f0e8",
+      "t1_source": [
+        {
+          "category": "司法解释",
+          "filename_date": "2011-08-01",
+          "offset": 444,
+          "source_filename": "最高人民法院、最高人民检察院关于办理危害计算机信息系统安全刑事案件应用法律若干问题的解释_20110801.docx",
+          "source_id": "8eaba6f7cfef9c69",
+          "source_sha256": "6d16eb3d2d1e6abdb01fb26427e0c8afb6d4e269db7792524ee4d58e46bb4078",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院、最高人民检察院关于办理危害计算机信息系统安全刑事案件应用法律若干问题的解释"
+        },
+        {
+          "category": "司法解释",
+          "filename_date": "2011-08-01",
+          "offset": 644,
+          "source_filename": "最高人民法院、最高人民检察院关于办理危害计算机信息系统安全刑事案件应用法律若干问题的解释_20110801.docx",
+          "source_id": "8eaba6f7cfef9c69",
+          "source_sha256": "6d16eb3d2d1e6abdb01fb26427e0c8afb6d4e269db7792524ee4d58e46bb4078",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院、最高人民检察院关于办理危害计算机信息系统安全刑事案件应用法律若干问题的解释"
+        }
+      ]
+    },
+    {
+      "claim_id": "c119",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/c119.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/c119.md",
+      "stratum": "条款替换",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/c119.md",
+      "t0_sha256": "268043071a6cce2f07df546d110dadacf7eb37436c8ef0d8f1d55d94e09e84d6",
+      "t0_source": {
+        "category": "司法解释",
+        "filename_date": "2011-08-07",
+        "offset": 683,
+        "source_filename": "最高人民法院关于审理涉及农村集体土地行政案件若干问题的规定_20110807.docx",
+        "source_id": "2adb5d6dd5613ee0",
+        "source_sha256": "69c87574c47d9ed53c80d309548b66e62c9df4bba07cd1463e55e13528ec9b5d",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "最高人民法院关于审理涉及农村集体土地行政案件若干问题的规定"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/c119.md",
+      "t1_sha256": "c903b3fe831abfdac0e106c2f070c24910be462015bf7e57955553e2fc25bbc5",
+      "t1_source": [
+        {
+          "category": "司法解释",
+          "filename_date": "2011-08-07",
+          "offset": 683,
+          "source_filename": "最高人民法院关于审理涉及农村集体土地行政案件若干问题的规定_20110807.docx",
+          "source_id": "2adb5d6dd5613ee0",
+          "source_sha256": "69c87574c47d9ed53c80d309548b66e62c9df4bba07cd1463e55e13528ec9b5d",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院关于审理涉及农村集体土地行政案件若干问题的规定"
+        },
+        {
+          "category": "司法解释",
+          "filename_date": "2011-08-07",
+          "offset": 763,
+          "source_filename": "最高人民法院关于审理涉及农村集体土地行政案件若干问题的规定_20110807.docx",
+          "source_id": "2adb5d6dd5613ee0",
+          "source_sha256": "69c87574c47d9ed53c80d309548b66e62c9df4bba07cd1463e55e13528ec9b5d",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院关于审理涉及农村集体土地行政案件若干问题的规定"
+        }
+      ]
+    },
+    {
+      "claim_id": "c120",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/c120.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/c120.md",
+      "stratum": "条款替换",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/c120.md",
+      "t0_sha256": "0b04f6c8fbf607126a51e0bf0fe6bbf68da1dbc3849390eff64e6502f8189737",
+      "t0_source": {
+        "category": "司法解释",
+        "filename_date": "2011-09-09",
+        "offset": 297,
+        "source_filename": "最高人民法院关于适用《中华人民共和国企业破产法》若干问题的规定（一）_20110909.docx",
+        "source_id": "54378f5941087d5f",
+        "source_sha256": "21334647ba02abccaf86d13c7b8cff53f6516bbea8f8c1594c96d4a749e381aa",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "最高人民法院关于适用《中华人民共和国企业破产法》若干问题的规定（一）"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/c120.md",
+      "t1_sha256": "45716f3e98e20accf29591a6411973a02176fbce6bc860421741c743d543277b",
+      "t1_source": [
+        {
+          "category": "司法解释",
+          "filename_date": "2011-09-09",
+          "offset": 297,
+          "source_filename": "最高人民法院关于适用《中华人民共和国企业破产法》若干问题的规定（一）_20110909.docx",
+          "source_id": "54378f5941087d5f",
+          "source_sha256": "21334647ba02abccaf86d13c7b8cff53f6516bbea8f8c1594c96d4a749e381aa",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院关于适用《中华人民共和国企业破产法》若干问题的规定（一）"
+        },
+        {
+          "category": "司法解释",
+          "filename_date": "2011-09-09",
+          "offset": 426,
+          "source_filename": "最高人民法院关于适用《中华人民共和国企业破产法》若干问题的规定（一）_20110909.docx",
+          "source_id": "54378f5941087d5f",
+          "source_sha256": "21334647ba02abccaf86d13c7b8cff53f6516bbea8f8c1594c96d4a749e381aa",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院关于适用《中华人民共和国企业破产法》若干问题的规定（一）"
+        }
+      ]
+    },
+    {
+      "claim_id": "c121",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/c121.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/c121.md",
+      "stratum": "条款替换",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/c121.md",
+      "t0_sha256": "c20cd3cfd5c30f6ad694b83266c6a97fb89782983896c4082310476f9c977a89",
+      "t0_source": {
+        "category": "司法解释",
+        "filename_date": "2011-10-14",
+        "offset": 353,
+        "source_filename": "最高人民法院关于审理人民检察院按照审判监督程序提出的刑事抗诉案件若干问题的规定_20111014.docx",
+        "source_id": "032d026224440fef",
+        "source_sha256": "2f460865970356fb01530e9ff89446f4a954fa7fcf154cb31e12e35589a436f3",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "最高人民法院关于审理人民检察院按照审判监督程序提出的刑事抗诉案件若干问题的规定"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/c121.md",
+      "t1_sha256": "e8d92171b7ee3ae5d5b9f7680d775a08c3556e2d71dfbd8fd3a59ee72526b235",
+      "t1_source": [
+        {
+          "category": "司法解释",
+          "filename_date": "2011-10-14",
+          "offset": 353,
+          "source_filename": "最高人民法院关于审理人民检察院按照审判监督程序提出的刑事抗诉案件若干问题的规定_20111014.docx",
+          "source_id": "032d026224440fef",
+          "source_sha256": "2f460865970356fb01530e9ff89446f4a954fa7fcf154cb31e12e35589a436f3",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院关于审理人民检察院按照审判监督程序提出的刑事抗诉案件若干问题的规定"
+        },
+        {
+          "category": "司法解释",
+          "filename_date": "2011-10-14",
+          "offset": 507,
+          "source_filename": "最高人民法院关于审理人民检察院按照审判监督程序提出的刑事抗诉案件若干问题的规定_20111014.docx",
+          "source_id": "032d026224440fef",
+          "source_sha256": "2f460865970356fb01530e9ff89446f4a954fa7fcf154cb31e12e35589a436f3",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院关于审理人民检察院按照审判监督程序提出的刑事抗诉案件若干问题的规定"
+        }
+      ]
+    },
+    {
+      "claim_id": "c122",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/c122.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/c122.md",
+      "stratum": "条款替换",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/c122.md",
+      "t0_sha256": "640a8130e4d42a3014944070ae508084835bcefcdaae957c46df05dc58638dff",
+      "t0_source": {
+        "category": "司法解释",
+        "filename_date": "2012-01-13",
+        "offset": 870,
+        "source_filename": "最高人民法院关于国家赔偿案件立案工作的规定_20120113.docx",
+        "source_id": "47edc07df14603b0",
+        "source_sha256": "8fcb6affbfab0773295a54c3a428c469d2044335afbf55051ffe6b0edbced7cd",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "最高人民法院关于国家赔偿案件立案工作的规定"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/c122.md",
+      "t1_sha256": "7ebddf52a733b285d49ba0c5d8990b4fa2ded7410f98c40266ec46b3d066be81",
+      "t1_source": [
+        {
+          "category": "司法解释",
+          "filename_date": "2012-01-13",
+          "offset": 870,
+          "source_filename": "最高人民法院关于国家赔偿案件立案工作的规定_20120113.docx",
+          "source_id": "47edc07df14603b0",
+          "source_sha256": "8fcb6affbfab0773295a54c3a428c469d2044335afbf55051ffe6b0edbced7cd",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院关于国家赔偿案件立案工作的规定"
+        },
+        {
+          "category": "司法解释",
+          "filename_date": "2012-01-13",
+          "offset": 941,
+          "source_filename": "最高人民法院关于国家赔偿案件立案工作的规定_20120113.docx",
+          "source_id": "47edc07df14603b0",
+          "source_sha256": "8fcb6affbfab0773295a54c3a428c469d2044335afbf55051ffe6b0edbced7cd",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院关于国家赔偿案件立案工作的规定"
+        }
+      ]
+    },
+    {
+      "claim_id": "c123",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/c123.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/c123.md",
+      "stratum": "条款替换",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/c123.md",
+      "t0_sha256": "53708910cba9d5cebc06d8e52f4650edf43c94222300559679ffabd5636d4eb5",
+      "t0_source": {
+        "category": "司法解释",
+        "filename_date": "2012-03-26",
+        "offset": 674,
+        "source_filename": "最高人民法院关于办理申请人民法院强制执行国有土地上房屋征收补偿决定案件若干问题的规定_20120326.docx",
+        "source_id": "06b59ec19c567892",
+        "source_sha256": "5bb09c84b06f7288810318de66467219f6d28da3fb7fc080c76899b3afbf13f0",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "最高人民法院关于办理申请人民法院强制执行国有土地上房屋征收补偿决定案件若干问题的规定"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/c123.md",
+      "t1_sha256": "7156725e88a4330458b39e668bdc2f8f2f8885635b7830e6d43e8b66c112c9af",
+      "t1_source": [
+        {
+          "category": "司法解释",
+          "filename_date": "2012-03-26",
+          "offset": 674,
+          "source_filename": "最高人民法院关于办理申请人民法院强制执行国有土地上房屋征收补偿决定案件若干问题的规定_20120326.docx",
+          "source_id": "06b59ec19c567892",
+          "source_sha256": "5bb09c84b06f7288810318de66467219f6d28da3fb7fc080c76899b3afbf13f0",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院关于办理申请人民法院强制执行国有土地上房屋征收补偿决定案件若干问题的规定"
+        },
+        {
+          "category": "司法解释",
+          "filename_date": "2012-03-26",
+          "offset": 697,
+          "source_filename": "最高人民法院关于办理申请人民法院强制执行国有土地上房屋征收补偿决定案件若干问题的规定_20120326.docx",
+          "source_id": "06b59ec19c567892",
+          "source_sha256": "5bb09c84b06f7288810318de66467219f6d28da3fb7fc080c76899b3afbf13f0",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院关于办理申请人民法院强制执行国有土地上房屋征收补偿决定案件若干问题的规定"
+        }
+      ]
+    },
+    {
+      "claim_id": "c124",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/c124.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/c124.md",
+      "stratum": "条款替换",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/c124.md",
+      "t0_sha256": "07c62026d936951ebc9df4dfd3819a4a5f91cf98f61dd603bc29c9ef74f3a0ae",
+      "t0_source": {
+        "category": "司法解释",
+        "filename_date": "2012-03-29",
+        "offset": 423,
+        "source_filename": "最高人民法院、最高人民检察院关于办理内幕交易、泄露内幕信息刑事案件具体应用法律若干问题的解释_20120329.docx",
+        "source_id": "e63b3744f2e03176",
+        "source_sha256": "ebf7e744930ac6acfc523d04163e2415d23d66d3e28be1907d15976e8838edb9",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "最高人民法院、最高人民检察院关于办理内幕交易、泄露内幕信息刑事案件具体应用法律若干问题的解释"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/c124.md",
+      "t1_sha256": "c2dbd7792db19846f835d2d4d554fb1784887bafef251b4b4d4730965dab8d6d",
+      "t1_source": [
+        {
+          "category": "司法解释",
+          "filename_date": "2012-03-29",
+          "offset": 423,
+          "source_filename": "最高人民法院、最高人民检察院关于办理内幕交易、泄露内幕信息刑事案件具体应用法律若干问题的解释_20120329.docx",
+          "source_id": "e63b3744f2e03176",
+          "source_sha256": "ebf7e744930ac6acfc523d04163e2415d23d66d3e28be1907d15976e8838edb9",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院、最高人民检察院关于办理内幕交易、泄露内幕信息刑事案件具体应用法律若干问题的解释"
+        },
+        {
+          "category": "司法解释",
+          "filename_date": "2012-03-29",
+          "offset": 515,
+          "source_filename": "最高人民法院、最高人民检察院关于办理内幕交易、泄露内幕信息刑事案件具体应用法律若干问题的解释_20120329.docx",
+          "source_id": "e63b3744f2e03176",
+          "source_sha256": "ebf7e744930ac6acfc523d04163e2415d23d66d3e28be1907d15976e8838edb9",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院、最高人民检察院关于办理内幕交易、泄露内幕信息刑事案件具体应用法律若干问题的解释"
+        }
+      ]
+    },
+    {
+      "claim_id": "c125",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/c125.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/c125.md",
+      "stratum": "条款替换",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/c125.md",
+      "t0_sha256": "8eb721afa4fe40012c06eeb7f6d5b9cd659fb8d384e26d70f5867e1383359ef5",
+      "t0_source": {
+        "category": "司法解释",
+        "filename_date": "2012-11-02",
+        "offset": 380,
+        "source_filename": "最高人民法院关于审理破坏草原资源刑事案件应用法律若干问题的解释_20121102.docx",
+        "source_id": "f1c48260cbed0f0f",
+        "source_sha256": "a918dfb92fb0304bd4a2c83e56e3354e91bee80b0633b50e1b392fe2fac106ca",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "最高人民法院关于审理破坏草原资源刑事案件应用法律若干问题的解释"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/c125.md",
+      "t1_sha256": "29cb6ddc2f6d50802408c4396bea65c621669d43e342a5f322fb86c0617ba061",
+      "t1_source": [
+        {
+          "category": "司法解释",
+          "filename_date": "2012-11-02",
+          "offset": 380,
+          "source_filename": "最高人民法院关于审理破坏草原资源刑事案件应用法律若干问题的解释_20121102.docx",
+          "source_id": "f1c48260cbed0f0f",
+          "source_sha256": "a918dfb92fb0304bd4a2c83e56e3354e91bee80b0633b50e1b392fe2fac106ca",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院关于审理破坏草原资源刑事案件应用法律若干问题的解释"
+        },
+        {
+          "category": "司法解释",
+          "filename_date": "2012-11-02",
+          "offset": 484,
+          "source_filename": "最高人民法院关于审理破坏草原资源刑事案件应用法律若干问题的解释_20121102.docx",
+          "source_id": "f1c48260cbed0f0f",
+          "source_sha256": "a918dfb92fb0304bd4a2c83e56e3354e91bee80b0633b50e1b392fe2fac106ca",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院关于审理破坏草原资源刑事案件应用法律若干问题的解释"
+        }
+      ]
+    },
+    {
+      "claim_id": "c126",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/c126.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/c126.md",
+      "stratum": "条款替换",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/c126.md",
+      "t0_sha256": "ab2e434c2e8e585f5395e3cf51f5243fb1903436a4157df9335e13c1eb694fac",
+      "t0_source": {
+        "category": "司法解释",
+        "filename_date": "2012-12-07",
+        "offset": 368,
+        "source_filename": "最高人民法院、最高人民检察院关于办理渎职刑事案件适用法律若干问题的解释（一）_20121207.docx",
+        "source_id": "2d64d820a783df78",
+        "source_sha256": "119a473cb91036b754f7a7a52a1364ea4cf8fc1a99ca157befcc3a9b67a01df6",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "最高人民法院、最高人民检察院关于办理渎职刑事案件适用法律若干问题的解释（一）"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/c126.md",
+      "t1_sha256": "a8bf3685e428cd2b2f56d6a665f41c9bf952ca8c2359bac4248a44aa71016d43",
+      "t1_source": [
+        {
+          "category": "司法解释",
+          "filename_date": "2012-12-07",
+          "offset": 368,
+          "source_filename": "最高人民法院、最高人民检察院关于办理渎职刑事案件适用法律若干问题的解释（一）_20121207.docx",
+          "source_id": "2d64d820a783df78",
+          "source_sha256": "119a473cb91036b754f7a7a52a1364ea4cf8fc1a99ca157befcc3a9b67a01df6",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院、最高人民检察院关于办理渎职刑事案件适用法律若干问题的解释（一）"
+        },
+        {
+          "category": "司法解释",
+          "filename_date": "2012-12-07",
+          "offset": 564,
+          "source_filename": "最高人民法院、最高人民检察院关于办理渎职刑事案件适用法律若干问题的解释（一）_20121207.docx",
+          "source_id": "2d64d820a783df78",
+          "source_sha256": "119a473cb91036b754f7a7a52a1364ea4cf8fc1a99ca157befcc3a9b67a01df6",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院、最高人民检察院关于办理渎职刑事案件适用法律若干问题的解释（一）"
+        }
+      ]
+    },
+    {
+      "claim_id": "c127",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/c127.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/c127.md",
+      "stratum": "条款替换",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/c127.md",
+      "t0_sha256": "233d084219bf05485d23735401c732ed6002adf44c05498febd72e92d7b9aecd",
+      "t0_source": {
+        "category": "司法解释",
+        "filename_date": "2012-12-12",
+        "offset": 429,
+        "source_filename": "最高人民法院、最高人民检察院关于办理妨害国（边）境管理刑事案件应用法律若干问题的解释_20121212.docx",
+        "source_id": "d168444e099e46d1",
+        "source_sha256": "2ed1fdb9aadd5d81d66cface8365875bb4db0e9384f61726e43d41f3d5f5d549",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "最高人民法院、最高人民检察院关于办理妨害国（边）境管理刑事案件应用法律若干问题的解释"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/c127.md",
+      "t1_sha256": "dc3ab430eff9bb20c2c210efb5db8c853e0b8ddccd02aedeb5825c892baabb87",
+      "t1_source": [
+        {
+          "category": "司法解释",
+          "filename_date": "2012-12-12",
+          "offset": 429,
+          "source_filename": "最高人民法院、最高人民检察院关于办理妨害国（边）境管理刑事案件应用法律若干问题的解释_20121212.docx",
+          "source_id": "d168444e099e46d1",
+          "source_sha256": "2ed1fdb9aadd5d81d66cface8365875bb4db0e9384f61726e43d41f3d5f5d549",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院、最高人民检察院关于办理妨害国（边）境管理刑事案件应用法律若干问题的解释"
+        },
+        {
+          "category": "司法解释",
+          "filename_date": "2012-12-12",
+          "offset": 517,
+          "source_filename": "最高人民法院、最高人民检察院关于办理妨害国（边）境管理刑事案件应用法律若干问题的解释_20121212.docx",
+          "source_id": "d168444e099e46d1",
+          "source_sha256": "2ed1fdb9aadd5d81d66cface8365875bb4db0e9384f61726e43d41f3d5f5d549",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院、最高人民检察院关于办理妨害国（边）境管理刑事案件应用法律若干问题的解释"
+        }
+      ]
+    },
+    {
+      "claim_id": "c128",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/c128.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/c128.md",
+      "stratum": "条款替换",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/c128.md",
+      "t0_sha256": "1aa7a8b46a6bacf90294e7ede04b45176fe5b58580a9ac998b2ac0c513d02358",
+      "t0_source": {
+        "category": "司法解释",
+        "filename_date": "2012-12-26",
+        "offset": 376,
+        "source_filename": "最高人民法院、最高人民检察院关于办理行贿刑事案件具体应用法律若干问题的解释_20121226.docx",
+        "source_id": "7624e64f979c3dce",
+        "source_sha256": "4d3e42b496e503497ad68e04fc811698e250fd8b2302c270332677f0753bcfd4",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "最高人民法院、最高人民检察院关于办理行贿刑事案件具体应用法律若干问题的解释"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/c128.md",
+      "t1_sha256": "6cfd07766003d5d8215dbfc7ea7de204b09204751e57d5293318c52f8612fe74",
+      "t1_source": [
+        {
+          "category": "司法解释",
+          "filename_date": "2012-12-26",
+          "offset": 376,
+          "source_filename": "最高人民法院、最高人民检察院关于办理行贿刑事案件具体应用法律若干问题的解释_20121226.docx",
+          "source_id": "7624e64f979c3dce",
+          "source_sha256": "4d3e42b496e503497ad68e04fc811698e250fd8b2302c270332677f0753bcfd4",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院、最高人民检察院关于办理行贿刑事案件具体应用法律若干问题的解释"
+        },
+        {
+          "category": "司法解释",
+          "filename_date": "2012-12-26",
+          "offset": 432,
+          "source_filename": "最高人民法院、最高人民检察院关于办理行贿刑事案件具体应用法律若干问题的解释_20121226.docx",
+          "source_id": "7624e64f979c3dce",
+          "source_sha256": "4d3e42b496e503497ad68e04fc811698e250fd8b2302c270332677f0753bcfd4",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院、最高人民检察院关于办理行贿刑事案件具体应用法律若干问题的解释"
+        }
+      ]
+    },
+    {
+      "claim_id": "c129",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/c129.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/c129.md",
+      "stratum": "条款替换",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/c129.md",
+      "t0_sha256": "19b9304570198f7f7de2d0e75c0e153bc430ef060c7560ed50dc38ba1f15a078",
+      "t0_source": {
+        "category": "司法解释",
+        "filename_date": "2013-01-16",
+        "offset": 310,
+        "source_filename": "最高人民法院关于审理拒不支付劳动报酬刑事案件适用法律若干问题的解释_20130116.docx",
+        "source_id": "c10d10ab7a4aa89c",
+        "source_sha256": "bf5daa639b3f83f3896e3ed0b6b7e65d1e3fae944b92c139217433f11d786c5f",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "最高人民法院关于审理拒不支付劳动报酬刑事案件适用法律若干问题的解释"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/c129.md",
+      "t1_sha256": "5bf5683ec31ef87e1aabd6772dd1513d23db68601cde1b8834b4fd912d1ba537",
+      "t1_source": [
+        {
+          "category": "司法解释",
+          "filename_date": "2013-01-16",
+          "offset": 310,
+          "source_filename": "最高人民法院关于审理拒不支付劳动报酬刑事案件适用法律若干问题的解释_20130116.docx",
+          "source_id": "c10d10ab7a4aa89c",
+          "source_sha256": "bf5daa639b3f83f3896e3ed0b6b7e65d1e3fae944b92c139217433f11d786c5f",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院关于审理拒不支付劳动报酬刑事案件适用法律若干问题的解释"
+        },
+        {
+          "category": "司法解释",
+          "filename_date": "2013-01-16",
+          "offset": 432,
+          "source_filename": "最高人民法院关于审理拒不支付劳动报酬刑事案件适用法律若干问题的解释_20130116.docx",
+          "source_id": "c10d10ab7a4aa89c",
+          "source_sha256": "bf5daa639b3f83f3896e3ed0b6b7e65d1e3fae944b92c139217433f11d786c5f",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "最高人民法院关于审理拒不支付劳动报酬刑事案件适用法律若干问题的解释"
+        }
+      ]
+    },
+    {
+      "claim_id": "d079",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/d079.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/d079.md",
+      "stratum": "删除",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/d079.md",
+      "t0_sha256": "ff06ed51bf8d0fc58a88a75ce019f09eb0e552f952a456531938559038f9a9fa",
+      "t0_source": {
+        "category": "地方法规",
+        "filename_date": "2018-06-28",
+        "offset": 4110,
+        "source_filename": "黑龙江省湿地保护条例_20180628.doc",
+        "source_id": "93b830e3e883d54f",
+        "source_sha256": "9914cf3b7ce45ad943e3f2b7f8f3752cb1cdf53dfce59d7024b172427f63c21c",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "黑龙江省湿地保护条例"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/d079.md",
+      "t1_sha256": "691e7d7c8769f3a672d59fe27a6c0e40fc3cda79a4d1c895bdc15af562b17cea",
+      "t1_source": [
+        {
+          "category": "地方法规",
+          "filename_date": "2021-03-26",
+          "offset": 3619,
+          "source_filename": "四川省优化营商环境条例_20210326.docx",
+          "source_id": "feb978bee116c8d2",
+          "source_sha256": "b61da9cbb3451a605ca36d77c2f8cebfd46df1c672eda35d5d4450e977e36247",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "四川省优化营商环境条例"
+        }
+      ]
+    },
+    {
+      "claim_id": "d080",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/d080.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/d080.md",
+      "stratum": "删除",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/d080.md",
+      "t0_sha256": "d8542989689804d1833e9e9a2a1209c8ae0c1943f98c256fccfe1ddbc5591598",
+      "t0_source": {
+        "category": "地方法规",
+        "filename_date": "2018-07-27",
+        "offset": 3343,
+        "source_filename": "广西壮族自治区促进科技成果转化条例_20180727.docx",
+        "source_id": "553f2356c0cd7306",
+        "source_sha256": "0f6919807ded55c48d2da9433fda2efd9adf1e4f171a35abbfa930bef4df45d9",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "广西壮族自治区促进科技成果转化条例"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/d080.md",
+      "t1_sha256": "39475afa0a0b4c4891f6c7757d010572b3ac34203cd1697174f9c82ae7e47474",
+      "t1_source": [
+        {
+          "category": "地方法规",
+          "filename_date": "2017-12-01",
+          "offset": 1683,
+          "source_filename": "山东省促进科技成果转化条例_20171201.docx",
+          "source_id": "624e1f9c144c6124",
+          "source_sha256": "fca6db09fadc85ede3f35b5f8b456c7753280db6ee73c1b03289dc139d088626",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "山东省促进科技成果转化条例"
+        }
+      ]
+    },
+    {
+      "claim_id": "d081",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/d081.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/d081.md",
+      "stratum": "删除",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/d081.md",
+      "t0_sha256": "68d3802e4f9fd627efa431a736695d90a3bc76086fe61143a74d5275e65677ad",
+      "t0_source": {
+        "category": "地方法规",
+        "filename_date": "2018-07-27",
+        "offset": 234,
+        "source_filename": "福建省台湾船舶停泊点管理办法_20180727.docx",
+        "source_id": "fc0d4facd136af7b",
+        "source_sha256": "617e1ef7fb17e694646fbe0a7181b8afcc4ab6c843d869b9ed3fb68980c66937",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "福建省台湾船舶停泊点管理办法"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/d081.md",
+      "t1_sha256": "8f11e0febe4a0a458b665445914c9d253163beb3a5f22987862adbb9c7ec9c3a",
+      "t1_source": [
+        {
+          "category": "地方法规",
+          "filename_date": "2021-03-26",
+          "offset": 3619,
+          "source_filename": "四川省优化营商环境条例_20210326.docx",
+          "source_id": "feb978bee116c8d2",
+          "source_sha256": "b61da9cbb3451a605ca36d77c2f8cebfd46df1c672eda35d5d4450e977e36247",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "四川省优化营商环境条例"
+        }
+      ]
+    },
+    {
+      "claim_id": "d082",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/d082.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/d082.md",
+      "stratum": "删除",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/d082.md",
+      "t0_sha256": "973b1caa3571099d42d01bea8fad23fb75634640ad16f0ecc1158911e00a01e5",
+      "t0_source": {
+        "category": "地方法规",
+        "filename_date": "2018-10-19",
+        "offset": 4286,
+        "source_filename": "鄂州市湖泊保护条例_20181019.doc",
+        "source_id": "aa137e92721acd12",
+        "source_sha256": "d8140c81233d927abf689e166472d637dff93d8dface97769a0760e8c1cf5ec1",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "鄂州市湖泊保护条例"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/d082.md",
+      "t1_sha256": "9c272729f8b7cc293ad7a7c7ace8949be2c73a7317fe87f152741793807a9587",
+      "t1_source": [
+        {
+          "category": "地方法规",
+          "filename_date": "2018-10-19",
+          "offset": 4286,
+          "source_filename": "鄂州市湖泊保护条例_20181019.doc",
+          "source_id": "aa137e92721acd12",
+          "source_sha256": "d8140c81233d927abf689e166472d637dff93d8dface97769a0760e8c1cf5ec1",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "鄂州市湖泊保护条例"
+        }
+      ]
+    },
+    {
+      "claim_id": "d083",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/d083.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/d083.md",
+      "stratum": "删除",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/d083.md",
+      "t0_sha256": "0c30911d2b965fb333959efb372ebaf1f849a3e5d97390c87ed60f76ee90b572",
+      "t0_source": {
+        "category": "地方法规",
+        "filename_date": "2018-11-01",
+        "offset": 6597,
+        "source_filename": "新乡市城市市容和环境卫生管理条例_20181101.docx",
+        "source_id": "810fcae3774163a8",
+        "source_sha256": "1a0a57cb52c7ad25f8c2903ed7d229f2c7fabe5a6bf357020c3171a89382a8c5",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "新乡市城市市容和环境卫生管理条例"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/d083.md",
+      "t1_sha256": "d25b789dd3e80b267484c6e98c265cfeb550b74b8573e26cb55a0adf77a85036",
+      "t1_source": [
+        {
+          "category": "地方法规",
+          "filename_date": "2021-03-26",
+          "offset": 3619,
+          "source_filename": "四川省优化营商环境条例_20210326.docx",
+          "source_id": "feb978bee116c8d2",
+          "source_sha256": "b61da9cbb3451a605ca36d77c2f8cebfd46df1c672eda35d5d4450e977e36247",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "四川省优化营商环境条例"
+        }
+      ]
+    },
+    {
+      "claim_id": "d084",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/d084.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/d084.md",
+      "stratum": "删除",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/d084.md",
+      "t0_sha256": "42b5462b24560973cdbabe784c367642ab25dc137fb03659ae7fd8b154557f5d",
+      "t0_source": {
+        "category": "地方法规",
+        "filename_date": "2018-11-29",
+        "offset": 4586,
+        "source_filename": "广东省人才发展条例_20181129.docx",
+        "source_id": "80b90aea1edbdd49",
+        "source_sha256": "09d12c21f176bec41ec81f63eb9c04a9c7a0e68bdaa539a8791acd0fb56dad70",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "广东省人才发展条例"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/d084.md",
+      "t1_sha256": "2ec29588c537fcd558470d2c0761bfa7a7d46fc076ef5851c2632e0e98b2781c",
+      "t1_source": [
+        {
+          "category": "地方法规",
+          "filename_date": "2018-11-29",
+          "offset": 4586,
+          "source_filename": "广东省人才发展条例_20181129.docx",
+          "source_id": "80b90aea1edbdd49",
+          "source_sha256": "09d12c21f176bec41ec81f63eb9c04a9c7a0e68bdaa539a8791acd0fb56dad70",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "广东省人才发展条例"
+        }
+      ]
+    },
+    {
+      "claim_id": "d085",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/d085.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/d085.md",
+      "stratum": "删除",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/d085.md",
+      "t0_sha256": "4aa6cb0e7fa5c8a6ec11ca73fcfe88ac53234555be5180947ec971157efa2e15",
+      "t0_source": {
+        "category": "地方法规",
+        "filename_date": "2018-11-30",
+        "offset": 3527,
+        "source_filename": "浙江省保障“最多跑一次”改革规定_20181130.docx",
+        "source_id": "d2190f5029550c24",
+        "source_sha256": "91e60e76d10ecb428084f7730e7560354189f701f42f99aa93cae0341386eb57",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "浙江省保障“最多跑一次”改革规定"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/d085.md",
+      "t1_sha256": "da782ddf62761f629fe28e0d7a7f9f6f98370a37aaac116591bb33bf95ac27ce",
+      "t1_source": [
+        {
+          "category": "地方法规",
+          "filename_date": "2018-11-30",
+          "offset": 3527,
+          "source_filename": "浙江省保障“最多跑一次”改革规定_20181130.docx",
+          "source_id": "d2190f5029550c24",
+          "source_sha256": "91e60e76d10ecb428084f7730e7560354189f701f42f99aa93cae0341386eb57",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "浙江省保障“最多跑一次”改革规定"
+        }
+      ]
+    },
+    {
+      "claim_id": "d086",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/d086.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/d086.md",
+      "stratum": "删除",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/d086.md",
+      "t0_sha256": "6ce9eac996c25c7f186288e967af254b0642a1511260b2b8be2985adb43cf0c8",
+      "t0_source": {
+        "category": "地方法规",
+        "filename_date": "2018-12-07",
+        "offset": 5138,
+        "source_filename": "成都国家自主创新示范区条例_20181207.docx",
+        "source_id": "bffb657a23e5c558",
+        "source_sha256": "6732d24c4b3065956a38befe7d9c041ef8d561fd6a349e7ac35d8bcef38cd25b",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "成都国家自主创新示范区条例"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/d086.md",
+      "t1_sha256": "56681c7e4d18c8d7e169a70dba2fe5cc79be4f385fbc982caa44b83dfe655798",
+      "t1_source": [
+        {
+          "category": "地方法规",
+          "filename_date": "2018-12-07",
+          "offset": 5138,
+          "source_filename": "成都国家自主创新示范区条例_20181207.docx",
+          "source_id": "bffb657a23e5c558",
+          "source_sha256": "6732d24c4b3065956a38befe7d9c041ef8d561fd6a349e7ac35d8bcef38cd25b",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "成都国家自主创新示范区条例"
+        }
+      ]
+    },
+    {
+      "claim_id": "d087",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/d087.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/d087.md",
+      "stratum": "删除",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/d087.md",
+      "t0_sha256": "9e7fb1a2c734498fe9380a2bbec020138c4e5f219bd3504d5ca703db7620bdcc",
+      "t0_source": {
+        "category": "地方法规",
+        "filename_date": "2019-03-30",
+        "offset": 7504,
+        "source_filename": "朝阳市人民代表大会及其常务委员会立法条例_20190330.doc",
+        "source_id": "f5a753593f1fc8a2",
+        "source_sha256": "c79eb72f76aed1e89208a862d96351e0705d37dfd5357d7f41ab52ff63a38cb6",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "朝阳市人民代表大会及其常务委员会立法条例"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/d087.md",
+      "t1_sha256": "6979a61dcab563de9b338c3fb77273a95a6bd7bb6606a0e0ceb8bc5e60f4f411",
+      "t1_source": [
+        {
+          "category": "地方法规",
+          "filename_date": "2016-04-27",
+          "offset": 6750,
+          "source_filename": "黔南布依族苗族自治州立法条例_20160427.docx",
+          "source_id": "c1698150d1009d8c",
+          "source_sha256": "ed828adcfd35e91af259fda3876d0e9f363d5ee6b484fa76f26debcd0c736547",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "黔南布依族苗族自治州立法条例"
+        }
+      ]
+    },
+    {
+      "claim_id": "d088",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/d088.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/d088.md",
+      "stratum": "删除",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/d088.md",
+      "t0_sha256": "8a74e36f9c2a914c2e4e0921f129ad711508700362a6bdbf179e1c56e9fa2922",
+      "t0_source": {
+        "category": "地方法规",
+        "filename_date": "2019-04-01",
+        "offset": 3281,
+        "source_filename": "唐山市全域旅游促进条例_20190401.docx",
+        "source_id": "12c6c80801b342da",
+        "source_sha256": "ff556770179b645250f1dd6463341b077462f8076b0cabb7a219b2c4f3c4c608",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "唐山市全域旅游促进条例"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/d088.md",
+      "t1_sha256": "973b88032f600f5dc710a0715300c53dc10255c23dcd903f08e1099561872a65",
+      "t1_source": [
+        {
+          "category": "地方法规",
+          "filename_date": "2021-03-26",
+          "offset": 3619,
+          "source_filename": "四川省优化营商环境条例_20210326.docx",
+          "source_id": "feb978bee116c8d2",
+          "source_sha256": "b61da9cbb3451a605ca36d77c2f8cebfd46df1c672eda35d5d4450e977e36247",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "四川省优化营商环境条例"
+        }
+      ]
+    },
+    {
+      "claim_id": "d089",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/d089.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/d089.md",
+      "stratum": "删除",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/d089.md",
+      "t0_sha256": "86571e8ba2903cdeb840ce5495e243be5f064087c08d83371a44a991abecd773",
+      "t0_source": {
+        "category": "地方法规",
+        "filename_date": "2019-04-09",
+        "offset": 2061,
+        "source_filename": "长治市不可移动文物保护条例_20190409.docx",
+        "source_id": "635d262cf2e4f246",
+        "source_sha256": "5624488f99ce3b6fd90e0b610c6967c09cff6e4fff1805ce3334bbfbbac7c97b",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "长治市不可移动文物保护条例"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/d089.md",
+      "t1_sha256": "d7faba817aa25048cb3b49f349a0373b8c0d26f811bae0b4c3c25c31104c94fe",
+      "t1_source": [
+        {
+          "category": "地方法规",
+          "filename_date": "2021-03-26",
+          "offset": 3619,
+          "source_filename": "四川省优化营商环境条例_20210326.docx",
+          "source_id": "feb978bee116c8d2",
+          "source_sha256": "b61da9cbb3451a605ca36d77c2f8cebfd46df1c672eda35d5d4450e977e36247",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "四川省优化营商环境条例"
+        }
+      ]
+    },
+    {
+      "claim_id": "d090",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/d090.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/d090.md",
+      "stratum": "删除",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/d090.md",
+      "t0_sha256": "6048c6a53cf381332101846d722155e74bcb2e9be9e84480a0ac75ad686b4297",
+      "t0_source": {
+        "category": "地方法规",
+        "filename_date": "2019-05-30",
+        "offset": 1502,
+        "source_filename": "天津港保税区条例_20190530.docx",
+        "source_id": "c39d6eaa642efc6d",
+        "source_sha256": "e58737bdf4124f832be5bdac4ab137cbcaced89f8fa5f3a3b9a7ba3be33bec2f",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "天津港保税区条例"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/d090.md",
+      "t1_sha256": "fc30d40636ead1dfc85b5ccd80f5a078987d4290a2ab1bb44cdf858f60f31acf",
+      "t1_source": [
+        {
+          "category": "地方法规",
+          "filename_date": "2021-03-26",
+          "offset": 3619,
+          "source_filename": "四川省优化营商环境条例_20210326.docx",
+          "source_id": "feb978bee116c8d2",
+          "source_sha256": "b61da9cbb3451a605ca36d77c2f8cebfd46df1c672eda35d5d4450e977e36247",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "四川省优化营商环境条例"
+        }
+      ]
+    },
+    {
+      "claim_id": "d091",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/d091.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/d091.md",
+      "stratum": "删除",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/d091.md",
+      "t0_sha256": "f2d41687c059ca7b315fd25a5e0e0244cc4b5fb854c9e576a29cb5cad7a1eb89",
+      "t0_source": {
+        "category": "地方法规",
+        "filename_date": "2019-06-11",
+        "offset": 8975,
+        "source_filename": "保亭黎族苗族自治县城乡容貌和环境卫生管理条例_20190611.docx",
+        "source_id": "839dbb4340d0c14d",
+        "source_sha256": "70093c3e13644a5de4f9121edd4758cec99d7072f1a9855f80505408cb029c25",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "保亭黎族苗族自治县城乡容貌和环境卫生管理条例"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/d091.md",
+      "t1_sha256": "cb6fc5d30e3d436f7ed3585c40086b31b4e224f018cc6c2c3a3ed478bdcc433a",
+      "t1_source": [
+        {
+          "category": "地方法规",
+          "filename_date": "2021-03-26",
+          "offset": 3619,
+          "source_filename": "四川省优化营商环境条例_20210326.docx",
+          "source_id": "feb978bee116c8d2",
+          "source_sha256": "b61da9cbb3451a605ca36d77c2f8cebfd46df1c672eda35d5d4450e977e36247",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "四川省优化营商环境条例"
+        }
+      ]
+    },
+    {
+      "claim_id": "d156",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/d156.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/d156.md",
+      "stratum": "删除",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/d156.md",
+      "t0_sha256": "375b0addcff6d3dc5d27fe181a6958ce5c75e2a3c936a74242d731973fe756e6",
+      "t0_source": {
+        "category": "地方法规",
+        "filename_date": "2018-06-04",
+        "offset": 2350,
+        "source_filename": "昆明市流动人口服务管理条例_20180604.docx",
+        "source_id": "2f9a334a4558a59a",
+        "source_sha256": "5be1fae04a65ed0dd8f293c66f1ea221b0be1836b2ff5e62967269b6546f973b",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "昆明市流动人口服务管理条例"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/d156.md",
+      "t1_sha256": "ae4721dfe7a822e11681b9d61d723247aa7fbe46316086173b655f096d7cd315",
+      "t1_source": [
+        {
+          "category": "地方法规",
+          "filename_date": "2024-11-29",
+          "offset": 6257,
+          "source_filename": "湖北省各级人民代表大会常务委员会人事任免工作条例_20241129.docx",
+          "source_id": "847048d195de9b73",
+          "source_sha256": "2e3e4d521598e6803af8b30447338fae1b4d56dff946df962e7017cb065ac738",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "湖北省各级人民代表大会常务委员会人事任免工作条例"
+        }
+      ]
+    },
+    {
+      "claim_id": "d164",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/d164.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/d164.md",
+      "stratum": "删除",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/d164.md",
+      "t0_sha256": "b3cc69d0ed0292988894b45fc5d5eed347d04b42f4b47120611c4557a82146ab",
+      "t0_source": {
+        "category": "地方法规",
+        "filename_date": "2016-08-01",
+        "offset": 1699,
+        "source_filename": "福建省旅游条例_20160801.docx",
+        "source_id": "974a580b1bc40d34",
+        "source_sha256": "60556468ea106fe73a82e293e7b98ac00083fc26b8b958831bce4d5242b4aec2",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "福建省旅游条例"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/d164.md",
+      "t1_sha256": "fd4433d743928751b9c4d87e5c373c28d8c2e69904a136288200457a6abdc9dc",
+      "t1_source": [
+        {
+          "category": "地方法规",
+          "filename_date": "2016-08-01",
+          "offset": 6825,
+          "source_filename": "福建省旅游条例_20160801.docx",
+          "source_id": "974a580b1bc40d34",
+          "source_sha256": "60556468ea106fe73a82e293e7b98ac00083fc26b8b958831bce4d5242b4aec2",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "福建省旅游条例"
+        },
+        {
+          "category": "地方法规",
+          "filename_date": "2023-11-29",
+          "offset": 1530,
+          "source_filename": "青海省罚款和没收财物管理条例_20231129.docx",
+          "source_id": "91b0a665c7dd84fe",
+          "source_sha256": "9730da16d0189e6e63d7b7a74d0bbcc6c5cff3bf8f72790d64289ea1d6da68ba",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "青海省罚款和没收财物管理条例"
+        }
+      ]
+    },
+    {
+      "claim_id": "d172",
+      "dataset_revision": "11be732f1a529a46e02e8c1530bae3b84f967bc3",
+      "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+      "fetch_time": "2026-10-09T10:00:00Z",
+      "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+      "source_t0_file": "data/corpus/pe_v2/t0/d172.md",
+      "source_t1_file": "data/corpus/pe_v2/t1/d172.md",
+      "stratum": "删除",
+      "t0_file": "data/patch-establishment/v1/corpus/t0/d172.md",
+      "t0_sha256": "08977f7a4a87fa76485b39b7c48591fde22c172a118b1dd6d283cefc29245281",
+      "t0_source": {
+        "category": "地方法规",
+        "filename_date": "2022-04-02",
+        "offset": 4910,
+        "source_filename": "湛江市优化营商环境条例_20220402.doc",
+        "source_id": "9ef9c6a465d45e89",
+        "source_sha256": "ee7235026466b59e3afa8fd3a65e55b115d4c197d75be0a404eb5b47c6df5469",
+        "source_url": "https://flk.npc.gov.cn/",
+        "title": "湛江市优化营商环境条例"
+      },
+      "t1_file": "data/patch-establishment/v1/corpus/t1/d172.md",
+      "t1_sha256": "78a0bb048e037a602ed566d4055246a5a18c6b7940bae3b938c0ab165591ff99",
+      "t1_source": [
+        {
+          "category": "地方法规",
+          "filename_date": "2021-10-28",
+          "offset": 6895,
+          "source_filename": "上海市档案条例_20211028.docx",
+          "source_id": "0b2a951c0667b6e4",
+          "source_sha256": "08ae9a921df694210f66f71a9d1c84b47263f3a27ad5683d962103a9dfbeefc4",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "上海市档案条例"
+        },
+        {
+          "category": "地方法规",
+          "filename_date": "2023-11-29",
+          "offset": 1530,
+          "source_filename": "青海省罚款和没收财物管理条例_20231129.docx",
+          "source_id": "91b0a665c7dd84fe",
+          "source_sha256": "9730da16d0189e6e63d7b7a74d0bbcc6c5cff3bf8f72790d64289ea1d6da68ba",
+          "source_url": "https://flk.npc.gov.cn/",
+          "title": "青海省罚款和没收财物管理条例"
+        }
+      ]
+    }
+  ],
+  "counts_as_establishment": false,
+  "dataset_snapshot": "2026-08-26",
+  "dataset_url": "https://huggingface.co/datasets/senry5433/china-effective-laws-regulations",
+  "excluded_sets": [
+    "n400",
+    "pilot"
+  ],
+  "excluded_split": "docs/evidence/patch-events/SPLIT-pe-v2-route-y.json",
+  "fetch_time": "2026-10-08T05:18:00Z",
+  "license": "汇编 CC0-1.0（senry5433/china-effective-laws-regulations，快照 2026-08-26）。正文是国家机关立法、行政、司法性质文件，不适用《著作权法》第五条。国家法律法规数据库网站使用条款未逐页核验。",
+  "measurement_status": "unmeasured",
+  "note": "正文逐字节复制自 pe_v2 leftover（排除 route-y n400 与 pilot）。不是正式 Y 名单，second_formal_y=false。未测量，不是成立。",
+  "role": "frozen_corpus_unrun",
+  "run_status": "unrun",
+  "second_formal_y": false,
+  "source_corpus": "data/corpus/pe_v2",
+  "source_docket": "data/pe_v2_docket.json",
+  "source_provenance": "data/corpus/pe_v2/PROVENANCE.json",
+  "source_url": "https://flk.npc.gov.cn/"
+}

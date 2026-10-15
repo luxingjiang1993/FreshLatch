@@ -116,9 +116,9 @@
     "experiment_corpus": {
       "counts_as_establishment": false,
       "measurement_status": "unmeasured",
-      "path": null,
-      "role": "unmeasured",
-      "sha256": null
+      "path": "data/patch-establishment/v1",
+      "role": "frozen_corpus_unrun",
+      "sha256": "cda7c5afffdba09550abb33cc5132453a91357c076d81752e9ca9eeca0397d1d"
     },
     "frozen_per_query": {
       "counts_as_establishment": false,
