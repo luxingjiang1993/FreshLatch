@@ -29,3 +29,7 @@
 ## 可选（不计入 I2 Exit）
 
 idea #4 过期伪装 `adv-fresh-t001` 可同波作面试弹药，证据页 `docs/evidence/i2/adv-fresh-t001.md`。**不计入 I2 Exit，不是硬表第四行。** I2 ≠ #4。
+
+## 薄 ACL 范围（A-P4）
+
+薄 ACL ≠ 完整 SaaS 多租户。CI 矩阵 `tests/unit/test_acl_cross_tenant_matrix.py` 只锁定服务端凭证映射下的跨租户读、写、会话拒绝：身份来自 `FRESHLATCH_SERVING_API_KEYS`，客户端单独提交的 `tenant_id` 不构成访问权。没有租户管理面、SSO、计费隔离或完整 RBAC。本段不是 I2 硬表新行。
