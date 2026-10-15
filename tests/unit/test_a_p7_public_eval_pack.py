@@ -75,9 +75,13 @@ def test_abstain_ignores_ragas_overlap() -> None:
 
 
 def test_crlf_pack_keeps_hash(tmp_path: Path) -> None:
-    crlf = tmp_path / "pack.json"
-    crlf.write_bytes(PACK.read_bytes().replace(b"\n", b"\r\n"))
-    left = replay_public_pack(PACK)
+    """检出可能已是 CRLF。先折成 LF，再分别写成 LF 与 CRLF 副本。"""
+    raw = PACK.read_bytes().replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+    lf = tmp_path / "pack-lf.json"
+    crlf = tmp_path / "pack-crlf.json"
+    lf.write_bytes(raw)
+    crlf.write_bytes(raw.replace(b"\n", b"\r\n"))
+    left = replay_public_pack(lf)
     right = replay_public_pack(crlf)
     assert left["pack_sha256"] == right["pack_sha256"]
     assert left["content_hash"] == right["content_hash"]
