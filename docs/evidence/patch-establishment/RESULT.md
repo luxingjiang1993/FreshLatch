@@ -6,7 +6,7 @@
 
 ## 跑针
 
-- **代码针**：`471cb665e3685d3acdc7b88603aaa75cc2ded48c`
+- **代码针**：`8b4c6f1ecc8e6db55e31959b8bab283921998a96`
 - **授权**：主人 Oriental Ronin 明文「跑」+ Amendment-02 + `--authorize-run`
 - **built_n** = 91（target_n=100；gap_n=9；不得把 91 假装成 100）
 - **生成路径**：`docs/evidence/patch-establishment/formal-generations.jsonl`（n_lines=182；sha256=`8593bf784d75edbb910c59b1342a998bf567cb3728b3c1b6be11701f3d5025da`）
