@@ -39,3 +39,27 @@
 单机 canary ≠ 多区渐进发布; ≠ 注册分; ≠ L5.
 
 这里没有多区流量阶梯，没有区域摘流，也没有把一次停发写成成熟度等级。发前钩子闸与检索默认臂保持原样。
+
+## Skill 单包（A-P9）
+
+单包 demo / 非 marketplace。
+
+业务 skill 不进 Runner 默认注入。开关是 `FRESHLATCH_SKILL_ALLOWLIST`，环境变量与同名 config 键都认；config 里有该键时优先于环境。未设置、空白、或字面量 `off` 都是 off，不挂任何包。设成恰好一个业务包 slug（`earnings_figures`、`event_timeline`、`patch_diff`、`strategy_walkthrough` 之一）才挂载该包。逗号多项、空格多项、未知 slug、角色包都 fail-closed，不改为挂全部包。
+
+skill→tool 先过 Serving ACL（身份来自 `FRESHLATCH_SERVING_API_KEYS`，客户端单独提交的 `tenant_id` 不构成访问权；工具参数里的 `tenant_id` 还必须与服务端租户一致），再过 `tool_tier`（`dispatch_tiered_tool`）。越权、跨租户、`tool_tier_2`、未过人审的 `tool_tier_1` 都不调用工具。
+
+每次调用写一条轨迹。`latency` 单位是秒。字段只有：
+
+| 字段 | 含义 |
+|------|------|
+| `package` | 挂上的业务包 slug；未挂载时为空字符串 |
+| `id` | 本次调用 id |
+| `ok` | 工具是否执行成功 |
+| `latency` | 秒 |
+| `reason` | 放行时为 `ok`；拒绝时为原因码（`skill_allowlist_off`、`skill_allowlist_invalid`、`skill_not_triggered`、`skill_tool_not_allowed`、`tool_tier_denied`、`tenant_acl_denied`、`SERVING_UNAUTHORIZED`、`SERVING_TENANT_MISMATCH`） |
+
+该触发 / 不该触发用包上的确定性触发词，不调用模型。pytest：`tests/unit/test_skill_allowlist.py`。
+
+发车勾选（可选。不改变本页 canary 的默认 `off`）：
+
+- [ ] 若本机要做单包 demo，`FRESHLATCH_SKILL_ALLOWLIST` 只填一个业务包；未勾选则保持 off
