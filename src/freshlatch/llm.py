@@ -14,8 +14,10 @@ from typing import Any
 from dotenv import find_dotenv, load_dotenv
 from openai import OpenAI
 
+from freshlatch.model_profile import resolve_model
 from freshlatch.models import DEFAULT_MODEL, MODEL_REGISTRY
 
+# 模块常量保持云端登记。profile 只在 resolve_model 与客户端构造时生效，避免 import 时被环境变量改掉。
 _default_base = MODEL_REGISTRY["default_llm"].base_url
 if not isinstance(_default_base, str) or not _default_base:
     raise RuntimeError("default_llm 缺少 base_url")
@@ -67,9 +69,14 @@ def tools_for_request(tools: list, *, accepts_strict: bool) -> list:
     return bound
 
 
+def _default_chat_model() -> str:
+    """未传入 model 时跟 profile。显式 model= 保持调用方的字符串，不在这里改写。"""
+    return resolve_model("default_llm").model
+
+
 @dataclass
 class DecodingParams:
-    model: str = DEFAULT_MODEL
+    model: str = field(default_factory=_default_chat_model)
     temperature: float = 0.0
     seed: int | None = None
     recorded_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
@@ -122,21 +129,33 @@ class LLMClient:
     def client(self) -> Any:
         """兼容旧代码读 self.client;首次访问时才向 OpenAI SDK 要凭据。"""
         if self._client is None:
-            entry = MODEL_REGISTRY["default_llm"]
+            entry = resolve_model("default_llm")
             env_key = entry.env_key
             base_url = entry.base_url
-            if not isinstance(env_key, str) or not env_key:
-                raise RuntimeError("default_llm 缺少 env_key")
             if not isinstance(base_url, str) or not base_url:
                 raise RuntimeError("default_llm 缺少 base_url")
-            key = self._api_key if self._api_key is not None else os.getenv(env_key, "")
+            if self._api_key is not None:
+                key = self._api_key
+            elif env_key is None:
+                # local-lms 的 env_key 为空：不读云端密钥。占位只为通过 SDK 构造。
+                key = ""
+            else:
+                if not isinstance(env_key, str) or not env_key:
+                    raise RuntimeError("default_llm 缺少 env_key")
+                key = os.getenv(env_key, "")
             # 非空占位仅绕过 SDK 对 "" 的构造期拒绝;真调用仍会因无效 key 鉴权失败。
             if not key:
                 key = "MISSING_DASHSCOPE_API_KEY"
-            # 默认 base_url 读 registry。已有的 DASHSCOPE_BASE_URL 环境变量仍可覆盖。
+            if self._base_url:
+                resolved_base = self._base_url
+            elif entry.platform == "dashscope":
+                # 云端默认端点读 resolve 结果。已有的 DASHSCOPE_BASE_URL 仍可覆盖。
+                resolved_base = os.getenv("DASHSCOPE_BASE_URL", base_url)
+            else:
+                resolved_base = base_url
             self._client = OpenAI(
                 api_key=key,
-                base_url=self._base_url or os.getenv("DASHSCOPE_BASE_URL", base_url),
+                base_url=resolved_base,
             )
         return self._client
 

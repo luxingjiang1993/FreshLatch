@@ -295,6 +295,7 @@ def test_default_llm_client_reads_registry_env_key_and_keeps_base_url_override(m
 
     monkeypatch.setattr(llm_mod, "OpenAI", _FakeOpenAI)
     monkeypatch.setattr(llm_mod, "load_dotenv", lambda *_args, **_kwargs: None)
+    monkeypatch.delenv("FRESHLATCH_MODEL_PROFILE", raising=False)
     entry = MODEL_REGISTRY["default_llm"]
     assert isinstance(entry.env_key, str)
     monkeypatch.setenv(entry.env_key, "sentinel-from-registry")
