@@ -23,6 +23,7 @@ from freshlatch.store.base import (
     filter_retrieve_pool,
     normalize_tenant_id,
 )
+from freshlatch.store.temporal_arm import reject_temporal_trained_ranking
 from freshlatch.store.pipeline import filter_patch_metadata, meta_text, run_pipeline
 
 SCHEMA = """
@@ -361,6 +362,7 @@ class SQLiteStore(RetrievalStore):
 
         self.last_rerank_mode = RERANK_MODE_NONE
         requested = self._requested_retrieval_mode()
+        reject_temporal_trained_ranking(requested)
         if requested == "dense":
             query_vec = self._embed_query(query)
             ranked = rank_dense(query_vec, pool, top_k=top_k) if query_vec else None

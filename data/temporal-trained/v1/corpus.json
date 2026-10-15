@@ -1,0 +1,37 @@
+{
+  "corpus_id": "temporal-trained-v1",
+  "corpus_version": "v1",
+  "level": "schema",
+  "documents": [
+    {
+      "doc_id": "demo-art-1",
+      "version_id": "v2020",
+      "as_of": "2020-01-01",
+      "valid_from": "2020-01-01",
+      "valid_to": "2024-01-01",
+      "text": "2020 年版演示条款：税率千分之五。"
+    },
+    {
+      "doc_id": "demo-art-1",
+      "version_id": "v2024",
+      "as_of": "2024-01-01",
+      "valid_from": "2024-01-01",
+      "valid_to": null,
+      "text": "2024 年版演示条款：税率千分之八。"
+    }
+  ],
+  "queries": [
+    {
+      "query_id": "q-asof-2021",
+      "query": "2021-06-01 适用的演示税率",
+      "query_date": "2021-06-01",
+      "relevant": ["demo-art-1#v2020@2020-01-01"]
+    },
+    {
+      "query_id": "q-asof-2025",
+      "query": "2025-03-01 适用的演示税率",
+      "query_date": "2025-03-01",
+      "relevant": ["demo-art-1#v2024@2024-01-01"]
+    }
+  ]
+}
