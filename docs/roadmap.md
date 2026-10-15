@@ -245,7 +245,7 @@ Word / PPT / Notion 插件、开放公网 webhook 等 Adoption **后期**嵌入�
 **Hard rules**
 - 只认已入库 T1；`web → 落盘 → 再复验`
 - 对话不改正式裁决；ingest ≠ 事实正确（白名单/冲突/人审）
-- 生产默认 BM25，直到 Hard-Gold **过线**（ADR-0033）且 Gate 实现票人终收改臂
+- 生产默认 `hybrid+rerank`（2026-10-07 真人拍板后；精排是本地 `BAAI/bge-reranker-base`，只重排 top-10）。一键回退是 `set_retrieval_switch("bm25")`
 - 对客主卖：改完立刻可再验 + 证据可导出 + 发前少翻车；少卖 Claim OS / 对抗平台 / 通用助手
 
 **Always ship**
