@@ -150,9 +150,10 @@ class Critic:
             source_type=args.get("source_type") or None,
             as_of=as_of or None,
             top_k=10,
+            # 工具参数只作声明。try_retrieve 用会话 tenant_id 做检索前 ACL。
             tenant_id=optional_tenant_id(args),
         )
-        if isinstance(hits, dict):  # 预算已尽,fail-soft(与 Lead 共享 Run 级预算)
+        if isinstance(hits, dict):  # 预算已尽,或检索前 ACL 拒绝
             return hits
         blocks = [
             {"evidence_id": chunk_evidence_id(c), "as_of": c.as_of,

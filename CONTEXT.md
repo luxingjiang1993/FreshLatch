@@ -93,7 +93,7 @@ _Avoid_: 同页兼写实验尺、把生产变绿写成主实验成功、把金�
 _Avoid_: 把它当成实验成立格、把 phase-2 六项升成第 7 个主 SLI、另起一套平行 KPI 名
 
 **tenant_id**:
-召回 ACL 上下文:块/文档所属合成租户标识;缺省 `default`。带 `tenant_id` 的 retrieve 只返回同租户块(ADR-0030)。不是多租户产品或 SSO。
+召回 ACL 上下文:块/文档所属合成租户标识;块上缺省 `default`。生产检索入口的 `tenant_id` 由会话/鉴权服务端注入,不信任模型输出或客户端 filter;工具参数若传入必须与会话一致,否则拒绝。缺服务端 tenant 时 fail-closed,不得落到全库。带服务端 `tenant_id` 的 retrieve 只返回同租户块(ADR-0030 的库内过滤仍在;评测直接调用的无参路径不是生产入口)。不是多租户产品或 SSO。
 _Avoid_: 租户管理面、RBAC 平台、把会话 evidence 白名单称作 ACL 已交付
 
 **poison / untrusted**:

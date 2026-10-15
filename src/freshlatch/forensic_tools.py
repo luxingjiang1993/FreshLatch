@@ -1,12 +1,17 @@
 """Forensic工具处理器 - 处理与Forensic相关的工具调用"""
 
 from typing import Dict, Any, Callable, Awaitable
+from freshlatch.store.tenant_acl import resolve_pre_retrieval_tenant
 from freshlatch.store.sqlite_store import SQLiteStore
 import json
 from datetime import datetime
 
 
-def create_forensic_tools(store: SQLiteStore) -> Dict[str, Callable[..., Awaitable[Dict[str, Any]]]]:
+def create_forensic_tools(
+    store: SQLiteStore,
+    *,
+    server_tenant_id: str | None = "default",
+) -> Dict[str, Callable[..., Awaitable[Dict[str, Any]]]]:
     """创建Forensic相关的工具集合
 
     Args:
@@ -38,15 +43,24 @@ def create_forensic_tools(store: SQLiteStore) -> Dict[str, Callable[..., Awaitab
         top_k: int = 10,
         tenant_id: str | None = None,
     ) -> Dict[str, Any]:
-        """按 as_of 检索语料,供 Forensic 对照 T1。过滤与 store.retrieve 同一实现。"""
+        """按 as_of 检索语料,供 Forensic 对照 T1。tenant 只来自服务端会话。"""
         try:
+            tool_tenant = tenant_id if isinstance(tenant_id, str) and tenant_id.strip() else None
+            resolved, denied = resolve_pre_retrieval_tenant(server_tenant_id, tool_tenant)
+            if denied is not None:
+                return {
+                    "status": "error",
+                    "error": denied["error"],
+                    "message": denied["error"],
+                    "reason_code": denied["reason_code"],
+                    "fail_closed": True,
+                }
             kwargs = {
                 "as_of": as_of if as_of in ("T0", "T1") else "T1",
                 "source_type": source_type or None,
                 "top_k": top_k,
+                "tenant_id": resolved,
             }
-            if tenant_id:
-                kwargs["tenant_id"] = tenant_id
             hits = store.retrieve(query, **kwargs)
             blocks = [
                 {
