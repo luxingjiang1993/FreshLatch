@@ -62,9 +62,33 @@ export FRESHLATCH_LMS_BASE_URL=http://127.0.0.1:1234/v1
 
 C-04 正式生成器没有单独的 slot。正式模块继续读 `DEFAULT_MODEL` 与 `MODEL_REGISTRY["default_llm"]`，并在调用时显式传入模型名。profile 不改写这两个常量，所以 `local-lms` 不会把正式生成器重映射到 LM Studio。
 
-## 正式 RESULT
+## 正式跑前闸
 
-不要在 `local-lms` 下写正式 C-04 / RESULT。S7 才做写入前的闸（断言 profile 不是 `local-lms`、locked slot 未被覆盖）。本页与冒烟脚本都不写 RESULT，也不实现那道闸。
+切片 MUM-S7。写入 C-04 RESULT 与同一次注册分之前，`write_measured`（`src/freshlatch/eval/patch_establishment_formal.py`）调用 `assert_formal_run_allowed()`（`src/freshlatch/formal_run_gate.py`）。
+
+| 条件 | 结果 |
+| --- | --- |
+| 未设置 `FRESHLATCH_MODEL_PROFILE`，或值为 `cloud` | 通过 |
+| `local-lms` | `FormalRunGateError`，不写文件 |
+| 未知 profile | `UnknownModelProfileError`，不写文件 |
+| `FRESHLATCH_ALLOW_NON_RESULT_DEBUG=1` 且 profile 为 `local-lms` | 仍拒绝正式写入。该变量只表示非 RESULT 调试，唯一认的值是 `1` |
+
+闸同时确认 locked slot（`judge_qwen`、`judge_deepseek`、`judge_kimi`、`nli`）在 `local-lms` 下仍是 `MODEL_REGISTRY` 原对象。被覆盖则失败关闭。
+
+显式 `assert_formal_run_allowed(profile="cloud")` 以参数为准，不读 `FRESHLATCH_MODEL_PROFILE`。`write_measured` 不传 profile，因此进程里的 `local-lms` 会挡住写入。
+
+本页与冒烟脚本都不写 RESULT。
+
+### 未接线入口（follow-up）
+
+本票只闸主路径 `write_measured`。它写 C-04 的 `docs/evidence/patch-establishment/RESULT.md`，以及同一次的 `measurement.json`、`manifest.json`、`primary-tc.json`。下列入口不写这份 C-04 RESULT，本票不改它们：
+
+- `patch_events_formal_y.write_result_y`：历史 `RESULT-Y`
+- `public_pack.write_result`：公开包 `RESULT.json`，拒绝写入 `docs/evidence/`
+- `quality_gate.score_registered_segments`：离线质量闸判分，不落 RESULT 文件
+- `patch_establishment.write_scaffold`：`run_status=unrun` 脚手架，不写分数
+- `send_generations`：发送生成，不写 RESULT。本票不重开 C-04 正式跑
+- `scripts/run_x1_offline_mode_compare.py`、`scripts/run_neural_rerank_compare.py`、`scripts/run_fastembed_081_recheck.py`、`scripts/run_issue_284_verify.py`：各自的实验 `RESULT.md`，不是 C-04 成立格
 
 ## 冒烟
 
@@ -107,4 +131,4 @@ PYTHONPATH=src python scripts/smoke_model_resolve.py --profile both
 
 ## 不要动
 
-本切换不改 floors、gold、x1 调用点、`PRODUCTION_RETRIEVAL_MODE`，不写 C-04 RESULT，不发明 SESOI。适配分析见 [`model-fit-report.md`](model-fit-report.md)（S5）。连通性体检见 [`model-connectivity.md`](model-connectivity.md)（S6）。正式跑前的 cloud profile 闸是 S7，不在本页。
+本切换不改 floors、gold、x1 调用点、`PRODUCTION_RETRIEVAL_MODE`，不写 C-04 RESULT，不发明 SESOI。适配分析见 [`model-fit-report.md`](model-fit-report.md)（S5）。连通性体检见 [`model-connectivity.md`](model-connectivity.md)（S6）。正式跑前的 cloud profile 闸是 S7，见上文「正式跑前闸」。

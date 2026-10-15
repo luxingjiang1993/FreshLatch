@@ -112,7 +112,7 @@ registry 模型是 `qwen-plus`，同样 `max_output_tokens=32768`。不在 overl
 
 C-04 没有单独的 registry 槽。正式模块读 `DEFAULT_MODEL` 与 `MODEL_REGISTRY["default_llm"]`，调用时显式传入模型名。二者现在都是 `qwen-flash`。profile 不改写这两个常量，所以 `local-lms` 不会把正式生成器重映射到 LM Studio。即便如此，正式跑仍然禁止在 `local-lms` 下写 RESULT：日常 profile 与正式读点必须分开，避免误钉本地。
 
-结论：`must_cloud`。正式 profile 不得是 `local-lms`。本轮不写 RESULT，不改 manifest 里的 `generator_model` / `nli_model`，不实现 S7 写入闸。S7 仍是后续切片。
+结论：`must_cloud`。正式 profile 不得是 `local-lms`。本轮不写 RESULT，不改 manifest 里的 `generator_model` / `nli_model`。写入闸是 S7，见 [`model-profiles.md`](model-profiles.md) 的「正式跑前闸」。
 
 ## Cursor Agent
 

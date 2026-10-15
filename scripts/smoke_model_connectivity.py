@@ -6,7 +6,7 @@
 
 退出码：0 通过；1 配置（未知 profile、空 LMS、缺 env、非法地址、超时参数）；
 2 探针不可达（超时、连接失败、HTTP 非 2xx）或 argparse 拒绝参数。
-正式跑的 cloud profile 闸在 S7，不在本脚本。
+正式跑的 cloud profile 闸是 S7 的 ``assert_formal_run_allowed``。本脚本不调用它。
 """
 
 from __future__ import annotations
