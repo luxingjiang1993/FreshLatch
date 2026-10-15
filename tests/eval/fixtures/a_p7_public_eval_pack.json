@@ -1,0 +1,46 @@
+{
+  "pack_id": "a-p7-public-eval-v1",
+  "level": "smoke",
+  "items": [
+    {
+      "id": "pub-supported",
+      "system_action": "answer",
+      "context_ids": ["memo#p1@T1"],
+      "cited_ids": ["memo#p1@T1"],
+      "context_span": "期限为三十日",
+      "answer": "合同写明期限为三十日。",
+      "independent_label": "supported",
+      "ragas_faithfulness": "0.9"
+    },
+    {
+      "id": "pub-supported-low-ragas",
+      "system_action": "answer",
+      "context_ids": ["memo#p1@T1"],
+      "cited_ids": ["memo#p1@T1"],
+      "context_span": "期限为三十日",
+      "answer": "合同写明期限为三十日。",
+      "independent_label": "supported",
+      "ragas_faithfulness": "0.0"
+    },
+    {
+      "id": "pub-unsupported",
+      "system_action": "answer",
+      "context_ids": ["memo#p1@T1"],
+      "cited_ids": ["memo#p2@T1"],
+      "context_span": "期限为三十日",
+      "answer": "合同写明期限为九十日。",
+      "independent_label": "unsupported",
+      "ragas_faithfulness": "0.2"
+    },
+    {
+      "id": "pub-abstain-overlap",
+      "system_action": "abstain",
+      "context_ids": ["memo#p1@T1"],
+      "cited_ids": ["memo#p1@T1"],
+      "context_span": "期限为三十日",
+      "answer": "期限为三十日",
+      "independent_label": "abstain",
+      "ragas_faithfulness": "1.0"
+    }
+  ]
+}
