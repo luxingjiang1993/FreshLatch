@@ -1,6 +1,7 @@
 """在线 product SLI：轨迹采样 → claim 抽检 → 周报/报警（L4-C-02）。
 
 纯函数。只读轨迹目录，不写盘，不改调用方文件。
+内存入口 ``aggregate_product_runs`` 使用同一套计数。目录函数读完文件后调用它。
 不进入注册 G1/A1/T1/R1，不写 RESULT-Y，不写 PREREG floors，
 不发明 SESOI，不改地板，不改生产检索臂，不把夹具读数当成注册分变好。
 ``counted_as_pass`` 恒为 false。采样步长不回写 PREREG。
@@ -66,6 +67,29 @@ class ProductSliRow(TypedDict):
     notes: str
 
 
+def aggregate_product_runs(
+    runs: list[tuple[str, list[dict]]],
+    *,
+    window: str,
+    sample_every: int = 1,
+    prior_groundedness: str | None = None,
+) -> list[ProductSliRow]:
+    """聚合已经在内存里的轨迹。每一项是 ``(来源名, 事件列表)``。不读目录。
+
+    来源名只参与排序，与目录入口按文件名排序同一规则。
+    计数、采样步长、drift_watch 与 ``aggregate_product_sli`` 相同。
+    """
+    every = _require_sample_every(sample_every)
+    label = window
+    units = _claim_units_from_runs(runs)
+    return _rows_from_units(
+        units,
+        window=label,
+        sample_every=every,
+        prior_groundedness=prior_groundedness,
+    )
+
+
 def aggregate_product_sli(
     trajectory_dir: str | Path,
     *,
@@ -80,14 +104,32 @@ def aggregate_product_sli(
     ``1`` 表示全取。步长只出现在本行的 ``sample_rate`` 计数里，不回写 PREREG。
     ``prior_groundedness`` 只能是上一窗本函数写出的 ``N / D`` 字符串。
     与本窗 groundedness 不同才出 drift_watch。没有数字通过线。
+    读入后交给 ``aggregate_product_runs``，计数规则不另写一套。
     """
     every = _require_sample_every(sample_every)
     root = Path(trajectory_dir)
     if not root.is_dir():
         raise FileNotFoundError(f"轨迹目录不存在: {root}")
     label = root.as_posix() if window is None else window
+    runs = [(path.name, _load_events(path)) for path in _trajectory_files(root)]
+    return aggregate_product_runs(
+        runs,
+        window=label,
+        sample_every=every,
+        prior_groundedness=prior_groundedness,
+    )
 
-    units = _claim_units(root)
+
+def _rows_from_units(
+    units: list[tuple[str, list[dict]]],
+    *,
+    window: str,
+    sample_every: int,
+    prior_groundedness: str | None,
+) -> list[ProductSliRow]:
+    """从已排序的主张单元写出 product SLI 行。"""
+    label = window
+    every = sample_every
     seen = len(units)
     kept = [unit for index, unit in enumerate(units) if index % every == 0]
     labels = [classify_claim_events(events) for _claim_id, events in kept]
@@ -204,9 +246,16 @@ def _require_sample_every(sample_every: int) -> int:
 
 def _claim_units(root: Path) -> list[tuple[str, list[dict]]]:
     """生产轨迹里的主张，按文件名与 claim_id 排序。eval 整文件排除。"""
+    runs = [(path.name, _load_events(path)) for path in _trajectory_files(root)]
+    return _claim_units_from_runs(runs)
+
+
+def _claim_units_from_runs(
+    runs: list[tuple[str, list[dict]]],
+) -> list[tuple[str, list[dict]]]:
+    """与目录入口同一套分组。来源名代替文件名参与排序。"""
     units: list[tuple[str, str, list[dict]]] = []
-    for path in _trajectory_files(root):
-        events = _load_events(path)
+    for name, events in runs:
         if _is_eval_run(events):
             continue
         grouped: dict[str, list[dict]] = {}
@@ -220,7 +269,7 @@ def _claim_units(root: Path) -> list[tuple[str, list[dict]]]:
         for claim_id in sorted(grouped):
             claim_events = grouped[claim_id]
             if _is_claim_unit(claim_events):
-                units.append((path.name, claim_id, claim_events))
+                units.append((name, claim_id, claim_events))
     units.sort(key=lambda item: (item[0], item[1]))
     return [(claim_id, events) for _name, claim_id, events in units]
 

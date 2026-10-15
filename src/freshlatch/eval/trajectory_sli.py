@@ -3,6 +3,7 @@
 纯函数：读一个轨迹目录，按 ``docs/ops/延迟与检索回退周报.md`` §1 / §9
 的列名产出**一行**。至少含 ``e2e_p95_ms``、``retrieval_fallback_rate``，
 并带上 ``N_request_ok``、``N_retrieve``、``fallback_n``、``notes``、``window``。
+内存入口 ``aggregate_trajectory_runs`` 使用同一套计数。目录函数读完文件后调用它。
 
 本模块**不计入**注册 G1/A1/T1/R1。不写 ``RESULT-Y`` / ``PREREG-Y``，
 不发明 SESOI，不改地板，不改生产检索臂，不把夹具读数当成注册分变好。
@@ -100,29 +101,22 @@ class TrajectorySliRow(TypedDict):
     notes: str
 
 
-def aggregate_trajectory_sli(
-    trajectory_dir: str | Path,
+def aggregate_trajectory_runs(
+    runs: list[list[dict]],
     *,
-    window: str | None = None,
+    window: str,
 ) -> TrajectorySliRow:
-    """读轨迹目录，返回一行 SLI。不写盘，不改调用方传入的文件。
+    """聚合已经在内存里的轨迹。每一项是一次 run 的事件列表。不读目录。
 
-    ``window`` 缺省时用目录路径，表示这一目录就是观测窗口。
-    调用方要写周报起止时，传入 Asia/Shanghai 的窗口标签。
-    目录不存在或不是目录时拒绝，避免把打错的路径报成样本不足。
+    计数规则与 ``aggregate_trajectory_sli`` 相同：eval 整份排除，
+    P95 与 fallback 的占位句不变。``window`` 由调用方给出。
     """
-    root = Path(trajectory_dir)
-    if not root.is_dir():
-        raise FileNotFoundError(f"轨迹目录不存在: {root}")
-    label = root.as_posix() if window is None else window
-
     durations: list[float] = []
     n_request_ok = 0
     n_retrieve = 0
     fallback_n = 0
 
-    for path in _trajectory_files(root):
-        events = _load_events(path)
+    for events in runs:
         if _is_eval_run(events):
             continue
         for event in events:
@@ -141,7 +135,7 @@ def aggregate_trajectory_sli(
     e2e = _e2e_p95_ms(n_request_ok, durations)
     rate = _fallback_rate(fallback_n, n_retrieve)
     return TrajectorySliRow(
-        window=label,
+        window=window,
         N_request_ok=n_request_ok,
         e2e_p95_ms=e2e,
         N_retrieve=n_retrieve,
@@ -154,6 +148,26 @@ def aggregate_trajectory_sli(
             fallback_n=fallback_n,
         ),
     )
+
+
+def aggregate_trajectory_sli(
+    trajectory_dir: str | Path,
+    *,
+    window: str | None = None,
+) -> TrajectorySliRow:
+    """读轨迹目录，返回一行 SLI。不写盘，不改调用方传入的文件。
+
+    ``window`` 缺省时用目录路径，表示这一目录就是观测窗口。
+    调用方要写周报起止时，传入 Asia/Shanghai 的窗口标签。
+    目录不存在或不是目录时拒绝，避免把打错的路径报成样本不足。
+    读入后交给 ``aggregate_trajectory_runs``，计数规则不另写一套。
+    """
+    root = Path(trajectory_dir)
+    if not root.is_dir():
+        raise FileNotFoundError(f"轨迹目录不存在: {root}")
+    label = root.as_posix() if window is None else window
+    runs = [_load_events(path) for path in _trajectory_files(root)]
+    return aggregate_trajectory_runs(runs, window=label)
 
 
 def _trajectory_files(root: Path) -> list[Path]:
