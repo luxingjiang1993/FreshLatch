@@ -155,8 +155,9 @@ def send_generations(
     base = _repo_root() if root is None else Path(root)
     if not prereg_run_authorized(base):
         raise RuntimeError("拒绝发送：PREREG 未勾主人明文「跑」或缺 Amendment-02")
-    if DEFAULT_MODEL != "qwen-flash":
-        raise RuntimeError(f"正式针生成器必须是 qwen-flash，得 {DEFAULT_MODEL!r}")
+    generator = MODEL_REGISTRY["default_llm"].model
+    if DEFAULT_MODEL != generator:
+        raise RuntimeError(f"正式针生成器必须是 {generator}，得 {DEFAULT_MODEL!r}")
     rows = load_formal_candidates(base)
     path = generations_path(base)
     _reject_out_dir(path.parent)
@@ -362,9 +363,7 @@ def compare_tc(
 
 def _require_real_nli() -> None:
     """拒绝 trial exact-match；必须能加载正式 XNLI。"""
-    if XNLI_MODEL_ID != NLI_MODEL or NLI_MODEL != (
-        "MoritzLaurer/mDeBERTa-v3-base-xnli-multilingual-nli-2mil7"
-    ):
+    if XNLI_MODEL_ID != NLI_MODEL or NLI_MODEL != MODEL_REGISTRY["nli"].model:
         raise RuntimeError(f"NLI 型号未锁到正式针: {XNLI_MODEL_ID!r}")
     probe = verify_edit(
         {
@@ -405,8 +404,8 @@ def run_primary(
     # refuse LMS / non-qwen-flash in saved generations
     for item in generations:
         model = str(item.get("model") or "")
-        if model and model != "qwen-flash":
-            raise RuntimeError(f"正式针拒绝非 qwen-flash 生成行: model={model!r}")
+        if model and model != DEFAULT_MODEL:
+            raise RuntimeError(f"正式针拒绝非 {DEFAULT_MODEL} 生成行: model={model!r}")
     have = {
         (str(item.get("claim_id")), str(item.get("arm")), str(item.get("phase")))
         for item in generations
@@ -493,7 +492,7 @@ def render_result_md(bundle: Mapping[str, Any], *, code_pin: str) -> str:
         "- **授权**：主人 Oriental Ronin 明文「跑」+ Amendment-02 + `--authorize-run`",
         f"- **built_n** = {bundle.get('built_n')}（target_n=100；gap_n={bundle.get('gap_n')}；不得把 91 假装成 100）",
         f"- **生成路径**：`{bundle.get('generations_path')}`（n_lines={bundle.get('generations_n')}；sha256=`{bundle.get('generations_sha256')}`）",
-        f"- **解码**：model=`qwen-flash`；temperature=`0`；Decoding.seed=`{SEED}`；API seed=`None`；n_boot=`{N_BOOT}`；k_min=`{K_MIN}`",
+        f"- **解码**：model=`{DEFAULT_MODEL}`；temperature=`0`；Decoding.seed=`{SEED}`；API seed=`None`；n_boot=`{N_BOOT}`；k_min=`{K_MIN}`",
         f"- **NLI**：`{NLI_MODEL}`；τ=`{ENTAILMENT_TAU}`（禁止 exact-match 回退）",
         f"- **run_status** = `{RUN_STATUS_RAN}`",
         f"- **measurement_status** = `{MEASUREMENT_STATUS_MEASURED}`",
@@ -565,7 +564,7 @@ def write_measured(
         "temperature": 0.0,
         "seed": SEED,
         "model": DEFAULT_MODEL,
-        "note": "formal C-04; qwen-flash + mDeBERTa; Amendment-02",
+        "note": f"formal C-04; {DEFAULT_MODEL} + mDeBERTa; Amendment-02",
     }
     manifest["establishment"] = establishment
     measurement = {
@@ -656,7 +655,7 @@ def estimate_cost_yuan(root: Path | None = None) -> dict[str, Any]:
         "est_input_tokens_upper": est_in,
         "est_output_tokens_upper": est_out,
         "est_yuan_upper": round(cost, 4),
-        "price": {"input_per_m": 0.15, "output_per_m": 1.5, "model": "qwen-flash"},
+        "price": {"input_per_m": 0.15, "output_per_m": 1.5, "model": DEFAULT_MODEL},
         "hard_cap_yuan": 10.0,
         "under_cap": cost <= 10.0,
     }
