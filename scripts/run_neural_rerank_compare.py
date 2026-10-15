@@ -43,10 +43,11 @@ from freshlatch.store.base import (  # noqa: E402
     chunk_evidence_id,
 )
 from freshlatch.store.ingest import load_corpus  # noqa: E402
+from freshlatch.models import LOCAL_EMBED_MODEL, NEURAL_RERANK_MODEL  # noqa: E402
 from freshlatch.store.pipeline import rerank_lexical, tokenize  # noqa: E402
 
 GOLD_COMMIT = "50adc3251737c318815105b3562a823198b80dc3"
-NEURAL_MODEL = "BAAI/bge-reranker-base"
+NEURAL_MODEL = NEURAL_RERANK_MODEL
 QUESTIONS = ROOT / "data/exp/x1/questions.json"
 CORPUS = ROOT / "data/exp/x1/corpus"
 TRAPS = ROOT / "data/exp/x1/traps"
@@ -153,7 +154,7 @@ def dump_candidates(path: Path) -> None:
         "n_arm": len(rows),
         "n_chunks": n,
         "fastembed_version": version,
-        "embed_model": "BAAI/bge-small-zh-v1.5",
+        "embed_model": LOCAL_EMBED_MODEL,
         "production_retrieval_mode": PRODUCTION_RETRIEVAL_MODE,
         "queries": rows,
     }

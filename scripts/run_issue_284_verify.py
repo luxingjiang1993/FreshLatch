@@ -31,9 +31,10 @@ from freshlatch.store.base import (  # noqa: E402
     chunk_evidence_id,
 )
 from freshlatch.store.ingest import load_corpus  # noqa: E402
+from freshlatch.models import EMBED_MODEL, LOCAL_EMBED_MODEL  # noqa: E402
 from freshlatch.store.pipeline import pack_vec, tokenize  # noqa: E402
 
-LOCAL_MODEL = "BAAI/bge-small-zh-v1.5"
+LOCAL_MODEL = LOCAL_EMBED_MODEL
 MODES = ("bm25", "hybrid", "hybrid+rerank")
 PAIRS = (
     ("bm25", "hybrid"),
@@ -416,7 +417,7 @@ def _render_result(payload: dict[str, Any]) -> str:
         f"- 票：https://github.com/luxingjiang1993/FreshLatch/issues/284",
         "- 引用：https://github.com/luxingjiang1993/FreshLatch/pull/283",
         f"- 金标：`data/exp/x1/questions.json`，arm={payload['n_arm']}，guardrail={payload['n_guardrail']}，chunk={payload['n_chunks']}",
-        f"- 向量：本地 `{payload['embed_model']}`，dim={payload['embed_dim']}，库 fastembed {payload['fastembed_version']}。不是 `text-embedding-v4`。",
+        f"- 向量：本地 `{payload['embed_model']}`，dim={payload['embed_dim']}，库 fastembed {payload['fastembed_version']}。不是 `{EMBED_MODEL}`。",
         f"- 生产默认臂（跑前/跑后）：{payload['mode_before']} / {payload['mode_after']}",
         f"- check_x1 退出码：{payload['check_exit']}",
         "- Recall@10 沿用 `recall_at_k`（前 10 条里出现任一金标记 1）。MRR 沿用 `mrr_at_k`。",

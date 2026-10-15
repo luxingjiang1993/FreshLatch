@@ -122,13 +122,21 @@ class LLMClient:
     def client(self) -> Any:
         """兼容旧代码读 self.client;首次访问时才向 OpenAI SDK 要凭据。"""
         if self._client is None:
-            key = self._api_key if self._api_key is not None else os.getenv("DASHSCOPE_API_KEY", "")
+            entry = MODEL_REGISTRY["default_llm"]
+            env_key = entry.env_key
+            base_url = entry.base_url
+            if not isinstance(env_key, str) or not env_key:
+                raise RuntimeError("default_llm 缺少 env_key")
+            if not isinstance(base_url, str) or not base_url:
+                raise RuntimeError("default_llm 缺少 base_url")
+            key = self._api_key if self._api_key is not None else os.getenv(env_key, "")
             # 非空占位仅绕过 SDK 对 "" 的构造期拒绝;真调用仍会因无效 key 鉴权失败。
             if not key:
                 key = "MISSING_DASHSCOPE_API_KEY"
+            # 默认 base_url 读 registry。已有的 DASHSCOPE_BASE_URL 环境变量仍可覆盖。
             self._client = OpenAI(
                 api_key=key,
-                base_url=self._base_url or os.getenv("DASHSCOPE_BASE_URL", DASHSCOPE_BASE_URL),
+                base_url=self._base_url or os.getenv("DASHSCOPE_BASE_URL", base_url),
             )
         return self._client
 

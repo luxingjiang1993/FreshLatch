@@ -34,6 +34,7 @@ from freshlatch.eval.control import run_control  # noqa: E402
 from freshlatch.eval.report import console_summary, write_outputs  # noqa: E402
 from freshlatch.eval.runner import run_gold  # noqa: E402
 from freshlatch.llm import DecodingParams  # noqa: E402
+from freshlatch.models import DEFAULT_MODEL  # noqa: E402
 from freshlatch.store.sqlite_store import SQLiteStore  # noqa: E402
 
 GOLD = REPO_ROOT / "data" / "eval" / "gold.json"
@@ -227,7 +228,7 @@ def assemble(args: argparse.Namespace, *, gold_raw: dict, j2_raws: list[dict],
         "",
         "容差判定人:______ 日期:______",
         "",
-        "> qwen-flash 是活托管端点,跨会话复现只能近似,此限制为留档声明(§4.7)。",
+        f"> {DEFAULT_MODEL} 是活托管端点,跨会话复现只能近似,此限制为留档声明(§4.7)。",
     ]) + "\n", encoding="utf-8")
 
     # README 状态刷新(登记目录由本目录 README 承载)

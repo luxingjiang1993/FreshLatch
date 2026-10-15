@@ -17,8 +17,11 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any
 
+from freshlatch.models import NLI_MODEL
+
 # 型号与 τ 跑前锁死（Pin · ADR-0040）。τ 为冒烟标定默认针；#520 可收紧，禁止放宽凑绿。
-XNLI_MODEL_ID = "MoritzLaurer/mDeBERTa-v3-base-xnli-multilingual-nli-2mil7"
+# model id 字面量只在 MODEL_REGISTRY["nli"]。这里再导出，既有调用方仍读 XNLI_MODEL_ID。
+XNLI_MODEL_ID = NLI_MODEL
 ENTAILMENT_TAU = 0.5
 
 _REJECT_SCORE = float("-inf")

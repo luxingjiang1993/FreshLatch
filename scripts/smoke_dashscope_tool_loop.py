@@ -23,6 +23,8 @@ from dataclasses import dataclass, field
 from dotenv import find_dotenv, load_dotenv
 from openai import OpenAI
 
+from freshlatch.models import DEFAULT_MODEL
+
 BASE_URL = "https://dashscope.aliyuncs.com/compatible-mode/v1"
 
 # ---------------------------------------------------------------------------
@@ -307,7 +309,7 @@ def run_long_context(client: OpenAI, model: str) -> dict:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model", default="qwen-flash")
+    parser.add_argument("--model", default=DEFAULT_MODEL)
     parser.add_argument("--runs", type=int, default=2)
     args = parser.parse_args()
 
