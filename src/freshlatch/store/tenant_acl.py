@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from freshlatch.store.base import Chunk, Document
+
 # 检索前 ACL 拒绝码。观察回给调用方,不表示检索已执行。
 REASON_TENANT_ACL_DENIED = "tenant_acl_denied"
 
@@ -68,3 +70,46 @@ def retrieve_for_session(
         patch_id=patch_id,
         valid_at=valid_at,
     )
+
+
+def _declared_tenant_conflict(
+    resolved: str,
+    doc: Document,
+    chunks: list[Chunk],
+) -> dict | None:
+    """对象上的 tenant_id 必须与已解析的服务端租户一致。空白不算另立租户。"""
+    declared = [doc.tenant_id]
+    declared.extend(chunk.tenant_id for chunk in chunks)
+    for raw in declared:
+        text = str(raw).strip()
+        if text and text != resolved:
+            return {
+                "error": (
+                    f"写入对象 tenant_id={text} 与会话 tenant_id={resolved} 不一致,拒绝写入"
+                ),
+                "reason_code": REASON_TENANT_ACL_DENIED,
+                "fail_closed": True,
+            }
+    return None
+
+
+def write_for_session(
+    store,
+    doc: Document,
+    chunks: list[Chunk],
+    *,
+    server_tenant_id: str | None,
+    tool_tenant: str | None = None,
+) -> None:
+    """写入前 ACL。拒绝时不调用 add_document。
+
+    服务端 tenant_id 是唯一写入归属。工具参数或对象自身的 tenant_id
+    与会话不一致则 fail-closed,不把对象改写进调用方声明的租户。
+    """
+    resolved, denied = resolve_pre_retrieval_tenant(server_tenant_id, tool_tenant)
+    if denied is not None:
+        raise TenantAclError(denied)
+    conflict = _declared_tenant_conflict(resolved, doc, chunks)
+    if conflict is not None:
+        raise TenantAclError(conflict)
+    store.add_document(doc, chunks)
