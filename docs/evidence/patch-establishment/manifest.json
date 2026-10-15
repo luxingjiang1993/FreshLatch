@@ -51,10 +51,10 @@
   "level": "scaffold",
   "manifest_status": "schema_frozen_unmeasured",
   "model": {
-    "generator_model": null,
+    "generator_model": "qwen-flash",
     "generator_sha256": null,
     "measurement_status": "unmeasured",
-    "nli_model": null,
+    "nli_model": "MoritzLaurer/mDeBERTa-v3-base-xnli-multilingual-nli-2mil7",
     "nli_sha256": null,
     "seed": null,
     "temperature": null

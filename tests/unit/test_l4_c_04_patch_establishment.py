@@ -30,6 +30,7 @@ from freshlatch.eval.patch_establishment import (
     validate_scaffold,
     write_scaffold,
 )
+from freshlatch.models import DEFAULT_MODEL, NLI_MODEL
 from freshlatch.store.base import PRODUCTION_RETRIEVAL_MODE
 from freshlatch.store.checksum import normalize_newlines, sha256_hex
 
@@ -216,7 +217,15 @@ def test_committed_scaffold_is_unmeasured_and_frozen_bytes_hold(tmp_path: Path) 
     assert measurement["conclusion_dir"] == "docs/evidence/patch-establishment/"
     assert manifest["retrieval"]["mode"] == "hybrid+rerank"
     assert manifest["retrieval"]["weight_sha256"] is None
+    assert manifest["model"]["generator_model"] == DEFAULT_MODEL == "qwen-flash"
+    assert manifest["model"]["nli_model"] == NLI_MODEL == (
+        "MoritzLaurer/mDeBERTa-v3-base-xnli-multilingual-nli-2mil7"
+    )
     assert manifest["model"]["generator_sha256"] is None
+    assert manifest["model"]["nli_sha256"] is None
+    assert manifest["model"]["temperature"] is None
+    assert manifest["model"]["seed"] is None
+    assert manifest["decoding"]["model"] is None
     assert manifest["establishment"]["n"] is None
     assert manifest["establishment"]["sesoi"] is None
     assert manifest["sources"]["b04_fixtures"]["counts_as_establishment"] is False
@@ -427,7 +436,10 @@ def test_frozen_corpus_is_disjoint_unrun_and_rebuilt_offline() -> None:
     assert "built_n=91" in prereg
     assert "gap_n=9" in prereg
     assert "目标 n=100 未满额建成" in prereg
-    assert "- [ ] 生成器与 NLI" in prereg
+    assert "- [x] 生成器 `generator_model` 与 NLI `nli_model` 写入 manifest" in prereg
+    assert "- [ ] 生成器 `generator_sha256` 与 NLI `nli_sha256` 写入 manifest" in prereg
+    assert "qwen-flash" in prereg
+    assert "MoritzLaurer/mDeBERTa-v3-base-xnli-multilingual-nli-2mil7" in prereg
     assert "- [ ] 主人明文「跑」" in prereg
     base = ROOT / FROZEN_CORPUS_REL
     split = json.loads((base / "SPLIT.json").read_text(encoding="utf-8"))
@@ -456,8 +468,8 @@ def test_frozen_corpus_is_disjoint_unrun_and_rebuilt_offline() -> None:
     }
     ids = [row["claim_id"] for row in formal]
     assert set(ids).isdisjoint(banned)
-    assert split["built_n"] == len(ids)
-    assert split["gap_n"] == 100 - len(ids)
+    assert split["built_n"] == len(ids) == 91
+    assert split["gap_n"] == 100 - len(ids) == 9
     assert split["gap_n"] > 0
     assert split["by_stratum"]["删除"]["bad_target"] == 13
     assert split["by_stratum"]["删除"]["bad"] < 13

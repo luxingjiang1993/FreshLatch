@@ -53,7 +53,7 @@ B-04 夹具只作边界锚。`counts_as_establishment=false`。夹具绿不是�
 
 ## 4. manifest 字段列表
 
-冻结的是字段,不是一次已跑的分数。检索块记录现行生产臂的名字与常数,权重 hash 为 null。模型块的生成器与 NLI 为 null。源块里,历史页、质量闸预注册、冻结 per-query、金标、x1 题集与 B-04 夹具只记 sha256,`counts_as_establishment=false`。实验语料 hash 为 null。
+冻结的是字段,不是一次已跑的分数。检索块记录现行生产臂的名字与常数,权重 hash 为 null。模型块的生成器与 NLI 为 null。该句是模型锁定批注之前的脚手架锁句。型号两格以文末「模型锁定批注」为准；`generator_sha256` 与 `nli_sha256` 仍是 null。源块里,历史页、质量闸预注册、冻结 per-query、金标、x1 题集与 B-04 夹具只记 sha256,`counts_as_establishment=false`。实验语料 hash 为 null。
 
 解码:temperature、seed、model 均为 null。本期不调用 LLM。托管端点若将来开跑会漂移;本期未开跑,随机层没有可复现的样本。
 
@@ -105,18 +105,18 @@ Trust=Gate。合并前,以及任何「跑」之前,主人看这一页,而不是�
 
 1. 第 2 节九条假阳性判据与第 3 节四条止损仍在,id 没有增删。
 2. 第 1–3 节脚手架原句仍含 `numeric_line=unregistered`。文末 Amendment-01 把 `criteria.numeric_line` 锁为 `registered:interval_gt0`,`sesoi` 仍 null,不得把该线叫做 SESOI。测量分数仍 null。
-3. 第 4 节的 manifest 字段行仍在。`manifest.json` 里模型 hash、权重 hash 仍是 null。实验语料 path 与 sha256 已按 Amendment-01 清单写入，`role=frozen_corpus_unrun`，`measurement_status=unmeasured`，`counts_as_establishment=false`。B-04 的 `counts_as_establishment=false`。
+3. 第 4 节的 manifest 字段行仍在。`manifest.json` 里 `generator_sha256`、`nli_sha256` 与权重 hash 仍是 null。`generator_model` 与 `nli_model` 已按文末「模型锁定批注」写入。实验语料 path 与 sha256 已按 Amendment-01 清单写入，`role=frozen_corpus_unrun`，`measurement_status=unmeasured`，`counts_as_establishment=false`。B-04 的 `counts_as_establishment=false`。
 4. 第 5 节仍写不改默认臂、不改 floors。`PRODUCTION_RETRIEVAL_MODE` 仍是 `hybrid+rerank`。
 5. `measurement.json` 仍是 `run_status=unrun`、`measurement_status=unmeasured`、`counted_as_pass=false`。分数仍 null。`sesoi` 仍 null。
 6. 历史结果丙没有被改判。`second_formal_y=false`。不得称优于 RARR·KPR。不得标产品 L5。
 7. 离线质量闸的 `value=` 与合入本页之前一致。
-8. 文末「激活批注」已写，并勾上「主人写激活批注」。批注如实写 `SPLIT.json` 的 `built_n=91`、`gap_n=9`。目标 n=100 是配额锁，不是已建成的 formal 针。`establishment.n` 仍是 null。「主人明文「跑」」未勾。生成器与 NLI 的型号与 hash 仍是 null。
+8. 文末「激活批注」已写，并勾上「主人写激活批注」。批注如实写 `SPLIT.json` 的 `built_n=91`、`gap_n=9`。目标 n=100 是配额锁，不是已建成的 formal 针。`establishment.n` 仍是 null。「主人明文「跑」」未勾。文末「模型锁定批注」已把 `generator_model` 与 `nli_model` 从 `MODEL_REGISTRY` 锁入 manifest。`generator_sha256` 与 `nli_sha256` 仍是 null。`built_n` 仍是 91。不得「跑」，不得往 `RESULT.md` 填分数。
 
 主人点头之前,不要把 `measurement_status` 改成已测量,不要往成立格填数字,不要改质量闸地板,不要开跑。
 
 ## Amendment-01 · 开跑前数字线（日期：2026-10-15 · 早于任何非空分数）
 
-状态：协议已锁（比较 A · 数字线 L1 · 目标 n=100）/ 激活批注已写 / 未开跑。本 Amendment 仍不是开跑,不写任何非空分数。实验语料 path 与 sha256 已写入 manifest，`role=frozen_corpus_unrun`，`measurement_status=unmeasured`。激活清单仍未齐：生成器与 NLI 的型号与 hash 仍是 null，主人未明文「跑」。未明文「跑」之前不得开跑。
+状态：协议已锁（比较 A · 数字线 L1 · 目标 n=100）/ 激活批注已写 / 生成器与 NLI 型号已从 `MODEL_REGISTRY` 锁入 manifest / 未开跑。本 Amendment 仍不是开跑,不写任何非空分数。实验语料 path 与 sha256 已写入 manifest，`role=frozen_corpus_unrun`，`measurement_status=unmeasured`。`built_n=91`，缺额不补。激活清单仍未齐：`generator_sha256` 与 `nli_sha256` 仍是 null，主人未明文「跑」。未明文「跑」之前不得开跑，不得写 RESULT。
 
 第 1–8 节的假阳性 id 与止损 id 不增删、不改写。第 3 节「本期没有这份 amendment」与「numeric_line=unregistered」留在原处,作为看见本 Amendment 之前的脚手架锁句。本 Amendment 在任何非空分数出现之前补上比较对象与数字线,不涂掉那些原句,也不把门槛叫做 SESOI。
 
@@ -124,7 +124,7 @@ Trust=Gate。合并前,以及任何「跑」之前,主人看这一页,而不是�
 
 - 臂：T（attested / fail-closed）对 C（无证据改写）。B1/B2 若保留则只作报告,不进成立格。
 - 语料：新实验语料,不是 `data/corpus/pe_v2` 正式 Y 名单。path 与 sha256 已写入 manifest `sources.experiment_corpus`（`data/patch-establishment/v1`）。语料已冻，`measurement_status=unmeasured`，因此仍不得「跑」。
-- 选取：固定 k := T 自然放行数。正式针 n=100（已锁）。pilot 另计,不进成立格。k_min、bootstrap 次数、种子、模型与 temperature 主人未锁;未锁参数不是已生效门槛,也不得在看见分数之后补写。
+- 选取：固定 k := T 自然放行数。正式针 n=100（已锁）。pilot 另计,不进成立格。k_min、bootstrap 次数、种子与 temperature 主人未锁。生成器与 NLI 的型号已由「模型锁定批注」从 `MODEL_REGISTRY` 写入，不改模型 id。未锁参数不是已生效门槛,也不得在看见分数之后补写。
 - `second_formal_y=false`。这不是 `PREREG-Y` 同尺再填。STOP-SAME-YARDSTICK 仍有效。
 
 ### 数字线（numeric_line）
@@ -152,7 +152,8 @@ Trust=Gate。合并前,以及任何「跑」之前,主人看这一页,而不是�
 ### 激活前清单
 
 - [x] 实验语料路径与 sha256 写入 manifest `sources.experiment_corpus`（path=`data/patch-establishment/v1`，sha256 已写入；`role=frozen_corpus_unrun`；`measurement_status=unmeasured`；`counts_as_establishment=false`；本项不是激活，不是「跑」，不是成立）
-- [ ] 生成器与 NLI（若用）的型号与 hash 写入 manifest（当前仍为 null；主人未锁型号、hash、temperature、seed；本项未勾，因为填写它们要先有主人锁的型号，不在本批注里发明）
+- [x] 生成器 `generator_model` 与 NLI `nli_model` 写入 manifest（2026-10-15；主人锁 `MODEL_REGISTRY` 默认：`default_llm.model`=`qwen-flash`，`nli.model`=`MoritzLaurer/mDeBERTa-v3-base-xnli-multilingual-nli-2mil7`；不改模型 id；本项不是「跑」，不是成立）
+- [ ] 生成器 `generator_sha256` 与 NLI `nli_sha256` 写入 manifest（当前仍为 null；不发明 hash；temperature、seed 仍 null）
 - [x] 主人确认比较对象与数字线：比较 A,数字线 L1,n=100（2026-10-15）
 - [x] 主人写激活批注（2026-10-15；见下方「激活批注」；`built_n=91`；`gap_n=9`；目标 n=100 未满额建成；`run_status=unrun`；`sesoi=null`；分数仍 null；本项不是「跑」，不是成立）
 - [ ] 主人明文「跑」
@@ -167,10 +168,24 @@ Trust=Gate。合并前,以及任何「跑」之前,主人看这一页,而不是�
 
 - `run_status=unrun`。`measurement_status=unmeasured`。`establishment.status=unmeasured`。`counted_as_pass=false`。`sesoi=null`。`establishment.numeric_line` 仍是 `unregistered`。`criteria.numeric_line=registered:interval_gt0`。不得把该线叫做 SESOI。本页不发明 SESOI。
 - `false_accept_rate`、`point_estimate`、`ci95_low`、`ci95_high`、`establishment.n`、`establishment.k` 都是 null。空着不是 0,也不是通过。
-- 比较对象仍是比较 A：臂 T（attested / fail-closed）对 C（无证据改写）。B1/B2 若保留则只作报告,不进成立格。数字线 L1 已由主人在 2026-10-15 确认。k_min、bootstrap 次数、种子、模型与 temperature 仍未锁。未锁参数不是已生效门槛,也不得在看见分数之后补写。
+- 比较对象仍是比较 A：臂 T（attested / fail-closed）对 C（无证据改写）。B1/B2 若保留则只作报告,不进成立格。数字线 L1 已由主人在 2026-10-15 确认。k_min、bootstrap 次数、种子与 temperature 在本批注写下时未锁。生成器与 NLI 的型号随后由「模型锁定批注」锁入，不改模型 id。未锁参数不是已生效门槛,也不得在看见分数之后补写。
 - 语料：`sources.experiment_corpus.path=data/patch-establishment/v1`，sha256 `cda7c5afffdba09550abb33cc5132453a91357c076d81752e9ca9eeca0397d1d`。`role=frozen_corpus_unrun`。`measurement_status=unmeasured`。`counts_as_establishment=false`。本批注不重冻该树,不改树内字节。
 - 正式针配额目标 `target_n=100` 已锁,配额不改小。`data/patch-establishment/v1/SPLIT.json` 记录建成 `built_n=91`，缺额 `gap_n=9`。删除层 `built=16`（正确 12 / 坏 4，坏槽目标仍是 13，该层 `gap=9`）。数值、日期、条款替换各 `built=25`、`gap=0`。`shortfalls` 里 reason 为「语料不足」的记录是 9 条,与 `gap_n` 同数；其余 shortfall 是算子不改时的跳过,不是把缺额补成满额。本批注不把建成数写成 100,也不把 91 或 9 写进 `establishment.n` / `establishment.k`。
-- 生成器 `generator_model` / `generator_sha256` 与 NLI `nli_model` / `nli_sha256` 仍是 null。解码 temperature、seed、model 仍是 null。对应清单项保持未勾。
+- 生成器 `generator_model` / `generator_sha256` 与 NLI `nli_model` / `nli_sha256` 在本批注写下时仍是 null。解码 temperature、seed、model 仍是 null。型号两格随后由「模型锁定批注」补上；hash 两格仍未勾。
 - `second_formal_y=false`。STOP-SAME-YARDSTICK。本批注不是路线 Y 的另一次正式主跑。不得回到 `PREREG-Y` 同尺再填一格。
 - 历史分层仍只认 `docs/evidence/patch-events/RESULT-Y.md`：结果丙。不得把历史结果丙改判为乙。不得改 `docs/evidence/patch-events/PREREG-Y.md` 的历史成立格。B-04 夹具 `counts_as_establishment=false`。夹具绿不是结果乙。不得称优于 RARR·KPR。不得标产品 L5。不改 floors。不改默认臂。`PRODUCTION_RETRIEVAL_MODE` 仍是 `hybrid+rerank`。不改 gold,不改 x1。
 - STOP-UNRUN 仍有效,直至主人明文「跑」。写入器拒绝任何非 null 分数。清单仍未齐。不得「跑」。
+
+## 模型锁定批注
+
+日期：2026-10-15。主人 Oriental Ronin 批准：正式跑的生成器与 NLI 用 `MODEL_REGISTRY` 默认，不改模型 id。票 L4-C-04-lock-models。Trust=Watch。
+
+本批注只锁型号。它不勾「主人明文「跑」」。它不是开跑，不是成立，不往 `docs/evidence/patch-establishment/RESULT.md` 填分数。
+
+- `generator_model` = `MODEL_REGISTRY["default_llm"].model` = `qwen-flash`。别名 `DEFAULT_MODEL`。
+- `nli_model` = `MODEL_REGISTRY["nli"].model` = `MoritzLaurer/mDeBERTa-v3-base-xnli-multilingual-nli-2mil7`。别名 `NLI_MODEL`。
+- `generator_sha256` 与 `nli_sha256` 仍是 null。不发明 hash。解码 temperature、seed、model 仍是 null。
+- `data/patch-establishment/v1/SPLIT.json` 的 `built_n` 仍是 91，`gap_n` 仍是 9。目标 n=100 不改小，缺额不补。语料 path 与 sha256 不重冻。
+- `run_status=unrun`。`measurement_status=unmeasured`。`sesoi=null`。本页不发明 SESOI。
+- 不改 floors。不改 gold。不改 x1。不改默认生产臂。`PRODUCTION_RETRIEVAL_MODE` 仍是 `hybrid+rerank`。
+- 激活批注里「型号两格仍是 null」记录的是本批注之前的状态。型号两格以本批注为准。hash 两格仍是 null。清单仍未齐，因为 hash 未写，且主人未明文「跑」。不得「跑」。

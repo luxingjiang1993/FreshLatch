@@ -5,6 +5,8 @@
 Amendment-01 只把判据行锁成 ``registered:interval_gt0``,成立格分数仍全是 null。
 冻结语料可以写入 ``sources.experiment_corpus`` 的 path 与 sha256；
 ``measurement_status`` 仍是 unmeasured，分数仍是 null。
+生成器与 NLI 的型号只读 ``MODEL_REGISTRY`` 的 ``default_llm`` 与 ``nli``。
+``generator_sha256`` 与 ``nli_sha256`` 仍是 null。``run_status`` 仍是 unrun。
 不改 ``PRODUCTION_RETRIEVAL_MODE``。不写路线 Y 的历史成立格,不写质量闸地板。
 """
 
@@ -13,7 +15,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from freshlatch.models import LOCAL_EMBED_MODEL, NEURAL_RERANK_MODEL
+from freshlatch.models import DEFAULT_MODEL, LOCAL_EMBED_MODEL, NEURAL_RERANK_MODEL, NLI_MODEL
 from freshlatch.store.base import PRODUCTION_RETRIEVAL_MODE
 from freshlatch.store.checksum import aggregate_checksum, normalize_newlines, sha256_hex
 from freshlatch.store.local_embed import LOCAL_EMBED_DIM
@@ -383,10 +385,11 @@ def _retrieval_block(root: Path) -> dict:
 
 
 def _model_block() -> dict:
+    """型号只读登记册默认。hash、temperature、seed 仍空。这不是开跑。"""
     return {
-        "generator_model": None,
+        "generator_model": DEFAULT_MODEL,
         "generator_sha256": None,
-        "nli_model": None,
+        "nli_model": NLI_MODEL,
         "nli_sha256": None,
         "temperature": None,
         "seed": None,
@@ -541,7 +544,9 @@ def validate_scaffold(manifest: dict, measurement: dict, *, root: Path) -> None:
     model = manifest.get("model")
     if not isinstance(model, dict):
         raise ValueError("model 必须是对象")
-    for name in ("generator_model", "generator_sha256", "nli_model", "nli_sha256", "temperature", "seed"):
+    _require_equal(model.get("generator_model"), DEFAULT_MODEL, "generator_model")
+    _require_equal(model.get("nli_model"), NLI_MODEL, "nli_model")
+    for name in ("generator_sha256", "nli_sha256", "temperature", "seed"):
         if model.get(name) is not None:
             raise ValueError(f"model.{name} 本期必须是 null")
     _require_equal(model.get("measurement_status"), MEASUREMENT_STATUS, "model.measurement_status")
