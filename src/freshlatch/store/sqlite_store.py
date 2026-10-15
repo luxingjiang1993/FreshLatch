@@ -342,11 +342,17 @@ class SQLiteStore(RetrievalStore):
         if source_type is not None:
             sql += " AND source_type = ?" if params else " WHERE source_type = ?"
             params.append(source_type)
+        # 生产入口总会传入服务端 tenant_id。这里写成 WHERE,不把过滤只留在 Python。
+        # tenant_id is None 仍是评测直接调用的旧路径,不在本条 SQL 里扩成全库生产语义。
+        scoped_tenant = None if tenant_id is None else normalize_tenant_id(tenant_id)
+        if scoped_tenant is not None:
+            sql += " AND tenant_id = ?" if params else " WHERE tenant_id = ?"
+            params.append(scoped_tenant)
         with self._conn() as conn:
             rows = conn.execute(sql, params).fetchall()
         pool = filter_retrieve_pool(
             [self._row_to_chunk(r) for r in rows],
-            tenant_id=tenant_id,
+            tenant_id=scoped_tenant,
         )
         # 补丁与有效期先于 BM25 / dense / RRF。不写入 as_of 的 WHERE。
         pool = filter_patch_metadata(pool, patch_id=patch_id, valid_at=valid_at)

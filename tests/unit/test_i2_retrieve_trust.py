@@ -161,7 +161,7 @@ def test_forensic_direct_retrieve_uses_store_filter(tmp_path):
     _populate(store, poison)
     tools = create_forensic_tools(store)
 
-    direct = store.retrieve(poison["query"], top_k=10)
+    direct = store.retrieve(poison["query"], top_k=10, tenant_id="default")
     via_tool = asyncio.run(tools["retrieve"](poison["query"], top_k=10))
     assert via_tool["status"] == "success"
     direct_ids = {c.doc_id for c in direct}
@@ -171,36 +171,42 @@ def test_forensic_direct_retrieve_uses_store_filter(tmp_path):
     assert "untrusted-bad" not in tool_ids
     assert direct_ids == tool_ids
 
-    scoped = asyncio.run(tools["retrieve"](acl["query"], tenant_id="B", top_k=10))
+    tools_b = create_forensic_tools(store, server_tenant_id="B")
+    scoped = asyncio.run(tools_b["retrieve"](acl["query"], tenant_id="B", top_k=10))
     scoped_ids = {block["evidence_id"].split("#")[0] for block in scoped["blocks"]}
     assert scoped_ids == {"acl-tenant-b"}
+    denied = asyncio.run(tools_b["retrieve"](acl["query"], tenant_id="A", top_k=10))
+    assert denied["fail_closed"] is True
+    assert "blocks" not in denied
     assert store.retrieve(acl["query"], tenant_id="B", top_k=10)[0].doc_id == "acl-tenant-b"
 
 
 def test_try_retrieve_and_tools_pass_tenant(tmp_path):
-    """try_retrieve / Lead / Critic 透传 tenant_id,并记入轨迹 filters。"""
+    """会话 tenant 才是过滤真相。工具参数必须一致,轨迹记下的是服务端 tenant_id。"""
     store = InMemoryStore()
     fixture = _load("acl-t001.json")
     _populate(store, fixture)
-    ctx = RunContext(store=store, mode="online")
-    hits = ctx.try_retrieve(fixture["query"], as_of="T1", top_k=10, tenant_id="B")
+    ctx = RunContext(store=store, mode="online", server_tenant_id="B")
+    hits = ctx.try_retrieve(fixture["query"], as_of="T1", top_k=10)
     assert {c.doc_id for c in hits} == {"acl-tenant-b"}
     assert ctx.events[-1]["filters"]["tenant_id"] == "B"
     assert ctx.events[-1]["filters"]["as_of"] == "T1"
 
     claim = Claim(claim_id="c-acl", statement=fixture["query"])
     lead = LeadReverifier(ctx, claim, llm=None)
-    led = lead._t_retrieve({"query": "ignored", "as_of": "T1", "tenant_id": "A"})
+    denied = lead._t_retrieve({"query": "ignored", "as_of": "T1", "tenant_id": "A"})
+    assert denied["fail_closed"] is True
+    assert "blocks" not in denied
+
+    led = lead._t_retrieve({"query": "ignored", "as_of": "T1", "tenant_id": "B"})
     assert led["blocks"]
-    assert all(b["evidence_id"].startswith("acl-tenant-a#") for b in led["blocks"])
-    assert ctx.events[-1]["filters"]["tenant_id"] == "A"
+    assert all(b["evidence_id"].startswith("acl-tenant-b#") for b in led["blocks"])
+    assert ctx.events[-1]["filters"]["tenant_id"] == "B"
 
     critic = Critic(ctx, claim, llm=None)
     crit = critic._t_retrieve({"query": "ignored", "as_of": "T1"})
-    assert {b["evidence_id"].split("#")[0] for b in crit["blocks"]} == {
-        "acl-tenant-a", "acl-tenant-b",
-    }
-    assert "tenant_id" not in ctx.events[-1]["filters"]
+    assert {b["evidence_id"].split("#")[0] for b in crit["blocks"]} == {"acl-tenant-b"}
+    assert ctx.events[-1]["filters"]["tenant_id"] == "B"
 
 
 def test_sqlite_old_rows_default_trust_columns(tmp_path):

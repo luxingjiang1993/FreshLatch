@@ -24,6 +24,7 @@ from freshlatch.store.base import (
     RetrievalStore,
     chunk_evidence_id,
 )
+from freshlatch.store.tenant_acl import resolve_pre_retrieval_tenant
 from freshlatch.store.pipeline import (
     HitScoreBook,
     activate_hit_score_book,
@@ -249,6 +250,9 @@ class RunContext:
     retrieval_switch: str | None = None
     # 最近一次成功 retrieve 的 manifest。预算耗尽时清空。
     last_retrieval_manifest: dict | None = None
+    # 服务端会话租户。代码注入,不是模型输出,也不是客户端 filter。
+    # 单租户进程缺省字面量 default。显式 None 或空白表示鉴权未注入,生产检索 fail-closed。
+    server_tenant_id: str | None = "default"
 
     def arm_eval_retrieval_mode(self, mode: str) -> None:
         """评测夹具:强制检索臂。生产 online 拒绝;未实装的臂拒绝,避免误标。"""
@@ -286,7 +290,20 @@ class RunContext:
         """retrieve 的预算闸门:Run 级共享计数,超限 fail-soft 返回结构化结果,不抛异常。
 
         生产签名不含 retrieval_mode。轨迹补齐 query、filters、有序 evidence_id、retrieval_mode。
+        tenant_id 参数只是工具或调用方的声明,不是过滤真相。
+        过滤值只来自 server_tenant_id。缺服务端 tenant 或声明不一致时 fail-closed,不读库。
         """
+        resolved, denied = resolve_pre_retrieval_tenant(self.server_tenant_id, tenant_id)
+        if denied is not None:
+            self.events.append({
+                "type": "tenant_acl",
+                "fail_closed": True,
+                "reason_code": denied["reason_code"],
+                "error": denied["error"],
+                "tool_tenant": tenant_id,
+                "server_tenant": self.server_tenant_id,
+            })
+            return denied
         if self.retrieval_used >= self.guardrails.retrieval_budget:
             self.events.append({"type": "budget", "kind": "retrieval_exhausted",
                                 "used": self.retrieval_used})
@@ -312,8 +329,7 @@ class RunContext:
             "source_type": source_type,
             "top_k": top_k,
         }
-        if tenant_id is not None:
-            retrieve_kwargs["tenant_id"] = tenant_id
+        retrieve_kwargs["tenant_id"] = resolved
         book = HitScoreBook()
         score_token = activate_hit_score_book(book)
         try:
@@ -325,9 +341,12 @@ class RunContext:
         evidence_ids = [chunk_evidence_id(c) for c in hits]
         mode = getattr(self.store, "last_retrieval_mode", requested)
         rerank_mode = getattr(self.store, "last_rerank_mode", "none")
-        filters = {"as_of": as_of, "source_type": source_type, "top_k": top_k}
-        if tenant_id is not None:
-            filters["tenant_id"] = tenant_id
+        filters = {
+            "as_of": as_of,
+            "source_type": source_type,
+            "top_k": top_k,
+            "tenant_id": resolved,
+        }
         self.events.append({
             "type": "retrieve",
             "query": query,
@@ -410,13 +429,15 @@ class Runner:
     def __init__(self, store: RetrievalStore, llm: LLMClient | None = None,
                  guardrails: Guardrails | None = None, *, mode: str = "online",
                  decoding: DecodingParams | None = None,
-                 checksum_fn=None) -> None:
+                 checksum_fn=None,
+                 server_tenant_id: str | None = "default") -> None:
         self.ctx = RunContext(
             store=store,
             guardrails=guardrails or Guardrails(),
             invalidation_list=set(store.list_invalidation()),
             decoding=decoding or DecodingParams(),
             mode=mode,
+            server_tenant_id=server_tenant_id,
         )
         self.llm = llm or LLMClient()
         self._trajectory_path: Path | None = None

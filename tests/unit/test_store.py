@@ -101,7 +101,12 @@ def test_retrieve_trajectory_records_contract(memory_store):
     ev = ctx.events[-1]
     assert ev["type"] == "retrieve"
     assert ev["query"] == "竞品 价格"
-    assert ev["filters"] == {"as_of": "T1", "source_type": "private", "top_k": 10}
+    assert ev["filters"] == {
+        "as_of": "T1",
+        "source_type": "private",
+        "top_k": 10,
+        "tenant_id": "default",
+    }
     assert ev["evidence_ids"] == [chunk_evidence_id(c) for c in hits]
     assert PRODUCTION_RETRIEVAL_MODE == "hybrid+rerank"
     assert ev["retrieval_mode"] == "bm25_fallback"

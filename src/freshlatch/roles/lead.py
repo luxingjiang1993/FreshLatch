@@ -349,10 +349,11 @@ class LeadReverifier:
             "source_type": args.get("source_type") or None,
             "as_of": as_of,
             "top_k": 10,  # §8.5:top_k 放宽到 10 缓释同义改写漏召回
+            # 工具参数只作声明。try_retrieve 用会话 tenant_id 做检索前 ACL。
             "tenant_id": optional_tenant_id(args),
         }
         hits = self.ctx.try_retrieve(query, **retrieve_kwargs)
-        if isinstance(hits, dict):  # 预算已尽,fail-soft
+        if isinstance(hits, dict):  # 预算已尽,或检索前 ACL 拒绝
             return hits
         blocks = self._blocks_from_hits(hits)
         # CRAG 三态只在这次检索边上计算一次。Agent 稍后只消费观察里的 grade。
