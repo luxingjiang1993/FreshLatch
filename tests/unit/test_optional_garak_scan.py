@@ -20,6 +20,7 @@ _REPO = Path(__file__).resolve().parents[2]
 _SCRIPT = _REPO / "scripts" / "optional_garak_tool_injection_scan.py"
 _BOOTSTRAP = _REPO / "scripts" / "optional_garak" / "bootstrap.py"
 _MATCH = _REPO / "scripts" / "optional_garak" / "freshlatch_match.py"
+_LOAD = _REPO / "scripts" / "optional_garak" / "_load.py"
 _PROMPTS = _REPO / "docs" / "evidence" / "garak" / "tool-injection-prompts.json"
 _RUNBOOK = _REPO / "docs" / "ops" / "可选-garak-tool-injection扫描.md"
 _SECURITY = _REPO / "docs" / "security.md"
@@ -27,10 +28,17 @@ _README = _REPO / "docs" / "evidence" / "garak" / "README.md"
 
 
 def _load_match():
-    spec = importlib.util.spec_from_file_location("freshlatch_match", _MATCH)
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    loader_name = "optional_garak_load"
+    if loader_name in sys.modules:
+        loader = sys.modules[loader_name]
+    else:
+        spec = importlib.util.spec_from_file_location(loader_name, _LOAD)
+        if spec is None or spec.loader is None:
+            raise ImportError(loader_name)
+        loader = importlib.util.module_from_spec(spec)
+        sys.modules[loader_name] = loader
+        spec.loader.exec_module(loader)
+    return loader.load_local("freshlatch_match", _MATCH)
 
 
 _MATCH_MOD = _load_match()

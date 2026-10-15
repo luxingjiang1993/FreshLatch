@@ -6,15 +6,32 @@
 
 from __future__ import annotations
 
+import importlib.util
 import sys
 from pathlib import Path
 
 _ROOT = Path(__file__).resolve().parent
 _PROBE_KEY = "probes.freshlatch_tool_injection.ToolInjection"
+_LOADER_NAME = "optional_garak_load"
+
+
+def _loader():
+    """加载 _load.py, 以便把 freshlatch_match 登记进 sys.modules."""
+    if _LOADER_NAME in sys.modules:
+        return sys.modules[_LOADER_NAME]
+    spec = importlib.util.spec_from_file_location(_LOADER_NAME, _ROOT / "_load.py")
+    if spec is None or spec.loader is None:
+        raise ImportError(_LOADER_NAME)
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[_LOADER_NAME] = module
+    spec.loader.exec_module(module)
+    return module
 
 
 def _install_adapters() -> None:
     """扩展 garak 的 probes 搜索路径, 并让 --spec 能解析到本仓探针."""
+    _loader().load_local("freshlatch_match", _ROOT / "freshlatch_match.py")
+
     import garak.probes as probes_pkg
     from garak._plugins import PluginCache
 
@@ -22,7 +39,6 @@ def _install_adapters() -> None:
     import garak.detectors as detectors_pkg
 
     detectors_pkg.__path__.append(str(_ROOT / "detectors"))
-    sys.path.insert(0, str(_ROOT))
 
     import importlib
 

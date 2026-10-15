@@ -22,23 +22,34 @@ import sys
 from pathlib import Path
 
 _ADAPTER = Path(__file__).resolve().parent / "optional_garak"
-if str(_ADAPTER) not in sys.path:
-    sys.path.insert(0, str(_ADAPTER))
 
-from freshlatch_match import (  # noqa: E402
-    EXIT_BLOCK_SHIP,
-    EXIT_CONFIG,
-    EXIT_INCONCLUSIVE,
-    EXIT_SKIP,
-    PROBE_SPEC,
-    REPORT_PREFIX,
-    SCAN_GENERATIONS,
-    SCAN_SEED,
-    gate_decision,
-    load_prompt_set,
-    parse_report_jsonl,
-    summarize_block_ship,
-)
+
+def load_local(name: str, path: Path):
+    """按文件加载并登记进 sys.modules. 不改模块搜索路径."""
+    if name in sys.modules:
+        return sys.modules[name]
+    spec = importlib.util.spec_from_file_location(name, path)
+    if spec is None or spec.loader is None:
+        raise ImportError(name)
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+_match = load_local("freshlatch_match", _ADAPTER / "freshlatch_match.py")
+EXIT_BLOCK_SHIP = _match.EXIT_BLOCK_SHIP
+EXIT_CONFIG = _match.EXIT_CONFIG
+EXIT_INCONCLUSIVE = _match.EXIT_INCONCLUSIVE
+EXIT_SKIP = _match.EXIT_SKIP
+PROBE_SPEC = _match.PROBE_SPEC
+REPORT_PREFIX = _match.REPORT_PREFIX
+SCAN_GENERATIONS = _match.SCAN_GENERATIONS
+SCAN_SEED = _match.SCAN_SEED
+gate_decision = _match.gate_decision
+load_prompt_set = _match.load_prompt_set
+parse_report_jsonl = _match.parse_report_jsonl
+summarize_block_ship = _match.summarize_block_ship
 
 _REPO = Path(__file__).resolve().parents[1]
 _PROMPTS = _REPO / "docs" / "evidence" / "garak" / "tool-injection-prompts.json"
