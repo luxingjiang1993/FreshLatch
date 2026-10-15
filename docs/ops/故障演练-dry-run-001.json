@@ -1,0 +1,291 @@
+{
+  "drill_id": "dry-run-001",
+  "ticket": "A-P8",
+  "layer": "演练级",
+  "scope": "演练级 ≠ 真 DAU/真事故史",
+  "walked": true,
+  "paid_api": false,
+  "eval_run": false,
+  "otel_export": false,
+  "phoenix_binding": false,
+  "oncall_role": "生产路径值班",
+  "coverage": "非 24×7",
+  "hours": "Asia/Shanghai 工作日 09:00–18:00",
+  "trace_note": "步骤序列对照 OTel GenAI span status（ERROR/OK）与 Phoenix 演练轨迹：一次场景、本地落盘。不导出 span，不新建 Phoenix-* 主名。演练级 ≠ 真 DAU/真事故史。",
+  "steps": [
+    {
+      "name": "inject",
+      "span_status": "ERROR",
+      "reason": "breach_halt",
+      "canary_halted": true,
+      "promoted": false,
+      "serving_arm": "main"
+    },
+    {
+      "name": "observe_latch",
+      "span_status": "ERROR",
+      "reason": "breach_halt",
+      "latched": true,
+      "canary_halted": true,
+      "promoted": false
+    },
+    {
+      "name": "hang_sli",
+      "span_status": "ERROR",
+      "page": true,
+      "ticket": true,
+      "kinds": [
+        "page",
+        "ticket"
+      ],
+      "live_page": false
+    },
+    {
+      "name": "rollback_canary",
+      "span_status": "OK",
+      "mode": "off",
+      "reason": "mode_off",
+      "canary_halted": false,
+      "promoted": false,
+      "serving_arm": "main"
+    },
+    {
+      "name": "rollback_page",
+      "span_status": "OK",
+      "sink": "FRESHLATCH_PAGE_SINK",
+      "sink_value": "off",
+      "suppressed": true,
+      "sent": false,
+      "sender_called": false
+    }
+  ],
+  "inject": {
+    "mode": "active",
+    "canary_arm": "candidate",
+    "main_arm": "main",
+    "sample": {
+      "failed": true,
+      "metric": "error_count",
+      "value": 3,
+      "halt_above": 1
+    },
+    "halt_above_note": "halt_above 只是这一次样本上的停发线，不是注册分，也不是 SESOI",
+    "canary_event": {
+      "event": "canary_event",
+      "ts": "2026-10-15T14:15:50.236933+00:00",
+      "mode": "active",
+      "canary_halted": true,
+      "promoted": false,
+      "main_arm": "main",
+      "canary_arm": "candidate",
+      "serving_arm": "main",
+      "reason": "breach_halt",
+      "message": "破线停发，主路径拒绝晋升",
+      "metric": "error_count",
+      "value": 3,
+      "halt_above": 1,
+      "failed": true,
+      "latched": false
+    },
+    "latched_canary_event": {
+      "event": "canary_event",
+      "ts": "2026-10-15T14:15:50.236956+00:00",
+      "mode": "active",
+      "canary_halted": true,
+      "promoted": false,
+      "main_arm": "main",
+      "canary_arm": "candidate",
+      "serving_arm": "main",
+      "reason": "breach_halt",
+      "message": "破线停发，主路径拒绝晋升",
+      "metric": "error_count",
+      "value": 0,
+      "halt_above": 1,
+      "failed": false,
+      "latched": true
+    }
+  },
+  "sli": {
+    "window": "failure-drill-dry-run-001",
+    "objective": 0.01,
+    "objective_is_sesoi": false,
+    "objective_note": "0.01 只属于这一次演练注入，不是 SESOI，不是 DAU",
+    "sender": "RecordingSender",
+    "live_page": false,
+    "sender_note": "sent=true 表示 RecordingSender 记下了 payload，不是真实 webhook 或 email",
+    "primary": {
+      "window": "failure-drill-dry-run-001",
+      "e2e_p95_ms": "样本不足",
+      "abstain_rate": "样本不足",
+      "retrieval_fallback_rate": "样本不足",
+      "abstain_fallback_rate": "样本不足",
+      "abstain_numerator": 0,
+      "abstain_denominator": 0,
+      "fallback_n": 0,
+      "N_retrieve": 0,
+      "N_request_ok": 0,
+      "canary_event_n": 1,
+      "canary_sample_n": 1,
+      "canary_bad_n": 1,
+      "sources": "canary_event",
+      "notes": "observation ≠ RESULT-Y ≠ PREREG floors。不发明 SESOI。不计注册 G1/A1/T1/R1。不写 RESULT-Y。来源 canary_event。canary_event 来自 A-P1 生产路径 canary，不是冻结金标 SLI 6。",
+      "counted_as_pass": false,
+      "invents_sesoi": false,
+      "writes_result_y": false
+    },
+    "burn_windows": {
+      "5m": [
+        1,
+        1
+      ],
+      "30m": [
+        1,
+        1
+      ],
+      "1h": [
+        1,
+        1
+      ],
+      "2h": [
+        1,
+        1
+      ],
+      "6h": [
+        1,
+        1
+      ],
+      "1d": [
+        1,
+        1
+      ],
+      "3d": [
+        1,
+        1
+      ]
+    },
+    "actions": [
+      {
+        "kind": "page",
+        "channel": "webhook",
+        "recorded": true,
+        "sent": true,
+        "suppressed": false,
+        "rules": [
+          "page:1h+5m>14.4",
+          "page:6h+30m>6"
+        ],
+        "oncall_role": "生产路径值班",
+        "coverage": "非 24×7",
+        "hours": "Asia/Shanghai 工作日 09:00–18:00",
+        "objective": 0.01,
+        "objective_is_sesoi": false,
+        "protocol_only": false,
+        "window": "failure-drill-dry-run-001",
+        "e2e_p95_ms": "样本不足",
+        "abstain_rate": "样本不足",
+        "retrieval_fallback_rate": "样本不足",
+        "abstain_fallback_rate": "样本不足",
+        "canary_event_n": 1,
+        "canary_bad_n": 1
+      },
+      {
+        "kind": "ticket",
+        "channel": "ticket",
+        "recorded": true,
+        "sent": false,
+        "suppressed": false,
+        "respond_by": "next_business_day",
+        "rules": [
+          "ticket:1d+2h>3",
+          "ticket:3d+6h>1"
+        ],
+        "oncall_role": "生产路径值班",
+        "coverage": "非 24×7",
+        "hours": "Asia/Shanghai 工作日 09:00–18:00",
+        "objective": 0.01,
+        "objective_is_sesoi": false,
+        "window": "failure-drill-dry-run-001",
+        "e2e_p95_ms": "样本不足",
+        "abstain_rate": "样本不足",
+        "retrieval_fallback_rate": "样本不足",
+        "abstain_fallback_rate": "样本不足",
+        "canary_event_n": 1,
+        "canary_bad_n": 1
+      }
+    ],
+    "sender_payload_n": 1
+  },
+  "rollback": {
+    "canary_mode": "off",
+    "canary_event": {
+      "event": "canary_event",
+      "ts": "2026-10-15T14:15:50.237058+00:00",
+      "mode": "off",
+      "canary_halted": false,
+      "promoted": false,
+      "main_arm": "main",
+      "canary_arm": "candidate",
+      "serving_arm": "main",
+      "reason": "mode_off",
+      "message": "模式为 off，主路径不晋升 canary 臂",
+      "metric": "error_count",
+      "value": 0,
+      "halt_above": 1,
+      "failed": false,
+      "latched": false
+    },
+    "page_sink": "off",
+    "page_sink_env": "FRESHLATCH_PAGE_SINK",
+    "actions": [
+      {
+        "kind": "page",
+        "channel": "webhook",
+        "recorded": true,
+        "sent": false,
+        "suppressed": true,
+        "rules": [
+          "page:1h+5m>14.4",
+          "page:6h+30m>6"
+        ],
+        "oncall_role": "生产路径值班",
+        "coverage": "非 24×7",
+        "hours": "Asia/Shanghai 工作日 09:00–18:00",
+        "objective": 0.01,
+        "objective_is_sesoi": false,
+        "protocol_only": false,
+        "window": "failure-drill-dry-run-001",
+        "e2e_p95_ms": "样本不足",
+        "abstain_rate": "样本不足",
+        "retrieval_fallback_rate": "样本不足",
+        "abstain_fallback_rate": "样本不足",
+        "canary_event_n": 1,
+        "canary_bad_n": 1
+      },
+      {
+        "kind": "ticket",
+        "channel": "ticket",
+        "recorded": true,
+        "sent": false,
+        "suppressed": false,
+        "respond_by": "next_business_day",
+        "rules": [
+          "ticket:1d+2h>3",
+          "ticket:3d+6h>1"
+        ],
+        "oncall_role": "生产路径值班",
+        "coverage": "非 24×7",
+        "hours": "Asia/Shanghai 工作日 09:00–18:00",
+        "objective": 0.01,
+        "objective_is_sesoi": false,
+        "window": "failure-drill-dry-run-001",
+        "e2e_p95_ms": "样本不足",
+        "abstain_rate": "样本不足",
+        "retrieval_fallback_rate": "样本不足",
+        "abstain_fallback_rate": "样本不足",
+        "canary_event_n": 1,
+        "canary_bad_n": 1
+      }
+    ],
+    "sender_payload_n": 0
+  }
+}
