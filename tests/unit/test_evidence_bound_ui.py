@@ -221,5 +221,5 @@ def test_confirm_rejects_fresh_and_empty_t1(client):
 
 
 def test_valid_actions_unchanged_by_patch_ui():
-    """补丁另缝:HumanLatch VALID_ACTIONS 仍仅 discard|renew。"""
-    assert set(VALID_ACTIONS) == {"discard", "renew"}
+    """补丁另缝:confirm/apply 不进 HumanLatch。disputed 是人审台账动词。"""
+    assert set(VALID_ACTIONS) == {"discard", "renew", "disputed"}

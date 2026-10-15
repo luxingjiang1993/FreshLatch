@@ -8,6 +8,8 @@
   (人就是那个「第二判」)。
 - 「Agent 不得把红灯改回绿灯」只约束 Agent 侧工具链;人审是 L0 合法出口,
   此口径与 gates/rule_gate.py 模块注释一致。
+- 改账(disputed):把人写的结论记入 latch_log,可再打开看到结论与审计轨迹。
+  不改机器 status,不进作废名单,不写 validity_basis,不写冻结 gold / floors。
 """
 
 from __future__ import annotations
@@ -24,7 +26,8 @@ from freshlatch.gates.policy_gate import (
 from freshlatch.gates.rule_gate import GateContext, GateDecision, rule_gate
 from freshlatch.models import AsOf, Claim
 
-VALID_ACTIONS = ("discard", "renew")  # 封闭集;禁止新增 override action
+# 人审动词。disputed 是台账改账,不是 override,也不取代 discard / renew。
+VALID_ACTIONS = ("discard", "renew", "disputed")
 
 
 def derive_override(action: str, machine_status_before: str) -> bool:
@@ -32,9 +35,12 @@ def derive_override(action: str, machine_status_before: str) -> bool:
 
     - discard 且落档前机器 status 为 fresh → True
     - renew 且落档前机器 status 为 stale 或 unknown → True
+    - disputed 恒为 False(改账不对抗、不改机器 status)
     - 其余成功人审 → False
     失败与幂等跳过不调用本函数写新行。
     """
+    if action == "disputed":
+        return False
     if action == "discard" and machine_status_before == "fresh":
         return True
     if action == "renew" and machine_status_before in ("stale", "unknown"):
@@ -46,14 +52,15 @@ RENEW_EVIDENCE_MALFORMED = "RENEW_EVIDENCE_MALFORMED"
 RENEW_EVIDENCE_UNRESOLVED = "RENEW_EVIDENCE_UNRESOLVED"
 UNKNOWN_CLAIM = "UNKNOWN_CLAIM"
 INVALID_ACTION = "INVALID_ACTION"
+DISPUTED_NO_CONCLUSION = "DISPUTED_NO_CONCLUSION"
 
 
 @dataclass
 class HumanDecision:
     claim_id: str
-    action: str  # discard | renew
-    evidence_id: str | None = None  # renew 必填(锚 T1);discard 忽略
-    reviewer_note: str | None = None  # 人审备注 → invalidation_list.reason
+    action: str  # discard | renew | disputed
+    evidence_id: str | None = None  # renew 必填(锚 T1);discard / disputed 忽略
+    reviewer_note: str | None = None  # discard 备注;disputed 的结论(必填)
 
 
 @dataclass
@@ -117,6 +124,8 @@ def _apply_one(store, claims_by_id: dict, d: HumanDecision, now: Callable[[], da
                               detail=f"action 只能是 {'|'.join(VALID_ACTIONS)};收到: {d.action!r}")
     if d.action == "renew":
         return _apply_renew(store, claim, d, now, checksum_fn, run_id)
+    if d.action == "disputed":
+        return _apply_disputed(store, claim, d, now, run_id)
     # discard:作废(幂等——interrupt 重执行语义下可能二次落档)
     if claim.voided:
         # 幂等跳过:不新增 latch_log 行,避免把重复作废记成新的对抗语义
@@ -216,3 +225,84 @@ def _apply_renew(store, claim: Claim, d: HumanDecision, now: Callable[[], dateti
     )
     return DecisionResult(claim.claim_id, ok=True, action="renew",
                           detail=f"已续命(last_confirmed_at={ts},依据 {d.evidence_id})")
+
+
+def _disputed_already_logged(store, claim_id: str, conclusion: str) -> bool:
+    """同主张、同结论是否已有 disputed 行。interrupt 重执行不双写。"""
+    list_fn = getattr(store, "list_latch_events", None)
+    if list_fn is None:
+        return False
+    for row in list_fn(claim_id) or []:
+        if row.get("action") != "disputed":
+            continue
+        if str(row.get("reviewer_note") or "").strip() == conclusion:
+            return True
+    return False
+
+
+def _apply_disputed(store, claim: Claim, d: HumanDecision, now: Callable[[], datetime],
+                    run_id: str | None = None) -> DecisionResult:
+    """改账:只写 latch_log。不改 status / voided / validity_basis,不进作废名单。
+
+    结论写在 reviewer_note。再打开时读这条与同主张的审计轨迹。
+    不写冻结 gold / floors。
+    """
+    conclusion = str(d.reviewer_note or "").strip()
+    if not conclusion:
+        return DecisionResult(claim.claim_id, ok=False, action="disputed",
+                              error_code=DISPUTED_NO_CONCLUSION,
+                              detail="disputed 必须写下结论,台账才可再打开")
+    if _disputed_already_logged(store, claim.claim_id, conclusion):
+        return DecisionResult(claim.claim_id, ok=True, action="disputed",
+                              detail="已改账,幂等跳过(latch_log 已有同一结论;不双写)")
+    machine_status_before = claim.status
+    ts = now().isoformat(timespec="seconds")
+    store.log_latch(
+        ts, claim.claim_id, "disputed", evidence_id=None, actor="human",
+        machine_status_before=machine_status_before,
+        override=False,
+        run_id=run_id,
+        reviewer_note=conclusion,
+    )
+    return DecisionResult(
+        claim.claim_id, ok=True, action="disputed",
+        detail=f"已改账(可再打开);机器判定 {claim.status} 保留",
+    )
+
+
+_REOPEN_LABELS = {
+    "discard": "人审作废",
+    "renew": "人审续命",
+    "disputed": "人审改账",
+    "rerun": "重跑",
+}
+
+
+def read_disputed_reopen(store, claim_id: str) -> dict:
+    """再打开 disputed:只读结论与审计轨迹。不写库,不改主张,不写 gold。"""
+    list_fn = getattr(store, "list_latch_events", None)
+    rows = list(list_fn(claim_id) or []) if list_fn else []
+    trail: list[dict] = []
+    disputed_rows: list[dict] = []
+    for row in rows:
+        action = str(row.get("action") or "")
+        item = {
+            "ts": row.get("ts") or "",
+            "action": action,
+            "label": _REOPEN_LABELS.get(action, action),
+            "reviewer_note": row.get("reviewer_note"),
+            "evidence_id": row.get("evidence_id"),
+            "machine_status_before": row.get("machine_status_before"),
+            "run_id": row.get("run_id"),
+        }
+        trail.append(item)
+        if action == "disputed":
+            disputed_rows.append(item)
+    conclusion = disputed_rows[-1].get("reviewer_note") if disputed_rows else None
+    return {
+        "claim_id": claim_id,
+        "action": "disputed" if disputed_rows else None,
+        "reopenable": bool(disputed_rows),
+        "conclusion": conclusion,
+        "audit_trail": trail,
+    }

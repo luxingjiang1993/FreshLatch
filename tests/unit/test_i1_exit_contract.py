@@ -90,7 +90,7 @@ def test_contribution_boundary_i1_row_names_triad_corpus_and_smoke():
 
 def test_production_enums_not_extended():
     """只读:Gate / disposition / HumanLatch 封闭集未被三分法或漏拦/误拦扩写。"""
-    assert VALID_ACTIONS == ("discard", "renew")
+    assert VALID_ACTIONS == ("discard", "renew", "disputed")
     assert DISPOSITIONS == frozenset({"可发", "需补丁", "勿发"})
     assert GREEN_STATUSES == ("fresh", "renew")
     for name in TRIAD_AND_ERR:

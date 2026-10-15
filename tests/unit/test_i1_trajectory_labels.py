@@ -217,5 +217,5 @@ def test_production_enums_not_extended_with_triad():
     for bucket in TRIAD_BUCKETS:
         assert bucket not in VALID_ACTIONS
         assert bucket not in DISPOSITIONS
-    assert VALID_ACTIONS == ("discard", "renew")
+    assert VALID_ACTIONS == ("discard", "renew", "disputed")
     assert DISPOSITIONS == frozenset({"可发", "需补丁", "勿发"})

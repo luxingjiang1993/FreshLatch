@@ -1,8 +1,8 @@
 """主张台账只读投影(ADR-0031 / #228)。
 
-真源 = invalidation_list ∪ latch_log(discard/renew)。
-零新 SQLite 写表;不改 human_latch 写路径;不与 patch_events 糊缝。
-renew 永不进入作废名单查询结果(与既有闸语义一致)。
+真源 = invalidation_list ∪ latch_log(discard/renew/disputed)。
+零新 SQLite 写表;不与 patch_events 糊缝。
+renew 与 disputed 都不进入作废名单查询结果。disputed 只读投影,不写冻结 gold。
 """
 
 from __future__ import annotations
@@ -12,10 +12,14 @@ from typing import Any
 
 from freshlatch.store.base import RetrievalStore
 
-# 台账投影只收人审作废/续命;rerun 等其它 latch 动作不进台账
-LEDGER_ACTIONS = frozenset({"discard", "renew"})
+# 台账投影收人审作废/续命/改账;rerun 等其它 latch 动作不进台账
+LEDGER_ACTIONS = frozenset({"discard", "renew", "disputed"})
 
-ACTION_LABELS = {"discard": "人审作废", "renew": "人审续命"}
+ACTION_LABELS = {
+    "discard": "人审作废",
+    "renew": "人审续命",
+    "disputed": "人审改账",
+}
 
 
 def get_claim_ledger(
@@ -23,7 +27,7 @@ def get_claim_ledger(
     *,
     run_id: str | None = None,
 ) -> dict[str, Any]:
-    """只读合并投影:作废名单 ∪ latch_log(discard/renew)。
+    """只读合并投影:作废名单 ∪ latch_log(discard/renew/disputed)。
 
     run_id 给定时仅保留 latch_log.run_id 匹配的人审行;
     作废名单仍按既有 list_invalidation 全量返回(跨 Run 持久,与闸语义一致),
@@ -96,12 +100,14 @@ def get_claim_ledger(
 
     discard_ids = sorted({e["claim_id"] for e in entries if e["action"] == "discard"})
     renew_ids = sorted({e["claim_id"] for e in entries if e["action"] == "renew"})
+    disputed_ids = sorted({e["claim_id"] for e in entries if e["action"] == "disputed"})
 
     return {
         "run_id": run_id,
         "entries": entries,
         "discard_claim_ids": discard_ids,
         "renew_claim_ids": renew_ids,
+        "disputed_claim_ids": disputed_ids,
         # 作废名单单一真相只读投影;renew 永不在此列表
         "invalidation_claim_ids": list(invalidation_ids),
     }
@@ -132,8 +138,11 @@ def render_claim_ledger_markdown(ledger: dict[str, Any]) -> str:
     else:
         lines.append("范围: 全库(跨 Run 作废名单 + 人审 latch_log)")
     lines.append("")
-    lines.append("写路径仍唯一经 HumanLatch;`invalidation_list` ∪ `latch_log`(discard/renew)只读投影。")
-    lines.append("续命(renew)不进作废名单。与 `patch_events` 分缝。")
+    lines.append(
+        "写路径仍唯一经 HumanLatch;"
+        "`invalidation_list` ∪ `latch_log`(discard/renew/disputed)只读投影。"
+    )
+    lines.append("续命(renew)不进作废名单。disputed 不进作废名单,不写冻结 gold。与 `patch_events` 分缝。")
     lines.append("")
 
     discard_ids = ledger.get("discard_claim_ids") or []
@@ -143,6 +152,10 @@ def render_claim_ledger_markdown(ledger: dict[str, Any]) -> str:
     lines.append("")
     lines.append(f"- 作废(discard) claim_id: {', '.join(f'`{c}`' for c in discard_ids) or '(无)'}")
     lines.append(f"- 续命(renew) claim_id: {', '.join(f'`{c}`' for c in renew_ids) or '(无)'}")
+    disputed_ids = ledger.get("disputed_claim_ids") or []
+    lines.append(
+        f"- 改账(disputed) claim_id: {', '.join(f'`{c}`' for c in disputed_ids) or '(无)'}"
+    )
     lines.append(
         f"- 作废名单(invalidation_list, renew∉此列): "
         f"{', '.join(f'`{c}`' for c in void_ids) or '(无)'}"
@@ -164,6 +177,8 @@ def render_claim_ledger_markdown(ledger: dict[str, Any]) -> str:
         line = f"- `{cid}` · {label} · {ts}"
         if e.get("evidence_id"):
             line += f" · evidence `{e['evidence_id']}`"
+        if e.get("action") == "disputed" and e.get("reviewer_note"):
+            line += f" · 结论 {e['reviewer_note']}"
         if e.get("run_id"):
             line += f" · run `{e['run_id']}`"
         if e.get("source") == "invalidation_list":

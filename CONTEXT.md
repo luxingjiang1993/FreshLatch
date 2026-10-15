@@ -77,7 +77,7 @@ _Avoid_: 把未做薄对话称作 Verify+ 已完备、Studio 已解冻、把入�
 _Avoid_: Embed(向量)、embedding 钩子、导出即自动 Lead 再跑、无闸导出、把 curl 冒烟称作 webhook 平台
 
 **主张台账（claim ledger）**:
-作废名单(`invalidation_list`)与续命人审日志(`latch_log` 的 discard/renew)的只读投影;挂复验单/Run 详情旁路并可导出 Markdown。不是新写表,不是 `patch_events`(ADR-0031)。
+作废名单(`invalidation_list`)与人审日志(`latch_log` 的 discard/renew/disputed)的只读投影;挂复验单/Run 详情旁路并可导出 Markdown。`disputed` 带结论,可再打开,不进作废名单,不写冻结 gold / floors。不是新写表,不是 `patch_events`(ADR-0031)。
 _Avoid_: claim_ledger 双写表、把补丁账当人审台账、第三套主导航「资产库」
 
 **生产补丁/放行 SLO**:
@@ -124,8 +124,12 @@ _Avoid_: 报告、看板
 _Avoid_: 简单模式/专家模式、调试页、在职人视图或审计标签里写角色专名
 
 **审计面**:
-审计视图上的只读轨迹投影。字段为 `query`、带分的 `hits`(`scores` 的 bm25 / dense / rrf / rerank,缺臂为空)、`attribution_ids`、`unknown_reason`、`claim_spans`。reason 只读 abstention reason 枚举,不另写拼写。缺字段显示空或「无」,不编造分数。不改 `Claim.status`。`badges` 是只读 UiBadge 列表;缺字段时为空,不编造。`claim_spans` 是主张句到 T1 句 id 的只读列表,支撑句与反对句分列;无支撑句时不画支撑高亮。人审动词仍只有 `discard` / `renew`。
-_Avoid_: 角色专名、假分、人审动词 `disputed`、把 UiBadge 写进 Claim.status、把命中块涂成支撑句
+审计视图上的只读轨迹投影。字段为 `query`、带分的 `hits`(`scores` 的 bm25 / dense / rrf / rerank,缺臂为空)、`attribution_ids`、`unknown_reason`、`claim_spans`、产品失败三桶。reason 只读 abstention reason 枚举,不另写拼写。缺字段显示空或「无」,不编造分数。不改 `Claim.status`。`badges` 是只读 UiBadge 列表;缺字段时为空,不编造。`claim_spans` 是主张句到 T1 句 id 的只读列表,支撑句与反对句分列;无支撑句时不画支撑高亮。人审动词为 `discard` / `renew` / `disputed`。`disputed` 把结论写入 `latch_log`,可再打开看到结论与审计轨迹;不改 `Claim.status`,不进作废名单,不写冻结 gold / floors。
+_Avoid_: 角色专名、假分、把 `disputed` 写成 Claim.status、把三桶收成一个失败、把 UiBadge 写进 Claim.status、把命中块涂成支撑句
+
+**产品失败三桶**:
+审计面把一条失败轨迹指到三枚彼此分开的标签:检索空、grade 不够、tool_tier_2 拒。不得收成一个「失败」。检索空是 retrieve 没有命中。grade 不够是 grade 为 incorrect 且 reason code 为 `grade_incorrect_exhausted`,或 grade 为 ambiguous 且 reason code 为 `grade_ambiguous`。tool_tier_2 拒是模型调用 tool_tier_2 被拒,reason code 为 `tool_tier_denied`。tool_tier_0 与 tool_tier_1 不是这一桶。产品失败三桶 ≠ ops ADR-0028 评测桶(找不到 / 找错 / 没用上,见 `docs/ops/挂标-失败归因三桶.md`)。不得用这三桶重标冻结 gold 或 floors。
+_Avoid_: 把三桶收成一个失败、用评测桶名当审计高亮、把三桶写进 gold 冒充注册涨分
 
 **句 id (sentence_id)**:
 主张句点回 T1 的偏移方案,本票只认这一种。一句在所属 `evidence_id` 块内的序号,形如 `s0`、`s1`,从 0 起。可见锚是 `evidence_id#sentence_id`(如 `fix-memo#p1@T1#s0`)。切句只认句末标点 `。！？!?`,以及前面不是数字的英文句点(`12.5` 不切)。块首 `## pN` 标题行不进入句子。不使用字符偏移。
@@ -137,7 +141,7 @@ _Avoid_: 相关块、假支撑高亮、NLI、字符偏移、改 `cite_sentence.j
 
 **UiBadge**:
 职人视图上的只读徽章,取值 `verified` | `partial` | `abstain`。`verified` 表示本轮闸允许的 fresh:证据足以续验且未拒答。`partial` 表示有本轮 evidence id,但不足以 `verified`。`abstain` 表示拒答原因属于既有 abstention reason 枚举。旧轨迹缺字段时不渲染。不写入 `Claim.status`。
-_Avoid_: 把 verified / partial / abstain 写进 Claim.status、人审动词 disputed、用角色专名当徽章文案
+_Avoid_: 把 verified / partial / abstain 写进 Claim.status、把 disputed 写进 UiBadge、用角色专名当徽章文案
 
 **客户向复验备忘 (Client Memo)**:
 可转发附件形态的复验产出:课题问题句、生成时间、免责声明、三分栏(仍成立/已作废/缺口)、每条 claim_id 与一句话理由、可点回的 evidence_id(格式 `doc_id#anchor@as_of`,本批不做字符级偏移 span)。不含 Agent 轨迹、不含「建议进入/不进入」类商业裁决。与内部审计/复验单导出分离。
@@ -235,8 +239,8 @@ _Avoid_: `grade_ambiguous`、挑更流畅的一侧写 fresh、无人审的冲突
 _Avoid_: 另写平行拼写、把错误文案当成原因码、把 `unknown_tool` / `illegal_tool_args` / `illegal_dimension` / `NO_T1_EVIDENCE` 并进本枚举
 
 **失败轨迹可复放 (failure replay)**:
-失败运行的轨迹 JSONL 可确定性读回工具步、`evidence_ids`、`grade`、`retry_count` 与 abstention reason。人审仍用 HumanLatch checkpoint。不把 LangGraph time-travel 引进 `run_loop`。
-_Avoid_: 另造平行事件类型、把 time-travel 当默认复验、人审动词 `disputed`
+失败运行的轨迹 JSONL 可确定性读回工具步、`evidence_ids`、`grade`、`retry_count`、abstention reason,以及只读的空命中信号与 tool_tier_2 拒绝观察。人审仍用 HumanLatch checkpoint。不把 LangGraph time-travel 引进 `run_loop`。`disputed` 住 HumanLatch 台账,不写进复放事件。
+_Avoid_: 另造平行事件类型、把 time-travel 当默认复验、在 `run_loop` 里写人审 disputed
 
 **hit 可测分 (hit scores)**:
 一次 retrieve 观察里每个 hit 的 `scores`,四个字段 `bm25`、`dense`、`rrf`、`rerank`。值是当次 BM25、余弦、RRF 与精排已经算出的数;该臂没算的字段为空。不进入排序,不改融合公式,也不当 fresh 阈值。
@@ -317,7 +321,7 @@ _Avoid_: 状态说明、跟踪备注
 _Avoid_: 过期/冲突/元陈述包(路线图旧称「过期」须读作快照取代)
 
 **HumanLatch**:
-人审工作流:人对每条红/黄灯主张点「作废」或「续命」(续命必须带 T1 evidence_id),并确认记忆隔离。Agent 不得自己把红灯改回绿灯。续命生效链次序(Batch 2):格式→点回→闸(含 checksum)→仅绿后写 validity_basis;失败零写;`error_code`+短中文透传(见 docs/research/β-checksum与HumanLatch-renew交界设计评估.md)。跨轮腐烂重检(ADR-0025)不得自动 void、不得篡改人审 L0;机器仅可将带 basis 的 fresh 机械落 unknown。
+人审工作流:人对每条红/黄灯主张点「作废」、「续命」或「disputed 改账」(续命必须带 T1 evidence_id;disputed 必须写下结论,可再打开,不改机器 status,不写冻结 gold / floors),并确认记忆隔离。Agent 不得自己把红灯改回绿灯。续命生效链次序(Batch 2):格式→点回→闸(含 checksum)→仅绿后写 validity_basis;失败零写;`error_code`+短中文透传(见 docs/research/β-checksum与HumanLatch-renew交界设计评估.md)。跨轮腐烂重检(ADR-0025)不得自动 void、不得篡改人审 L0;机器仅可将带 basis 的 fresh 机械落 unknown。
 
 **作废名单 (Invalidation List)**:
 被人作废的主张 id 清单;进名单的主张重跑时不得再判 fresh。删除文件另闸,可先隔离不删盘。存储真相是 SQLite `invalidation_list` 表,随课题持久,与长期记忆的「已废 id」是同一份,不复制。
@@ -327,8 +331,8 @@ _Avoid_: 黑名单、封禁列表
 被人工作废的主张终态,复验单上灰显。与 Auditor 判的 `stale` 并存不互斥:`stale` 是机器判定,`void` 是人的决定。作废后重跑不得再绿,由规则闸查作废名单强制。
 
 **override（派生标签）**:
-人审 `discard`/`renew` 落档时,相对落档前机器 `status` 是否构成对抗的布尔标记(非新 action)。谓词与 `latch_log` 扩列见 ADR-0023;禁止把 override 计数解释为「模型变好」,本批不锁 Override Rate 通过线。
-_Avoid_: override 按钮、第三种人审动作、模型变好指标
+人审 `discard`/`renew` 落档时,相对落档前机器 `status` 是否构成对抗的布尔标记(非新 action)。`disputed` 不是 override,落档时该标记为 false。谓词与 `latch_log` 扩列见 ADR-0023;禁止把 override 计数解释为「模型变好」,本批不锁 Override Rate 通过线。
+_Avoid_: override 按钮、把 disputed 当成 override、模型变好指标
 
 **读法源 (How-to-Read source)**:
 「如何读复验」的单一文案真相:身份(卖作废)/机器判定/人作废/边界(非法律·非自动)/验收诚实;投影至复验单旁路、Client Memo 附注与 ACCEPTANCE 可引用句(Batch 5 ε)。demo 可读 ≠ 付费或验证成功。
@@ -363,8 +367,8 @@ _Avoid_: 无 dense 判过线、用主张金标/control-c 顶替、grill 直接�
 _Avoid_: 把 K=30 送进 cross-encoder、失败时静默仍标成神经精排、把这次切换说成全库人工 gold
 
 **I1 失败复盘（评测标签）**:
-答辩/冒烟用语,不是生产 Gate 或 disposition 枚举。桶名(找不到/找错/没用上)与漏拦/误拦的操作定义、corpus 路径见 ADR-0028 与 `docs/research/I1-失败三分法与HumanLatch语料设计评估.md`;语料落 `docs/evidence/i1/`。
-_Avoid_: 把三分法写成生产 status、无轨迹编造样本、远程 V1 关单冒充本地 Exit 后宣称 I1 完成
+答辩/冒烟用语,不是生产 Gate 或 disposition 枚举。桶名(找不到/找错/没用上)与漏拦/误拦的操作定义、corpus 路径见 ADR-0028 与 `docs/research/I1-失败三分法与HumanLatch语料设计评估.md`;语料落 `docs/evidence/i1/`。产品失败三桶 ≠ ops ADR-0028 评测桶:审计面上的检索空 / grade 不够 / tool_tier_2 拒不得改写成找不到 / 找错 / 没用上,见 `docs/ops/挂标-失败归因三桶.md`。
+_Avoid_: 把三分法写成生产 status、把产品三桶与评测三桶混名、无轨迹编造样本、远程 V1 关单冒充本地 Exit 后宣称 I1 完成
 
 **I2 安全三例（评测/答辩）**:
 面试安全轮冒烟用语,不是安全认证或生产枚举。三例=越权召回 / 间接注入 / 检索投毒;操作定义与 Exit 分层见 ADR-0030 与 `docs/research/I2-安全三例设计评估.md`;证据落 `docs/evidence/i2/` 与 `docs/security.md`。idea #4 过期伪装不计入本 Exit。

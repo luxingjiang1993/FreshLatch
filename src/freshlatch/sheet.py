@@ -16,6 +16,12 @@ from freshlatch.evidence_bound import is_patch_eligible
 from freshlatch.latch import HumanLatch
 from freshlatch.models import Claim
 from freshlatch.prepublish import disposition_for_claims
+from freshlatch.roles.retrieve_grade import (
+    REASON_GRADE_AMBIGUOUS,
+    REASON_GRADE_INCORRECT_EXHAUSTED,
+)
+from freshlatch.roles.retrieve_sufficiency import REASON_INSUFFICIENT_EVIDENCE
+from freshlatch.tools import REASON_TOOL_TIER_DENIED, TOOL_TIER_2
 from freshlatch.publish_hook import (
     NEEDS_PATCH_BANNER,
     PublishHookResult,
@@ -25,7 +31,22 @@ from freshlatch.reading_source import BYPASS_TEXT, MEMO_NOTE
 from freshlatch.store.base import RetrievalStore
 
 # 人审动作时间线文案(后端唯一生成;重跑文案走 HumanLatch.timeline_label)
-LATCH_EVENT_LABELS = {"discard": "人审作废", "renew": "人审续命"}
+LATCH_EVENT_LABELS = {
+    "discard": "人审作废",
+    "renew": "人审续命",
+    "disputed": "人审改账",
+}
+
+# 产品失败三桶。与 ops ADR-0028 评测桶(找不到/找错/没用上)不是同一套词。
+PRODUCT_BUCKET_RETRIEVAL_EMPTY = "retrieval_empty"
+PRODUCT_BUCKET_GRADE_INSUFFICIENT = "grade_insufficient"
+PRODUCT_BUCKET_TOOL_TIER_2_DENIED = "tool_tier_2_denied"
+PRODUCT_FAILURE_BUCKETS: tuple[tuple[str, str], ...] = (
+    (PRODUCT_BUCKET_RETRIEVAL_EMPTY, "检索空"),
+    (PRODUCT_BUCKET_GRADE_INSUFFICIENT, "grade 不够"),
+    (PRODUCT_BUCKET_TOOL_TIER_2_DENIED, "tool_tier_2 拒"),
+)
+_PRODUCT_BUCKET_LABELS = dict(PRODUCT_FAILURE_BUCKETS)
 
 
 def project_claim(store: RetrievalStore, claim: Claim) -> dict[str, Any]:
@@ -48,13 +69,15 @@ def project_claim(store: RetrievalStore, claim: Claim) -> dict[str, Any]:
             "kind": e["action"],
             "ts": e["ts"],
             "thread_id": None,
-            "note": "",
             "evidence_id": e["evidence_id"],
             "label": LATCH_EVENT_LABELS.get(e["action"], e["action"]),
             # override 是派生标签,可在时间线上观察;不表示模型变好
             "override": e.get("override"),
             "machine_status_before": e.get("machine_status_before"),
             "run_id": e.get("run_id"),
+            # disputed 的结论进时间线,再打开时与台账同一句话
+            "reviewer_note": e.get("reviewer_note") if e.get("action") == "disputed" else None,
+            "note": (e.get("reviewer_note") or "") if e.get("action") == "disputed" else "",
         }
         for e in store.list_latch_events(claim.claim_id)
         if e["action"] != "rerun"
@@ -89,7 +112,7 @@ def project_audit(trajectory: str | Path | None) -> dict[str, Any]:
     """只读轨迹投影成审计面。不改闸,不改 Claim.status。
 
     字段:query、hits(含 scores)、attribution_ids、unknown_reason、badges、
-    claim_spans(句 id 锚,支撑句与反对句分列)。
+    claim_spans(句 id 锚,支撑句与反对句分列)、failure_buckets(产品三桶,分列)。
     scores 只抄 RAG-04 已有的 bm25 / dense / rrf / rerank;缺臂留空。
     命中行若事件里已有 as_of / patch_id / valid_from / valid_to,原样抄上。
     没有这些键时不补空键,避免改旧轨迹的命中字典。
@@ -97,18 +120,10 @@ def project_audit(trajectory: str | Path | None) -> dict[str, Any]:
     文件不是轨迹 JSONL,或没有这些字段时,对应项为空,不编造分数。
     badges 是 UiBadge 只读列表,语义见 project_ui_badges;缺字段时为 []。
     claim_spans 只读 claim_span 事件;不把命中块涂成支撑句。
+    failure_buckets 三枚标签始终分列,高亮至多对应本轨迹命中的桶,不收成一个失败。
     """
     path_text = None if trajectory is None else str(trajectory)
-    out: dict[str, Any] = {
-        "parsed": False,
-        "path": path_text,
-        "query": [],
-        "hits": [],
-        "attribution_ids": [],
-        "unknown_reason": None,
-        "badges": [],
-        "claim_spans": [],
-    }
+    out: dict[str, Any] = _empty_audit(path_text)
     if trajectory is None:
         return out
     path = Path(trajectory)
@@ -192,7 +207,11 @@ def project_audit(trajectory: str | Path | None) -> dict[str, Any]:
     from freshlatch.claim_span import project_claim_spans
 
     claim_spans = project_claim_spans(events)
-    parsed = bool(queries or hit_order or attribution or reason or claim_spans)
+    bucket_view = project_failure_buckets(replay)
+    parsed = bool(
+        queries or hit_order or attribution or reason or claim_spans
+        or bucket_view["failure_bucket_claims"]
+    )
     out["parsed"] = parsed
     out["query"] = queries
     hits: list[dict[str, Any]] = []
@@ -209,9 +228,129 @@ def project_audit(trajectory: str | Path | None) -> dict[str, Any]:
     out["attribution_ids"] = attribution
     out["unknown_reason"] = reason
     out["claim_spans"] = claim_spans
+    out["failure_bucket"] = bucket_view["failure_bucket"]
+    out["failure_buckets"] = bucket_view["failure_buckets"]
+    out["failure_bucket_claims"] = bucket_view["failure_bucket_claims"]
     # 与审计字段分开算:只读徽章,不回写 status。
     out["badges"] = project_ui_badges(path)
     return out
+
+
+def _empty_audit(path_text: str | None) -> dict[str, Any]:
+    """没有可解析轨迹时的审计壳。三桶在场但无一高亮。"""
+    return {
+        "parsed": False,
+        "path": path_text,
+        "query": [],
+        "hits": [],
+        "attribution_ids": [],
+        "unknown_reason": None,
+        "badges": [],
+        "claim_spans": [],
+        "failure_bucket": None,
+        "failure_buckets": _inactive_failure_buckets(),
+        "failure_bucket_claims": [],
+    }
+
+
+def _inactive_failure_buckets() -> list[dict[str, Any]]:
+    return [
+        {"id": bucket_id, "label": label, "active": False}
+        for bucket_id, label in PRODUCT_FAILURE_BUCKETS
+    ]
+
+
+def classify_product_failure_bucket(row: dict) -> str | None:
+    """一条复放主张 → 至多一个产品桶。没有信号时返回 None,不发明「失败」。
+
+    优先 tool_tier_2 拒,其次 grade 不够,再次检索空。
+    grade=incorrect 且 reason 为 insufficient_evidence、命中为空时归检索空。
+    """
+    denials = row.get("tool_tier_2_denials") or []
+    if isinstance(denials, list):
+        for item in denials:
+            if not isinstance(item, dict):
+                continue
+            if item.get("reason_code") != REASON_TOOL_TIER_DENIED:
+                continue
+            if item.get("tool_tier") == TOOL_TIER_2:
+                return PRODUCT_BUCKET_TOOL_TIER_2_DENIED
+    reason = row.get("reason_code")
+    if reason in (REASON_GRADE_INCORRECT_EXHAUSTED, REASON_GRADE_AMBIGUOUS):
+        return PRODUCT_BUCKET_GRADE_INSUFFICIENT
+    evidence_ids = row.get("evidence_ids") or []
+    has_ids = isinstance(evidence_ids, list) and any(
+        isinstance(item, str) and item for item in evidence_ids
+    )
+    if row.get("hits_empty") is True and not has_ids:
+        if reason in (None, REASON_INSUFFICIENT_EVIDENCE):
+            return PRODUCT_BUCKET_RETRIEVAL_EMPTY
+    return None
+
+
+def project_failure_buckets(replay: dict) -> dict[str, Any]:
+    """复放结果 → 三桶投影。多主张命中不同桶时各桶独立高亮,不合并成一个标签。"""
+    active: list[str] = []
+    claims: list[dict[str, str]] = []
+    for row in replay.get("claims") or []:
+        if not isinstance(row, dict):
+            continue
+        bucket_id = classify_product_failure_bucket(row)
+        if bucket_id is None:
+            continue
+        claim_id = row.get("claim_id")
+        if not isinstance(claim_id, str) or not claim_id:
+            continue
+        claims.append({
+            "claim_id": claim_id,
+            "bucket": bucket_id,
+            "label": _PRODUCT_BUCKET_LABELS[bucket_id],
+        })
+        if bucket_id not in active:
+            active.append(bucket_id)
+    buckets = [
+        {"id": bucket_id, "label": label, "active": bucket_id in active}
+        for bucket_id, label in PRODUCT_FAILURE_BUCKETS
+    ]
+    failure_bucket = active[0] if len(active) == 1 else None
+    return {
+        "failure_bucket": failure_bucket,
+        "failure_buckets": buckets,
+        "failure_bucket_claims": claims,
+    }
+
+
+def render_failure_buckets_html(buckets: object) -> str:
+    """三桶 HTML。标签分列;active 才加 is-active。不输出单独的「失败」标签。"""
+    import html as html_lib
+
+    rows = buckets if isinstance(buckets, list) else None
+    if not rows:
+        rows = _inactive_failure_buckets()
+    parts: list[str] = []
+    active_ids: list[str] = []
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        bucket_id = str(row.get("id") or "")
+        label = str(row.get("label") or "")
+        if not bucket_id or not label:
+            continue
+        active = bool(row.get("active"))
+        if active:
+            active_ids.append(bucket_id)
+        class_name = "failure-bucket is-active" if active else "failure-bucket"
+        parts.append(
+            f'<span class="{class_name}" data-bucket="{html_lib.escape(bucket_id)}">'
+            f"{html_lib.escape(label)}</span>"
+        )
+    data_active = html_lib.escape(",".join(active_ids))
+    return (
+        f'<div id="audit-failure-buckets" data-active="{data_active}">'
+        "<b>失败三桶</b> · "
+        + "".join(parts)
+        + "</div>"
+    )
 
 
 # 审计命中行展示的四列。过滤仍走 filter_patch_metadata,这里只读。

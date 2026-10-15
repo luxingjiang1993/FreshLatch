@@ -32,6 +32,12 @@
  .latch button.void{background:#8250df;color:#fff;border-color:#8250df}
  .latch button.rerun{background:#fff;color:#8250df}
  .latch button.renew{background:#1a7f37;color:#fff;border-color:#1a7f37}
+ .latch button.disputed,.modal .disputed-ok{background:#2563eb;color:#fff;border-color:#2563eb}
+ .failure-bucket{display:inline-block;margin:0 6px 0 0;padding:2px 8px;border-radius:6px;font-size:12px;font-weight:600}
+ .failure-bucket[data-bucket="retrieval_empty"]{background:#e0e7ff;color:#3730a3}
+ .failure-bucket[data-bucket="grade_insufficient"]{background:#ffedd5;color:#9a3412}
+ .failure-bucket[data-bucket="tool_tier_2_denied"]{background:#fce7f3;color:#9d174d}
+ .failure-bucket.is-active{outline:2px solid #2563eb}
  /* 已选待提交态:与 .renew 同特异性且靠后,才能盖过按钮本色(卡片在 .latch 内) */
  .latch button.picked,#banner button.picked{background:#fff8c5;border-color:#d4a72c;color:#8250df;cursor:default}
  #banner{background:#fff8c5;border:1px solid #d4a72c;border-radius:6px;padding:10px 12px;margin-bottom:10px}
@@ -228,8 +234,8 @@
  <div id="gate-results-body">尚无闸结果。</div>
 </div>
 <details id="claim-ledger" aria-live="polite">
- <summary>主张台账(作废 / 续命)</summary>
- <p class="hint">只读投影:invalidation_list ∪ latch_log(discard/renew)。renew 不进作废名单。与 patch_events 分缝。写路径仍唯一经 HumanLatch。</p>
+ <summary>主张台账(作废 / 续命 / disputed)</summary>
+ <p class="hint">只读投影:invalidation_list ∪ latch_log(discard/renew/disputed)。renew 与 disputed 不进作废名单。disputed 可再打开,不写冻结 gold。与 patch_events 分缝。写路径仍唯一经 HumanLatch。</p>
  <div id="claim-ledger-body">尚无人审作废/续命记录。</div>
  <button type="button" class="export-md" onclick="exportClaimLedgerMd()">导出台账 Markdown</button>
 </details>
@@ -244,6 +250,21 @@
   <p>作废后重跑不得再绿,确认?</p>
   <button class="ok" onclick="confirmVoid()">确认作废</button>
   <button onclick="closeModal()">取消</button>
+</div></div>
+<div id="disputed-modal" class="modal"><div class="box">
+  <p><b>disputed 改账</b></p>
+  <p id="disputed-claim" style="color:#57606a"></p>
+  <p>写下结论。进台账后可再打开。不改机器判定,不写冻结 gold。</p>
+  <input id="disputed-note" type="text" aria-label="disputed 结论" style="width:100%;box-sizing:border-box">
+  <div style="margin-top:8px">
+    <button class="disputed-ok" onclick="confirmDisputed()">确认改账</button>
+    <button onclick="closeDisputed()">取消</button>
+  </div>
+</div></div>
+<div id="disputed-reopen-modal" class="modal"><div class="box">
+  <p><b>再打开 disputed</b></p>
+  <div id="disputed-reopen-body"></div>
+  <div style="margin-top:8px"><button onclick="closeDisputedReopen()">关闭</button></div>
 </div></div>
 <div id="renew-modal" class="modal"><div class="box">
   <p><b>续命确认</b></p>
@@ -449,6 +470,7 @@ function renderAuditMarkup(){
      + '</div>';
   h += '<div id="audit-unknown"><b>未知原因</b> · '
      + (reason ? ('<code>'+esc(reason)+'</code>') : '无') + '</div>';
+  h += renderFailureBuckets(audit);
   h += renderClaimSpans(audit);
   if(STATE.retrieval_used != null)
     h += '<div style="margin-top:4px">检索次数(本轮): '+esc(String(STATE.retrieval_used))+'</div>';
@@ -460,8 +482,32 @@ function renderAuditMarkup(){
   h += '<div style="margin-top:6px;color:#8250df">查询、命中、判定依据、未知原因与主张句只在审计视图展开;'
      + '命中行展示 as_of、patch_id、valid_from、valid_to。'
      + '支撑句与反对句分列,按句 id 点回原文。'
-     + '职人视图用主张状态、只读徽章与作废/续命/重跑。</div>';
+     + '失败三桶分列,不收成一个失败。'
+     + '职人视图用主张状态、只读徽章与作废/续命/disputed/重跑。</div>';
   return h;
+}
+function renderFailureBuckets(audit){
+  // 三枚标签始终分列。命中的桶加 is-active,不另画一个「失败」。
+  const fallback = [
+    {id:'retrieval_empty', label:'检索空', active:false},
+    {id:'grade_insufficient', label:'grade 不够', active:false},
+    {id:'tool_tier_2_denied', label:'tool_tier_2 拒', active:false}
+  ];
+  const rows = (audit && Array.isArray(audit.failure_buckets) && audit.failure_buckets.length)
+    ? audit.failure_buckets : fallback;
+  const active = [];
+  let spans = '';
+  for(const row of rows){
+    const id = String(row.id || '');
+    const label = String(row.label || '');
+    if(!id || !label) continue;
+    const on = !!row.active;
+    if(on) active.push(id);
+    spans += '<span class="failure-bucket'+(on?' is-active':'')+'" data-bucket="'+esc(id)+'">'
+          + esc(label)+'</span>';
+  }
+  return '<div id="audit-failure-buckets" data-active="'+esc(active.join(','))+'">'
+       + '<b>失败三桶</b> · '+spans+'</div>';
 }
 function uiBadgeHtml(badge){
   // 只读三值。null 与其它字符串不渲染,避免把 status 词画成徽章。
@@ -699,7 +745,13 @@ function renderBanner(){
     } else {
       h += ' <button class="void" onclick="openVoidConfirm(&quot;'+p.claim_id+'&quot;)">作废</button>';
     }
-    h += ' ' + renewButton(p.claim_id) + '</div>';
+    h += ' ' + renewButton(p.claim_id);
+    if(act==='disputed'){
+      h += ' <span class="picked">已选:disputed 改账(待提交)</span>';
+    } else {
+      h += ' <button class="disputed" onclick="openDisputed(&quot;'+p.claim_id+'&quot;)">disputed 改账</button>';
+    }
+    h += '</div>';
   }
   h += '<div style="margin-top:10px">'
      + '<button class="void" onclick="submitDecisions()">提交人审决定('
@@ -803,6 +855,7 @@ function renderClaimLedger(){
   const entries = ledger.entries || [];
   const discardIds = ledger.discard_claim_ids || [];
   const renewIds = ledger.renew_claim_ids || [];
+  const disputedIds = ledger.disputed_claim_ids || [];
   const voidIds = ledger.invalidation_claim_ids || [];
   if(!entries.length && !voidIds.length){
     body.textContent = '尚无人审作废/续命记录。';
@@ -814,6 +867,9 @@ function renderClaimLedger(){
   h += '<div>续命 claim_id: '
      + (renewIds.length ? renewIds.map(c=>'<code>'+esc(c)+'</code>').join(' ') : '(无)')
      + '</div>';
+  h += '<div>disputed claim_id: '
+     + (disputedIds.length ? disputedIds.map(c=>'<code>'+esc(c)+'</code>').join(' ') : '(无)')
+     + '</div>';
   h += '<div>作废名单(renew 不在此列): '
      + (voidIds.length ? voidIds.map(c=>'<code>'+esc(c)+'</code>').join(' ') : '(无)')
      + '</div>';
@@ -823,6 +879,10 @@ function renderClaimLedger(){
       h += '<li><code>'+esc(e.claim_id||'')+'</code> · '+esc(e.label||e.action||'')
          + (e.ts?(' · '+esc(e.ts)):'')
          + (e.evidence_id?(' · evidence <code>'+esc(e.evidence_id)+'</code>'):'')
+         + (e.action==='disputed' && e.reviewer_note?(' · 结论 '+esc(e.reviewer_note)):'')
+         + (e.action==='disputed'
+            ? (' <button type="button" onclick="reopenDisputed(&quot;'+esc(e.claim_id||'')+'&quot;)">再打开</button>')
+            : '')
          + '</li>';
     }
     h += '</ul>';
@@ -1048,6 +1108,10 @@ function renderClaims(){
       h += renewButton(c.claim_id);  // 续命只对人审范围内的红/黄灯主张(fresh 无需续命)
       h += ' ' + renderPatchOpenButton(c);  // #200:改稿入口与 discard/renew 并存
     }
+    if((c.timeline||[]).some(t => t.kind==='disputed')){
+      h += ' <button type="button" onclick="event.stopPropagation();reopenDisputed(&quot;'
+        + c.claim_id+'&quot;)">再打开 disputed</button>';
+    }
     h += '</div>';
     h += renderPatchStrip(c);  // 条带挂在 latch 区外,仍在主张卡内
     if(c.timeline && c.timeline.length){
@@ -1180,6 +1244,49 @@ function openRenew(cid){
   document.getElementById('renew-modal').style.display = 'block';
 }
 function closeRenew(){ document.getElementById('renew-modal').style.display='none'; RENEW_CLAIM=null; }
+let DISPUTED_CLAIM = null;
+function openDisputed(cid){
+  DISPUTED_CLAIM = cid;
+  const c = STATE.claims.find(x=>x.claim_id===cid);
+  document.getElementById('disputed-claim').textContent = cid + ': ' + (c?c.statement:'');
+  document.getElementById('disputed-note').value = '';
+  document.getElementById('disputed-modal').style.display = 'block';
+}
+function closeDisputed(){ document.getElementById('disputed-modal').style.display='none'; DISPUTED_CLAIM=null; }
+function confirmDisputed(){
+  const note = (document.getElementById('disputed-note').value || '').trim();
+  if(!DISPUTED_CLAIM){ closeDisputed(); return; }
+  if(!note){
+    document.getElementById('status').textContent = 'disputed 必须写下结论';
+    return;
+  }
+  PENDING_DECISIONS = PENDING_DECISIONS.filter(x=>x.claim_id!==DISPUTED_CLAIM);
+  PENDING_DECISIONS.push({claim_id: DISPUTED_CLAIM, action:'disputed', reviewer_note: note});
+  closeDisputed();
+  renderClaims();
+}
+function closeDisputedReopen(){
+  document.getElementById('disputed-reopen-modal').style.display = 'none';
+}
+async function reopenDisputed(cid){
+  const j = await (await fetch('/api/latch/reopen?claim_id='+encodeURIComponent(cid))).json();
+  let h = '';
+  if(!j.reopenable){
+    h = '<p>尚无 disputed 结论。</p>';
+  } else {
+    h += '<p><b>结论</b> · '+esc(String(j.conclusion||''))+'</p>';
+    h += '<div><b>审计轨迹</b></div><ul>';
+    for(const row of (j.audit_trail||[])){
+      h += '<li>'+esc(String(row.ts||''))+' '+esc(String(row.label||row.action||''))
+         + (row.reviewer_note?(' · '+esc(String(row.reviewer_note))):'')
+         + (row.evidence_id?(' · '+esc(String(row.evidence_id))):'')
+         + '</li>';
+    }
+    h += '</ul>';
+  }
+  document.getElementById('disputed-reopen-body').innerHTML = h;
+  document.getElementById('disputed-reopen-modal').style.display = 'block';
+}
 function previewRenewEvidence(){  // 续命证据 id 必须可点回(#23 红线:不得凭印象续命)
   const eid = document.getElementById('renew-evidence').value;
   const bare = (eid.split('@')[0]||'').split('#');

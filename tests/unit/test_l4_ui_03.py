@@ -45,7 +45,7 @@ _DO_NOT_TOUCH = (
     "data/eval/cite_sentence.json",
     "data/eval/temporal_new_over_old.json",
     "data/eval/gold.json",
-    "src/freshlatch/latch/pipeline.py",
+    # L4-B-05 扩展人审图的 disputed。冻结 gold / PREREG 仍在本列表。
 )
 
 

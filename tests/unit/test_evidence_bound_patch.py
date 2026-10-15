@@ -404,8 +404,8 @@ def test_confirm_rejects_fresh_without_writing(tmp_path: Path):
 
 
 def test_valid_actions_still_discard_renew_only():
-    """HumanLatch VALID_ACTIONS 仍仅为 discard|renew。"""
-    assert VALID_ACTIONS == ("discard", "renew")
+    """补丁动词不进 HumanLatch。disputed 是人审台账动词,不是 apply_patch。"""
+    assert VALID_ACTIONS == ("discard", "renew", "disputed")
     assert "apply_patch" not in VALID_ACTIONS
     assert "propose_patch" not in VALID_ACTIONS
     assert "confirm_patch" not in VALID_ACTIONS

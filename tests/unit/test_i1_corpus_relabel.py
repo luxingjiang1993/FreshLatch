@@ -85,5 +85,5 @@ def test_production_enums_still_untouched_after_relabel():
     for bucket in ("找不到", "找错", "没用上"):
         assert bucket not in VALID_ACTIONS
         assert bucket not in DISPOSITIONS
-    assert VALID_ACTIONS == ("discard", "renew")
+    assert VALID_ACTIONS == ("discard", "renew", "disputed")
     assert DISPOSITIONS == frozenset({"可发", "需补丁", "勿发"})

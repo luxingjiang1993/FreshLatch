@@ -65,6 +65,7 @@ from freshlatch.sheet import (  # noqa: E402
     project_audit,
     project_claim,
     project_ui_badges,
+    render_failure_buckets_html,
 )
 from freshlatch.store.checksum import make_checksum_fn  # noqa: E402
 from freshlatch.gates.basis_rot import rot_claims  # noqa: E402
@@ -762,6 +763,12 @@ def api_latch_status() -> dict:
     return {"latch": _state["latch"]}
 
 
+@app.get("/api/latch/reopen")
+def api_latch_reopen(claim_id: str = Query(...)) -> dict:
+    """再打开 disputed 结论与审计轨迹。只读,不写冻结 gold / floors。"""
+    return _latch().reopen_disputed(claim_id)
+
+
 class ProposePatchRequest(BaseModel):
     """#200 改稿暂存:after_text + 可选 t1 草案;不改正文、不写正式账本。"""
 
@@ -1037,6 +1044,7 @@ def _render_audit_body(audit: dict) -> str:
         + f'<div id="audit-hits"><b>命中</b> · {hits_html}</div>'
         + f'<div id="audit-attribution"><b>判定依据</b> · {attribution_html}</div>'
         + f'<div id="audit-unknown"><b>未知原因</b> · {reason_html}</div>'
+        + render_failure_buckets_html(audit.get("failure_buckets"))
         + _render_claim_spans(audit.get("claim_spans") or [])
     )
 
