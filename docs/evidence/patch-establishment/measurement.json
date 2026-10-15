@@ -1,0 +1,58 @@
+{
+  "conclusion_dir": "docs/evidence/patch-establishment/",
+  "criteria": {
+    "false_positive": [
+      "FP-UNMEASURED",
+      "FP-B04",
+      "FP-REJUDGE",
+      "FP-SECOND-Y",
+      "FP-L5",
+      "FP-SUPERIOR",
+      "FP-FLOORS",
+      "FP-SESOI",
+      "FP-NULL-AS-ZERO"
+    ],
+    "numeric_line": "unregistered",
+    "sesoi": null,
+    "stop": [
+      "STOP-UNRUN",
+      "STOP-FAIL",
+      "STOP-PASS",
+      "STOP-SAME-YARDSTICK"
+    ]
+  },
+  "decoding": {
+    "model": null,
+    "note": "scaffold, no LLM, temperature/seed/model unused",
+    "seed": null,
+    "temperature": null
+  },
+  "establishment": {
+    "ci95_high": null,
+    "ci95_low": null,
+    "counted_as_pass": false,
+    "false_accept_rate": null,
+    "k": null,
+    "n": null,
+    "numeric_line": "unregistered",
+    "point_estimate": null,
+    "sesoi": null,
+    "status": "unmeasured"
+  },
+  "firewall": {
+    "b04_counts_as_establishment": false,
+    "claims_rarr_kpr_superiority": false,
+    "floors_unchanged": true,
+    "historical_cells_rewritten": false,
+    "historical_result_y": "丙",
+    "product_l5": false,
+    "production_arm_unchanged": true,
+    "second_formal_y": false
+  },
+  "level": "scaffold",
+  "measurement_status": "unmeasured",
+  "production_retrieval_mode": "hybrid+rerank",
+  "replaces_frozen_baseline": false,
+  "run_status": "unrun",
+  "schema_version": "l4-c-04-v1"
+}
