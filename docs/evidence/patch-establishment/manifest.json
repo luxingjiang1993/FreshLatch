@@ -1,0 +1,192 @@
+{
+  "criteria": {
+    "false_positive": [
+      "FP-UNMEASURED",
+      "FP-B04",
+      "FP-REJUDGE",
+      "FP-SECOND-Y",
+      "FP-L5",
+      "FP-SUPERIOR",
+      "FP-FLOORS",
+      "FP-SESOI",
+      "FP-NULL-AS-ZERO"
+    ],
+    "numeric_line": "unregistered",
+    "sesoi": null,
+    "stop": [
+      "STOP-UNRUN",
+      "STOP-FAIL",
+      "STOP-PASS",
+      "STOP-SAME-YARDSTICK"
+    ]
+  },
+  "decoding": {
+    "model": null,
+    "note": "scaffold, no LLM, temperature/seed/model unused",
+    "seed": null,
+    "temperature": null
+  },
+  "establishment": {
+    "ci95_high": null,
+    "ci95_low": null,
+    "counted_as_pass": false,
+    "false_accept_rate": null,
+    "k": null,
+    "n": null,
+    "numeric_line": "unregistered",
+    "point_estimate": null,
+    "sesoi": null,
+    "status": "unmeasured"
+  },
+  "firewall": {
+    "b04_counts_as_establishment": false,
+    "claims_rarr_kpr_superiority": false,
+    "floors_unchanged": true,
+    "historical_cells_rewritten": false,
+    "historical_result_y": "丙",
+    "product_l5": false,
+    "production_arm_unchanged": true,
+    "second_formal_y": false
+  },
+  "level": "scaffold",
+  "manifest_status": "schema_frozen_unmeasured",
+  "model": {
+    "generator_model": null,
+    "generator_sha256": null,
+    "measurement_status": "unmeasured",
+    "nli_model": null,
+    "nli_sha256": null,
+    "seed": null,
+    "temperature": null
+  },
+  "production_retrieval_mode": "hybrid+rerank",
+  "replaces_frozen_baseline": false,
+  "retrieval": {
+    "embedding_dim": 512,
+    "embedding_model": "BAAI/bge-small-zh-v1.5",
+    "fastembed": "0.8.1",
+    "fusion": "RRF",
+    "mode": "hybrid+rerank",
+    "production_default_unchanged": true,
+    "rerank_k": 10,
+    "rerank_model": "BAAI/bge-reranker-base",
+    "rrf_k": 60,
+    "weight_sha256": null
+  },
+  "schema_version": "l4-c-04-v1",
+  "sources": {
+    "b04_fixtures": {
+      "counts_as_establishment": false,
+      "files": [
+        {
+          "counts_as_establishment": false,
+          "path": "tests/fixtures/l4_b_04/b04-price-blank-filler.md",
+          "sha256": "625b9035c87c7d6b809235de42f0d076a7efa4afe74d078215fc940b0a799044"
+        },
+        {
+          "counts_as_establishment": false,
+          "path": "tests/fixtures/l4_b_04/b04-price-blank.md",
+          "sha256": "9f70afcd7bbd8f3fe8dfbe8f111c4fdb3925f97106942ed7fb6fd36cfb6dbea8"
+        },
+        {
+          "counts_as_establishment": false,
+          "path": "tests/fixtures/l4_b_04/b04-price-drop.md",
+          "sha256": "dd20ac712acb5b09ecf484685892da675085241d7692732491c51182709d77d4"
+        },
+        {
+          "counts_as_establishment": false,
+          "path": "tests/fixtures/l4_b_04/b04-price-expired.md",
+          "sha256": "265abc6a58e4a4978d02a0781ed14a263e9b92d3aaa985eb034392d91929ebdd"
+        },
+        {
+          "counts_as_establishment": false,
+          "path": "tests/fixtures/l4_b_04/b04-price-keep-t0.md",
+          "sha256": "57e6df6a11db689229df6caee80ae89c13f618fc505923f5e28ab6cc8519205a"
+        },
+        {
+          "counts_as_establishment": false,
+          "path": "tests/fixtures/l4_b_04/b04-price-keep.md",
+          "sha256": "59ff45c7fbd3117063e8cee9dc3ec607fa2149d4d3fb286eba88e023b0f24ed8"
+        }
+      ],
+      "path": "tests/fixtures/l4_b_04",
+      "role": "fixture_boundary",
+      "sha256": "0a1bad1ba84e2dcc3a992de1f9f8d59fc25c8bb5eed0fe750d7ae9b0245dd920"
+    },
+    "experiment_corpus": {
+      "counts_as_establishment": false,
+      "measurement_status": "unmeasured",
+      "path": null,
+      "role": "unmeasured",
+      "sha256": null
+    },
+    "frozen_per_query": {
+      "counts_as_establishment": false,
+      "path": "docs/evidence/neural-rerank/per-query.json",
+      "role": "frozen_read_only",
+      "sha256": "2c4df07089eeb33ab5887c588a1907bc3caa5447f9bcdde09280d6b8555f1b4c"
+    },
+    "frozen_summary": {
+      "counts_as_establishment": false,
+      "path": "docs/evidence/neural-rerank/summary.json",
+      "role": "frozen_read_only",
+      "sha256": "8fb4f1271b844c979b28bf351cf22ecbad354e3f5f35f7d2e1e7d760efb8e526"
+    },
+    "gold": {
+      "counts_as_establishment": false,
+      "files": [
+        {
+          "counts_as_establishment": false,
+          "path": "data/eval/gold.json",
+          "role": "frozen_read_only",
+          "sha256": "28b8b88c41fb2a89794efe063de2948605f513ca10701cfc081c4ad144a939c2"
+        },
+        {
+          "counts_as_establishment": false,
+          "path": "data/eval/guard_should.json",
+          "role": "frozen_read_only",
+          "sha256": "63144c205f02ebbde88b9dd95217dfc9a1d69f6813590d1dd4818481d50022de"
+        },
+        {
+          "counts_as_establishment": false,
+          "path": "data/eval/cite_sentence.json",
+          "role": "frozen_read_only",
+          "sha256": "7b299a0bce8589bc2fd810a706572be27b4409ab03bc8a6c6b4d8024ee65bc94"
+        },
+        {
+          "counts_as_establishment": false,
+          "path": "data/eval/temporal_new_over_old.json",
+          "role": "frozen_read_only",
+          "sha256": "3a1b959a6aa63b89d10fa883982c11b7b7234aacdb537d754a1587010e40c8a0"
+        }
+      ],
+      "role": "frozen_read_only"
+    },
+    "prereg_y": {
+      "counts_as_establishment": false,
+      "historical_cell": "read_only",
+      "path": "docs/evidence/patch-events/PREREG-Y.md",
+      "role": "historical_read_only",
+      "sha256": "0381aa4fd3f1247f5d242a16c9151571292f765bb90be182946248def59cc4c4"
+    },
+    "quality_gate_prereg": {
+      "counts_as_establishment": false,
+      "path": "docs/evidence/quality-gate/PREREG.md",
+      "role": "historical_read_only",
+      "sha256": "3d01f8a9481effab0506762853789d568451701d6e438b8615dc5a696af7f72c"
+    },
+    "result_y": {
+      "counts_as_establishment": false,
+      "historical_cell": "丙",
+      "path": "docs/evidence/patch-events/RESULT-Y.md",
+      "role": "historical_read_only",
+      "sha256": "b58d7023b7f7359ec4fae1c32673efaaa56f969d184754f69890b2ec2fc22705"
+    },
+    "x1_questions": {
+      "counts_as_establishment": false,
+      "path": "data/exp/x1/questions.json",
+      "role": "frozen_read_only",
+      "sha256": "2cd7c5fb1e14859049c148e4dafc95b4d3c0abb4fa1080965dcc57b0d57c73fe"
+    }
+  }
+}

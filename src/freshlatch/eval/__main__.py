@@ -1,4 +1,4 @@
-"""CLI:`python -m freshlatch.eval run|control|control-c|report|quality-gate|arm-table|temporal-prereg`(§4.1)。
+"""CLI:`python -m freshlatch.eval run|control|control-c|report|quality-gate|arm-table|temporal-prereg|patch-establishment`(§4.1)。
 
 run --gold data/eval/gold.json [--runs N]   金标对账(LLM,手动/milestone 触发,不进 CI)
 control                                      无工具假绿对照(旧仪器;判 alive = 假绿,对照成立)
@@ -137,6 +137,21 @@ def build_parser(pack: PackPaths | None = None) -> argparse.ArgumentParser:
         help="权重路径。文件在也不打分：本期没有打分器",
     )
 
+    p_patch = sub.add_parser(
+        "patch-establishment",
+        help="成立 patch 实验的空 manifest 与空测量（未开跑，不打分）",
+    )
+    p_patch.add_argument(
+        "--out",
+        default="docs/evidence/patch-establishment",
+        help="只写 manifest.json 与 measurement.json。不得指向冻结目录",
+    )
+    p_patch.add_argument(
+        "--root",
+        default=".",
+        help="仓库根。预注册页与锚文件相对此目录读取",
+    )
+
     return ap
 
 
@@ -189,6 +204,25 @@ def main(argv: list[str] | None = None) -> None:
             f"status={payload['level']}"
         )
         print(f"json: {payload['json_path']}")
+        return
+
+    if args.cmd == "patch-establishment":
+        from freshlatch.eval.patch_establishment import write_scaffold
+
+        try:
+            payload = write_scaffold(out_dir=Path(args.out), root=Path(args.root))
+        except ValueError as exc:
+            print(str(exc), file=sys.stderr)
+            raise SystemExit(1) from exc
+        print(
+            f"patch-establishment run_status={payload['run_status']} "
+            f"measurement_status={payload['measurement_status']} "
+            f"establishment={payload['establishment']} "
+            f"counted_as_pass={str(payload['counted_as_pass']).lower()} "
+            f"product_l5={str(payload['product_l5']).lower()}"
+        )
+        print(f"manifest: {payload['paths']['manifest.json']}")
+        print(f"measurement: {payload['paths']['measurement.json']}")
         return
 
     if args.cmd == "report":
