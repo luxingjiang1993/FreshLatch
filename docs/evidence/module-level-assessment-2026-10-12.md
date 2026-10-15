@@ -1,12 +1,13 @@
 # FreshLatch 模块水平评估（2026-10-12 原文 · 2026-10-15 回写）
 
-> **As-of 2026-10-15 / HEAD `9af5af00`。本横幅替换下文过期的 as-is L3 与 If-landed 推测，作为 A 层已落地后的现行结论。** L4U-DOC-01。
+> **As-of 2026-10-15 / A 层针 HEAD `9af5af00`。C-04 正式针 HEAD `eab2f51`（#639）。本横幅替换下文过期的 as-is L3 与 If-landed 推测，作为 A 层已落地后的现行结论；C-04 以 `docs/evidence/patch-establishment/RESULT.md` 为准。** L4U-DOC-01。
 >
 > - 代码基线：`main` @ `9af5af00ef85ad693bc3877299f2ac978ce75f2e`（`docs(evidence): M8 A-layer checklist 2026-10-14 (#621)`，**M8 PASS**）。
 > - 父提交：`9cc116d975e06246c6c9d61db8a173364d16a73b`（`feat(skills): L4-SK-02 中文业务 skill 包 (#620)`）。
-> - **工程结论：L4**（可回归的拒答产品）。主链木桶 min(Function Call, RAG, AI Agent) = L4。
+> - **工程结论：工程 L4（A-layer）**（可回归拒答原型）。主链木桶 min(Function Call, RAG, AI Agent) = L4。该档不是 Meta E4，不是职级 L4，不是「生产 L4 已达标」。
 > - **Skill：L3**。hook 样板默认不启用；四个中文业务包在盘、未挂 Runner。Skill 不拉低主链木桶，也不单独把整体抬到更高档。
-> - **不是 L5。** B-01…B-05 与 C-01…C-04 未做。工程档停在 L4，不把产品写成已经对上头部产品。
+> - **不是 L5。** C-04 正式针已跑且 `not_established`，成立格未通过。本回写不重审 B-01…B-05 与 C-01…C-03 的勾选，也不把产品写成已经对上头部产品。
+> - **C-04（#639，HEAD `eab2f51`）：** `run_status=ran`。`establishment.status=not_established`。T−C 点估计约 0.152，95% CI 下界 ≤ 0。`counted_as_pass=false`。`product_l5=false`。`sesoi=null`。`second_formal_y=false`。精确数字只以 [`docs/evidence/patch-establishment/RESULT.md`](patch-establishment/RESULT.md) 为准。本页不发明 SESOI。这不是注册通过，不是产品 L5，不是路线 Y 的另一次正式主跑。
 > - 注册 G1 / A1 / T1 / R1 仍是 `status=TBD`、`counted_as_pass=false`。冻结 `value=` 是无回归锁上的点估计，不是产品拒绝率、产品引用率或产品时序准确率。token 以 [`m8-a-layer-checklist-2026-10-14.md`](m8-a-layer-checklist-2026-10-14.md) §1 为准。本回写不把 `counted_as_pass` 改成 true，不发明 SESOI。
 > - RESULT-Y：**丙**（T−C 不成立）。不改判乙。不得称优于 RARR / KPR。
 > - A 层 #602–#620 已合，M8 清单是 #621。**A-EV-03**（轨迹目录 → e2e P95 与 `retrieval_fallback_rate`）仍未实现。它不挡 M8：L4 要求的「SLI 或 ablation」已由 L4-RAG-04 / #605 的 rerank ON/OFF 记录满足一腿。
@@ -21,9 +22,9 @@
 
 ## 1. 执行摘要
 
-**HEAD `9af5af00`：工程 L4。** 对外可说的是「可回归的拒答产品」。A 层主链已合（#602–#620），M8 #621 PASS。证据不足可以在 retrieve 边拒，非法调用有 typed reason 与有限自纠，`tool_tier_0/1/2` 把越权调用拒下，失败轨迹可复放，审计面能看 Query→Hits→Attribution 与 `verified|partial|abstain`。生产检索默认仍是 `hybrid+rerank`（BM25 + dense，RRF(k=60)，neural rerank top-10）。
+**A 层针 `9af5af00`：工程 L4（A-layer）。** 对外可说的是「可回归拒答原型」。不得说成 Meta E4、职级 L4、硅谷 L4，或「生产 L4 已达标」。A 层主链已合（#602–#620），M8 #621 PASS。证据不足可以在 retrieve 边拒，非法调用有 typed reason 与有限自纠，`tool_tier_0/1/2` 把越权调用拒下，失败轨迹可复放，审计面能看 Query→Hits→Attribution 与 `verified|partial|abstain`。生产检索默认仍是 `hybrid+rerank`（BM25 + dense，RRF(k=60)，neural rerank top-10）。
 
-**Skill 是 L3，整体不是 L5。** 业务包在盘未挂 Runner，Guards hook 样板默认 off。金融级数字闸、冲突拒答、句级归因、面板可见的 patch / 有效期、`disputed` 人审改账都还在 B 层，未做。训练型时序检索、在线 claim 监控、多租户 ACL、成立的 patch 实验都还在 C 层，未做。注册 G1 / A1 / T1 / R1 仍是 `status=TBD`、`counted_as_pass=false`。RESULT-Y 仍是丙。
+**Skill 是 L3，整体不是 L5。** 业务包在盘未挂 Runner，Guards hook 样板默认 off。相对 A 层针 `9af5af00`，金融级数字闸、冲突拒答、句级归因、面板可见的 patch / 有效期、`disputed` 人审改账当时还在 B 层；训练型时序检索、在线 claim 监控、多租户 ACL 当时还在 C 层。本回写不重审这七项。成立的 patch 实验（C-04）在 HEAD `eab2f51` 已跑，`establishment.status=not_established`，见 [`docs/evidence/patch-establishment/RESULT.md`](patch-establishment/RESULT.md)。注册 G1 / A1 / T1 / R1 仍是 `status=TBD`、`counted_as_pass=false`。RESULT-Y 仍是丙。本针 `counted_as_pass=false`，`product_l5=false`，`sesoi=null`，`second_formal_y=false`。
 
 **A-EV-03 仍开着。** `src/` 里没有把轨迹目录收成 `e2e_p95_ms` 与 `retrieval_fallback_rate` 的纯函数。这是文档与实现都承认的软缺口，不把工程档打回 L3。
 
@@ -40,6 +41,8 @@
 | L3 工程化 MVP | 有 schema / 测试 / 证据字段，核心路径 fail-closed 或可拒答 |
 | L4 生产向团队产品 | 可回归、可审计、有 SLI/ablation、权限分层落地 |
 | L5 领域标杆 | 时序 / patch / 金融级证据闸门与 HITL 成熟，可对外对标头部产品 |
+
+表内「L4 生产向团队产品」是 2026-10-12 的标尺名。本页已落地的 A 层只称可回归拒答原型 / 工程 L4（A-layer）。该名称不是「生产 L4 已达标」，也不是 Meta E4 或职级 L4。
 
 ### 2.2 五轴（每模块都评）
 
@@ -109,8 +112,8 @@ HEAD 列是 2026-10-15 现行档。2026-10-12 的 as-is / if-landed 两列只保
 | RAG | L3 | L4 | **L4** | 无注入时 CRAG grade 偏「有无 `@T1`」，learned grader 非 A 层；面板可见 patch / 有效期是 B-04，未做；训练型时序检索是 C-01，未做 |
 | AI Agent | L3 | L4 | **L4** | 审计面指三桶 + `disputed` 是 B-05，未做；`token_usage` 落盘未核为本回写范围 |
 | UI | L3 | L4 | **L4** | 句级 span 是 B-03，未做；面板露 `patch_id` / 有效期是 B-04，未做；无多用户权限面（C-03） |
-| Eval / Evidence | L3 | L4 | **L4（A 层；注册分仍 TBD）** | A-EV-03 SLI 聚合未实现；注册 G1/A1/T1/R1 仍 `status=TBD` / `counted_as_pass=false`；RESULT-Y 仍丙 |
-| 主链木桶 | L3 | L4 | **L4** | 不是 L5。B、C 未齐 |
+| Eval / Evidence | L3 | L4 | **L4（A 层；注册分仍 TBD）** | A-EV-03 相对 A 层针未重审；注册 G1/A1/T1/R1 仍 `status=TBD` / `counted_as_pass=false`；RESULT-Y 仍丙；C-04 已跑且 `not_established` |
+| 主链木桶 | L3 | L4 | **工程 L4（A-layer）** | 不是 L5。不是 Meta E4。C-04 已跑且 `not_established` |
 
 2026-10-12 反事实（只落地来源 A 或只落地来源 B）的模块档，综合档、木桶。它解释当时的票序取舍，不描述 HEAD：
 
@@ -248,11 +251,11 @@ If-landed：在现有复验单上加四段 walkthrough，abstain 必须露出 re
 
 ### 4.6 Eval / Evidence · 2026-10-12 快照（当时 as-is L3 / if-landed L4）
 
-> HEAD 现行 **L4（A 层）**，注册分仍 TBD。指针：L4-EV-T1-CASE #603、L4-FC-CITE #607、L4-EV-02 #608、L4-EV-01 #617（`replaces_frozen_baseline=false`）。A-EV-03 未做。下文表格仍是 `a7505d6` 快照。G1/A1/T1/R1 的 `value=` 不是产品率。
+> HEAD 现行 **工程 L4（A-layer）**，注册分仍 TBD。指针：L4-EV-T1-CASE #603、L4-FC-CITE #607、L4-EV-02 #608、L4-EV-01 #617（`replaces_frozen_baseline=false`）。A-EV-03 相对 A 层针未重审。下文表格仍是 `a7505d6` 快照。G1/A1/T1/R1 的 `value=` 不是产品率。C-04 正式针（#639）`run_status=ran`，`establishment.status=not_established`，见 [`docs/evidence/patch-establishment/RESULT.md`](patch-establishment/RESULT.md)，不改注册分。
 
 评测入口是 `python -m freshlatch.eval`（`eval/__main__.py`）：`run`、`control`、`retrieve` 等。`retrieve` 能出 Recall / MRR。假绿对照是无工具基线（ADR-0005）。CI 绿灯表示不变量没破。模型表现绿走手动金标 runner，不进这次 GitHub Actions。
 
-路线 Y 是另一套仪器。`RESULT-Y.md` 抄录结论：结果丙；T−C 未过 Y 尺。预注册在 `PREREG-Y.md`。本评估未复跑，未测到新的 false-accept。丙是已落档负结果，说明止损句事先写死并被遵守；它不证明检索或复验闸达到 L5。
+路线 Y 是另一套仪器。`RESULT-Y.md` 抄录结论：结果丙；T−C 未过 Y 尺。预注册在 `PREREG-Y.md`。本评估未复跑路线 Y。C-04 正式针的 T−C 点估计约 0.152、95% CI 下界 ≤ 0，只记在 [`docs/evidence/patch-establishment/RESULT.md`](patch-establishment/RESULT.md)：`run_status=ran`，`establishment.status=not_established`，`counted_as_pass=false`，`product_l5=false`，`sesoi=null`，`second_formal_y=false`。不得把该针写成路线 Y 的另一次正式主跑，不得改判丙，不得标 L5。丙是已落档负结果，说明止损句事先写死并被遵守；它不证明检索或复验闸达到 L5。
 
 生产观测六项与 phase-2（faithfulness 抽检、失败归因、人机校准）是协议与空表。周报骨架写明样本不足时留占位，禁止把数字写回 `RESULT-Y`。`src/` 无对应聚合实现。
 
@@ -270,7 +273,7 @@ If-landed：冻结一小撮中文 golden；Recall@k 与 MRR 按臂分列进 CI�
 
 ## 5. 面试 / 作品集口径
 
-受众：求职 mid-level RAG / Agent。HEAD 上能讲的是文首工程 L4 与已落档的测量纪律（注册仍 TBD，RESULT-Y 仍丙）。不能讲的是 B/C 未做项，以及把注册 `value=` 说成产品率。§5.1–§5.3 正文里未被勘误点名的句子，仍是 2026-10-12 口径。
+受众：求职 mid-level RAG / Agent。能讲的是可回归拒答原型 / 工程 L4（A-layer），以及已落档的测量纪律（注册仍 TBD，RESULT-Y 仍丙，C-04 正式针 `not_established`）。不能把工程 L4 讲成 Meta E4、职级 L4、硅谷 L4 或「生产 L4 已达标」。不能把 C-04 讲成成立、L5、注册通过或第二次正式 Y。不能把注册 `value=` 说成产品率。§5.1–§5.3 正文里未被勘误点名的句子，仍是 2026-10-12 口径。
 
 ### 5.1 能讲
 
@@ -290,7 +293,8 @@ If-landed：冻结一小撮中文 golden；Recall@k 与 MRR 按臂分列进 CI�
 - 「references 不会加载、仓库里没有 hook 样板」在 HEAD 上不再成立（#618、#619）。仍然不能说 Skill 是 L4：样板默认 off，四个业务包未挂 Runner（#620）。
 - 「审计 UI 只能看轨迹路径」在 HEAD 上不再成立（#615、#616）。仍然不能说句级 span（B-03）或 `disputed`（B-05）。
 - 不能把注册 G1/A1/T1/R1 的 `value=` 或冒烟集历史 Recall 说成此次新产品率。本回写未测到新的 P95、fallback rate、faithfulness。A-EV-03 未做。
-- 不能说整体是 L5，也不能说「对标头部产品已成立」。code-computed 数字闸与成熟 HITL（`disputed`）不在本仓。RESULT-Y 仍是丙。
+- 不能说整体是 L5，也不能说「对标头部产品已成立」。code-computed 数字闸与成熟 HITL（`disputed`）相对 A 层针不在当时的勾选里。RESULT-Y 仍是丙。
+- 不能把工程 L4（A-layer）说成 Meta E4、硅谷职级 L4 或「生产 L4 已达标」。C-04 正式针已跑：T−C 点估计约 0.152，95% CI 下界 ≤ 0，`counted_as_pass=false`，`product_l5=false`，`sesoi=null`。见 [`docs/evidence/patch-establishment/RESULT.md`](patch-establishment/RESULT.md)。不得发明 SESOI。不得把该针说成注册通过或第二次正式 Y。
 
 2026-10-12 原文禁句（已被上列勘误替换的，不要再当 HEAD 口径）：
 
@@ -304,7 +308,7 @@ If-landed：冻结一小撮中文 golden；Recall@k 与 MRR 按臂分列进 CI�
 
 ### 5.3 作品集里怎么放档位
 
-对外一句话用文首：工程 L4，Skill L3，不是 L5。不要再用「现状 L3，落地后才 L4」。UI 的 2026-10-12 观测轴 L2 是落地前快照。把 #580 称为「另一份未合并的只读架构笔记」，不要写成已合并设计。
+对外一句话用文首：可回归拒答原型 / 工程 L4（A-layer），Skill L3，不是 L5。面试不得声称 Meta E4 等价。C-04 是 `not_established`，不是第二次正式 Y。不要再用「现状 L3，落地后才 L4」。UI 的 2026-10-12 观测轴 L2 是落地前快照。把 #580 称为「另一份未合并的只读架构笔记」，不要写成已合并设计。
 
 ## 6. 风险：只做 UI / 讲解、不做闸门
 
