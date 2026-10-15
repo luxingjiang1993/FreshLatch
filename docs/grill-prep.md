@@ -500,7 +500,7 @@ BOI / GenAI 暂行办法 / 个保审计办法 — 见会话记录；适合 `regu
 | **Verify+** | Gate + 入库 + 报告级汇总 + 带确认改稿 + 薄对话 |
 | **Studio** | 多工作站外壳；冻结；须穿同一 Gate |
 | **disposition（包结论）** | 可发 / 需补丁 / 勿发（聚合层） |
-| **retrieval arm** | BM25 / dense / hybrid / rerank；生产默认 BM25 |
+| **retrieval arm** | BM25 / dense / hybrid / hybrid+rerank；生产默认 `hybrid+rerank`（本地 `BAAI/bge-reranker-base` 重排 hybrid top-10；一键回退 `set_retrieval_switch("bm25")`）→ **已迁 CONTEXT** |
 | **HumanLatch** | 人审状态机与误判样本驱动说明（I1 将钉 corpus 形态） |
 | **失败三分法 / 漏拦·误拦** | **评测·答辩标签**（非生产 Gate 枚举）；定义与映射见 I1 ADR/评估；corpus 在 `docs/evidence/i1/` |
 | **Evidence-bound patch** | 引用 ⊆ 已入库 T1 的**整条主张正文替换**；人确认才应用；强制再验；产品路径恒 `arm=T`（对外少用 proof-carrying）→ **已迁 CONTEXT / ADR-0029** |
