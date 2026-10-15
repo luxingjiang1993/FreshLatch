@@ -103,6 +103,8 @@ PYTHONPATH=src python scripts/smoke_model_resolve.py --profile both
 
 单测 `tests/unit/test_model_profile.py` 覆盖解析本身。`tests/unit/test_smoke_model_resolve.py` 在进程内调用冒烟 `main`，不要求 LM Studio。
 
+密钥是否在环境里、以及可选的 GET `/models`，见 [`model-connectivity.md`](model-connectivity.md)（S6）。解析冒烟本身仍然不发网络。
+
 ## 不要动
 
-本切换不改 floors、gold、x1 调用点、`PRODUCTION_RETRIEVAL_MODE`，不写 C-04 RESULT，不发明 SESOI。适配分析（S5）、连通性 HTTP 探针（S6）、RESULT 写入闸（S7）不在本页。
+本切换不改 floors、gold、x1 调用点、`PRODUCTION_RETRIEVAL_MODE`，不写 C-04 RESULT，不发明 SESOI。适配分析见 [`model-fit-report.md`](model-fit-report.md)（S5）。连通性体检见 [`model-connectivity.md`](model-connectivity.md)（S6）。正式跑前的 cloud profile 闸是 S7，不在本页。
