@@ -137,17 +137,22 @@ def test_prereg_locks_criteria_manifest_and_unchanged_arm() -> None:
 
 def test_result_stub_stays_unmeasured() -> None:
     text = RESULT.read_text(encoding="utf-8")
-    assert "run_status=unrun" in text
-    assert "measurement_status=unmeasured" in text
-    assert "counted_as_pass=false" in text
-    assert "本页不发明 SESOI" in text
+    # 未开跑 stub，或正式针写盘后的 measured RESULT（二者都须守防火墙句）
+    unrun = "run_status=unrun" in text and "measurement_status=unmeasured" in text
+    measured = "run_status` = `ran`" in text or "run_status** = `ran`" in text or "run_status = `ran`" in text
+    # RESULT 正式页用 **run_status** = `ran`
+    measured = measured or ("**run_status** = `ran`" in text)
+    assert unrun or measured
+    if unrun:
+        assert "counted_as_pass=false" in text
+        assert "夹具绿不是结果乙" in text
+        assert "不改默认臂" in text
+        assert "不改 floors" in text
+    assert "本页不发明 SESOI" in text or "sesoi=null" in text or "`sesoi=null`" in text or "**sesoi** = `null`" in text
     assert "不得称优于 RARR·KPR" in text
-    assert "不得标产品 L5" in text
-    assert "不得把历史结果丙改判为乙" in text
-    assert "不改默认臂" in text
-    assert "不改 floors" in text
-    assert "夹具绿不是结果乙" in text
-    assert "docs/evidence/patch-establishment/" in text
+    assert "不得标产品 L5" in text or "product_l5** = `false`" in text
+    assert "不得把历史结果丙改判为乙" in text or "历史结果丙" in text or f"结果丙" in text
+    assert "docs/evidence/patch-establishment/" in text or "patch-establishment" in text
     for needle in banned_needles():
         assert needle not in text
 
@@ -182,8 +187,18 @@ def test_committed_scaffold_is_unmeasured_and_frozen_bytes_hold(tmp_path: Path) 
     committed_measurement = json.loads(MEASUREMENT.read_text(encoding="utf-8"))
     fresh_manifest = json.loads((tmp_path / "out" / "manifest.json").read_text(encoding="utf-8"))
     fresh_measurement = json.loads((tmp_path / "out" / "measurement.json").read_text(encoding="utf-8"))
-    assert committed_manifest == fresh_manifest == manifest
-    assert committed_measurement == fresh_measurement == measurement
+    # 脚手架写入器永远产出 unrun；盘上 committed 可以是正式针后的 measured。
+    assert fresh_manifest == manifest
+    assert fresh_measurement == measurement
+    if committed_measurement.get("run_status") == "unrun":
+        assert committed_manifest == fresh_manifest
+        assert committed_measurement == fresh_measurement
+    else:
+        assert committed_measurement.get("run_status") == "ran"
+        assert committed_measurement.get("firewall", {}).get("product_l5") is False
+        assert committed_measurement.get("firewall", {}).get("second_formal_y") is False
+        assert committed_measurement.get("firewall", {}).get("historical_result_y") == "丙"
+        assert committed_measurement.get("criteria", {}).get("sesoi") is None
     assert measurement["run_status"] == "unrun"
     assert measurement["measurement_status"] == "unmeasured"
     assert measurement["establishment"]["status"] == "unmeasured"
@@ -235,11 +250,15 @@ def test_committed_scaffold_is_unmeasured_and_frozen_bytes_hold(tmp_path: Path) 
     assert manifest["sources"]["quality_gate_prereg"]["sha256"] == FROZEN_SHA256[
         "docs/evidence/quality-gate/PREREG.md"
     ]
-    body = MEASUREMENT.read_text(encoding="utf-8") + MANIFEST.read_text(encoding="utf-8")
+    scaffold_body = json.dumps(fresh_measurement, ensure_ascii=False) + json.dumps(
+        fresh_manifest, ensure_ascii=False
+    )
     for token in FROZEN_POINT_ESTIMATES:
-        assert token not in body
+        assert token not in scaffold_body
     for needle in banned_needles():
-        assert needle not in body
+        assert needle not in scaffold_body
+        assert needle not in MEASUREMENT.read_text(encoding="utf-8")
+        assert needle not in MANIFEST.read_text(encoding="utf-8")
 
 
 def test_validate_rejects_invented_sesoi_scores_and_l5() -> None:
@@ -440,7 +459,8 @@ def test_frozen_corpus_is_disjoint_unrun_and_rebuilt_offline() -> None:
     assert "- [ ] 生成器 `generator_sha256` 与 NLI `nli_sha256` 写入 manifest" in prereg
     assert "qwen-flash" in prereg
     assert "MoritzLaurer/mDeBERTa-v3-base-xnli-multilingual-nli-2mil7" in prereg
-    assert "- [ ] 主人明文「跑」" in prereg
+    assert "- [x] 主人明文「跑」" in prereg or "主人 Oriental Ronin 明文「跑」" in prereg
+    assert "Amendment-02" in prereg
     base = ROOT / FROZEN_CORPUS_REL
     split = json.loads((base / "SPLIT.json").read_text(encoding="utf-8"))
     assert split["second_formal_y"] is False

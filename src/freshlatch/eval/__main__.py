@@ -139,17 +139,37 @@ def build_parser(pack: PackPaths | None = None) -> argparse.ArgumentParser:
 
     p_patch = sub.add_parser(
         "patch-establishment",
-        help="成立 patch 实验的空 manifest 与空测量（未开跑，不打分）",
+        help="成立 patch 实验：默认空脚手架；--authorize-run 走正式针",
     )
     p_patch.add_argument(
         "--out",
         default="docs/evidence/patch-establishment",
-        help="只写 manifest.json 与 measurement.json。不得指向冻结目录",
+        help="只写 patch-establishment/。不得指向冻结目录",
     )
     p_patch.add_argument(
         "--root",
         default=".",
         help="仓库根。预注册页与锚文件相对此目录读取",
+    )
+    p_patch.add_argument(
+        "--authorize-run",
+        action="store_true",
+        help="主人已明文「跑」后授权正式针（生成/核验/写 RESULT）",
+    )
+    p_patch.add_argument(
+        "--send-only",
+        action="store_true",
+        help="只发送 C/T 生成到 formal-generations.jsonl（须 --authorize-run）",
+    )
+    p_patch.add_argument(
+        "--score-only",
+        action="store_true",
+        help="只读已有 generations 做 NLI+T−C 并写 RESULT（须 --authorize-run）",
+    )
+    p_patch.add_argument(
+        "--estimate-only",
+        action="store_true",
+        help="只估 token/¥，不调用 API、不写分",
     )
 
     return ap
@@ -208,9 +228,48 @@ def main(argv: list[str] | None = None) -> None:
 
     if args.cmd == "patch-establishment":
         from freshlatch.eval.patch_establishment import write_scaffold
+        from freshlatch.eval.patch_establishment_formal import (
+            estimate_cost_yuan,
+            run_primary,
+            send_generations,
+            write_measured,
+        )
+        import subprocess
+
+        root = Path(args.root)
+        if args.estimate_only:
+            est = estimate_cost_yuan(root)
+            print(json.dumps(est, ensure_ascii=False, indent=2))
+            if not est["under_cap"]:
+                raise SystemExit(2)
+            return
+
+        if args.authorize_run:
+            try:
+                if not args.score_only:
+                    sent = send_generations(root=root, authorize_run=True)
+                    print(json.dumps({"send": sent}, ensure_ascii=False))
+                if args.send_only:
+                    return
+                bundle = run_primary(root=root)
+                pin = subprocess.check_output(
+                    ["git", "rev-parse", "HEAD"], cwd=root, text=True
+                ).strip()
+                payload = write_measured(
+                    root=root,
+                    out_dir=Path(args.out),
+                    bundle=bundle,
+                    code_pin=pin,
+                    authorize_run=True,
+                )
+            except (ValueError, RuntimeError) as exc:
+                print(str(exc), file=sys.stderr)
+                raise SystemExit(1) from exc
+            print(json.dumps({"primary": bundle.get("primary"), "write": payload}, ensure_ascii=False, indent=2))
+            return
 
         try:
-            payload = write_scaffold(out_dir=Path(args.out), root=Path(args.root))
+            payload = write_scaffold(out_dir=Path(args.out), root=root)
         except ValueError as exc:
             print(str(exc), file=sys.stderr)
             raise SystemExit(1) from exc
