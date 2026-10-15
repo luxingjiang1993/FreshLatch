@@ -9,7 +9,12 @@ from pathlib import Path
 
 import pytest
 
-SRC = Path(__file__).resolve().parents[2] / "src"
+ROOT = Path(__file__).resolve().parents[2]
+SRC = ROOT / "src"
+SCRIPTS = ROOT / "scripts"
+# 仓库相对路径。列入的脚本整文件不扫 model 字面量。
+# S1 已把可安全改指向 registry 别名、且不改变运行默认的调用点收口，故当前为空。
+SCRIPT_LITERAL_ALLOWLIST: frozenset[str] = frozenset()
 
 _LOG_ATTRS = frozenset(
     {"debug", "info", "warning", "warn", "error", "exception", "critical", "log"}
@@ -146,8 +151,9 @@ def test_registry_rows_and_aliases_keep_current_values():
         FLAG_MODEL,
         MODEL_MAX_OUTPUT_TOKENS,
     )
+    from freshlatch.eval.patch_events_verify import XNLI_MODEL_ID
     from freshlatch.llm import DASHSCOPE_BASE_URL, DEFAULT_MODEL
-    from freshlatch.models import MODEL_REGISTRY
+    from freshlatch.models import MODEL_REGISTRY, NLI_MODEL
     from freshlatch.store.embeddings import EMBED_MODEL, _ENDPOINT
     from freshlatch.store.local_embed import LOCAL_EMBED_MODEL
     from freshlatch.store.neural_rerank import NEURAL_RERANK_MODEL
@@ -162,6 +168,12 @@ def test_registry_rows_and_aliases_keep_current_values():
         ),
         "local_embed": ("BAAI/bge-small-zh-v1.5", "fastembed", None, None),
         "neural_rerank": ("BAAI/bge-reranker-base", "fastembed", None, None),
+        "nli": (
+            "MoritzLaurer/mDeBERTa-v3-base-xnli-multilingual-nli-2mil7",
+            "transformers",
+            None,
+            None,
+        ),
         "x1_draft": (
             "qwen-flash",
             "dashscope",
@@ -215,6 +227,10 @@ def test_registry_rows_and_aliases_keep_current_values():
     assert _ENDPOINT == "https://dashscope.aliyuncs.com/compatible-mode/v1/embeddings"
     assert LOCAL_EMBED_MODEL == "BAAI/bge-small-zh-v1.5"
     assert NEURAL_RERANK_MODEL == "BAAI/bge-reranker-base"
+    assert NLI_MODEL == XNLI_MODEL_ID == "MoritzLaurer/mDeBERTa-v3-base-xnli-multilingual-nli-2mil7"
+    assert MODEL_REGISTRY["nli"].platform == "transformers"
+    assert MODEL_REGISTRY["nli"].base_url is None
+    assert MODEL_REGISTRY["nli"].env_key is None
     assert LOCKED_CONFIG["embed_model"] == "text-embedding-v4"
     assert LOCKED_CONFIG["draft_model"] == "qwen-flash"
     assert LOCKED_CONFIG["flag_model"] == "qwen-plus"
@@ -265,6 +281,41 @@ def test_registry_rows_and_aliases_keep_current_values():
     assert MODEL_REGISTRY["judge_kimi"].forbidden_models == kimi.forbidden_models
 
 
+def test_default_llm_client_reads_registry_env_key_and_keeps_base_url_override(monkeypatch):
+    """default_llm 的密钥名与 base_url 读 registry；DASHSCOPE_BASE_URL 仍可覆盖。"""
+    from freshlatch import llm as llm_mod
+    from freshlatch.models import MODEL_REGISTRY
+
+    seen: dict[str, str] = {}
+
+    class _FakeOpenAI:
+        def __init__(self, *, api_key: str, base_url: str) -> None:
+            seen["api_key"] = api_key
+            seen["base_url"] = base_url
+
+    monkeypatch.setattr(llm_mod, "OpenAI", _FakeOpenAI)
+    monkeypatch.setattr(llm_mod, "load_dotenv", lambda *_args, **_kwargs: None)
+    entry = MODEL_REGISTRY["default_llm"]
+    assert isinstance(entry.env_key, str)
+    monkeypatch.setenv(entry.env_key, "sentinel-from-registry")
+    monkeypatch.delenv("DASHSCOPE_BASE_URL", raising=False)
+
+    client = llm_mod.LLMClient()
+    assert client.client is not None
+    assert seen["api_key"] == "sentinel-from-registry"
+    assert seen["base_url"] == entry.base_url
+
+    monkeypatch.setenv("DASHSCOPE_BASE_URL", "https://override.example/v1")
+    overridden = llm_mod.LLMClient()
+    assert overridden.client is not None
+    assert seen["base_url"] == "https://override.example/v1"
+
+    explicit = llm_mod.LLMClient(api_key="explicit-key", base_url="http://127.0.0.1:9/v1")
+    assert explicit.client is not None
+    assert seen["api_key"] == "explicit-key"
+    assert seen["base_url"] == "http://127.0.0.1:9/v1"
+
+
 def test_src_model_name_literals_only_in_registry():
     names = registered_model_names()
     assert "qwen-flash" in names
@@ -276,6 +327,20 @@ def test_src_model_name_literals_only_in_registry():
             continue
         hits = model_name_hits(path.read_text(encoding="utf-8"), names)
         offenders.extend(f"{path.relative_to(SRC.parent)}:{hit}" for hit in hits)
+    assert offenders == []
+
+
+def test_script_model_name_literals_only_in_registry_or_allowlist():
+    names = registered_model_names()
+    missing = [rel for rel in sorted(SCRIPT_LITERAL_ALLOWLIST) if not (ROOT / rel).is_file()]
+    assert missing == []
+    offenders: list[str] = []
+    for path in sorted(SCRIPTS.rglob("*.py")):
+        rel = path.relative_to(ROOT).as_posix()
+        if rel in SCRIPT_LITERAL_ALLOWLIST:
+            continue
+        hits = model_name_hits(path.read_text(encoding="utf-8"), names)
+        offenders.extend(f"{rel}:{hit}" for hit in hits)
     assert offenders == []
 
 

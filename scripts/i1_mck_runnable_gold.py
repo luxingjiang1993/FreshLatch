@@ -27,6 +27,7 @@ REPO = Path(__file__).resolve().parent.parent
 
 from freshlatch.eval.matrix import EXPECTED_VERDICT  # noqa: E402
 from freshlatch.llm import DecodingParams, LLMClient  # noqa: E402
+from freshlatch.models import DEFAULT_MODEL  # noqa: E402
 from freshlatch.runner import Runner, load_docket  # noqa: E402
 from freshlatch.store.ingest import ingest_into, load_corpus  # noqa: E402
 from freshlatch.store.sqlite_store import SQLiteStore  # noqa: E402
@@ -63,7 +64,7 @@ def main() -> None:
     ap.add_argument("--claim-id", default="mck-1")
     ap.add_argument("--gold", type=Path, default=DEFAULT_GOLD)
     ap.add_argument("--corpus-mode", choices=("full", "t0-only"), default="full")
-    ap.add_argument("--model", default="qwen-flash")
+    ap.add_argument("--model", default=DEFAULT_MODEL)
     ap.add_argument("--temperature", type=float, default=0.0)
     ap.add_argument("--seed", type=int, default=None,
                     help="temp=0 时 seed 无采样意义;默认 None")

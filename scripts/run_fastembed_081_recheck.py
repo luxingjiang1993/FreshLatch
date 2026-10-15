@@ -39,6 +39,7 @@ from freshlatch.store.neural_rerank import (  # noqa: E402
     rerank_hybrid_candidates,
     warmup_neural_rerank,
 )
+from freshlatch.models import LOCAL_EMBED_MODEL, NEURAL_RERANK_MODEL  # noqa: E402
 from freshlatch.store.pipeline import pack_vec, tokenize  # noqa: E402
 
 N_BOOT = 10000
@@ -150,7 +151,7 @@ def _embed_payload(version: str) -> dict[str, Any]:
     query_vecs = embed_texts_local(queries)
     return {
         "fastembed_version": version,
-        "model": "BAAI/bge-small-zh-v1.5",
+        "model": LOCAL_EMBED_MODEL,
         "chunks": {eid: vec for eid, vec in zip(eids, chunk_vecs)},
         "queries": {text: vec for text, vec in zip(queries, query_vecs)},
     }
@@ -271,7 +272,7 @@ def _render(payload: dict[str, Any]) -> str:
         "# fastembed 0.8.1 复核",
         "",
         "不改生产代码，不改金标，不调用付费 API。",
-        f"fastembed {payload['fastembed_version']}，模型 `BAAI/bge-small-zh-v1.5`，精排 `BAAI/bge-reranker-base`，K=10。",
+        f"fastembed {payload['fastembed_version']}，模型 `{LOCAL_EMBED_MODEL}`，精排 `{NEURAL_RERANK_MODEL}`，K=10。",
         f"作答臂 n={payload['n_arm']}，chunk {payload['n_chunks']}。bootstrap {N_BOOT}，seed={BOOT_SEED}。",
         "金标仍是模型双标加代审。人工审核只覆盖 DECISION-16 的 16 道题。",
         "",
@@ -651,8 +652,8 @@ def cmd_run(vec071: Path, candidates: Path | None, out_dir: Path) -> int:
     (out_dir / "per-query.json").write_text(json.dumps(per_query, ensure_ascii=False) + "\n", encoding="utf-8")
     cost = {
         "fastembed_version": version,
-        "embed_model": "BAAI/bge-small-zh-v1.5",
-        "rerank_model": "BAAI/bge-reranker-base",
+        "embed_model": LOCAL_EMBED_MODEL,
+        "rerank_model": NEURAL_RERANK_MODEL,
         "k": TOP_K,
         "n_boot": N_BOOT,
         "seed": BOOT_SEED,

@@ -25,6 +25,7 @@ from freshlatch.eval.patch_events_verify import (
     XNLI_MODEL_ID,
     verify_edit,
 )
+from freshlatch.models import MODEL_REGISTRY
 
 # 通过线 ρ（ADR-0041 · 跑前锁死；禁止事后放宽凑绿）
 BAD_OK_FALSE_MIN = 0.90
@@ -612,7 +613,8 @@ FORMAL_FREEZE_SHA256 = "e1899872c8a6748de81d87b8c5b89c931d33d13fdd50109ad4694371
 PREMATURE_PR543_SHA256 = "baf33f5b9e0ea801c736d67385a94546fb6bd24af1ada0e4f27d1b9f5da1fa8c"
 # #538 代码内 24 条口径。本票不把它当成正式 S，也不改 SENSITIVITY_SET_S。
 OLD_INCODE_SET_SHA256 = "958638ca0f3dc51323db710a69f4eacacc2fcff10186a99b07aecc47821d838b"
-VERIFY_PY_SHA256 = "58bdae90199bfcb901cc22622e7ebeedfbe800bd208b60858febeab069739918"
+# S1 把同一 model id 改由 MODEL_REGISTRY["nli"] 提供后重钉。τ 与 ok 公式未改。
+VERIFY_PY_SHA256 = "548c48b2fe059b530fff4ddf8c3ac823b1e2501cff810324bacf39b31b8c6966"
 CHEF_TOKEN_OVERLAP_MIN = 0.8
 MUST_CARRY_IDS = ("DIAG-CHEF-03-bad", "DIAG-CHEF-04-bad")
 RETIRED_NOT_IN_FORMAL_S = (
@@ -760,7 +762,7 @@ def assert_formal_freeze_structure(
         raise RuntimeError("ρ 被改动，拒绝开跑")
     if ENTAILMENT_TAU != 0.5:
         raise RuntimeError("τ 被改动，拒绝开跑")
-    if XNLI_MODEL_ID != "MoritzLaurer/mDeBERTa-v3-base-xnli-multilingual-nli-2mil7":
+    if XNLI_MODEL_ID != MODEL_REGISTRY["nli"].model:
         raise RuntimeError("型号被改动，拒绝开跑")
     if _verify_py_sha256() != VERIFY_PY_SHA256:
         raise RuntimeError("patch_events_verify.py 字节与冻结仪器不一致，拒绝开跑")

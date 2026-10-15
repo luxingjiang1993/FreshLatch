@@ -77,6 +77,12 @@ MODEL_REGISTRY: dict[str, ModelEntry] = {
         model="BAAI/bge-reranker-base",
         platform="fastembed",
     ),
+    # 与搬迁前 patch_events_verify.XNLI_MODEL_ID 同一字符串。本地 transformers，不走托管 API。
+    "nli": ModelEntry(
+        purpose="nli",
+        model="MoritzLaurer/mDeBERTa-v3-base-xnli-multilingual-nli-2mil7",
+        platform="transformers",
+    ),
     "x1_draft": ModelEntry(
         purpose="x1_draft",
         model="qwen-flash",
@@ -133,6 +139,7 @@ DEFAULT_MODEL = MODEL_REGISTRY["default_llm"].model
 EMBED_MODEL = MODEL_REGISTRY["embed"].model
 LOCAL_EMBED_MODEL = MODEL_REGISTRY["local_embed"].model
 NEURAL_RERANK_MODEL = MODEL_REGISTRY["neural_rerank"].model
+NLI_MODEL = MODEL_REGISTRY["nli"].model
 # 精排成功时 last_rerank_mode 的标签。不是模型 id，模型 id 仍是上面的 NEURAL_RERANK_MODEL。
 RERANK_MODE_NEURAL = "bge-reranker-base"
 DRAFT_MODEL = MODEL_REGISTRY["x1_draft"].model

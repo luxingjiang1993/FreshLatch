@@ -36,9 +36,9 @@ from freshlatch.store.base import (  # noqa: E402
     chunk_evidence_id,
 )
 from freshlatch.store.ingest import load_corpus  # noqa: E402
+from freshlatch.models import EMBED_MODEL, LOCAL_EMBED_MODEL  # noqa: E402
 from freshlatch.store.pipeline import pack_vec, tokenize  # noqa: E402
 
-LOCAL_EMBED_MODEL = "BAAI/bge-small-zh-v1.5"
 MODES = ("bm25", "dense", "hybrid", "hybrid+rerank")
 TOP_K = 10
 PART2_QUESTIONS = (
@@ -365,7 +365,7 @@ def run(argv: list[str] | None = None) -> int:
             f"hard {hard['dense']['Recall@10']:.4f} 也低于 bm25 的 {hard['bm25']['Recall@10']:.4f}。"
             "hybrid+rerank 的总体 Recall@10 与 hybrid 相同，"
             f"仓库预登记门（须严格高于 hybrid）的判决是「{verdict}」，不建议为 rerank 另开切换票。"
-            "本轮不是授权：生产默认仍是 bm25；向量是本地 bge-small-zh-v1.5，不是配置里的 text-embedding-v4；"
+            f"本轮不是授权：生产默认仍是 bm25；向量是本地 bge-small-zh-v1.5，不是配置里的 {EMBED_MODEL}；"
             "题集是模型双标加模型代审。"
         )
     else:
@@ -406,7 +406,7 @@ def run(argv: list[str] | None = None) -> int:
         "config_embed_model": cfg.get("embed_model"),
         "config_embed_dim": cfg.get("embed_dim"),
         "config_embed_status": "未跑",
-        "config_embed_reason": "embeddings.py 只调用 DashScope text-embedding-v4，本测量禁止付费 API",
+        "config_embed_reason": f"embeddings.py 只调用 DashScope {EMBED_MODEL}，本测量禁止付费 API",
         "local_embed_model": LOCAL_EMBED_MODEL,
         "local_embed_dim": dim,
         "local_embed_lib": "fastembed",
