@@ -104,7 +104,7 @@ manifest_fields: retrieval.mode, retrieval.embedding_model, retrieval.embedding_
 Trust=Gate。合并前,以及任何「跑」之前,主人看这一页,而不是看夹具是否变绿。
 
 1. 第 2 节九条假阳性判据与第 3 节四条止损仍在,id 没有增删。
-2. `numeric_line=unregistered`,且本页不发明 SESOI。没有数字门槛。
+2. 第 1–3 节脚手架原句仍含 `numeric_line=unregistered`。文末 Amendment-01 把 `criteria.numeric_line` 锁为 `registered:interval_gt0`,`sesoi` 仍 null,不得把该线叫做 SESOI。测量分数仍 null。
 3. 第 4 节的 manifest 字段行仍在。`manifest.json` 里实验语料 sha256、模型 hash、权重 hash 仍是 null。B-04 的 `counts_as_establishment=false`。
 4. 第 5 节仍写不改默认臂、不改 floors。`PRODUCTION_RETRIEVAL_MODE` 仍是 `hybrid+rerank`。
 5. `measurement.json` 仍是 `run_status=unrun`、`measurement_status=unmeasured`、`counted_as_pass=false`。
@@ -112,3 +112,48 @@ Trust=Gate。合并前,以及任何「跑」之前,主人看这一页,而不是�
 7. 离线质量闸的 `value=` 与合入本页之前一致。
 
 主人点头之前,不要把 `measurement_status` 改成已测量,不要往成立格填数字,不要改质量闸地板,不要开跑。
+
+## Amendment-01 · 开跑前数字线（日期：2026-10-15 · 早于任何非空分数）
+
+状态：协议已锁（比较 A · 数字线 L1 · n=100）/ 未激活。本 Amendment 只是开跑前协议锁,不是激活,不是开跑,不写任何非空分数。实验语料未冻、激活清单未齐、主人未明文「跑」之前不得开跑。
+
+第 1–8 节的假阳性 id 与止损 id 不增删、不改写。第 3 节「本期没有这份 amendment」与「numeric_line=unregistered」留在原处,作为看见本 Amendment 之前的脚手架锁句。本 Amendment 在任何非空分数出现之前补上比较对象与数字线,不涂掉那些原句,也不把门槛叫做 SESOI。
+
+### 比较对象
+
+- 臂：T（attested / fail-closed）对 C（无证据改写）。B1/B2 若保留则只作报告,不进成立格。
+- 语料：新实验语料,不是 `data/corpus/pe_v2` 正式 Y 名单。path 与 sha256 仍为 null,开跑前才写入 manifest `sources.experiment_corpus`。当前未冻,因此不得「跑」。
+- 选取：固定 k := T 自然放行数。正式针 n=100（已锁）。pilot 另计,不进成立格。k_min、bootstrap 次数、种子、模型与 temperature 主人未锁;未锁参数不是已生效门槛,也不得在看见分数之后补写。
+- `second_formal_y=false`。这不是 `PREREG-Y` 同尺再填。STOP-SAME-YARDSTICK 仍有效。
+
+### 数字线（numeric_line）
+
+- `sesoi=null`。本页不发明 SESOI,不继承改名 SESOI,不得把该线叫做 SESOI。
+- `criteria.numeric_line=registered:interval_gt0`。这是判据行,不是已测量分数。
+- 成立：主比较（T−C 固定-k 误放率差）点估计 > 0 且 95% CI 下界 > 0 且有定义。
+- 无定义 / 下界≤0 / 点≤0 → 不成立。
+- `establishment.numeric_line` 仍是 `unregistered`。`false_accept_rate`、`point_estimate`、`ci95_low`、`ci95_high`、`n`、`k` 都是 null。`run_status=unrun`。`measurement_status=unmeasured`。`counted_as_pass=false`。空着不是 0。
+
+### 丙防火墙（重申）
+
+- 历史分层只认 `docs/evidence/patch-events/RESULT-Y.md`：结果丙。不得把历史结果丙改判为乙。不得写回该文件,不得改 `docs/evidence/patch-events/PREREG-Y.md` 的历史成立格。
+- 本跑不是路线 Y 的另一次正式主跑。`second_formal_y=false`。STOP-SAME-YARDSTICK。
+- B-04 夹具 `counts_as_establishment=false`。夹具绿不是结果乙。
+- 不得称优于 RARR·KPR。不得标产品 L5。即便将来成立格通过,本页仍不得单独把产品标成 L5。
+- 不改 floors。不改默认臂。`PRODUCTION_RETRIEVAL_MODE` 仍是 `hybrid+rerank`。不改 gold,不改 x1。
+
+### 止损增量
+
+- STOP-UNRUN 仍有效,直至主人明文「跑」。写入器拒绝任何非 null 分数。
+- 正式针完成后未成立 → 收口。禁止同页二跑,禁止加 n,禁止改尺后再用同一页充数。
+- 过成立格仍不得称优于 RARR·KPR,不得把历史结果丙改判为乙,不得标产品 L5。
+
+### 激活前清单
+
+- [ ] 实验语料路径与 sha256 写入 manifest `sources.experiment_corpus`（当前 path=null,sha256=null,本项未完成）
+- [ ] 生成器与 NLI（若用）的型号与 hash 写入 manifest（当前仍为 null）
+- [x] 主人确认比较对象与数字线：比较 A,数字线 L1,n=100（2026-10-15）
+- [ ] 主人写激活批注
+- [ ] 主人明文「跑」
+
+清单未齐。不得「跑」。Trust=Gate。合并与开跑都要主人另行点头。语料冻结之后,仍须主人明文「跑」才可进入正式针。

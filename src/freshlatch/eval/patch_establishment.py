@@ -2,6 +2,7 @@
 
 口径锁在 ``docs/evidence/patch-establishment/PREREG.md``。
 本期不开跑、不打分、不发明 SESOI。
+Amendment-01 只把判据行锁成 ``registered:interval_gt0``,成立格分数仍全是 null。
 不改 ``PRODUCTION_RETRIEVAL_MODE``。不写路线 Y 的历史成立格,不写质量闸地板。
 """
 
@@ -23,6 +24,8 @@ MANIFEST_STATUS = "schema_frozen_unmeasured"
 RUN_STATUS = "unrun"
 MEASUREMENT_STATUS = "unmeasured"
 NUMERIC_LINE = "unregistered"
+# Amendment-01 锁的是判据行,不是 SESOI,也不是已测量分数。
+CRITERIA_NUMERIC_LINE = "registered:interval_gt0"
 HISTORICAL_RESULT_Y = "丙"
 CONCLUSION_DIR = "docs/evidence/patch-establishment/"
 MANIFEST_NAME = "manifest.json"
@@ -124,6 +127,12 @@ REQUIRED_PROSE = (
     "不得把历史结果丙改判为乙",
     "本页不发明 SESOI",
     "numeric_line=unregistered",
+    "Amendment-01",
+    "registered:interval_gt0",
+    "比较 A",
+    "n=100",
+    "sesoi=null",
+    "不得把该线叫做 SESOI",
     "measurement_status=unmeasured",
     "run_status=unrun",
     "counted_as_pass=false",
@@ -390,7 +399,7 @@ def _criteria_block() -> dict:
         "false_positive": list(FALSE_POSITIVE_IDS),
         "stop": list(STOP_IDS),
         "sesoi": None,
-        "numeric_line": NUMERIC_LINE,
+        "numeric_line": CRITERIA_NUMERIC_LINE,
     }
 
 
@@ -451,11 +460,14 @@ def _require_equal(got: object, expected: object, label: str) -> None:
         raise ValueError(f"{label} 不符合未开跑脚手架")
 
 
-def _reject_scores(block: dict) -> None:
+def _reject_scores(block: dict, *, numeric_line: str = NUMERIC_LINE) -> None:
+    """分数位保持 null。sesoi 保持 null。numeric_line 只能等于调用方给出的已锁值。"""
     if block.get("sesoi") is not None:
         raise ValueError("本页不发明 SESOI")
-    if block.get("numeric_line") != NUMERIC_LINE:
-        raise ValueError("numeric_line 必须是 unregistered")
+    if block.get("numeric_line") != numeric_line:
+        if numeric_line == NUMERIC_LINE:
+            raise ValueError("numeric_line 必须是 unregistered")
+        raise ValueError("criteria.numeric_line 必须是 registered:interval_gt0")
     for name in SCORE_FIELDS:
         if name == "sesoi" or name == "numeric_line":
             continue
@@ -508,7 +520,7 @@ def validate_scaffold(manifest: dict, measurement: dict, *, root: Path) -> None:
     if not isinstance(establishment, dict) or not isinstance(firewall, dict) or not isinstance(criteria, dict):
         raise ValueError("establishment / firewall / criteria 必须是对象")
     _reject_scores(establishment)
-    _reject_scores(criteria)
+    _reject_scores(criteria, numeric_line=CRITERIA_NUMERIC_LINE)
     _require_equal(establishment.get("status"), MEASUREMENT_STATUS, "establishment.status")
     _require_equal(establishment.get("counted_as_pass"), False, "counted_as_pass")
     _require_equal(criteria.get("false_positive"), list(FALSE_POSITIVE_IDS), "false_positive")

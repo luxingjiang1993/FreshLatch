@@ -110,6 +110,14 @@ def test_prereg_locks_criteria_manifest_and_unchanged_arm() -> None:
     assert "hybrid+rerank" in text
     assert "本页不发明 SESOI" in text
     assert "numeric_line=unregistered" in text
+    assert "Amendment-01" in text
+    assert "registered:interval_gt0" in text
+    assert "比较 A" in text
+    assert "n=100" in text
+    assert "sesoi=null" in text
+    assert "不得把该线叫做 SESOI" in text
+    assert "second_formal_y=false" in text
+    assert "STOP-SAME-YARDSTICK" in text
     assert "不得称优于 RARR·KPR" in text
     assert "不得标产品 L5" in text
     assert "不得把历史结果丙改判为乙" in text
@@ -172,6 +180,15 @@ def test_committed_scaffold_is_unmeasured_and_frozen_bytes_hold(tmp_path: Path) 
     assert measurement["establishment"]["counted_as_pass"] is False
     assert measurement["establishment"]["sesoi"] is None
     assert measurement["establishment"]["numeric_line"] == "unregistered"
+    assert measurement["establishment"]["n"] is None
+    assert measurement["establishment"]["k"] is None
+    assert measurement["establishment"]["ci95_low"] is None
+    assert measurement["criteria"]["numeric_line"] == "registered:interval_gt0"
+    assert measurement["criteria"]["sesoi"] is None
+    assert manifest["criteria"]["numeric_line"] == "registered:interval_gt0"
+    assert manifest["criteria"]["sesoi"] is None
+    assert manifest["establishment"]["numeric_line"] == "unregistered"
+    assert manifest["sources"]["experiment_corpus"]["path"] is None
     assert measurement["establishment"]["false_accept_rate"] is None
     assert measurement["establishment"]["point_estimate"] is None
     assert measurement["firewall"]["product_l5"] is False
@@ -231,6 +248,15 @@ def test_validate_rejects_invented_sesoi_scores_and_l5() -> None:
     b04 = deepcopy(manifest)
     b04["firewall"]["b04_counts_as_establishment"] = True
     cases.append(b04)
+    named = deepcopy(manifest)
+    named["criteria"]["sesoi"] = 0.05
+    cases.append(named)
+    unregistered = deepcopy(manifest)
+    unregistered["criteria"]["numeric_line"] = "unregistered"
+    cases.append(unregistered)
+    scored_line = deepcopy(manifest)
+    scored_line["establishment"]["numeric_line"] = "registered:interval_gt0"
+    cases.append(scored_line)
     for broken in cases:
         with pytest.raises(ValueError):
             validate_scaffold(broken, measurement, root=ROOT)

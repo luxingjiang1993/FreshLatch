@@ -12,7 +12,7 @@
       "FP-SESOI",
       "FP-NULL-AS-ZERO"
     ],
-    "numeric_line": "unregistered",
+    "numeric_line": "registered:interval_gt0",
     "sesoi": null,
     "stop": [
       "STOP-UNRUN",
