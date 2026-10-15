@@ -423,7 +423,11 @@ def _leftover_pins() -> list[dict[str, str]]:
 def test_frozen_corpus_is_disjoint_unrun_and_rebuilt_offline() -> None:
     prereg = PREREG.read_text(encoding="utf-8")
     assert "- [x] 实验语料路径与 sha256 写入 manifest `sources.experiment_corpus`" in prereg
-    assert "- [ ] 主人写激活批注" in prereg
+    assert "- [x] 主人写激活批注" in prereg
+    assert "built_n=91" in prereg
+    assert "gap_n=9" in prereg
+    assert "目标 n=100 未满额建成" in prereg
+    assert "- [ ] 生成器与 NLI" in prereg
     assert "- [ ] 主人明文「跑」" in prereg
     base = ROOT / FROZEN_CORPUS_REL
     split = json.loads((base / "SPLIT.json").read_text(encoding="utf-8"))
