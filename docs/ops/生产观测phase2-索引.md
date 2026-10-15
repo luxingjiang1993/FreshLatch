@@ -151,6 +151,7 @@ SLO-phase2（grill 锁「按推荐」· Asia/Shanghai）：P1–P6 已钉（clai
 | 地图 | `docs/ops/生产补丁放行SLO-地图.md`（min-6 / #556 链；phase-2 模板不改写其锁文） |
 | 防火墙 ADR | `docs/adr/0042-生产补丁放行SLO与实验防火墙.md` |
 | 宽表规格 | `docs/spec/24-生产补丁放行SLO.md` |
+| 在线 product SLI | `src/freshlatch/eval/product_sli.py`（L4-C-02；协议见 [`抽检-主张忠实.md`](抽检-主张忠实.md) §11。observation ≠ RESULT-Y ≠ PREREG floors。不回写 PREREG。不新建 Phoenix-* 主名） |
 
 ## 8. 本波票
 
@@ -167,3 +168,15 @@ Parent [#569](https://github.com/luxingjiang1993/FreshLatch/issues/569)。下列
 | T7 | #576 P6 implicit feedback | [`弱信号Watch.md`](弱信号Watch.md) |
 
 #556 仍 OPEN，继续只覆盖 min-6。本 PR 是 draft。No merge until Matt+human。
+
+## 9. 在线 product SLI（L4-C-02 · 与离线注册分列）
+
+层身份是 **product SLI**。这是 observation（观测）。
+
+**observation ≠ RESULT-Y ≠ PREREG floors。**
+
+流水：轨迹采样 → claim 抽检 → 周报 / alert。实现 `src/freshlatch/eval/product_sli.py`，协议正文在 [`抽检-主张忠实.md`](抽检-主张忠实.md) §11。只读轨迹。`sample_rate` 不回写 PREREG。不改 G1 / A1 / T1 / R1 的 `value=`。`counted_as_pass` 保持 false。
+
+本行不是最小 6 的第 7 个主 SLI，也不替换 P1 人标。groundedness 与 abstain 是 product SLI 仪表。样本不足写「样本不足」。缺分与漂移只出 alert，没有与 `quality-gate --offline` 共享的通过线数字。
+
+不新建 Phoenix-* 主 KPI / 主服务名。Arize / LangSmith / RAGAS / Langfuse / RAGFlow 只在 §11 作字段习惯。Recall@k、MRR、hybrid、rerank 仍只属于离线注册与 SLI 5，不进本行的通过线。
