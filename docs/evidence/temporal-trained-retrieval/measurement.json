@@ -1,0 +1,53 @@
+{
+  "arms": [
+    {
+      "MRR": null,
+      "Recall@k": null,
+      "arm": "temporal_trained",
+      "kind": "trained_or_published_equivalent",
+      "measurement_status": "unmeasured",
+      "nDCG": null,
+      "production_default": false,
+      "reason": "weights_absent"
+    },
+    {
+      "MRR": null,
+      "Recall@k": null,
+      "arm": "mrag_untrained",
+      "kind": "untrained_contrast",
+      "measurement_status": "unmeasured",
+      "nDCG": null,
+      "production_default": false,
+      "reason": "contrast_not_scored"
+    }
+  ],
+  "corpus_id": "temporal-trained-v1",
+  "corpus_sha256": "49ada9927084e2ccc73eba27d1486be1f384494b4325e5cb49e99473843f5b3e",
+  "corpus_version": "v1",
+  "counted_as_pass": false,
+  "decoding": {
+    "model": null,
+    "note": "schema scaffold, no LLM, no trained weights",
+    "seed": null,
+    "temperature": null
+  },
+  "frozen_relation": {
+    "R1": "does_not_replace",
+    "T1": "does_not_replace",
+    "frozen_per_query": "docs/evidence/neural-rerank/per-query.json",
+    "quality_gate_prereg": "docs/evidence/quality-gate/PREREG.md",
+    "registered_value_rewritten": false
+  },
+  "k": 10,
+  "level": "schema",
+  "metrics": [
+    "Recall@k",
+    "MRR",
+    "nDCG"
+  ],
+  "n": 2,
+  "production_retrieval_mode": "hybrid+rerank",
+  "replaces_frozen_baseline": false,
+  "schema_version": "l4-c-01-v1",
+  "weights_present": false
+}

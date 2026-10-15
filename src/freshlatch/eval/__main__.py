@@ -1,4 +1,4 @@
-"""CLI:`python -m freshlatch.eval run|control|control-c|report|quality-gate|arm-table`(§4.1)。
+"""CLI:`python -m freshlatch.eval run|control|control-c|report|quality-gate|arm-table|temporal-prereg`(§4.1)。
 
 run --gold data/eval/gold.json [--runs N]   金标对账(LLM,手动/milestone 触发,不进 CI)
 control                                      无工具假绿对照(旧仪器;判 alive = 假绿,对照成立)
@@ -117,6 +117,26 @@ def build_parser(pack: PackPaths | None = None) -> argparse.ArgumentParser:
         help="写入表内的 code_pin。缺省则读 git HEAD",
     )
 
+    p_temporal = sub.add_parser(
+        "temporal-prereg",
+        help="训练/时序检索新预注册的空测量（无权重则不打分）",
+    )
+    p_temporal.add_argument(
+        "--corpus",
+        default="data/temporal-trained/v1/corpus.json",
+        help="独立版本语料。不得指向 data/exp/x1/",
+    )
+    p_temporal.add_argument(
+        "--out",
+        default="docs/evidence/temporal-trained-retrieval",
+        help="只写 measurement.json。不得指向冻结目录",
+    )
+    p_temporal.add_argument(
+        "--weights",
+        default=None,
+        help="权重路径。文件在也不打分：本期没有打分器",
+    )
+
     return ap
 
 
@@ -147,6 +167,27 @@ def main(argv: list[str] | None = None) -> None:
             f"arms={len(payload['rows'])} pin={payload['code_pin']}"
         )
         print(f"markdown: {payload['markdown_path']}")
+        print(f"json: {payload['json_path']}")
+        return
+
+    if args.cmd == "temporal-prereg":
+        from freshlatch.eval.temporal_trained import write_measurement
+
+        try:
+            payload = write_measurement(
+                out_dir=Path(args.out),
+                corpus_path=Path(args.corpus),
+                weights_path=Path(args.weights) if args.weights else None,
+            )
+        except ValueError as exc:
+            print(str(exc), file=sys.stderr)
+            raise SystemExit(1) from exc
+        print(
+            f"temporal-prereg n={payload['n']} k={payload['k']} "
+            f"arms={len(payload['arms'])} "
+            f"replaces_frozen_baseline={str(payload['replaces_frozen_baseline']).lower()} "
+            f"status={payload['level']}"
+        )
         print(f"json: {payload['json_path']}")
         return
 

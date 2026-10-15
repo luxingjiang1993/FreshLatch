@@ -24,6 +24,7 @@ from freshlatch.store.base import (
     RetrievalStore,
     chunk_evidence_id,
 )
+from freshlatch.store.temporal_arm import TEMPORAL_TRAINED_MODE
 from freshlatch.store.tenant_acl import resolve_pre_retrieval_tenant
 from freshlatch.store.pipeline import (
     HitScoreBook,
@@ -258,9 +259,12 @@ class RunContext:
         """评测夹具:强制检索臂。生产 online 拒绝;未实装的臂拒绝,避免误标。"""
         if self.mode != "eval":
             raise RuntimeError("生产路径不可强制 retrieval_mode")
-        if mode not in RETRIEVAL_MODE_ENUM:
+        # temporal_trained 只在 eval 臂钩子里可选。不并进生产枚举,也不进运维开关。
+        known = RETRIEVAL_MODE_ENUM | {TEMPORAL_TRAINED_MODE}
+        executable = EXECUTABLE_RETRIEVAL_MODES | {TEMPORAL_TRAINED_MODE}
+        if mode not in known:
             raise ValueError(f"未知 retrieval_mode: {mode}")
-        if mode not in EXECUTABLE_RETRIEVAL_MODES:
+        if mode not in executable:
             raise ValueError(
                 f"retrieval_mode={mode} 本期未实装,拒绝把其它臂的结果标成该模式"
             )
@@ -311,6 +315,37 @@ class RunContext:
             return RETRIEVAL_EXHAUSTED
         self.retrieval_used += 1
         requested = self._active_retrieval_mode()
+        if requested == TEMPORAL_TRAINED_MODE:
+            # 无已核验权重。不调用 store.retrieve,避免落到 bm25 / hybrid 后误标。
+            self.last_retrieval_manifest = None
+            filters = {
+                "as_of": as_of,
+                "source_type": source_type,
+                "top_k": top_k,
+                "tenant_id": resolved,
+            }
+            self.events.append({
+                "type": "retrieve",
+                "query": query,
+                "as_of": as_of,
+                "filters": filters,
+                "evidence_ids": [],
+                "retrieval_mode": TEMPORAL_TRAINED_MODE,
+                "rerank_mode": "none",
+                "measurement_status": "unmeasured",
+                "reason": "weights_absent",
+                "replaces_frozen_baseline": False,
+                "used": self.retrieval_used,
+                "hits": 0,
+            })
+            return {
+                "temporal_trained_unmeasured": True,
+                "measurement_status": "unmeasured",
+                "reason": "weights_absent",
+                "replaces_frozen_baseline": False,
+                "retrieval_mode": TEMPORAL_TRAINED_MODE,
+                "evidence_ids": [],
+            }
         if requested == "bm25":
             # 显式 BM25 单独绑定。后面的向量臂集合不含它,避免被记成 bm25_fallback。
             self.store.bind_eval_retrieval_mode("bm25")
