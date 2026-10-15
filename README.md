@@ -135,6 +135,8 @@ Diagram: [`docs/现状四闸-结构图.html`](docs/现状四闸-结构图.html).
 
 Honest snapshot of this public repo:
 
+Interview / demo / 对外介绍只抄 [`docs/ops/口径一页纸.md`](docs/ops/口径一页纸.md)。
+
 | | |
 |--|--|
 | **Runs locally** | Reverify Sheet UI, main reverify chain, human void/renew, synthetic corpora, gate unit tests |
