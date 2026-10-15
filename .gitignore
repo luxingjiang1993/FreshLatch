@@ -60,3 +60,6 @@ reports/i2-inj-e2e/
 reports/report-*.json
 reports/report-*.md
 
+# L4U-GARAK 操作者本地扫描产物, 不入库, 不是合并门
+garak_runs/
+

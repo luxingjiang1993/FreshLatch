@@ -38,4 +38,4 @@ idea #4 过期伪装 `adv-fresh-t001` 可同波作面试弹药，证据页 `docs
 
 红队成对回归 ≠ 完整对抗安全认证。`tests/unit/test_redteam_accept_reject_pairs.py` 把应拒与不应拒成对送进同一夹具路径：应拒必须 deny 或 abstain；不应拒不得在该路径上误拒。触及 ACL / Serving 的对，跨租户与未授权 fail-closed，身份仍来自 `FRESHLATCH_SERVING_API_KEYS` 的服务端映射。本段不是 I2 硬表新行，不报攻击成功率，也不代替渗透认证。
 
-可选扫描：garak 可以在自有环境另行执行。本仓 CI 不调用 garak，也不把付费或外网 garak 当成合并条件。
+可选扫描：garak 可以在自有环境另行执行。本仓 CI 不调用 garak，也不把付费或外网 garak 当成合并条件。样板与 block-ship 门槛见 `docs/ops/可选-garak-tool-injection扫描.md`。默认不进必合 CI。
