@@ -1,0 +1,217 @@
+{
+  "claim_count": 12,
+  "status_hist": {
+    "stale": 4,
+    "fresh": 4,
+    "unknown": 4
+  },
+  "disposition_note": "see reverify disposition 勿发",
+  "claims": [
+    {
+      "claim_id": "c1",
+      "status": "stale",
+      "voided": false,
+      "statement": "竞品 SeaDesk 在该市场的客单价仍显著高于我方拟定的 59 美元/月/店定价",
+      "t0_evidence_ids": [
+        "t0-competitor-notes#p2"
+      ],
+      "t1_evidence_ids": [
+        "t0-competitor-notes#p2@T1"
+      ],
+      "patch_eligible": true
+    },
+    {
+      "claim_id": "c2",
+      "status": "stale",
+      "voided": false,
+      "statement": "印尼与泰国监管暂无客服数据本地化强制要求",
+      "t0_evidence_ids": [
+        "t0-regulatory-memo#p2"
+      ],
+      "t1_evidence_ids": [
+        "t0-regulatory-memo#p2@T1"
+      ],
+      "patch_eligible": true
+    },
+    {
+      "claim_id": "c3",
+      "status": "stale",
+      "voided": false,
+      "statement": "3 家意向渠道伙伴接受 30% 销售分成比例",
+      "t0_evidence_ids": [
+        "t0-channel-interviews#p2"
+      ],
+      "t1_evidence_ids": [
+        "t0-channel-interviews#p2@T1"
+      ],
+      "patch_eligible": true
+    },
+    {
+      "claim_id": "c4",
+      "status": "fresh",
+      "voided": false,
+      "statement": "目标市场(六国具备基础数字化条件的中小企业)不少于 800 万家",
+      "t0_evidence_ids": [
+        "t0-market-census#p2"
+      ],
+      "t1_evidence_ids": [
+        "t0-market-census#p2@T1"
+      ],
+      "patch_eligible": false
+    },
+    {
+      "claim_id": "c5",
+      "status": "fresh",
+      "voided": false,
+      "statement": "我方单会话服务成本仍低于竞品",
+      "t0_evidence_ids": [
+        "t0-cost-model#p2"
+      ],
+      "t1_evidence_ids": [
+        "t0-cost-model#p2@T1"
+      ],
+      "patch_eligible": false
+    },
+    {
+      "claim_id": "c6",
+      "status": "fresh",
+      "voided": false,
+      "statement": "竞品 SeaDesk 收缩东南亚免费版、聚焦付费商户,意味着市场窗口打开",
+      "t0_evidence_ids": [
+        "t0-competitor-news#p2"
+      ],
+      "t1_evidence_ids": [
+        "t0-competitor-news#p2@T1",
+        "t0-competitor-news#p3@T1"
+      ],
+      "patch_eligible": false
+    },
+    {
+      "claim_id": "c7",
+      "status": "stale",
+      "voided": false,
+      "statement": "行业媒体最新一期报道显示,竞品 SeaDesk 客单价仍为 99 美元/月,我方价格优势仍在",
+      "t0_evidence_ids": [
+        "t0-trade-press#p2"
+      ],
+      "t1_evidence_ids": [
+        "t0-trade-press#p2@T1",
+        "t0-trade-press#p3@T1"
+      ],
+      "patch_eligible": true
+    },
+    {
+      "claim_id": "c8",
+      "status": "fresh",
+      "voided": false,
+      "statement": "东南亚本地语言小模型生态不成熟,核心对话能力需自研",
+      "t0_evidence_ids": [
+        "t0-tech-ecosystem#p2"
+      ],
+      "t1_evidence_ids": [
+        "t0-tech-ecosystem#p2@T1"
+      ],
+      "patch_eligible": false
+    },
+    {
+      "claim_id": "c9",
+      "status": "unknown",
+      "voided": false,
+      "statement": "目标市场 WhatsApp Business 渗透率不低于 70%",
+      "t0_evidence_ids": [
+        "t0-messaging-survey#p2"
+      ],
+      "t1_evidence_ids": [],
+      "patch_eligible": true
+    },
+    {
+      "claim_id": "c10",
+      "status": "unknown",
+      "voided": false,
+      "statement": "雅加达双语客服专员综合用工成本约 450 美元/月",
+      "t0_evidence_ids": [
+        "t0-talent-salary#p2"
+      ],
+      "t1_evidence_ids": [],
+      "patch_eligible": true
+    },
+    {
+      "claim_id": "c11",
+      "status": "unknown",
+      "voided": false,
+      "statement": "电子钱包已是目标市场第一大收款方式(占比约 58%)",
+      "t0_evidence_ids": [
+        "t0-payment-landscape#p2"
+      ],
+      "t1_evidence_ids": [],
+      "patch_eligible": true
+    },
+    {
+      "claim_id": "c12",
+      "status": "unknown",
+      "voided": false,
+      "statement": "合作候选云服务商区域可用区年计划外故障不超过 2 次",
+      "t0_evidence_ids": [
+        "t0-infra-reliability#p2"
+      ],
+      "t1_evidence_ids": [],
+      "patch_eligible": true
+    }
+  ],
+  "disposition": "勿发",
+  "latch": {
+    "thread_id": "reverify-round-20261016-124848",
+    "pending": [
+      {
+        "claim_id": "c1",
+        "statement": "竞品 SeaDesk 在该市场的客单价仍显著高于我方拟定的 59 美元/月/店定价",
+        "status": "stale",
+        "reason": "T1 原文明确指出，SeaDesk Lite 入门版报价为 39 美元/月/店，已低于我方拟定的 59 美元/月/店定价；且有两家商户已实际转用 Lite 版，直接推翻『客单价仍显著高于』的前提。"
+      },
+      {
+        "claim_id": "c2",
+        "statement": "印尼与泰国监管暂无客服数据本地化强制要求",
+        "status": "stale",
+        "reason": "T1 原文明确指出：『2026 年 8 月，印尼通信与信息技术部发布 PDP 法实施条例，其中明确规定：面向印尼境内用户的在线客服对话日志须在印尼境内存储，2026 年 12 月 1 日起生效，过渡期 90 天。』该句直接推翻了主张中『印尼监管暂无客服数据本地化强制要求』的前提；同时，泰国虽未定稿，但已发布咨询稿拟提出类似要求，亦构成对『暂无』的否定。因此，原主张在 T1 时刻已被明确推翻。"
+      },
+      {
+        "claim_id": "c3",
+        "statement": "3 家意向渠道伙伴接受 30% 销售分成比例",
+        "status": "stale",
+        "reason": "T1 原文明确指出：『Manila BizLink 与曼谷 SiamReach 均改口，要求分成比例从 30% 提高到 45%，理由是 SeaDesk 2026 年 7 月起对渠道给出 40% 的返点，30% 已无人愿意推；PT MegaSolusi 表示 30% 仅接受首年，第二年要按 40% 重谈。3 月纪要中「均明确接受 30%」的口径已不成立。』该句直接推翻了主张 c3 中『3 家意向渠道伙伴接受 30% 销售分成比例』的前提，且证据来源为复访纪要（访谈记录），属于 interview_reversal 维度。"
+      },
+      {
+        "claim_id": "c7",
+        "statement": "行业媒体最新一期报道显示,竞品 SeaDesk 客单价仍为 99 美元/月,我方价格优势仍在",
+        "status": "stale",
+        "reason": "T1 原文明确承认《东南亚 SaaS 观察》2026 年 9 月刊中关于 SeaDesk 标准版定价为 99 美元/月的表述存在已知滞后，且该数据未反映 SeaDesk 于 2026 年 7 月将标准版价格降至 79 美元/月的事实。因此，主张中『竞品 SeaDesk 客单价仍为 99 美元/月』的前提已被 T1 原文直接推翻。"
+      },
+      {
+        "claim_id": "c9",
+        "statement": "目标市场 WhatsApp Business 渗透率不低于 70%",
+        "status": "unknown",
+        "reason": "缺口: T1 原文明确说明 WhatsApp Business 渗透率指标已不再列入跟踪项,无新数据覆盖,无法验证主张前提"
+      },
+      {
+        "claim_id": "c10",
+        "statement": "雅加达双语客服专员综合用工成本约 450 美元/月",
+        "status": "unknown",
+        "reason": "缺口: T1 时刻雅加达双语客服专员综合用工成本无新测量，2 月调研数据（约 450 美元/月）后无更新记录，缺乏现时支持性证据。"
+      },
+      {
+        "claim_id": "c11",
+        "statement": "电子钱包已是目标市场第一大收款方式(占比约 58%)",
+        "status": "unknown",
+        "reason": "缺口: T1 原文明确声明『本期笔记未复测支付方式格局』,且『没有任何新的格局性数据入账』,无法验证电子钱包占比是否仍为 58%。签发时依据的 2 月小样本访谈数据已过时,无新数据更新。"
+      },
+      {
+        "claim_id": "c12",
+        "statement": "合作候选云服务商区域可用区年计划外故障不超过 2 次",
+        "status": "unknown",
+        "reason": "缺口: T1 时刻无 2026 财年区域可用区计划外故障数据,且供应商报告未发布,无法验证主张前提。"
+      }
+    ]
+  },
+  "active_run_id": "run-e39047098a",
+  "run_status": "待人审"
+}
