@@ -1,0 +1,11 @@
+{
+  "url": "http://127.0.0.1:8000/api/source/t0-competitor-notes?as_of=T1",
+  "http": 200,
+  "doc_id": "t0-competitor-notes",
+  "n_sections": 3,
+  "anchors": [
+    "p1",
+    "p2",
+    "p3"
+  ]
+}

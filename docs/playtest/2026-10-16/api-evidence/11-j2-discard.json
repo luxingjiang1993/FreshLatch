@@ -1,0 +1,20 @@
+{
+  "journey": "J2",
+  "title": "discard stale claim; must not read as green publishable",
+  "http": 200,
+  "result0": {
+    "claim_id": "c1",
+    "ok": true,
+    "action": "discard",
+    "error_code": null,
+    "detail": "已作废并进作废名单(voided_at=2026-10-16T12:35:49);机器判定 stale 保留"
+  },
+  "c1_after": {
+    "status": "stale",
+    "voided": true,
+    "reason": "T1 竞品降价"
+  },
+  "invalidation_has_c1": true,
+  "llm_spend": "zero",
+  "notes": "TestClient enter_round + discard. Full UI discard modal + ledger screenshot pending computerUse. Live GET /api/source/t0-competitor-notes?as_of=T1 returns sections (evidence click-through substrate)."
+}
