@@ -529,9 +529,71 @@ def api_publish_hook_check(
     return JSONResponse(body, status_code=deny_http_status(result.code))
 
 
+def _sheet_must_keep() -> bool:
+    """#665:已有待拍板或勿发时,import 不得覆盖当前复验单。"""
+    latch = _state.get("latch") or {}
+    if latch.get("pending"):
+        return True
+    claims = list(_state.get("claims") or [])
+    if not claims:
+        return False
+    return disposition_for_claims(claims) == "勿发"
+
+
+def _preserved_import_payload() -> dict:
+    """幂等加载:原样返回当前会话,不新建 Run,不改 latch。"""
+    rid = _state.get("active_run_id")
+    row = None
+    if rid:
+        found = _prepublish.get(str(rid))
+        if found is not None:
+            row = found.to_dict()
+    return {
+        "imported": len(_state.get("claims") or []),
+        "preserved": True,
+        "run": row,
+    }
+
+
+def _clear_live_sheet() -> None:
+    """显式重置:只清当前复验单。历史发前行留在注册表里。"""
+    _state["claims"] = []
+    _state["question"] = ""
+    _state["latch"] = dict(EMPTY_LATCH)
+    _state["trajectory"] = None
+    _state["active_run_id"] = None
+    _state["retrieve_zero_hits"] = []
+    _state["budget"] = dict(EMPTY_BUDGET)
+    _state["bound_t1_checksums"] = {}
+    _state["run_ctx"] = None
+    # 解开当前指针,避免下次 upsert 把勿发行改写成空表
+    _prepublish.active_run_id = None
+
+
+@app.get("/api/boot")
+def api_boot() -> dict:
+    """页面加载/刷新:幂等读取当前会话。不调用 import,不洗勿发与待拍板。"""
+    return api_claims()
+
+
+@app.post("/api/session/reset")
+def api_session_reset() -> JSONResponse:
+    """高级「重置」:显式清空当前复验单。不调用 HumanLatch,不改闸。"""
+    if _state.get("running"):
+        return JSONResponse({"error": "复验进行中,不能重置"}, status_code=409)
+    _clear_live_sheet()
+    return JSONResponse({"reset": True, "latch": dict(EMPTY_LATCH)})
+
+
 @app.post("/api/import")
 def api_import() -> dict:
-    """JSON docket 高级入口(Workflow):只读 statement 与 t0_evidence_ids,不做新调查。"""
+    """JSON docket 高级入口(Workflow):只读 statement 与 t0_evidence_ids,不做新调查。
+
+    #665:会话里已有勿发或待拍板时本调用改为幂等加载,不覆盖。
+    清空只走 POST /api/session/reset。
+    """
+    if _sheet_must_keep():
+        return _preserved_import_payload()
     docket = load_docket(DEMO_DOCKET)
     _state["claims"] = docket.claims
     _state["question"] = docket.question  # 单一真相:当前课题包 docket
@@ -626,6 +688,9 @@ def api_import_draft(req: DraftImportRequest) -> JSONResponse:
         docket, assigned = parse_claim_import_draft(req.text, question=req.question)
     except ClaimImportError as e:
         return JSONResponse({"error": str(e)}, status_code=400)
+    # #665:合法草稿也不覆盖已有勿发/待拍板;清空走高级重置
+    if _sheet_must_keep():
+        return JSONResponse(_preserved_import_payload())
     _state["claims"] = docket.claims
     _state["question"] = docket.question
     _state["latch"] = dict(EMPTY_LATCH)
