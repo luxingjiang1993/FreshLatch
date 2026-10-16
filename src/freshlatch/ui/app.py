@@ -1055,6 +1055,12 @@ def index(view: str = Query(default="")) -> str:
     # view=audit 只改呈现,不改闸。审计正文来自 project_audit。
     mode = "audit" if view == "audit" else VIEW_MODE_DEFAULT
     page = HTML_PAGE.replace(_VIEW_MODE_TOKEN, mode)
+    # #664 只同步呈现密度。data-view 决定职人主路径是否折叠协议词,不改判定。
+    page = page.replace(
+        '<html lang="zh" data-view="craftsman">',
+        f'<html lang="zh" data-view="{mode}">',
+        1,
+    )
     if mode != "craftsman":
         page = page.replace('id="view-craftsman" class="on"', 'id="view-craftsman"')
         page = page.replace('id="view-audit"', 'id="view-audit" class="on"', 1)

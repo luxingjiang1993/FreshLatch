@@ -4,9 +4,12 @@
 止损条款高于验收:任何「为了过本测试」修改主按钮/主界面的动作判定为违规(ADR-0007 §3)。
 """
 
+import json
+import subprocess
+from html.parser import HTMLParser
 from pathlib import Path
 
-from freshlatch.ui.app import HTML_PAGE, MAIN_BUTTON_TEXT
+from freshlatch.ui.app import BADGE, HTML_PAGE, MAIN_BUTTON_TEXT
 
 UI_SRC = Path(__file__).resolve().parent.parent.parent / "src" / "freshlatch" / "ui" / "app.py"
 
@@ -114,4 +117,219 @@ def test_div_tag_balance():
     assert loop_opens == loop_closes, (
         f"renderClaims 循环体内 <div> 不配平:开 {loop_opens} / 闭 {loop_closes}——单张卡片会缺闭合标签"
     )
+
+
+# #664 三类白话清单。展示映射,不新增后端状态。
+
+_PROTOCOL_WORDS = ("claim", "latch", "T0", "fail-closed")
+_VOID_TAGS = {
+    "area", "base", "br", "col", "embed", "hr", "img", "input",
+    "link", "meta", "source", "track", "wbr",
+}
+
+
+class _CraftsmanMainPath(HTMLParser):
+    """职人默认主路径可见文本。脚本、审计面板、弹层、高级折叠内文不计入。"""
+
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self.parts: list[str] = []
+        self._stack: list[str] = []
+        self._summary_done = False
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        ad = dict(attrs)
+        classes = set((ad.get("class") or "").split())
+        entering = None
+        if not self._stack:
+            if tag in ("script", "style"):
+                entering = "raw"
+            elif ad.get("id") == "audit-panel" or "modal" in classes:
+                entering = "hide"
+            elif ad.get("id") == "advanced-evidence":
+                entering = "advanced"
+        else:
+            top = self._stack[-1]
+            if top == "raw":
+                entering = "raw"
+            elif top == "hide":
+                entering = "hide"
+            elif top == "summary":
+                entering = "summary"
+            elif top == "advanced":
+                entering = "summary" if tag == "summary" and not self._summary_done else "hide"
+        if entering:
+            self._stack.append(entering)
+        if tag in _VOID_TAGS and self._stack:
+            self._stack.pop()
+
+    def handle_endtag(self, tag: str) -> None:
+        if tag in _VOID_TAGS or not self._stack:
+            return
+        top = self._stack.pop()
+        if top == "summary":
+            self._summary_done = True
+        elif top == "advanced":
+            self._summary_done = False
+
+    def handle_data(self, data: str) -> None:
+        if not self._stack or self._stack[-1] == "summary":
+            self.parts.append(data)
+
+
+def _craftsman_main_text(html: str) -> str:
+    parser = _CraftsmanMainPath()
+    parser.feed(html)
+    return "".join(parser.parts)
+
+
+def _grab_js(name: str) -> str:
+    """按花括号配平截取顶层 function,供 node 跑展示映射。"""
+    key = f"function {name}("
+    start = HTML_PAGE.index(key)
+    i = HTML_PAGE.index("{", start)
+    depth = 0
+    quote = ""
+    k = i
+    while k < len(HTML_PAGE):
+        ch = HTML_PAGE[k]
+        if quote:
+            if ch == "\\":
+                k += 2
+                continue
+            if ch == quote:
+                quote = ""
+            k += 1
+            continue
+        if ch in ("'", '"', "`"):
+            quote = ch
+            k += 1
+            continue
+        if ch == "{":
+            depth += 1
+        elif ch == "}":
+            depth -= 1
+            if depth == 0:
+                return HTML_PAGE[start:k + 1]
+        k += 1
+    raise AssertionError(f"函数未闭合: {name}")
+
+
+def test_issue_664_three_lists_are_display_maps():
+    """三类清单可见且各有一行定义;映射仍是 fresh / stale|unknown / latch pending。"""
+    assert 'id="vernacular-lists"' in HTML_PAGE
+    assert 'data-map="fresh"' in HTML_PAGE
+    assert 'data-map="stale|unknown"' in HTML_PAGE
+    assert 'data-map="latch pending"' in HTML_PAGE
+    assert ">仍可信</h3>" in HTML_PAGE
+    assert ">可能过期</h3>" in HTML_PAGE
+    assert ">要你确认</h3>" in HTML_PAGE
+    assert "证据仍支撑这条结论" in HTML_PAGE
+    assert "材料变了或证据不够" in HTML_PAGE
+    assert "系统拦下，需你拍板" in HTML_PAGE
+    assert set(BADGE) == {"fresh", "stale", "unknown", "void"}
+    bucket = _grab_js("vernacularBucket")
+    assert "/api/" not in bucket
+    assert 'c.status === "fresh"' in bucket
+    assert 'c.status === "stale" || c.status === "unknown"' in bucket
+    assert "awaitingConfirm" in bucket
+    advanced = HTML_PAGE.split('id="advanced-evidence"', 1)[1].split('id="craftsman-badges"', 1)[0]
+    assert "<summary>高级/证据</summary>" in advanced
+    for marker in ('id="how-to-read"', 'id="t1-checksums"', 'id="gate-results"', 'id="claim-ledger"'):
+        assert marker in advanced
+
+
+def test_issue_664_craftsman_main_path_has_no_protocol_pile():
+    """默认职人主路径可见文案无 claim/latch/T0/fail-closed;协议在高级/证据。"""
+    from fastapi.testclient import TestClient
+
+    from freshlatch.ui.app import app
+
+    for html in (HTML_PAGE, TestClient(app).get("/").text):
+        text = _craftsman_main_text(html)
+        assert "仍可信" in text and "可能过期" in text and "要你确认" in text
+        assert "高级/证据" in text
+        for word in _PROTOCOL_WORDS:
+            assert word not in text, word
+    assert "protocol-inline" in HTML_PAGE
+    assert 'html[data-view="craftsman"] .protocol-inline{display:none}' in HTML_PAGE
+
+
+def test_issue_664_decide_leaves_confirm_list_and_block_keeps_lists():
+    """作废/续命后离开要你确认;挡续命只出成功说明,不清空三类清单。"""
+    names = (
+        "esc", "pickedAction", "renewOptions", "renewButton", "explainRenewBlocked",
+        "awaitingConfirm", "vernacularBucket", "vernacularItemHtml", "fillVernacular",
+        "renderVernacularLists",
+    )
+    src = "\n".join(_grab_js(name) for name in names)
+    script = r"""
+const RENEW_BLOCKED_COPY = __COPY__;
+let PENDING_DECISIONS = [];
+let STATE = {claims: [], latch: {pending: []}};
+const els = {};
+function makeEl(id){
+  return {id: id, innerHTML: "", textContent: "", attrs: {},
+    setAttribute(k, v){ this.attrs[k] = v; },
+    classList: {add(c){ this._c = c; }}};
+}
+for (const id of ["list-still-trusted-items","list-maybe-stale-items","list-needs-you-items","renew-blocked-note"]) {
+  els[id] = makeEl(id);
+}
+global.document = {getElementById(id){ return els[id] || null; }};
+__SRC__
+function textOf(id){ return els[id].innerHTML; }
+STATE.claims = [
+  {claim_id:"a", status:"fresh", statement:"仍成立的结论", t0_evidence_ids:[], t1_evidence_ids:[]},
+  {claim_id:"b", status:"stale", statement:"过期结论", t0_evidence_ids:[], t1_evidence_ids:[]},
+  {claim_id:"c", status:"unknown", statement:"证据不够", t0_evidence_ids:[], t1_evidence_ids:[]},
+  {claim_id:"d", status:"stale", statement:"请你拍板", t0_evidence_ids:[], t1_evidence_ids:[]}
+];
+STATE.latch = {thread_id:"t", pending:[{claim_id:"c"},{claim_id:"d"}]};
+renderVernacularLists();
+if (!textOf("list-still-trusted-items").includes("仍成立的结论")) process.exit(2);
+if (!textOf("list-maybe-stale-items").includes("过期结论")) process.exit(3);
+if (textOf("list-maybe-stale-items").includes("证据不够")) process.exit(4);
+if (!textOf("list-needs-you-items").includes("证据不够")) process.exit(5);
+if (!textOf("list-needs-you-items").includes("请你拍板")) process.exit(6);
+if (!textOf("list-needs-you-items").includes(">作废<")) process.exit(7);
+if (!textOf("list-needs-you-items").includes(">续命<")) process.exit(8);
+PENDING_DECISIONS = [{claim_id:"d", action:"discard"}];
+renderVernacularLists();
+if (textOf("list-needs-you-items").includes("请你拍板")) process.exit(9);
+if (!textOf("list-maybe-stale-items").includes("请你拍板")) process.exit(10);
+if (!textOf("list-still-trusted-items").includes("仍成立的结论")) process.exit(11);
+if (!textOf("list-needs-you-items").includes("证据不够")) process.exit(12);
+PENDING_DECISIONS = [{claim_id:"c", action:"renew"}];
+renderVernacularLists();
+if (textOf("list-needs-you-items").includes("证据不够")) process.exit(13);
+const before = {
+  fresh: textOf("list-still-trusted-items"),
+  maybe: textOf("list-maybe-stale-items"),
+  confirm: textOf("list-needs-you-items")
+};
+explainRenewBlocked("d");
+if (textOf("list-still-trusted-items") !== before.fresh) process.exit(14);
+if (textOf("list-maybe-stale-items") !== before.maybe) process.exit(15);
+if (textOf("list-needs-you-items") !== before.confirm) process.exit(16);
+if (!els["renew-blocked-note"].textContent.includes("挡住=产品在干活")) process.exit(17);
+if (STATE.claims.length !== 4) process.exit(19);
+console.log("ok");
+""".replace("__COPY__", json.dumps(
+        "续命被挡住。挡住=产品在干活:没有可核对的新材料,或既有闸拦住了。清单还在。"
+    )).replace("__SRC__", src)
+    # 成功文案必须与页面常量一致,避免测试另写一套
+    assert "挡住=产品在干活" in HTML_PAGE
+    assert 'title="本轮无已检索 T1 原文块,续命不可用"' in HTML_PAGE
+    assert "explainRenewBlocked" in _grab_js("renewButton")
+    proc = subprocess.run(["node", "-e", script], capture_output=True, text=True, check=False)
+    assert proc.returncode == 0, proc.stderr + proc.stdout
+    assert "ok" in proc.stdout
+    blocked = _grab_js("explainRenewBlocked")
+    assert "STATE.claims" not in blocked
+    assert "innerHTML" not in blocked
+    submit = HTML_PAGE.split("async function submitDecisions(")[1].split("\nasync function ")[0]
+    assert "renewBlocked" in submit
+    assert "RENEW_BLOCKED_COPY" in submit
+    assert "list-still-trusted-items" not in submit
 
