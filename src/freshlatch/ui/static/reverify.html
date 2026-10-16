@@ -63,6 +63,10 @@
  .view-toggle button:last-child{border-radius:0 6px 6px 0;border-left:0}
  .view-toggle button.on{background:#1f6feb;color:#fff;border-color:#1f6feb}
  #status{font-size:13px;color:#57606a}
+ /* #663:复验进行中的白话进度;默认不占位,点一键样例后可见 */
+ #reverify-progress{display:none;margin:0 16px 10px;background:#ddf4ff;border:1px solid #54aeff;
+                    border-radius:6px;padding:10px 14px;color:#0a2540;font-size:15px}
+ #reverify-progress.visible{display:block}
  #audit-panel{display:none;margin:0 16px 10px;background:#fff;border:1px solid #d0d7de;
               border-radius:6px;padding:10px 14px;font-size:13px;color:#57606a}
  #audit-panel.visible{display:block}
@@ -201,8 +205,9 @@
  <span style="flex:1"></span>
  <button class="ghost" type="button" onclick="toggleImportPanel()">主张导入稿</button>
  <button class="ghost" type="button" onclick="importDocket()">导入合成 docket(高级)</button>
- <button class="big" id="btn-run" onclick="runReverify()">开始复验</button>
+ <button class="big" id="btn-run" onclick="startSample()">一键样例</button>
 </header>
+<div id="reverify-progress" role="status">正在用新材料核对旧结论（大约两分钟）</div>
 <div id="audit-panel" aria-live="polite">
  <b>审计视图</b> · 复验 / 反证 / 闸(排障用;不改变作废·续命·闸语义)
  <div id="audit-body" style="margin-top:6px">__AUDIT_BODY__</div>
@@ -300,10 +305,11 @@ let PATCH_FORM = {};  // claim_id → {after_text, t1_ids, minutes}
 let budgetPoll = null;  // DEM-4:复验中轮询预算
 // DEM-6:同一复验单两密度;默认职人;切换只改呈现,不碰 Latch/Gate
 let VIEW_MODE = "__VIEW_MODE_DEFAULT__";
-const STATUS_RUNNING_CRAFTSMAN = "复验中……";
+const STATUS_RUNNING_CRAFTSMAN = "正在用新材料核对旧结论（大约两分钟）";
 const STATUS_DONE_CRAFTSMAN = "复验完成";
-const STATUS_RUNNING_AUDIT = "复验中(端到端真主链:复验循环 + 规则闸)……";
+const STATUS_RUNNING_AUDIT = "正在用新材料核对旧结论（大约两分钟）· 复验中(端到端真主链:复验循环 + 规则闸)……";
 const STATUS_DONE_AUDIT = "复验完成";  // 详情拼在 audit 面板,状态栏保持短句
+let REVERIFY_RUNNING = false;  // 样例进入复验后为真;切视图时用来保住白话进度
 function esc(s){return s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}
 const BADGE = {fresh:["绿 · 仍成立","#1a7f37"],stale:["红 · 已失效","#cf222e"],
                unknown:["灰 · 证据不足","#6e7781"],void:["void · 已作废","#8250df"]};
@@ -355,11 +361,41 @@ function setViewMode(mode){
       (VIEW_MODE === "audit")
         ? (STATUS_DONE_AUDIT + " · 见下方工具轨迹")
         : STATUS_DONE_CRAFTSMAN;
-  } else if(document.getElementById("status").textContent.indexOf("复验中") === 0){
-    // 复验进行中切视图:同步 running 文案密度
+  } else if(REVERIFY_RUNNING || document.getElementById("status").textContent.indexOf("复验中") === 0){
+    // 复验进行中切视图:同步 running 文案密度(白话进度条不随密度收起)
     document.getElementById("status").textContent =
       (VIEW_MODE === "audit") ? STATUS_RUNNING_AUDIT : STATUS_RUNNING_CRAFTSMAN;
   }
+}
+function showSampleProgress(){
+  // #663:复验进行中露出白话进度,并写上大约两分钟的预期
+  REVERIFY_RUNNING = true;
+  const bar = document.getElementById("reverify-progress");
+  if(bar) bar.classList.add("visible");
+  document.getElementById("status").textContent =
+    (VIEW_MODE === "audit") ? STATUS_RUNNING_AUDIT : STATUS_RUNNING_CRAFTSMAN;
+}
+function hideSampleProgress(){
+  REVERIFY_RUNNING = false;
+  const bar = document.getElementById("reverify-progress");
+  if(bar) bar.classList.remove("visible");
+}
+async function startSample(){
+  // #663 一键样例:选用内置合成评测包,然后进入既有复验。导入仍是次按钮。
+  const btn = document.getElementById("btn-run");
+  if(!btn || btn.disabled) return;
+  btn.disabled = true;
+  showSampleProgress();
+  const j = await (await fetch("/api/t1-source/synthetic",{method:"POST"})).json();
+  if(j.error){
+    document.getElementById("status").textContent = j.error;
+    hideSampleProgress();
+    btn.disabled = false;
+    return;
+  }
+  T1SRC = j;
+  btn.disabled = false;
+  await runReverify();
 }
 function auditPatchText(hit){
   // 与 PATCH_VISIBILITY_FIELDS、服务端 _patch_visibility_html 同一组列。空值写「无」。
@@ -1183,8 +1219,7 @@ async function runReverify(){
   const btn = document.getElementById('btn-run');
   btn.disabled = true;
   // 职人默认成交面不用角色专名;审计视图才展开查询/命中/依据/原因
-  document.getElementById('status').textContent =
-    (VIEW_MODE === "audit") ? STATUS_RUNNING_AUDIT : STATUS_RUNNING_CRAFTSMAN;
+  showSampleProgress();
   if(budgetPoll) clearInterval(budgetPoll);
   budgetPoll = setInterval(pollBudget, 400);
   try{
@@ -1216,6 +1251,7 @@ async function runReverify(){
     }
   } finally {
     if(budgetPoll){ clearInterval(budgetPoll); budgetPoll = null; }
+    hideSampleProgress();
     btn.disabled = false;
   }
 }

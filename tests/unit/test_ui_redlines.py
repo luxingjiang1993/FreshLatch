@@ -12,9 +12,25 @@ UI_SRC = Path(__file__).resolve().parent.parent.parent / "src" / "freshlatch" / 
 
 
 def test_main_button_whitelist():
-    """红线 2:主按钮文案 ∈ {开始复验}。"""
-    assert MAIN_BUTTON_TEXT == "开始复验"
-    assert ">开始复验</button>" in HTML_PAGE
+    """红线 2(#663):首页主 CTA = 一键样例;导入为次按钮;不得叫「生成答案」。"""
+    assert MAIN_BUTTON_TEXT == "一键样例"
+    assert 'id="btn-run" onclick="startSample()">一键样例</button>' in HTML_PAGE
+    assert "function startSample(" in HTML_PAGE
+    assert "/api/t1-source/synthetic" in HTML_PAGE
+    assert "await runReverify()" in HTML_PAGE
+    assert 'class="big"' in HTML_PAGE
+    assert HTML_PAGE.count('class="big"') == 1
+    assert 'onclick="importDocket()"' in HTML_PAGE
+    assert "主张导入稿" in HTML_PAGE
+    # 导入按钮保持 ghost,不占用唯一主按钮
+    assert 'class="ghost" type="button" onclick="importDocket()"' in HTML_PAGE
+    assert "正在用新材料核对旧结论" in HTML_PAGE
+    assert "大约两分钟" in HTML_PAGE
+    assert 'id="reverify-progress"' in HTML_PAGE
+    assert "生成答案" not in HTML_PAGE
+    # HumanLatch 动词集仍只经 discard|renew,本票不改
+    assert "action: 'discard'" in HTML_PAGE
+    assert "action:'renew'" in HTML_PAGE
 
 
 def test_no_chat_main_box():

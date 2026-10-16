@@ -20,6 +20,6 @@ def test_pages_loaded_from_static_not_inline():
     prepublish = (STATIC / "prepublish.html").read_text(encoding="utf-8")
     assert appmod.HTML_PAGE == reverify
     assert appmod.PREPUBLISH_HTML == prepublish
-    assert ">开始复验</button>" in appmod.HTML_PAGE
+    assert ">一键样例</button>" in appmod.HTML_PAGE
     assert "_state: dict" in src
     assert "def create_app" not in src
