@@ -1,0 +1,51 @@
+{
+  "version": "v0",
+  "counted_as_pass": false,
+  "note": "合成 CI 夹具。夹具绿不等于注册 G1/A1 过线，不等于 RESULT-Y 乙，不等于 SESOI。",
+  "rows": [
+    {
+      "id": "G2-IE-01",
+      "label": "must_abstain",
+      "expected": "insufficient_evidence",
+      "scene": "零/空 hits → 不得 fresh",
+      "anchor": "AG-02 / RAG-01"
+    },
+    {
+      "id": "G2-CR-01",
+      "label": "must_abstain",
+      "expected": "cite_outside_registry",
+      "scene": "cite 不在 turn registry",
+      "anchor": "EV-02 / FC-CITE"
+    },
+    {
+      "id": "G2-NM-01",
+      "label": "must_abstain",
+      "expected": "numeric_mismatch",
+      "scene": "假数字 quote",
+      "anchor": "B-01 test_fake_quote_fixture_is_not_fresh_and_names_numeric_mismatch"
+    },
+    {
+      "id": "G2-CF-01",
+      "label": "must_abstain",
+      "expected": "conflicting_evidence",
+      "scene": "互斥 @T1 对",
+      "anchor": "B-02 test_exclusive_fixture_is_not_fresh_and_names_conflicting_evidence"
+    },
+    {
+      "id": "G2-RN-01",
+      "label": "must_block_renew",
+      "expected": "RENEW_NO_EVIDENCE",
+      "scene": "无 T1 续命 blocked",
+      "anchor": "tests/unit/test_renew.py HumanLatch.decide 省略 evidence_id",
+      "wired": "human_latch_no_evidence"
+    },
+    {
+      "id": "G2-OK-01",
+      "label": "must_not_abstain",
+      "expected": "（不得误判为上表码）",
+      "scene": "足证据对照路径",
+      "anchor": "B-01 match",
+      "wired": "b01_match"
+    }
+  ]
+}
