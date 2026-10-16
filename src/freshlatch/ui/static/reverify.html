@@ -171,6 +171,11 @@
  #renew-blocked-note.visible{display:block}
  #advanced-evidence{margin:0 16px 10px;background:#fff;border:1px solid #d0d7de;border-radius:6px;padding:8px 12px}
  #advanced-evidence > summary{cursor:pointer;font-weight:600;color:#0a2540}
+ /* #665 显式重置只在高级区;主路径与 boot 都不洗待拍板 */
+ #session-reset{margin:8px 0 4px}
+ #session-reset .hint{font-size:12px;color:#57606a;margin:6px 0 0}
+ #session-reset button{padding:5px 12px;border-radius:6px;border:1px solid #d0d7de;
+                       background:#fff;cursor:pointer;font-size:13px}
  #advanced-evidence #how-to-read,
  #advanced-evidence #t1-checksums,
  #advanced-evidence #gate-results,
@@ -268,6 +273,10 @@
 </section>
 <details id="advanced-evidence">
  <summary>高级/证据</summary>
+ <div id="session-reset">
+  <button type="button" id="btn-reset" onclick="resetSession()">重置</button>
+  <p class="hint">清空当前这一张复验单上的待拍板和包结论。打开页面或刷新不会自动清空。</p>
+ </div>
 <aside id="how-to-read">
  <strong>如何读</strong>
  <p>如何读本复验单:【身份】卖作废。【机器】fresh/stale/unknown 是机器判定。【人】void 是人的决定,void≠stale。【边界】非法律意见、非自动决策。</p>
@@ -623,8 +632,8 @@ function renderViewChrome(){
 }
 
 async function boot(){
-  await fetch('/api/import',{method:'POST'});
-  const j = await (await fetch('/api/claims')).json();
+  // #665:页面加载只幂等读取当前会话。不得 POST /api/import,否则会洗掉勿发与待拍板。
+  const j = await (await fetch('/api/boot')).json();
   STATE = Object.assign(STATE, j);
   if(!STATE.retrieve_zero_hits) STATE.retrieve_zero_hits = [];
   absorbDetailExtras(j);
@@ -632,6 +641,18 @@ async function boot(){
   await refreshT1Source();
   renderViewChrome();
   renderClaims();
+}
+async function resetSession(){
+  // #665:清空只走高级区按钮。不改作废/续命。
+  const r = await fetch('/api/session/reset',{method:'POST'});
+  const j = await r.json();
+  if(!r.ok){
+    document.getElementById('status').textContent = j.error || '重置失败';
+    return;
+  }
+  PENDING_DECISIONS = [];
+  await boot();
+  document.getElementById('status').textContent = '已重置当前复验单';
 }
 async function refreshT1Source(){
   T1SRC = await (await fetch('/api/t1-source')).json();
@@ -751,6 +772,11 @@ async function importClaimDraft(){
     body: JSON.stringify({text: text})});
   const j = await r.json();
   if(!r.ok){ document.getElementById('status').textContent = j.error; return; }
+  if(j.preserved){
+    document.getElementById('status').textContent =
+      '已有勿发或待拍板,未清空。要清空请展开高级/证据后点重置。';
+    return;
+  }
   PENDING_DECISIONS = [];
   const claims = await (await fetch('/api/claims')).json();
   STATE = Object.assign(STATE, claims);
@@ -763,7 +789,12 @@ async function importClaimDraft(){
   document.getElementById('status').textContent = msg;
 }
 async function importDocket(){
-  await fetch('/api/import',{method:'POST'});
+  const imported = await (await fetch('/api/import',{method:'POST'})).json();
+  if(imported.preserved){
+    document.getElementById('status').textContent =
+      '已有勿发或待拍板,未清空。要清空请展开高级/证据后点重置。';
+    return;
+  }
   PENDING_DECISIONS = [];
   const j = await (await fetch('/api/claims')).json();
   STATE = Object.assign(STATE, j);
