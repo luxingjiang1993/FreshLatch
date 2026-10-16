@@ -346,7 +346,8 @@ def test_no_field_engine_or_new_main_cta():
     for path in src.rglob("*.py"):
         text = path.read_text(encoding="utf-8")
         assert "reverify_field" not in text
-    assert appmod.MAIN_BUTTON_TEXT == "开始复验"
+    # #663 首页主 CTA 改为一键样例;此处仍禁止比价/字段引擎类主按钮
+    assert appmod.MAIN_BUTTON_TEXT == "一键样例"
     for marker in ("比价", "字段引擎", "自动通知"):
         assert marker not in appmod.HTML_PAGE
 

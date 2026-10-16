@@ -1,6 +1,6 @@
 """复验单 UI:FastAPI 薄壳 + 手写 HTML/JS 双栏(左主张卡片,右原文面板)。
 
-形态红线(§5.1):主界面是复验单,不是聊天框;主按钮 =「开始复验」;界面标注 SYNTHETIC。
+形态红线(§5.1 / #663):主界面是复验单,不是聊天框;主 CTA =「一键样例」(进入复验);界面标注 SYNTHETIC。
 HumanLatch 端点(W3 起,§5.5)为同步 def 端点:FastAPI 线程池执行,同步 SqliteSaver
 不阻塞事件循环(ADR-0006 §8);写路径唯一 = gates/human_latch.py,核心包零 Web 依赖。
 """
@@ -91,7 +91,7 @@ BADGE = {
     "unknown": ("灰 · 证据不足", "#6e7781"),
     "void": ("void · 已作废", "#8250df"),
 }
-MAIN_BUTTON_TEXT = "开始复验"  # 文案白名单(红线 2):主按钮唯一合法文案
+MAIN_BUTTON_TEXT = "一键样例"  # #663 首页主 CTA。复验动作由样例串联进入
 VIEW_MODE_DEFAULT = "craftsman"  # DEM-6:默认职人视图(去角色化成交面)
 # HTML 模板占位:index() 注入 VIEW_MODE_DEFAULT,避免 Python/JS 默认值漂移
 _VIEW_MODE_TOKEN = "__VIEW_MODE_DEFAULT__"
@@ -643,7 +643,7 @@ def api_import_draft(req: DraftImportRequest) -> JSONResponse:
 
 @app.post("/api/reverify")
 def api_reverify() -> JSONResponse:
-    """主按钮「开始复验」:端到端真主链(Lead 裸循环 + 规则闸),轨迹落盘。
+    """复验动作(由一键样例进入):端到端真主链(Lead 裸循环 + 规则闸),轨迹落盘。
 
     整轮跑完(W3 起)进 HumanLatch:图在收尾节点 interrupt,红/黄灯主张进待审清单,
     复验单顶部出「待人工」横幅(轮次级单 interrupt,一次 resume 传整个决定列表)。
