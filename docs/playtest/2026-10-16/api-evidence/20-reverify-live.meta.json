@@ -1,0 +1,36 @@
+{
+  "http_status": 200,
+  "wall_seconds": 137,
+  "started_at": "2026-10-16T12:46:32+08:00",
+  "ended_at": "2026-10-16T12:48:49+08:00",
+  "success": true,
+  "error": null,
+  "curl_exit": 0,
+  "raw_bytes": 20946,
+  "claim_count": 12,
+  "latch_pending_count": 8,
+  "latch_pending_ids": [
+    "c1",
+    "c2",
+    "c3",
+    "c7",
+    "c9",
+    "c10",
+    "c11",
+    "c12"
+  ],
+  "trajectory": "reports/trajectories/run-20261016-124848.jsonl",
+  "disposition": "勿发",
+  "status_hist": {
+    "stale": 4,
+    "fresh": 4,
+    "unknown": 4
+  },
+  "sheet_usable": true,
+  "budget": {
+    "steps_used": 6,
+    "lead_max_steps": 18,
+    "retrieval_used": 19,
+    "retrieval_budget": 24
+  }
+}

@@ -1,0 +1,592 @@
+{
+  "claims": [
+    {
+      "claim_id": "c1",
+      "statement": "竞品 SeaDesk 在该市场的客单价仍显著高于我方拟定的 59 美元/月/店定价",
+      "t0_evidence_ids": [
+        "t0-competitor-notes#p2"
+      ],
+      "t1_evidence_ids": [
+        "t0-competitor-notes#p2@T1"
+      ],
+      "status": "stale",
+      "reason": "T1 原文明确指出，SeaDesk Lite 入门版报价为 39 美元/月/店，已低于我方拟定的 59 美元/月/店定价；且有两家商户已实际转用 Lite 版，直接推翻『客单价仍显著高于』的前提。",
+      "voided": false,
+      "voided_at": null,
+      "last_confirmed_at": null,
+      "validity_basis": null,
+      "timeline": [],
+      "patch_eligible": true
+    },
+    {
+      "claim_id": "c2",
+      "statement": "印尼与泰国监管暂无客服数据本地化强制要求",
+      "t0_evidence_ids": [
+        "t0-regulatory-memo#p2"
+      ],
+      "t1_evidence_ids": [
+        "t0-regulatory-memo#p2@T1"
+      ],
+      "status": "stale",
+      "reason": "T1 原文明确指出：『2026 年 8 月，印尼通信与信息技术部发布 PDP 法实施条例，其中明确规定：面向印尼境内用户的在线客服对话日志须在印尼境内存储，2026 年 12 月 1 日起生效，过渡期 90 天。』该句直接推翻了主张中『印尼监管暂无客服数据本地化强制要求』的前提；同时，泰国虽未定稿，但已发布咨询稿拟提出类似要求，亦构成对『暂无』的否定。因此，原主张在 T1 时刻已被明确推翻。",
+      "voided": false,
+      "voided_at": null,
+      "last_confirmed_at": null,
+      "validity_basis": null,
+      "timeline": [],
+      "patch_eligible": true
+    },
+    {
+      "claim_id": "c3",
+      "statement": "3 家意向渠道伙伴接受 30% 销售分成比例",
+      "t0_evidence_ids": [
+        "t0-channel-interviews#p2"
+      ],
+      "t1_evidence_ids": [
+        "t0-channel-interviews#p2@T1"
+      ],
+      "status": "stale",
+      "reason": "T1 原文明确指出：『Manila BizLink 与曼谷 SiamReach 均改口，要求分成比例从 30% 提高到 45%，理由是 SeaDesk 2026 年 7 月起对渠道给出 40% 的返点，30% 已无人愿意推；PT MegaSolusi 表示 30% 仅接受首年，第二年要按 40% 重谈。3 月纪要中「均明确接受 30%」的口径已不成立。』该句直接推翻了主张 c3 中『3 家意向渠道伙伴接受 30% 销售分成比例』的前提，且证据来源为复访纪要（访谈记录），属于 ...[truncated 262 chars]",
+      "voided": false,
+      "voided_at": null,
+      "last_confirmed_at": null,
+      "validity_basis": null,
+      "timeline": [],
+      "patch_eligible": true
+    },
+    {
+      "claim_id": "c4",
+      "statement": "目标市场(六国具备基础数字化条件的中小企业)不少于 800 万家",
+      "t0_evidence_ids": [
+        "t0-market-census#p2"
+      ],
+      "t1_evidence_ids": [
+        "t0-market-census#p2@T1"
+      ],
+      "status": "fresh",
+      "reason": "复验完成。主张 c4 在 T1 时刻被原文明确支持，判定为 **fresh**。",
+      "voided": false,
+      "voided_at": null,
+      "last_confirmed_at": null,
+      "validity_basis": null,
+      "timeline": [],
+      "patch_eligible": false
+    },
+    {
+      "claim_id": "c5",
+      "statement": "我方单会话服务成本仍低于竞品",
+      "t0_evidence_ids": [
+        "t0-cost-model#p2"
+      ],
+      "t1_evidence_ids": [
+        "t0-cost-model#p2@T1"
+      ],
+      "status": "fresh",
+      "reason": "复验完成。主张 c5「我方单会话服务成本仍低于竞品」经 T1 原文核验，证据充分、逻辑闭环，判定为 **fresh**。  \n最终记录：`reverify_claim(claim_id=\"c5\", status=\"fresh\", evidence_ids=[\"t0-cost-model#p2@T1\"])`  \n规则闸已通过，会话结束。",
+      "voided": false,
+      "voided_at": null,
+      "last_confirmed_at": null,
+      "validity_basis": null,
+      "timeline": [],
+      "patch_eligible": false
+    },
+    {
+      "claim_id": "c6",
+      "statement": "竞品 SeaDesk 收缩东南亚免费版、聚焦付费商户,意味着市场窗口打开",
+      "t0_evidence_ids": [
+        "t0-competitor-news#p2"
+      ],
+      "t1_evidence_ids": [
+        "t0-competitor-news#p2@T1",
+        "t0-competitor-news#p3@T1"
+      ],
+      "status": "fresh",
+      "reason": "复验完成。主张 c6 已判定为 **fresh**，依据 T1 原文证据：\n\n- `t0-competitor-news#p2@T1`：明确指出 SeaDesk 自 2026 年 5 月起收缩免费版座席，付费商户续约率 91%，毛利健康，亏损集中于免费版；\n- `t0-competitor-news#p3@T1`：表明 3 月“窗口不佳”判断被推翻，资源正向付费商户集中，项目组原研判得到验证。\n\n两项证据均锚定 T1，直接支持“竞品收缩免费版、聚焦付费商户”这一前提，并指向“...[truncated 264 chars]",
+      "voided": false,
+      "voided_at": null,
+      "last_confirmed_at": null,
+      "validity_basis": null,
+      "timeline": [],
+      "patch_eligible": false
+    },
+    {
+      "claim_id": "c7",
+      "statement": "行业媒体最新一期报道显示,竞品 SeaDesk 客单价仍为 99 美元/月,我方价格优势仍在",
+      "t0_evidence_ids": [
+        "t0-trade-press#p2"
+      ],
+      "t1_evidence_ids": [
+        "t0-trade-press#p2@T1",
+        "t0-trade-press#p3@T1"
+      ],
+      "status": "stale",
+      "reason": "T1 原文明确承认《东南亚 SaaS 观察》2026 年 9 月刊中关于 SeaDesk 标准版定价为 99 美元/月的表述存在已知滞后，且该数据未反映 SeaDesk 于 2026 年 7 月将标准版价格降至 79 美元/月的事实。因此，主张中『竞品 SeaDesk 客单价仍为 99 美元/月』的前提已被 T1 原文直接推翻。",
+      "voided": false,
+      "voided_at": null,
+      "last_confirmed_at": null,
+      "validity_basis": null,
+      "timeline": [],
+      "patch_eligible": true
+    },
+    {
+      "claim_id": "c8",
+      "statement": "东南亚本地语言小模型生态不成熟,核心对话能力需自研",
+      "t0_evidence_ids": [
+        "t0-tech-ecosystem#p2"
+      ],
+      "t1_evidence_ids": [
+        "t0-tech-ecosystem#p2@T1"
+      ],
+      "status": "fresh",
+      "reason": "复验完成。主张 c8 已确认为 **fresh**，判定依据为 T1 原文 `t0-tech-ecosystem#p2@T1` 中对本地语言小模型性能的明确评估：幻觉率仍显著高于商用门槛（<10%），意图识别准确率未达可用水平，生态不成熟状态持续，自研必要性不变。无有效反证可推翻该结论。",
+      "voided": false,
+      "voided_at": null,
+      "last_confirmed_at": null,
+      "validity_basis": null,
+      "timeline": [],
+      "patch_eligible": false
+    },
+    {
+      "claim_id": "c9",
+      "statement": "目标市场 WhatsApp Business 渗透率不低于 70%",
+      "t0_evidence_ids": [
+        "t0-messaging-survey#p2"
+      ],
+      "t1_evidence_ids": [],
+      "status": "unknown",
+      "reason": "缺口: T1 原文明确说明 WhatsApp Business 渗透率指标已不再列入跟踪项,无新数据覆盖,无法验证主张前提",
+      "voided": false,
+      "voided_at": null,
+      "last_confirmed_at": null,
+      "validity_basis": null,
+      "timeline": [],
+      "patch_eligible": true
+    },
+    {
+      "claim_id": "c10",
+      "statement": "雅加达双语客服专员综合用工成本约 450 美元/月",
+      "t0_evidence_ids": [
+        "t0-talent-salary#p2"
+      ],
+      "t1_evidence_ids": [],
+      "status": "unknown",
+      "reason": "缺口: T1 时刻雅加达双语客服专员综合用工成本无新测量，2 月调研数据（约 450 美元/月）后无更新记录，缺乏现时支持性证据。",
+      "voided": false,
+      "voided_at": null,
+      "last_confirmed_at": null,
+      "validity_basis": null,
+      "timeline": [],
+      "patch_eligible": true
+    },
+    {
+      "claim_id": "c11",
+      "statement": "电子钱包已是目标市场第一大收款方式(占比约 58%)",
+      "t0_evidence_ids": [
+        "t0-payment-landscape#p2"
+      ],
+      "t1_evidence_ids": [],
+      "status": "unknown",
+      "reason": "缺口: T1 原文明确声明『本期笔记未复测支付方式格局』,且『没有任何新的格局性数据入账』,无法验证电子钱包占比是否仍为 58%。签发时依据的 2 月小样本访谈数据已过时,无新数据更新。",
+      "voided": false,
+      "voided_at": null,
+      "last_confirmed_at": null,
+      "validity_basis": null,
+      "timeline": [],
+      "patch_eligible": true
+    },
+    {
+      "claim_id": "c12",
+      "statement": "合作候选云服务商区域可用区年计划外故障不超过 2 次",
+      "t0_evidence_ids": [
+        "t0-infra-reliability#p2"
+      ],
+      "t1_evidence_ids": [],
+      "status": "unknown",
+      "reason": "缺口: T1 时刻无 2026 财年区域可用区计划外故障数据,且供应商报告未发布,无法验证主张前提。",
+      "voided": false,
+      "voided_at": null,
+      "last_confirmed_at": null,
+      "validity_basis": null,
+      "timeline": [],
+      "patch_eligible": true
+    }
+  ],
+  "trajectory": "reports/trajectories/run-20261016-124848.jsonl",
+  "retrieval_used": 19,
+  "steps_by_claim": {
+    "c1": 4,
+    "c2": 4,
+    "c3": 4,
+    "c4": 4,
+    "c5": 6,
+    "c6": 9,
+    "c7": 5,
+    "c8": 5,
+    "c9": 6,
+    "c10": 7,
+    "c11": 6,
+    "c12": 6
+  },
+  "decoding": {
+    "model": "qwen-flash",
+    "temperature": 0.0,
+    "seed": null,
+    "recorded_at": "2026-10-16T04:46:32.582621+00:00"
+  },
+  "latch": {
+    "thread_id": "reverify-round-20261016-124848",
+    "pending": [
+      {
+        "claim_id": "c1",
+        "statement": "竞品 SeaDesk 在该市场的客单价仍显著高于我方拟定的 59 美元/月/店定价",
+        "status": "stale",
+        "reason": "T1 原文明确指出，SeaDesk Lite 入门版报价为 39 美元/月/店，已低于我方拟定的 59 美元/月/店定价；且有两家商户已实际转用 Lite 版，直接推翻『客单价仍显著高于』的前提。"
+      },
+      {
+        "claim_id": "c2",
+        "statement": "印尼与泰国监管暂无客服数据本地化强制要求",
+        "status": "stale",
+        "reason": "T1 原文明确指出：『2026 年 8 月，印尼通信与信息技术部发布 PDP 法实施条例，其中明确规定：面向印尼境内用户的在线客服对话日志须在印尼境内存储，2026 年 12 月 1 日起生效，过渡期 90 天。』该句直接推翻了主张中『印尼监管暂无客服数据本地化强制要求』的前提；同时，泰国虽未定稿，但已发布咨询稿拟提出类似要求，亦构成对『暂无』的否定。因此，原主张在 T1 时刻已被明确推翻。"
+      },
+      {
+        "claim_id": "c3",
+        "statement": "3 家意向渠道伙伴接受 30% 销售分成比例",
+        "status": "stale",
+        "reason": "T1 原文明确指出：『Manila BizLink 与曼谷 SiamReach 均改口，要求分成比例从 30% 提高到 45%，理由是 SeaDesk 2026 年 7 月起对渠道给出 40% 的返点，30% 已无人愿意推；PT MegaSolusi 表示 30% 仅接受首年，第二年要按 40% 重谈。3 月纪要中「均明确接受 30%」的口径已不成立。』该句直接推翻了主张 c3 中『3 家意向渠道伙伴接受 30% 销售分成比例』的前提，且证据来源为复访纪要（访谈记录），属于 interview_reversal 维度。"
+      },
+      {
+        "claim_id": "c7",
+        "statement": "行业媒体最新一期报道显示,竞品 SeaDesk 客单价仍为 99 美元/月,我方价格优势仍在",
+        "status": "stale",
+        "reason": "T1 原文明确承认《东南亚 SaaS 观察》2026 年 9 月刊中关于 SeaDesk 标准版定价为 99 美元/月的表述存在已知滞后，且该数据未反映 SeaDesk 于 2026 年 7 月将标准版价格降至 79 美元/月的事实。因此，主张中『竞品 SeaDesk 客单价仍为 99 美元/月』的前提已被 T1 原文直接推翻。"
+      },
+      {
+        "claim_id": "c9",
+        "statement": "目标市场 WhatsApp Business 渗透率不低于 70%",
+        "status": "unknown",
+        "reason": "缺口: T1 原文明确说明 WhatsApp Business 渗透率指标已不再列入跟踪项,无新数据覆盖,无法验证主张前提"
+      },
+      {
+        "claim_id": "c10",
+        "statement": "雅加达双语客服专员综合用工成本约 450 美元/月",
+        "status": "unknown",
+        "reason": "缺口: T1 时刻雅加达双语客服专员综合用工成本无新测量，2 月调研数据（约 450 美元/月）后无更新记录，缺乏现时支持性证据。"
+      },
+      {
+        "claim_id": "c11",
+        "statement": "电子钱包已是目标市场第一大收款方式(占比约 58%)",
+        "status": "unknown",
+        "reason": "缺口: T1 原文明确声明『本期笔记未复测支付方式格局』,且『没有任何新的格局性数据入账』,无法验证电子钱包占比是否仍为 58%。签发时依据的 2 月小样本访谈数据已过时,无新数据更新。"
+      },
+      {
+        "claim_id": "c12",
+        "statement": "合作候选云服务商区域可用区年计划外故障不超过 2 次",
+        "status": "unknown",
+        "reason": "缺口: T1 时刻无 2026 财年区域可用区计划外故障数据,且供应商报告未发布,无法验证主张前提。"
+      }
+    ]
+  },
+  "retrieve_zero_hits": [
+    {
+      "query": "我方单会话服务成本仍低于竞品 成本模型",
+      "as_of": null,
+      "used": 7,
+      "hits": 0
+    },
+    {
+      "query": "我方单会话服务成本仍低于竞品 成本模型",
+      "as_of": null,
+      "used": 8,
+      "hits": 0
+    },
+    {
+      "query": "我方单会话服务成本仍低于竞品 成本模型",
+      "as_of": null,
+      "used": 9,
+      "hits": 0
+    },
+    {
+      "query": "竞品 SeaDesk 收缩东南亚免费版、聚焦付费商户,意味着市场窗口打开 竞品价格",
+      "as_of": null,
+      "used": 11,
+      "hits": 0
+    }
+  ],
+  "budget": {
+    "steps_used": 6,
+    "lead_max_steps": 18,
+    "retrieval_used": 19,
+    "retrieval_budget": 24
+  },
+  "run": {
+    "run_id": "run-e39047098a",
+    "title": "是否应该在未来 12 个月进入东南亚中小企业 AI 客服市场?",
+    "source": "thesis-1 · 第一课题 · T1:synthetic",
+    "disposition": "勿发",
+    "updated_at": "2026-10-16T04:48:49+00:00",
+    "status": "复验中",
+    "claim_count": 12,
+    "pack_id": "thesis-1",
+    "trajectory": "reports/trajectories/run-20261016-124848.jsonl"
+  },
+  "disposition": "勿发",
+  "run_status": "待人审",
+  "active_run_id": "run-e39047098a",
+  "t1_checksums": [
+    {
+      "doc_id": "t0-channel-coverage",
+      "title": "六国分销渠道盘点(2026 年 1 月,内部渠道组)",
+      "checksum": "6d582f7c5f17105729a6f8472bd2f3a96916515fa2c0007350e9f02b41ba960d",
+      "doc_version": "1.0"
+    },
+    {
+      "doc_id": "t0-channel-interviews",
+      "title": "渠道伙伴访谈纪要",
+      "checksum": "0d7194c2ff6ec38f6d5d04250fa2b1df3b44037b67995e0cc9cd0d640c7ad108",
+      "doc_version": "1.0"
+    },
+    {
+      "doc_id": "t0-competitor-economics",
+      "title": "竞品单位经济模型观察(2026 年 2 月整理)",
+      "checksum": "946d71c2e2e12b7dbd9b3043f8045e299432aeb5183dd4666ef3d9a80b8daf58",
+      "doc_version": "1.0"
+    },
+    {
+      "doc_id": "t0-competitor-news",
+      "title": "竞品新闻稿存档",
+      "checksum": "036e7ecf40ca3e8b977e6de934925e9d09488a640ec1e41a801ef3468204ad24",
+      "doc_version": "1.0"
+    },
+    {
+      "doc_id": "t0-competitor-notes",
+      "title": "竞品访谈笔记",
+      "checksum": "b2a0ad898d712664f671f280ff59bcf03c6364c493879df58a35fa8f0a677ec2",
+      "doc_version": "1.0"
+    },
+    {
+      "doc_id": "t0-cost-model",
+      "title": "单会话服务成本模型 v1",
+      "checksum": "8ba49845499650451117a6d1f29f1e435ee86629d5e61cb4a8fdf8454b7cfb5d",
+      "doc_version": "1.0"
+    },
+    {
+      "doc_id": "t0-infra-reliability",
+      "title": "当地云基础设施可用性记录",
+      "checksum": "5fa702dd3825be0abb4d0b16ff1e978ea149cb5f4523d4a858e2d270de46a919",
+      "doc_version": "1.0"
+    },
+    {
+      "doc_id": "t0-market-census",
+      "title": "东盟中小企业普查数据摘要",
+      "checksum": "cf76c48b9a6cc04a20115b999371cabaa995a1af121ed616e1033062fd57a63b",
+      "doc_version": "1.0"
+    },
+    {
+      "doc_id": "t0-messaging-survey",
+      "title": "即时通讯使用习惯调查",
+      "checksum": "d635cddeb666fb3e0af80dc2ae8eb55933a1fb7cc8ea25fe715f51856c840bb2",
+      "doc_version": "1.0"
+    },
+    {
+      "doc_id": "t0-payment-landscape",
+      "title": "本地支付方式格局笔记",
+      "checksum": "b742d986bdd3feee4fe17a6f8595abe47f72935be608d25fdd5a4a8e2e560720",
+      "doc_version": "1.0"
+    },
+    {
+      "doc_id": "t0-regulatory-memo",
+      "title": "监管口径跟踪备忘",
+      "checksum": "c40dac82ae9f7e0932a7eff078592d7dfbfff360b1e856f39d0030cce6dc5339",
+      "doc_version": "1.0"
+    },
+    {
+      "doc_id": "t0-talent-salary",
+      "title": "当地运营人才薪酬调研",
+      "checksum": "489d23f81c372e2f43cb01d320ae825110ed65d002cc258f7ff4c42a63a727d8",
+      "doc_version": "1.0"
+    },
+    {
+      "doc_id": "t0-tech-ecosystem",
+      "title": "东南亚语言模型生态评估",
+      "checksum": "cdf9f92f73c8b8ca6dfe827c195e8a80b2d2a669a6e81942fcd7e1cd375d526f",
+      "doc_version": "1.0"
+    },
+    {
+      "doc_id": "t0-trade-press",
+      "title": "行业媒体报道汇编",
+      "checksum": "4a012ea01cbe87fc7f2b2ac2cc044acc96ae52657a1c39aa802ef9e8c665ed02",
+      "doc_version": "1.0"
+    }
+  ],
+  "gate_results": [
+    {
+      "claim_id": "c1",
+      "status": "stale",
+      "voided": false,
+      "gate_rejected": false,
+      "error_code": null,
+      "reason": "T1 原文明确指出，SeaDesk Lite 入门版报价为 39 美元/月/店，已低于我方拟定的 59 美元/月/店定价；且有两家商户已实际转用 Lite 版，直接推翻『客单价仍显著高于』的前提。"
+    },
+    {
+      "claim_id": "c2",
+      "status": "stale",
+      "voided": false,
+      "gate_rejected": false,
+      "error_code": null,
+      "reason": "T1 原文明确指出：『2026 年 8 月，印尼通信与信息技术部发布 PDP 法实施条例，其中明确规定：面向印尼境内用户的在线客服对话日志须在印尼境内存储，2026 年 12 月 1 日起生效，过渡期 90 天。』该句直接推翻了主张中『印尼监管暂无客服数据本地化强制要求』的前提；同时，泰国虽未定稿，但已发布咨询稿拟提出类似要求，亦构成对『暂无』的否定。因此，原主张在 T1 时刻已被明确推翻。"
+    },
+    {
+      "claim_id": "c3",
+      "status": "stale",
+      "voided": false,
+      "gate_rejected": false,
+      "error_code": null,
+      "reason": "T1 原文明确指出：『Manila BizLink 与曼谷 SiamReach 均改口，要求分成比例从 30% 提高到 45%，理由是 SeaDesk 2026 年 7 月起对渠道给出 40% 的返点，30% 已无人愿意推；PT MegaSolusi 表示 30% 仅接受首年，第二年要按 40% 重谈。3 月纪要中「均明确接受 30%」的口径已不成立。』该句直接推翻了主张 c3 中『3 家意向渠道伙伴接受 30% 销售分成比例』的前提，且证据来源为复访纪要（访谈记录），属于 interview_reversal 维度。"
+    },
+    {
+      "claim_id": "c4",
+      "status": "fresh",
+      "voided": false,
+      "gate_rejected": false,
+      "error_code": null,
+      "reason": "复验完成。主张 c4 在 T1 时刻被原文明确支持，判定为 **fresh**。"
+    },
+    {
+      "claim_id": "c5",
+      "status": "fresh",
+      "voided": false,
+      "gate_rejected": false,
+      "error_code": null,
+      "reason": "复验完成。主张 c5「我方单会话服务成本仍低于竞品」经 T1 原文核验，证据充分、逻辑闭环，判定为 **fresh**。  \n最终记录：`reverify_claim(claim_id=\"c5\", status=\"fresh\", evidence_ids=[\"t0-cost-model#p2@T1\"])`  \n规则闸已通过，会话结束。"
+    },
+    {
+      "claim_id": "c6",
+      "status": "fresh",
+      "voided": false,
+      "gate_rejected": false,
+      "error_code": null,
+      "reason": "复验完成。主张 c6 已判定为 **fresh**，依据 T1 原文证据：\n\n- `t0-competitor-news#p2@T1`：明确指出 SeaDesk 自 2026 年 5 月起收缩免费版座席，付费商户续约率 91%，毛利健康，亏损集中于免费版；\n- `t0-competitor-news#p3@T1`：表明 3 月“窗口不佳”判断被推翻，资源正向付费商户集中，项目组原研判得到验证。\n\n两项证据均锚定 T1，直接支持“竞品收缩免费版、聚焦付费商户”这一前提，并指向“市场窗口打开”的结论。无有效反证干扰，判定成立。"
+    },
+    {
+      "claim_id": "c7",
+      "status": "stale",
+      "voided": false,
+      "gate_rejected": false,
+      "error_code": null,
+      "reason": "T1 原文明确承认《东南亚 SaaS 观察》2026 年 9 月刊中关于 SeaDesk 标准版定价为 99 美元/月的表述存在已知滞后，且该数据未反映 SeaDesk 于 2026 年 7 月将标准版价格降至 79 美元/月的事实。因此，主张中『竞品 SeaDesk 客单价仍为 99 美元/月』的前提已被 T1 原文直接推翻。"
+    },
+    {
+      "claim_id": "c8",
+      "status": "fresh",
+      "voided": false,
+      "gate_rejected": false,
+      "error_code": null,
+      "reason": "复验完成。主张 c8 已确认为 **fresh**，判定依据为 T1 原文 `t0-tech-ecosystem#p2@T1` 中对本地语言小模型性能的明确评估：幻觉率仍显著高于商用门槛（<10%），意图识别准确率未达可用水平，生态不成熟状态持续，自研必要性不变。无有效反证可推翻该结论。"
+    },
+    {
+      "claim_id": "c9",
+      "status": "unknown",
+      "voided": false,
+      "gate_rejected": false,
+      "error_code": null,
+      "reason": "缺口: T1 原文明确说明 WhatsApp Business 渗透率指标已不再列入跟踪项,无新数据覆盖,无法验证主张前提"
+    },
+    {
+      "claim_id": "c10",
+      "status": "unknown",
+      "voided": false,
+      "gate_rejected": false,
+      "error_code": null,
+      "reason": "缺口: T1 时刻雅加达双语客服专员综合用工成本无新测量，2 月调研数据（约 450 美元/月）后无更新记录，缺乏现时支持性证据。"
+    },
+    {
+      "claim_id": "c11",
+      "status": "unknown",
+      "voided": false,
+      "gate_rejected": false,
+      "error_code": null,
+      "reason": "缺口: T1 原文明确声明『本期笔记未复测支付方式格局』,且『没有任何新的格局性数据入账』,无法验证电子钱包占比是否仍为 58%。签发时依据的 2 月小样本访谈数据已过时,无新数据更新。"
+    },
+    {
+      "claim_id": "c12",
+      "status": "unknown",
+      "voided": false,
+      "gate_rejected": false,
+      "error_code": null,
+      "reason": "缺口: T1 时刻无 2026 财年区域可用区计划外故障数据,且供应商报告未发布,无法验证主张前提。"
+    }
+  ],
+  "archived_t1_ids": [
+    "t0-channel-coverage#p1@T1",
+    "t0-channel-coverage#p2@T1",
+    "t0-channel-coverage#p3@T1",
+    "t0-channel-interviews#p1@T1",
+    "t0-channel-interviews#p2@T1",
+    "t0-channel-interviews#p3@T1",
+    "t0-competitor-economics#p1@T1",
+    "t0-competitor-economics#p2@T1",
+    "t0-competitor-economics#p3@T1",
+    "t0-competitor-news#p1@T1",
+    "t0-competitor-news#p2@T1",
+    "t0-competitor-news#p3@T1",
+    "t0-competitor-notes#p1@T1",
+    "t0-competitor-notes#p2@T1",
+    "t0-competitor-notes#p3@T1",
+    "t0-cost-model#p1@T1",
+    "t0-cost-model#p2@T1",
+    "t0-cost-model#p3@T1",
+    "t0-infra-reliability#p1@T1",
+    "t0-infra-reliability#p2@T1",
+    "t0-infra-reliability#p3@T1",
+    "t0-market-census#p1@T1",
+    "t0-market-census#p2@T1",
+    "t0-market-census#p3@T1",
+    "t0-messaging-survey#p1@T1",
+    "t0-messaging-survey#p2@T1",
+    "t0-messaging-survey#p3@T1",
+    "t0-payment-landscape#p1@T1",
+    "t0-payment-landscape#p2@T1",
+    "t0-payment-landscape#p3@T1",
+    "t0-regulatory-memo#p1@T1",
+    "t0-regulatory-memo#p2@T1",
+    "t0-regulatory-memo#p3@T1",
+    "t0-talent-salary#p1@T1",
+    "t0-talent-salary#p2@T1",
+    "t0-talent-salary#p3@T1",
+    "t0-tech-ecosystem#p1@T1",
+    "t0-tech-ecosystem#p2@T1",
+    "t0-tech-ecosystem#p3@T1",
+    "t0-trade-press#p1@T1",
+    "t0-trade-press#p2@T1",
+    "t0-trade-press#p3@T1"
+  ],
+  "patch_drafts": {},
+  "claim_ledger": {
+    "run_id": null,
+    "entries": [],
+    "discard_claim_ids": [],
+    "renew_claim_ids": [],
+    "invalidation_claim_ids": []
+  },
+  "_top_level_keys": [
+    "active_run_id",
+    "archived_t1_ids",
+    "budget",
+    "claim_ledger",
+    "claims",
+    "decoding",
+    "disposition",
+    "gate_results",
+    "latch",
+    "patch_drafts",
+    "retrieval_used",
+    "retrieve_zero_hits",
+    "run",
+    "run_status",
+    "steps_by_claim",
+    "t1_checksums",
+    "trajectory"
+  ],
+  "_http_status": 200,
+  "_wall_seconds": 137
+}
