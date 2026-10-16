@@ -1,0 +1,29 @@
+{
+  "disposition": "需补丁",
+  "run_status": "已落档",
+  "active_run_id": "run-458af63da9",
+  "latch": {
+    "thread_id": null,
+    "pending": []
+  },
+  "claims": [
+    {
+      "claim_id": "c-fresh",
+      "status": "fresh",
+      "statement": "份额口径仍和现材料一致",
+      "voided": false
+    },
+    {
+      "claim_id": "c-stale",
+      "status": "stale",
+      "statement": "旧定价已经被新材料改写",
+      "voided": true
+    },
+    {
+      "claim_id": "c-gap",
+      "status": "unknown",
+      "statement": "采用率还缺能核对的材料",
+      "voided": false
+    }
+  ]
+}

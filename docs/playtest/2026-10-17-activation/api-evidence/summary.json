@@ -1,0 +1,30 @@
+{
+  "issue": 666,
+  "kind": "activation_smoke_fixture",
+  "llm_reverify": "not_run",
+  "cited_start_reverify_wall_seconds": 137,
+  "cited_source": "docs/playtest/2026-10-16/api-evidence/20-reverify-live.meta.json",
+  "trials": 5,
+  "passed": 5,
+  "completion": "5/5",
+  "trial_wall_seconds": [
+    1.213,
+    0.0915,
+    0.0868,
+    0.0874,
+    0.0838
+  ],
+  "max_trial_wall_seconds": 1.213,
+  "sum_trial_wall_seconds": 1.5625,
+  "runner_wall_seconds": 1.6217,
+  "five_minute_budget_seconds": 300,
+  "short_path_within_5min": true,
+  "cited_reverify_plus_max_short_path_seconds": 138.213,
+  "cited_total_within_5min": true,
+  "stuck_step": null,
+  "non_claims": [
+    "NOT RESULT-Y 乙",
+    "NOT L4",
+    "NOT main-experiment success"
+  ]
+}
