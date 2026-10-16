@@ -1,0 +1,273 @@
+{
+  "results": [
+    {
+      "claim_id": "c-stale",
+      "ok": true,
+      "action": "discard",
+      "error_code": null,
+      "detail": "已作废并进作废名单(voided_at=2026-10-16T19:47:52);机器判定 stale 保留"
+    }
+  ],
+  "claims": [
+    {
+      "claim_id": "c-fresh",
+      "statement": "份额口径仍和现材料一致",
+      "t0_evidence_ids": [],
+      "t1_evidence_ids": [],
+      "status": "fresh",
+      "reason": "现材料仍支持",
+      "voided": false,
+      "voided_at": null,
+      "last_confirmed_at": null,
+      "validity_basis": null,
+      "timeline": [],
+      "patch_eligible": false,
+      "badge": null
+    },
+    {
+      "claim_id": "c-stale",
+      "statement": "旧定价已经被新材料改写",
+      "t0_evidence_ids": [],
+      "t1_evidence_ids": [],
+      "status": "stale",
+      "reason": "新材料改写了定价",
+      "voided": true,
+      "voided_at": "2026-10-16T19:47:52",
+      "last_confirmed_at": null,
+      "validity_basis": null,
+      "timeline": [
+        {
+          "kind": "discard",
+          "ts": "2026-10-16T19:47:52",
+          "thread_id": null,
+          "evidence_id": null,
+          "label": "人审作废",
+          "override": false,
+          "machine_status_before": "stale",
+          "run_id": "reverify-round-20261017-activation",
+          "reviewer_note": null,
+          "note": ""
+        }
+      ],
+      "patch_eligible": false,
+      "badge": null
+    },
+    {
+      "claim_id": "c-gap",
+      "statement": "采用率还缺能核对的材料",
+      "t0_evidence_ids": [],
+      "t1_evidence_ids": [],
+      "status": "unknown",
+      "reason": "缺可核对材料",
+      "voided": false,
+      "voided_at": null,
+      "last_confirmed_at": null,
+      "validity_basis": null,
+      "timeline": [],
+      "patch_eligible": true,
+      "badge": null
+    }
+  ],
+  "latch": {
+    "thread_id": null,
+    "pending": []
+  },
+  "run": {
+    "run_id": "run-7861903226",
+    "title": "样例走完后的顾问结论",
+    "source": "thesis-1 · 第一课题 · T1:synthetic",
+    "disposition": "需补丁",
+    "updated_at": "2026-10-16T19:47:52+00:00",
+    "status": "已落档",
+    "claim_count": 3,
+    "pack_id": "thesis-1",
+    "trajectory": "activation-smoke-fixture"
+  },
+  "patch_events_written": 1,
+  "disposition": "需补丁",
+  "run_status": "已落档",
+  "active_run_id": "run-7861903226",
+  "t1_checksums": [
+    {
+      "doc_id": "t0-channel-coverage",
+      "title": "六国分销渠道盘点(2026 年 1 月,内部渠道组)",
+      "checksum": "6d582f7c5f17105729a6f8472bd2f3a96916515fa2c0007350e9f02b41ba960d",
+      "doc_version": "1.0"
+    },
+    {
+      "doc_id": "t0-channel-interviews",
+      "title": "渠道伙伴访谈纪要",
+      "checksum": "0d7194c2ff6ec38f6d5d04250fa2b1df3b44037b67995e0cc9cd0d640c7ad108",
+      "doc_version": "1.0"
+    },
+    {
+      "doc_id": "t0-competitor-economics",
+      "title": "竞品单位经济模型观察(2026 年 2 月整理)",
+      "checksum": "946d71c2e2e12b7dbd9b3043f8045e299432aeb5183dd4666ef3d9a80b8daf58",
+      "doc_version": "1.0"
+    },
+    {
+      "doc_id": "t0-competitor-news",
+      "title": "竞品新闻稿存档",
+      "checksum": "036e7ecf40ca3e8b977e6de934925e9d09488a640ec1e41a801ef3468204ad24",
+      "doc_version": "1.0"
+    },
+    {
+      "doc_id": "t0-competitor-notes",
+      "title": "竞品访谈笔记",
+      "checksum": "b2a0ad898d712664f671f280ff59bcf03c6364c493879df58a35fa8f0a677ec2",
+      "doc_version": "1.0"
+    },
+    {
+      "doc_id": "t0-cost-model",
+      "title": "单会话服务成本模型 v1",
+      "checksum": "8ba49845499650451117a6d1f29f1e435ee86629d5e61cb4a8fdf8454b7cfb5d",
+      "doc_version": "1.0"
+    },
+    {
+      "doc_id": "t0-infra-reliability",
+      "title": "当地云基础设施可用性记录",
+      "checksum": "5fa702dd3825be0abb4d0b16ff1e978ea149cb5f4523d4a858e2d270de46a919",
+      "doc_version": "1.0"
+    },
+    {
+      "doc_id": "t0-market-census",
+      "title": "东盟中小企业普查数据摘要",
+      "checksum": "cf76c48b9a6cc04a20115b999371cabaa995a1af121ed616e1033062fd57a63b",
+      "doc_version": "1.0"
+    },
+    {
+      "doc_id": "t0-messaging-survey",
+      "title": "即时通讯使用习惯调查",
+      "checksum": "d635cddeb666fb3e0af80dc2ae8eb55933a1fb7cc8ea25fe715f51856c840bb2",
+      "doc_version": "1.0"
+    },
+    {
+      "doc_id": "t0-payment-landscape",
+      "title": "本地支付方式格局笔记",
+      "checksum": "b742d986bdd3feee4fe17a6f8595abe47f72935be608d25fdd5a4a8e2e560720",
+      "doc_version": "1.0"
+    },
+    {
+      "doc_id": "t0-regulatory-memo",
+      "title": "监管口径跟踪备忘",
+      "checksum": "c40dac82ae9f7e0932a7eff078592d7dfbfff360b1e856f39d0030cce6dc5339",
+      "doc_version": "1.0"
+    },
+    {
+      "doc_id": "t0-talent-salary",
+      "title": "当地运营人才薪酬调研",
+      "checksum": "489d23f81c372e2f43cb01d320ae825110ed65d002cc258f7ff4c42a63a727d8",
+      "doc_version": "1.0"
+    },
+    {
+      "doc_id": "t0-tech-ecosystem",
+      "title": "东南亚语言模型生态评估",
+      "checksum": "cdf9f92f73c8b8ca6dfe827c195e8a80b2d2a669a6e81942fcd7e1cd375d526f",
+      "doc_version": "1.0"
+    },
+    {
+      "doc_id": "t0-trade-press",
+      "title": "行业媒体报道汇编",
+      "checksum": "4a012ea01cbe87fc7f2b2ac2cc044acc96ae52657a1c39aa802ef9e8c665ed02",
+      "doc_version": "1.0"
+    }
+  ],
+  "gate_results": [
+    {
+      "claim_id": "c-fresh",
+      "status": "fresh",
+      "voided": false,
+      "gate_rejected": false,
+      "error_code": null,
+      "reason": "现材料仍支持"
+    },
+    {
+      "claim_id": "c-stale",
+      "status": "stale",
+      "voided": true,
+      "gate_rejected": false,
+      "error_code": null,
+      "reason": "新材料改写了定价"
+    },
+    {
+      "claim_id": "c-gap",
+      "status": "unknown",
+      "voided": false,
+      "gate_rejected": false,
+      "error_code": null,
+      "reason": "缺可核对材料"
+    }
+  ],
+  "archived_t1_ids": [
+    "t0-channel-coverage#p1@T1",
+    "t0-channel-coverage#p2@T1",
+    "t0-channel-coverage#p3@T1",
+    "t0-channel-interviews#p1@T1",
+    "t0-channel-interviews#p2@T1",
+    "t0-channel-interviews#p3@T1",
+    "t0-competitor-economics#p1@T1",
+    "t0-competitor-economics#p2@T1",
+    "t0-competitor-economics#p3@T1",
+    "t0-competitor-news#p1@T1",
+    "t0-competitor-news#p2@T1",
+    "t0-competitor-news#p3@T1",
+    "t0-competitor-notes#p1@T1",
+    "t0-competitor-notes#p2@T1",
+    "t0-competitor-notes#p3@T1",
+    "t0-cost-model#p1@T1",
+    "t0-cost-model#p2@T1",
+    "t0-cost-model#p3@T1",
+    "t0-infra-reliability#p1@T1",
+    "t0-infra-reliability#p2@T1",
+    "t0-infra-reliability#p3@T1",
+    "t0-market-census#p1@T1",
+    "t0-market-census#p2@T1",
+    "t0-market-census#p3@T1",
+    "t0-messaging-survey#p1@T1",
+    "t0-messaging-survey#p2@T1",
+    "t0-messaging-survey#p3@T1",
+    "t0-payment-landscape#p1@T1",
+    "t0-payment-landscape#p2@T1",
+    "t0-payment-landscape#p3@T1",
+    "t0-regulatory-memo#p1@T1",
+    "t0-regulatory-memo#p2@T1",
+    "t0-regulatory-memo#p3@T1",
+    "t0-talent-salary#p1@T1",
+    "t0-talent-salary#p2@T1",
+    "t0-talent-salary#p3@T1",
+    "t0-tech-ecosystem#p1@T1",
+    "t0-tech-ecosystem#p2@T1",
+    "t0-tech-ecosystem#p3@T1",
+    "t0-trade-press#p1@T1",
+    "t0-trade-press#p2@T1",
+    "t0-trade-press#p3@T1"
+  ],
+  "patch_drafts": {},
+  "claim_ledger": {
+    "run_id": null,
+    "entries": [
+      {
+        "claim_id": "c-stale",
+        "action": "discard",
+        "ts": "2026-10-16T19:47:52",
+        "evidence_id": null,
+        "actor": "human",
+        "run_id": "reverify-round-20261017-activation",
+        "reviewer_note": null,
+        "machine_status_before": "stale",
+        "override": false,
+        "label": "人审作废",
+        "source": "latch_log"
+      }
+    ],
+    "discard_claim_ids": [
+      "c-stale"
+    ],
+    "renew_claim_ids": [],
+    "disputed_claim_ids": [],
+    "invalidation_claim_ids": [
+      "c-stale"
+    ]
+  }
+}

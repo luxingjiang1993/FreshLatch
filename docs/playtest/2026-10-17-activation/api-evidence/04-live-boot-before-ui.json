@@ -1,0 +1,43 @@
+{
+  "disposition": "勿发",
+  "run_status": "待人审",
+  "active_run_id": "run-458af63da9",
+  "question": "样例走完后的顾问结论",
+  "latch": {
+    "thread_id": "reverify-round-20261017-live",
+    "pending": [
+      {
+        "claim_id": "c-stale",
+        "statement": "旧定价已经被新材料改写",
+        "status": "stale",
+        "reason": "新材料改写了定价"
+      },
+      {
+        "claim_id": "c-gap",
+        "statement": "采用率还缺能核对的材料",
+        "status": "unknown",
+        "reason": "缺可核对材料"
+      }
+    ]
+  },
+  "claims": [
+    {
+      "claim_id": "c-fresh",
+      "status": "fresh",
+      "statement": "份额口径仍和现材料一致",
+      "voided": false
+    },
+    {
+      "claim_id": "c-stale",
+      "status": "stale",
+      "statement": "旧定价已经被新材料改写",
+      "voided": false
+    },
+    {
+      "claim_id": "c-gap",
+      "status": "unknown",
+      "statement": "采用率还缺能核对的材料",
+      "voided": false
+    }
+  ]
+}
