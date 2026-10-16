@@ -1,0 +1,2 @@
+{"kind":"none","paste_status":"none","paste_preview":"","ready":false,"synthetic":false,"network_enabled":false,"message":"未选定合法 T1 来源,不得假装已有最新事实","ingested_chunks":0,"checksum":"","source_url":"","allowed_url_host":"www.mckinsey.com","draft_doc_id":"paste-change","cards":[{"id":"upload","label":"上传 T1 语料包","synthetic":false},{"id":"paste","label":"粘贴变更要点","synthetic":false,"requires_confirm":true},{"id":"synthetic","label":"内置合成评测包","synthetic":true}]}
+HTTP 200

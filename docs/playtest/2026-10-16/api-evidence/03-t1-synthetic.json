@@ -1,0 +1,2 @@
+{"kind":"synthetic","paste_status":"none","paste_preview":"","ready":true,"synthetic":true,"network_enabled":false,"message":"已选用内置合成评测包(synthetic)","ingested_chunks":84,"checksum":"","source_url":"","allowed_url_host":"www.mckinsey.com","draft_doc_id":"paste-change","cards":[{"id":"upload","label":"上传 T1 语料包","synthetic":false},{"id":"paste","label":"粘贴变更要点","synthetic":false,"requires_confirm":true},{"id":"synthetic","label":"内置合成评测包","synthetic":true}]}
+HTTP 200

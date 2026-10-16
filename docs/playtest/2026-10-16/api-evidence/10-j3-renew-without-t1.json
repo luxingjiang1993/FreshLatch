@@ -1,0 +1,254 @@
+{
+  "journey": "J3",
+  "title": "renew without valid T1 must be blocked",
+  "cases": [
+    {
+      "case": "gate_renew_evidence_id_None",
+      "claim_id": "c-j3",
+      "ok": false,
+      "action": "renew",
+      "error_code": "RENEW_NO_EVIDENCE",
+      "detail": "续命必须带 T1 原文证据(evidence_id 至少 1 个,ADR-0006 §4)"
+    },
+    {
+      "case": "gate_renew_evidence_id_empty",
+      "claim_id": "c-j3b",
+      "ok": false,
+      "action": "renew",
+      "error_code": "RENEW_NO_EVIDENCE",
+      "detail": "续命必须带 T1 原文证据(evidence_id 至少 1 个,ADR-0006 §4)"
+    },
+    {
+      "case": "api_renew_missing_evidence_id",
+      "http": 200,
+      "body": {
+        "results": [
+          {
+            "claim_id": "c1",
+            "ok": false,
+            "action": "renew",
+            "error_code": "RENEW_NO_EVIDENCE",
+            "detail": "续命必须带 T1 原文证据(evidence_id 至少 1 个,ADR-0006 §4)"
+          }
+        ],
+        "claims": [
+          {
+            "claim_id": "c1",
+            "statement": "竞品客单价仍显著高于我们",
+            "t0_evidence_ids": [],
+            "t1_evidence_ids": [],
+            "status": "stale",
+            "reason": "T1 竞品降价",
+            "voided": false,
+            "voided_at": null,
+            "last_confirmed_at": null,
+            "validity_basis": null,
+            "timeline": [],
+            "patch_eligible": true
+          }
+        ],
+        "latch": {
+          "thread_id": null,
+          "pending": []
+        },
+        "run": {
+          "run_id": "run-f4dcf06aca",
+          "title": "是否应该在未来 12 个月进入东南亚中小企业 AI 客服市场?",
+          "source": "thesis-1 · 第一课题",
+          "disposition": "勿发",
+          "updated_at": "2026-10-16T04:35:37+00:00",
+          "status": "已落档",
+          "claim_count": 1,
+          "pack_id": "thesis-1",
+          "trajectory": null
+        },
+        "patch_events_written": 0,
+        "disposition": "勿发",
+        "run_status": "已落档",
+        "active_run_id": "run-f4dcf06aca",
+        "t1_checksums": [],
+        "gate_results": [
+          {
+            "claim_id": "c1",
+            "status": "stale",
+            "voided": false,
+            "gate_rejected": false,
+            "error_code": null,
+            "reason": "T1 竞品降价"
+          }
+        ],
+        "archived_t1_ids": [],
+        "patch_drafts": {},
+        "claim_ledger": {
+          "run_id": null,
+          "entries": [],
+          "discard_claim_ids": [],
+          "renew_claim_ids": [],
+          "invalidation_claim_ids": []
+        }
+      }
+    },
+    {
+      "case": "api_renew_empty_evidence_id",
+      "http": 200,
+      "body": {
+        "results": [
+          {
+            "claim_id": "c1",
+            "ok": false,
+            "action": "renew",
+            "error_code": "RENEW_NO_EVIDENCE",
+            "detail": "续命必须带 T1 原文证据(evidence_id 至少 1 个,ADR-0006 §4)"
+          }
+        ],
+        "claims": [
+          {
+            "claim_id": "c1",
+            "statement": "竞品客单价仍显著高于我们",
+            "t0_evidence_ids": [],
+            "t1_evidence_ids": [],
+            "status": "stale",
+            "reason": "T1 竞品降价",
+            "voided": false,
+            "voided_at": null,
+            "last_confirmed_at": null,
+            "validity_basis": null,
+            "timeline": [],
+            "patch_eligible": true
+          }
+        ],
+        "latch": {
+          "thread_id": null,
+          "pending": []
+        },
+        "run": {
+          "run_id": "run-f4dcf06aca",
+          "title": "是否应该在未来 12 个月进入东南亚中小企业 AI 客服市场?",
+          "source": "thesis-1 · 第一课题",
+          "disposition": "勿发",
+          "updated_at": "2026-10-16T04:35:37+00:00",
+          "status": "已落档",
+          "claim_count": 1,
+          "pack_id": "thesis-1",
+          "trajectory": null
+        },
+        "patch_events_written": 0,
+        "disposition": "勿发",
+        "run_status": "已落档",
+        "active_run_id": "run-f4dcf06aca",
+        "t1_checksums": [],
+        "gate_results": [
+          {
+            "claim_id": "c1",
+            "status": "stale",
+            "voided": false,
+            "gate_rejected": false,
+            "error_code": null,
+            "reason": "T1 竞品降价"
+          }
+        ],
+        "archived_t1_ids": [],
+        "patch_drafts": {},
+        "claim_ledger": {
+          "run_id": null,
+          "entries": [],
+          "discard_claim_ids": [],
+          "renew_claim_ids": [],
+          "invalidation_claim_ids": []
+        }
+      }
+    },
+    {
+      "case": "api_renew_unresolved_evidence_id",
+      "http": 200,
+      "body": {
+        "results": [
+          {
+            "claim_id": "c1",
+            "ok": false,
+            "action": "renew",
+            "error_code": "RENEW_EVIDENCE_UNRESOLVED",
+            "detail": "证据点不回任何 T1 原文块: fake-doc#p1@T1"
+          }
+        ],
+        "claims": [
+          {
+            "claim_id": "c1",
+            "statement": "竞品客单价仍显著高于我们",
+            "t0_evidence_ids": [],
+            "t1_evidence_ids": [],
+            "status": "stale",
+            "reason": "T1 竞品降价",
+            "voided": false,
+            "voided_at": null,
+            "last_confirmed_at": null,
+            "validity_basis": null,
+            "timeline": [],
+            "patch_eligible": true
+          }
+        ],
+        "latch": {
+          "thread_id": null,
+          "pending": []
+        },
+        "run": {
+          "run_id": "run-f4dcf06aca",
+          "title": "是否应该在未来 12 个月进入东南亚中小企业 AI 客服市场?",
+          "source": "thesis-1 · 第一课题",
+          "disposition": "勿发",
+          "updated_at": "2026-10-16T04:35:38+00:00",
+          "status": "已落档",
+          "claim_count": 1,
+          "pack_id": "thesis-1",
+          "trajectory": null
+        },
+        "patch_events_written": 0,
+        "disposition": "勿发",
+        "run_status": "已落档",
+        "active_run_id": "run-f4dcf06aca",
+        "t1_checksums": [],
+        "gate_results": [
+          {
+            "claim_id": "c1",
+            "status": "stale",
+            "voided": false,
+            "gate_rejected": false,
+            "error_code": null,
+            "reason": "T1 竞品降价"
+          }
+        ],
+        "archived_t1_ids": [],
+        "patch_drafts": {},
+        "claim_ledger": {
+          "run_id": null,
+          "entries": [],
+          "discard_claim_ids": [],
+          "renew_claim_ids": [],
+          "invalidation_claim_ids": []
+        }
+      }
+    },
+    {
+      "case": "ui_renew_button_disabled_copy",
+      "present": true
+    },
+    {
+      "case": "live_reverify_without_t1_ready",
+      "raw": "{\"error\":\"未选定合法 T1 来源,不得假装已有最新事实(请先完成 T1 来源三卡)\"}\nHTTP 400",
+      "expect_http_400": true
+    }
+  ],
+  "all_blocked": true,
+  "blocked_flags": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+  ],
+  "verdict": "FAIL_CLOSED_OK",
+  "llm_spend": "zero",
+  "notes": "Live POST /api/reverify with ready=false → HTTP 400. HumanLatch renew without/empty/unresolved evidence_id → ok=false (zero write). UI disables renew when claim has no @T1 evidence_ids. Full browser renew modal after real Start reverify sheet not exercised (LLM spend deferred)."
+}

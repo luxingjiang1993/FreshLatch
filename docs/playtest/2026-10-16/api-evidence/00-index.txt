@@ -1,0 +1,7 @@
+=== GET / ===
+HTTP 200
+5:<title>FreshLatch 复验单 — SYNTHETIC</title>
+163: <span class="syn">SYNTHETIC · 合成语料,非真实客户数据</span>
+186: <button class="big" id="btn-run" onclick="runReverify()">开始复验</button>
+380:        + '<div class="card'+(sel==='synthetic'?' sel':'')+'" id="t1-card-synthetic">'
+948:  const btn = document.getElementById('btn-run');
