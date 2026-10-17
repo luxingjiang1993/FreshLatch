@@ -186,7 +186,7 @@ def test_confirm_with_archived_t1_covers_statement(client):
     assert body["ok"] is True
     assert body["after_text"] == "经 T1 核后的主张句"
     assert body["reverify_requested"] is True
-    assert body["disposition"] in ("可发", "需补丁", "勿发")
+    assert body["disposition"] in ("可发（全部仍成立）", "可发（含作废）", "需补丁", "勿发")
     unk = next(c for c in body["claims"] if c["claim_id"] == "c-unk")
     assert unk["statement"] == "经 T1 核后的主张句"
     assert eid in unk["t1_evidence_ids"]

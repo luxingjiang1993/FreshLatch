@@ -63,7 +63,7 @@ _CLIENT_MEMO_MARKERS = (
     "课题问题句",
     "免责声明",
     "DEM-3",
-    "仍成立",
+    "## 仍成立",
     "已作废",
     "缺口",
 )
@@ -163,15 +163,15 @@ def test_export_from_patch_event_explicit(tmp_path: Path):
         actor="确认者乙",
         events_dir=events_dir,
     )
-    bundle = export_from_patch_event(event, disposition_after="可发")
+    bundle = export_from_patch_event(event, disposition_after="可发（全部仍成立）")
     assert_required_json_keys(bundle.json_payload)
     assert bundle.json_payload["before_text"] == "旧句"
     assert bundle.json_payload["after_text"] == "新句"
     assert bundle.json_payload["t1_ids"] == [ARCHIVED_EID]
     assert bundle.json_payload["confirmer"] == "确认者乙"
     assert bundle.json_payload["disposition_before"] == "需补丁"
-    assert bundle.json_payload["disposition_after"] == "可发"
-    assert "需补丁" in bundle.markdown and "可发" in bundle.markdown
+    assert bundle.json_payload["disposition_after"] == "可发（全部仍成立）"
+    assert "需补丁" in bundle.markdown and "可发（全部仍成立）" in bundle.markdown
 
 
 def test_export_from_confirm_result_allows_after_override(tmp_path: Path):
@@ -219,7 +219,7 @@ def test_export_path_not_client_memo_field_set():
         t1_ids=[ARCHIVED_EID],
         confirmer="顾问",
         disposition_before="需补丁",
-        disposition_after="可发",
+        disposition_after="可发（全部仍成立）",
         t1_checksums={ARCHIVED_EID: "sha256:deadbeef"},
     )
     payload = bundle.json_payload
@@ -278,5 +278,5 @@ def test_export_from_event_without_texts_fails():
                 "t1_ids": [ARCHIVED_EID],
                 "actor": "human",
             },
-            disposition_after="可发",
+            disposition_after="可发（全部仍成立）",
         )

@@ -270,7 +270,7 @@ def test_confirm_with_valid_t1_overwrites_and_writes_T_row(tmp_path: Path):
     assert claims[0].statement == "经 T1 核后的主张句"
     assert result.before_text == before_text
     assert result.after_text == "经 T1 核后的主张句"
-    assert result.disposition in ("可发", "需补丁", "勿发")
+    assert result.disposition in ("可发（全部仍成立）", "可发（含作废）", "需补丁", "勿发")
     assert result.disposition == disposition_for_claims(claims)
     assert result.reverify_requested is True
     assert result.reverify_triggered is True
@@ -347,7 +347,7 @@ def test_confirm_disposition_matches_aggregate_after_reverify(tmp_path: Path):
     expected = aggregate_disposition(
         ClaimDispositionInput(status=c.status, human_action=None) for c in claims
     )
-    assert result.disposition == expected == disposition_for_claims(claims) == "可发"
+    assert result.disposition == expected == disposition_for_claims(claims) == "可发（全部仍成立）"
     assert result.reverify_verdict == "fresh"
 
 

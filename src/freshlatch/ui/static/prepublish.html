@@ -36,7 +36,7 @@
 </main>
 <script>
 function esc(s){return String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}
-function dispCls(d){return d==='可发'?'ok':(d==='需补丁'?'patch':(d==='勿发'?'block':''))}
+function dispCls(d){return d==='可发（全部仍成立）'||d==='可发（含作废）'?'ok':(d==='需补丁'?'patch':(d==='勿发'?'block':''))}
 async function loadList(){
   const j = await (await fetch('/api/prepublish/runs')).json();
   const runs = j.runs || [];

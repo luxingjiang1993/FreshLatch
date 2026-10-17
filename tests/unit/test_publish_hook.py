@@ -22,14 +22,18 @@ from freshlatch.publish_hook import (
     evaluate_publish_hook,
 )
 
+_PUB_ALL = "可发（全部仍成立）"
+_PUB_VOIDED = "可发（含作废）"
+
 # (run_id, disposition, ack, checksum_fresh, expect_allow, expect_code, expect_banner, note)
 _GATE_CASES: list[tuple] = [
     # —— 缺绑定 / 无法解析 ——
-    (None, "可发", False, True, False, HOOK_MISSING_RUN_ID, False, "run_id=None fail-closed"),
-    ("", "可发", False, True, False, HOOK_MISSING_RUN_ID, False, "run_id 空串 fail-closed"),
-    ("   ", "可发", False, True, False, HOOK_MISSING_RUN_ID, False, "run_id 空白 fail-closed"),
+    (None, _PUB_ALL, False, True, False, HOOK_MISSING_RUN_ID, False, "run_id=None fail-closed"),
+    ("", _PUB_ALL, False, True, False, HOOK_MISSING_RUN_ID, False, "run_id 空串 fail-closed"),
+    ("   ", _PUB_ALL, False, True, False, HOOK_MISSING_RUN_ID, False, "run_id 空白 fail-closed"),
     ("run-1", None, False, True, False, HOOK_UNBOUND_RUN, False, "缺 disposition fail-closed"),
-    ("run-1", "通过", False, True, False, HOOK_UNBOUND_RUN, False, "非法第四套词 fail-closed"),
+    ("run-1", "通过", False, True, False, HOOK_UNBOUND_RUN, False, "非法第五套词 fail-closed"),
+    ("run-1", "可发", False, True, False, HOOK_UNBOUND_RUN, False, "旧三值词已废 fail-closed"),
     # —— 勿发拒(不暗示可落 Memo) ——
     ("run-1", "勿发", False, True, False, HOOK_DO_NOT_PUBLISH, False, "勿发+无ack拒"),
     ("run-1", "勿发", True, True, False, HOOK_DO_NOT_PUBLISH, False, "勿发+ack仍拒"),
@@ -38,10 +42,12 @@ _GATE_CASES: list[tuple] = [
     ("run-1", "需补丁", False, True, False, HOOK_NEEDS_PATCH_NO_ACK, False, "需补丁无ack拒"),
     ("run-1", "需补丁", True, True, True, HOOK_OK, True, "需补丁+ack放行带页眉"),
     ("run-1", "需补丁", True, False, False, HOOK_CHECKSUM_DRIFT, False, "需补丁+ack但漂移仍拒"),
-    # —— 可发 × 新鲜度 ——
-    ("run-1", "可发", False, True, True, HOOK_OK, False, "可发未漂放行"),
-    ("run-1", "可发", True, True, True, HOOK_OK, False, "可发+多余ack仍放行无页眉"),
-    ("run-1", "可发", False, False, False, HOOK_CHECKSUM_DRIFT, False, "可发但checksum漂移拒"),
+    # —— 两档可发同权 × 新鲜度(I-09 / #694) ——
+    ("run-1", _PUB_ALL, False, True, True, HOOK_OK, False, "可发(全部仍成立)未漂放行"),
+    ("run-1", _PUB_VOIDED, False, True, True, HOOK_OK, False, "可发(含作废)同权放行"),
+    ("run-1", _PUB_VOIDED, True, True, True, HOOK_OK, False, "含作废+多余ack仍放行无页眉"),
+    ("run-1", _PUB_ALL, False, False, False, HOOK_CHECKSUM_DRIFT, False, "可发但checksum漂移拒"),
+    ("run-1", _PUB_VOIDED, False, False, False, HOOK_CHECKSUM_DRIFT, False, "含作废但漂移拒"),
 ]
 
 
@@ -70,6 +76,9 @@ def test_evaluate_publish_hook_table(
         assert NEEDS_PATCH_BANNER == "需补丁"
     if result.disposition is not None:
         assert result.disposition in DISPOSITIONS, note
+    if allow and code == HOOK_OK and disposition in (_PUB_ALL, _PUB_VOIDED):
+        # 两档可发同权放行,且透传原四档字面(I-09 / #694)
+        assert result.disposition == disposition, note
     if not allow:
         # deny 不得暗示可落 Memo(无放行页眉)
         assert result.requires_needs_patch_banner is False or not allow
