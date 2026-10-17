@@ -42,7 +42,6 @@ from freshlatch.prepublish import (  # noqa: E402
     list_t1_checksums,
     project_gate_results,
 )
-import uuid  # noqa: E402
 from freshlatch.patch_events import record_human_review_events  # noqa: E402
 from freshlatch.publish_hook import (  # noqa: E402
     HOOK_BIND_HOST_ENV,
