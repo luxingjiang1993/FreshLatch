@@ -182,6 +182,8 @@ def fingerprints_match(prereg_text: str, computed: dict[str, str]) -> bool:
 
 
 def _load_questions(source: Path | str | list | dict) -> list[dict[str, Any]]:
+    if source is None:
+        raise ValueError("questions 不能为 null（JSON 顶层 null 或显式 None）")
     if isinstance(source, list):
         return list(source)
     if isinstance(source, dict):
@@ -226,7 +228,8 @@ def unique_embed_texts(corpus: Path, traps: Path, questions: Path | str | list |
             seen.add(text)
             out.append(text)
     for item in _load_questions(questions):
-        q = str(item.get("query", ""))
+        raw_q = item.get("query") if isinstance(item, dict) else None
+        q = "" if raw_q is None else str(raw_q)
         if q and q not in seen:
             seen.add(q)
             out.append(q)
@@ -497,6 +500,8 @@ def run_typed_compare(
     qs = _load_questions(questions)
     for item in qs:
         require_as_of(item)
+        if not isinstance(item, dict) or item.get("query") is None:
+            raise ValueError(f"{item.get('id', '?') if isinstance(item, dict) else '?'} query 不能为 null")
 
     texts = unique_embed_texts(Path(corpus), Path(traps), questions)
     uncached_chars, n_miss, n_hit_est = count_uncached(

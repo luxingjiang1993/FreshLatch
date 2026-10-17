@@ -14,7 +14,7 @@ Repo: [luxingjiang1993/FreshLatch](https://github.com/luxingjiang1993/FreshLatch
 
 | | |
 |--|--|
-| **Offline tests** | `874 passed, 3 skipped` — `python -m pytest tests/ -q`（本机实测；CI 同命令，零 LLM） |
+| **Offline tests** | `1683 passed, 2 skipped` — `python -m pytest tests/unit -q`（Windows 本机实测 2026-10-18，全绿；CI 跑 `tests/` 同命令族，全量数字以 CI 为准，零 LLM） |
 | **Coverage** | `src/freshlatch` **80%** line coverage（`pytest --cov=freshlatch`；不含大模型调用） |
 | **Architecture** | 四闸总览：[`docs/现状四闸-结构图.html`](docs/现状四闸-结构图.html) · 词表 [`CONTEXT.md`](CONTEXT.md) |
 | **Honest boundary** | 冒烟 / 采用层 / 面试加固 — **不是**已关闭的统计测量；**不**宣称 W12 过线或 SaaS 上线 |

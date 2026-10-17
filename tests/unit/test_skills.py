@@ -6,7 +6,9 @@
 断言 4:拦截→纠正对照表只断「场景→原因→动作」映射存在,不断言错误文案(文案唯一真相在代码)。
 """
 
+import os
 import re
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -182,6 +184,23 @@ def test_load_skill_body_still_reads_only_skill_md(tmp_path):
     assert load_skill_reference("reverify", "rerun-rules", skills_root=tmp_path) is None
 
 
+def _dir_link_or_junction(link: Path, target: Path) -> None:
+    """建目录级链接。POSIX / 有提权的 Windows 用符号链接；无提权 Windows
+    （WinError 1314）退 junction——同为目录重解析点，resolve() 同样穿透，
+    是该校验 Windows 下可构造的最强逃逸原语（I-06 #681）。"""
+    try:
+        link.symlink_to(target, target_is_directory=True)
+        return
+    except OSError:
+        if os.name != "nt":
+            raise
+    subprocess.run(
+        ["cmd", "/c", "mklink", "/J", str(link), str(target)],
+        check=True,
+        capture_output=True,
+    )
+
+
 def test_load_skill_reference_rejects_symlink_escape(tmp_path):
     """references 目录或文件指向 skills 根之外时,不读取。"""
     skills_root = tmp_path / "skills"
@@ -190,7 +209,7 @@ def test_load_skill_reference_rejects_symlink_escape(tmp_path):
     outside = tmp_path / "escaped"
     outside.mkdir()
     (outside / "verdict-basis.md").write_text("外部哨兵", encoding="utf-8")
-    (skill / "references").symlink_to(outside)
+    _dir_link_or_junction(skill / "references", outside)
     assert load_skill_reference(
         "reverify", "verdict-basis", skills_root=skills_root,
     ) is None
@@ -198,7 +217,16 @@ def test_load_skill_reference_rejects_symlink_escape(tmp_path):
     (skill / "references").unlink()
     ref_dir = skill / "references"
     ref_dir.mkdir()
-    (ref_dir / "verdict-basis.md").symlink_to(outside / "verdict-basis.md")
+    try:
+        (ref_dir / "verdict-basis.md").symlink_to(outside / "verdict-basis.md")
+    except OSError:
+        if os.name != "nt":
+            raise
+        # 文件级符号链接在无提权 Windows 上不可构造；改测同一 resolve 容性
+        # 守卫族的 skill 目录级逃逸（junction），仍必须拒绝读取。
+        ref_dir.rmdir()
+        skill.rmdir()
+        _dir_link_or_junction(skill, outside)
     assert load_skill_reference(
         "reverify", "verdict-basis", skills_root=skills_root,
     ) is None
