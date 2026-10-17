@@ -163,7 +163,7 @@ def test_main_seam_sample_pack_thin_url_to_patch_events(client):
     assert detail["disposition"] == listed[0]["disposition"]
     assert any(x.get("checksum") == t1_checksum for x in detail["t1_checksums"])
 
-    # 6) 人审:收口未处理 stale(mck-1/mck-4);unknown mck-3 亦 discard → 可发
+    # 6) 人审:收口未处理 stale(mck-1/mck-4);unknown mck-3 亦 discard → 可发（含作废）
     rnd = appmod._latch().enter_round(claims)
     assert rnd.waiting
     appmod._state["latch"] = {"thread_id": rnd.thread_id, "pending": rnd.pending}
@@ -182,10 +182,10 @@ def test_main_seam_sample_pack_thin_url_to_patch_events(client):
     assert r_dec.status_code == 200, r_dec.text
     body = r_dec.json()
     assert all(x.get("ok") for x in body["results"])
-    assert body["disposition"] == "可发"
+    assert body["disposition"] == "可发（含作废）"
     assert body["patch_events_written"] >= 1
     listed2 = http.get("/api/prepublish/runs").json()["runs"]
-    assert listed2[0]["disposition"] == body["disposition"] == "可发"
+    assert listed2[0]["disposition"] == body["disposition"] == "可发（含作废）"
     assert listed2[0]["status"] == "已落档"
 
     # 7) patch_events 至少一行字段齐全
@@ -213,14 +213,14 @@ def test_prereg_mapping_disposition_matches_adr0027():
     assert got == "勿发"  # 未收口 stale 优先
     assert got in DISPOSITIONS
 
-    # 收口全部红/黄灯后 → 可发(边界 4)
+    # 收口全部红/黄灯后 → 可发（含作废）(边界 4;均 discard)
     closed = [
         ClaimDispositionInput(status="stale", human_action="discard"),
         ClaimDispositionInput(status="fresh"),
         ClaimDispositionInput(status="unknown", human_action="discard"),
         ClaimDispositionInput(status="stale", human_action="discard"),
     ]
-    assert aggregate_disposition(closed) == "可发"
+    assert aggregate_disposition(closed) == "可发（含作废）"
 
 
 # -- 软 Port / 默认臂 ------------------------------------------------------------

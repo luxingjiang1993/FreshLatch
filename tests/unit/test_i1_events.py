@@ -139,4 +139,4 @@ def test_production_enums_not_extended_with_triad_buckets():
     # 评测三桶仍不进 HumanLatch。产品动词另有 disputed,不是这三桶。
     assert VALID_ACTIONS == ("discard", "renew", "disputed")
     # disposition 仍只有三值包结论
-    assert DISPOSITIONS == frozenset({"可发", "需补丁", "勿发"})
+    assert DISPOSITIONS == frozenset({"可发（全部仍成立）", "可发（含作废）", "需补丁", "勿发"})

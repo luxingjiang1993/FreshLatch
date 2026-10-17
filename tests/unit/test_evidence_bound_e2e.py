@@ -287,7 +287,7 @@ def test_v15_prelock_main_seam_hard_bars(client):
     assert "mck-3" in export["markdown"] or PRELOCK["after_text"] in export["markdown"]
 
     # 加分(非硬 Exit):夹具再验后包结论可升「可发」
-    bonus_ke_fa = ok_body.get("disposition") == "可发"
+    bonus_ke_fa = ok_body.get("disposition") in ("可发（全部仍成立）", "可发（含作废）")
     assert disposition_for_claims(claims) == ok_body["disposition"]
     # 记录加分结果供 ACCEPTANCE 引用;本断言不把「可发」绑成硬失败
     assert bonus_ke_fa or ok_body["disposition"] in DISPOSITIONS
@@ -359,7 +359,7 @@ def test_v15_prelock_library_fixture_equivalent(tmp_path: Path):
         assert key in ok.export.json_payload
     assert ok.export.markdown
     # 加分:升可发(非硬 Exit;本夹具可演示)
-    assert ok.disposition == "可发"
+    assert ok.disposition == "可发（含作废）"
 
 
 # ---------------------------------------------------------------------------

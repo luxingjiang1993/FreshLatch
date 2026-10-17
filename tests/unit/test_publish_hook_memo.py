@@ -364,6 +364,46 @@ def test_ui_has_export_client_memo_entry():
     assert "from streamlit" not in appmod.HTML_PAGE
 
 
+def test_publishable_two_tiers_same_rights_no_banner(tmp_path):
+    """I-09 / #694:两档可发同权放行,均无需 ack、无「需补丁」页眉。
+
+    Given 全绿无作废 → 可发（全部仍成立）;Given 废多无红黄 → 可发（含作废）。
+    When 套同一 publish_hook 导出,Then 两档均 allow、HOOK_OK、无页眉。
+    """
+    store = _store(tmp_path)
+    claims_all = _claims_publishable()
+    assert disposition_for_claims(claims_all) == "可发（全部仍成立）"
+    claims_voided = [
+        Claim(
+            claim_id="c-void",
+            statement="已作废主张",
+            t0_evidence_ids=["t0#b"],
+            t1_evidence_ids=[],
+            status="stale",
+            reason="T1 推翻",
+            voided=True,
+        ),
+        _claims_publishable()[0],
+    ]
+    assert disposition_for_claims(claims_voided) == "可发（含作废）"
+
+    for tag, claims, expected in (
+        ("all", claims_all, "可发（全部仍成立）"),
+        ("voided", claims_voided, "可发（含作废）"),
+    ):
+        hook, md = export_client_memo_gated(
+            run_id=f"run-{tag}",
+            disposition=expected,
+            projections=[project_claim(store, c) for c in claims],
+            generated_at="2026-09-30T00:00:00Z",
+        )
+        assert hook.allow is True, tag
+        assert hook.code == HOOK_OK, tag
+        assert hook.disposition == expected, tag
+        assert hook.requires_needs_patch_banner is False, tag
+        assert md is not None and NEEDS_PATCH_BANNER not in md, tag
+
+
 def test_render_banner_only_when_flagged(tmp_path):
     """页眉「需补丁」仅在 needs_patch_banner 时出现。"""
     store = _store(tmp_path)

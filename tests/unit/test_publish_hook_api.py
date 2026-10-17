@@ -68,7 +68,7 @@ def test_check_allow_for_publishable_run(client):
     assert r.status_code == 200
     body = r.json()
     assert body["allow"] is True
-    assert body["disposition"] == "可发"
+    assert body["disposition"] == "可发（全部仍成立）"
     assert body["code"] == HOOK_OK
     assert "message" in body
 

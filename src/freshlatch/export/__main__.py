@@ -12,6 +12,7 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
+from freshlatch.disposition import DISPOSITIONS  # noqa: E402
 from freshlatch.sheet import (  # noqa: E402
     export_client_memo_from_snapshot_gated,
     export_sheet_from_snapshot,
@@ -63,8 +64,8 @@ def main(argv: list[str] | None = None) -> None:
     p_memo.add_argument(
         "--disposition",
         default=None,
-        choices=["可发", "需补丁", "勿发"],
-        help="包结论;缺省由快照主张聚合(disposition_for_claims)",
+        choices=sorted(DISPOSITIONS),
+        help="包结论(四档 closed set);缺省由快照主张聚合(disposition_for_claims)",
     )
     p_memo.add_argument(
         "--ack-needs-patch",

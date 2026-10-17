@@ -1,9 +1,9 @@
-"""发前钩子闸(ADR-0031 / #227/#230)。
+"""发前钩子闸(ADR-0031 / #227/#230;I-09 四档词表 #694)。
 
-确定性纯逻辑:给定 run_id、该 Run 包结论、T1 checksum 机械新鲜度、
+确定性纯逻辑:给定 run_id、该 Run 包结论(四档)、T1 checksum 机械新鲜度、
 可选 ack_needs_patch → allow/deny + code/message(+需补丁页眉约束)。
 
-只读消费 disposition 词表(ADR-0027);不触发整包再验、零 LLM。
+只读消费 disposition 词表(ADR-0027 四档修订);不触发整包再验、零 LLM。
 HTTP 入站 check(#230)与 UI/CLI 共用本闸;本模块禁止平行 if/else 出口。
 入站绑定面常量(本机默认 / 可选 token 头)亦登记于此,供适配层透传。
 """
@@ -101,11 +101,11 @@ def evaluate_publish_hook(
 
     优先级(fail-closed):
     1) 缺/空 run_id → deny
-    2) 无法解析包结论(disposition 缺失或不在三值内) → deny
+    2) 无法解析包结论(disposition 缺失或不在四档内) → deny
     3) 勿发 → deny(不暗示可落 Memo)
     4) checksum/run 机械新鲜度漂移 → deny
     5) 需补丁且未 ack → deny;ack 则放行并强制需补丁页眉
-    6) 可发且未漂 → 放行
+    6) 两档可发(全部仍成立 / 含作废)同权且未漂 → 放行,透传原字面
     """
     rid = (run_id or "").strip()
     if not rid:
@@ -156,10 +156,10 @@ def evaluate_publish_hook(
             requires_needs_patch_banner=True,
         )
 
-    # 可发 + 未漂
+    # 两档可发(全部仍成立 / 含作废)同权放行(I-09 / #694);透传原四档字面
     return PublishHookResult(
         allow=True,
-        disposition="可发",
+        disposition=disposition,
         code=HOOK_OK,
         message="包结论可发且新鲜度未漂,放行",
     )

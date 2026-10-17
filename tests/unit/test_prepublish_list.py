@@ -122,10 +122,10 @@ def test_decide_path_still_works_after_disposition(client):
     assert r.status_code == 200
     body = r.json()
     assert body["results"][0]["ok"] is True
-    assert body["disposition"] == "可发"  # stale 已 discard 收口
+    assert body["disposition"] == "可发（含作废）"  # stale 已 discard 收口 → 含作废
     assert body["latch"]["thread_id"] is None
     listed = client.get("/api/prepublish/runs").json()["runs"]
-    assert listed[0]["disposition"] == "可发"
+    assert listed[0]["disposition"] == "可发（含作废）"
     assert listed[0]["status"] == "已落档"
 
 
@@ -161,4 +161,4 @@ def test_derive_run_status_and_claim_mapping():
     assert derive_run_status(running=False, latch={}) == "已落档"
     c = Claim(claim_id="c1", statement="s", status="stale", voided=True)
     assert claim_to_disposition_input(c).human_action == "discard"
-    assert disposition_for_claims([c]) == "可发"
+    assert disposition_for_claims([c]) == "可发（含作废）"
