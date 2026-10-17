@@ -101,6 +101,27 @@ def test_decide_discard_happy_path(client):
     assert "c1" in appmod._store().list_invalidation()
 
 
+def test_banner_pending_same_source_excludes_voided(client):
+    """I-05(#693):人审横幅只渲染 enter_round 过滤后的 pending(API 同源,不靠 UI 藏)。
+
+    discard 后 c1 voided 且机器 status 仍 stale;下一轮 pending(= 横幅数据源)不得含 c1。
+    """
+    claims = [Claim(claim_id="c1", statement="竞品客单价仍显著高于我们",
+                    status="stale", reason="T1 竞品降价"),
+              Claim(claim_id="c2", statement="普查仍支持", status="fresh", reason="T1 仍支持"),
+              Claim(claim_id="c3", statement="T1 无原文覆盖", status="unknown")]
+    appmod._state["claims"] = claims
+    rnd1 = appmod._latch().enter_round(claims)
+    appmod._state["latch"] = {"thread_id": rnd1.thread_id, "pending": rnd1.pending}
+    r = client.post("/api/latch/decide",
+                    json={"thread_id": rnd1.thread_id,
+                          "decisions": [{"claim_id": "c1", "action": "discard"}]})
+    assert r.status_code == 200
+    rnd2 = appmod._latch().enter_round(claims)
+    appmod._state["latch"] = {"thread_id": rnd2.thread_id, "pending": rnd2.pending}
+    assert [p["claim_id"] for p in appmod._state["latch"]["pending"]] == ["c3"]
+
+
 DOC = "t0-competitor-notes"
 RENEW_EID = f"{DOC}#p2@T1"
 

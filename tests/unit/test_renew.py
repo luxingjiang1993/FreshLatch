@@ -11,6 +11,7 @@ from __future__ import annotations
 from freshlatch.gates.human_latch import (
     RENEW_EVIDENCE_MALFORMED,
     RENEW_EVIDENCE_UNRESOLVED,
+    apply_decisions,
 )
 from freshlatch.gates.rule_gate import GateContext, GateDecision, rule_gate
 from freshlatch.latch import HumanLatch
@@ -362,15 +363,18 @@ def test_renew_unresolvable_evidence_rejected(tmp_path):
 
 
 def test_renew_on_invalidated_claim_rejected(tmp_path):
-    """已作废主张不得续命(作废是人的终局决定,规则闸查名单强制)。"""
+    """已作废主张不得续命(作废是人的终局决定,规则闸查名单强制)。
+
+    I-05(#693):voided 主张进不了 pending,故直测写路径 apply_decisions
+    (pending_ids=None 绕开待审校验;闸的 INVALIDATED 拒绝语义不变)。
+    """
     store = make_store(tmp_path)
     store.add_invalidation("c1", "2026-09-21T00:00:00", actor="human")
-    latch = make_latch(store, tmp_path)
     claims = [make_claim()]
     claims[0].voided = True
-    rnd = latch.enter_round(claims)
-    results = latch.decide(rnd.thread_id, [{"claim_id": "c1", "action": "renew",
-                                            "evidence_id": EID}])
+    results = apply_decisions(store, {c.claim_id: c for c in claims},
+                              [{"claim_id": "c1", "action": "renew",
+                                "evidence_id": EID}], pending_ids=None)
     assert results[0]["ok"] is False
     assert results[0]["error_code"] == "INVALIDATED"
     assert claims[0].status == "stale"
