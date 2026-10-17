@@ -1,5 +1,6 @@
 """神经 rerank 对照的纯函数。不下载权重。"""
 
+import os
 from pathlib import Path
 
 from freshlatch.eval.neural_rerank import (
@@ -94,7 +95,16 @@ def test_weight_bytes_count_each_inode_once(tmp_path: Path):
     snap.mkdir()
     payload = blob / "model.onnx"
     payload.write_bytes(b"abcde")
-    (snap / "model.onnx").symlink_to(payload)
+    # 生产不变量：两个路径指向同一 inode 时只计一次字节。HF 缓存布局用
+    # 符号链接实现；无 SeCreateSymbolicLinkPrivilege 的 Windows 机器建不了
+    # 符号链接，硬链接是同一 inode 的合法别名，等效构造该不变量（I-06 #681）。
+    try:
+        (snap / "model.onnx").symlink_to(payload)
+    except OSError:
+        if os.name != "nt":
+            raise
+        os.link(payload, snap / "model.onnx")
+    assert os.stat(snap / "model.onnx").st_ino == os.stat(payload).st_ino
     other = tmp_path / "models--Qdrant--bge-small-zh-v1.5" / "model.onnx"
     other.parent.mkdir()
     other.write_bytes(b"zzzzzzzzzz")

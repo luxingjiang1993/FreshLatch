@@ -172,6 +172,71 @@ def test_p50_uses_same_ceil_as_p95_and_does_not_double_ms():
     assert p50 == 20.0
 
 
+def test_run_typed_compare_rejects_null_questions(tmp_path):
+    """I-06(#681)：questions 为 None / JSON 顶层 null 时，生产路径给干净
+    ValueError，不得抛 NoneType 裸错误。dense-db 只需存在（校验在其后）。"""
+    cfg = tmp_path / "config.json"
+    cfg.write_text(json.dumps(_cfg()), encoding="utf-8")
+    dense = tmp_path / "dense.sqlite"
+    dense.write_bytes(b"")
+    with pytest.raises(ValueError, match="null"):
+        run_typed_compare(
+            corpus=tmp_path / "corpus",
+            traps=tmp_path / "traps",
+            questions=None,
+            config=cfg,
+            dense_db=dense,
+            cache_path=tmp_path / "cache.sqlite",
+            out_dir=None,
+            embed_fn=_fake_embed_match_first,
+        )
+    null_json = tmp_path / "questions-null.json"
+    null_json.write_text("null", encoding="utf-8")
+    with pytest.raises(ValueError, match="null"):
+        run_typed_compare(
+            corpus=tmp_path / "corpus",
+            traps=tmp_path / "traps",
+            questions=null_json,
+            config=cfg,
+            dense_db=dense,
+            cache_path=tmp_path / "cache.sqlite",
+            out_dir=None,
+            embed_fn=_fake_embed_match_first,
+        )
+
+
+def test_run_typed_compare_rejects_null_query_item(tmp_path):
+    """题目 query 显式 null：生产守卫拒绝，不把它当 "None" 字符串跑分。"""
+    corpus, traps, qpath, cfg, dense, cache = _score_fixture(tmp_path)
+    raw = json.loads(qpath.read_text(encoding="utf-8"))
+    raw["queries"][0]["query"] = None
+    qnull = tmp_path / "questions-null-query.json"
+    qnull.write_text(json.dumps(raw, ensure_ascii=False), encoding="utf-8")
+    with pytest.raises(ValueError, match="query 不能为 null"):
+        run_typed_compare(
+            corpus=corpus,
+            traps=traps,
+            questions=qnull,
+            config=cfg,
+            dense_db=dense,
+            cache_path=cache,
+            out_dir=None,
+            embed_fn=_fake_embed_match_first,
+        )
+
+
+def test_unique_embed_texts_skips_null_query(tmp_path):
+    """estimate 路径（--estimate-only）不跑逐题校验：null query 按缺失跳过，
+    不得混入 "None" 文本污染缓存键与成本估算。"""
+    corpus = tmp_path / "corpus"
+    _write_doc(corpus, "t1", "T1", "doc-a", ["正文词XYZ"])
+    texts = unique_embed_texts(
+        corpus, tmp_path / "no-traps", [_q("qn", None), _q("qb", "问题词ABC")]
+    )
+    assert "None" not in texts
+    assert "问题词ABC" in texts
+
+
 def _score_fixture(tmp_path: Path):
     corpus = tmp_path / "corpus"
     traps = tmp_path / "traps"
