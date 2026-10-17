@@ -739,8 +739,14 @@ def export_sheet_from_snapshot(
 # ---- 客户向复验备忘 (Client Memo;ADR-0015 / INV-2·INV-3) ----
 # 与复验单导出分离:读同一投影,不写轨迹/人审时间线,过禁语与字段契约。
 
-# 禁止项字面:「建议进入/不进入」→ 建议进入 | 建议不进入(不含裸「不进入」,避免误伤)
-_CLIENT_MEMO_FORBIDDEN = re.compile(r"Lead|Critic|建议进入|建议不进入")
+# 禁止项字面:「建议进入/不进入」→ 建议进入 | 建议不进入(不含裸「不进入」,避免误伤)。
+# I-03(#674/#677)初值表:ADR-/GATE/DEM-/闸/异议/路由/DIMENSION_MISMATCH + 报告 H 节样例;
+# 机器 token 用 \b 边界,避免误伤 NAVIGATE 之类英文词;导出单测对样例 Memo 零命中。
+_CLIENT_MEMO_FORBIDDEN = re.compile(
+    r"Lead|Critic|建议进入|建议不进入"
+    r"|\bADR-\d+\b|\bGATE\b|\bDEM-\d+\b|\bDIMENSION_MISMATCH\b"
+    r"|闸|异议|路由"
+)
 _CLIENT_MEMO_DISCLAIMER = (
     "免责声明:本备忘非法律意见、非自动商业决策;"
     "仅反映既定 T1 事实下的复验投影,不构成投资或交易建议。"
@@ -762,30 +768,41 @@ def _client_memo_bucket(proj: dict[str, Any]) -> str:
     return "gap"
 
 
+# 客户向结论模板(I-03 #674 拍板:模板/规则层,不上 LLM):
+# 一句客户向结论,按三分栏取值;机器理由(internal_reason 侧)不进默认面。
+_CLIENT_MEMO_CONCLUSIONS = {
+    "held": "现有证据支持该主张仍然成立。",
+    "voided": "该主张已被后续证据推翻,不再成立。",
+    "gap": "现有证据不足以确认该主张。",
+}
+
+
+def _external_reason(proj: dict[str, Any]) -> str:
+    """模板 external_reason:纯规则,无 LLM;不含闸码/ADR/角色名。"""
+    return _CLIENT_MEMO_CONCLUSIONS[_client_memo_bucket(proj)]
+
+
 def _client_memo_pointback_ids(proj: dict[str, Any]) -> list[str]:
     """可点回 evidence_id:仅 T1;`doc_id#anchor@as_of`,不做字符级偏移。"""
     return [str(e) for e in (proj.get("t1_evidence_ids") or []) if e]
 
 
 def _render_client_memo_entry(proj: dict[str, Any], *, gap_no_t1: bool = False) -> str:
-    """单条:claim_id + 一句话理由 + 可选 evidence_id 点回。
+    """单条:claim_id + 客户向结论句(external_reason 模板)+ 证据列表(纯文本)。
 
     「无 T1 覆盖」仅挂在缺口栏(gap_no_t1);仍成立/已作废不强制该文案。
+    internal_reason / 机器 reason 不进客户向默认面(I-03);证据以纯文本呈现,
+    不用 evidence: scheme(附录/点回由调用方按原文 id 自行映射,#677 story 24)。
     """
     cid = proj.get("claim_id") or ""
-    reason = _sanitize_client_memo_text(str(proj.get("reason") or ""))
+    conclusion = _external_reason(proj)
     eids = _client_memo_pointback_ids(proj)
-    if gap_no_t1:
-        if not reason:
-            reason = "无 T1 覆盖"
-        elif "无 T1 覆盖" not in reason:
-            reason = f"{reason};无 T1 覆盖"
-    if not reason:
-        reason = "(无理由)"
-    lines = [f"- **{cid}**: {reason}"]
-    for eid in eids:
-        # Markdown 链接保留完整 evidence_id,供点回;无字符偏移 span
-        lines.append(f"  - 证据: [`{eid}`](evidence:{eid})")
+    lines = [f"- **{cid}**: {conclusion}"]
+    if eids:
+        for eid in eids:
+            lines.append(f"  - 证据: `{eid}`")
+    elif gap_no_t1:
+        lines.append("  - 证据: 无 T1 覆盖")
     return "\n".join(lines)
 
 
@@ -836,11 +853,14 @@ def render_client_memo_markdown(
     generated_at: str,
     synthetic: bool = False,
     needs_patch_banner: bool = False,
+    include_dem3_rubric: bool = False,
 ) -> str:
     """客户向复验备忘 Markdown(ADR-0015 必填字段;禁轨迹与商业裁决句)。
 
     needs_patch_banner:发前钩子需补丁+ack 放行时强制页眉标明「需补丁」(ADR-0031);
     不扩商业裁决、不写轨迹。
+    include_dem3_rubric:DEM-3 人工勾选面仅显式开启才挂(#674 拍板:默认剔除);
+    机器套件只锁字段/禁语边界,勾选结果不作通过线。
     """
     held: list[dict[str, Any]] = []
     voided: list[dict[str, Any]] = []
@@ -878,9 +898,11 @@ def render_client_memo_markdown(
             _render_client_memo_section("仍成立", held),
             _render_client_memo_section("已作废", voided),
             _render_client_memo_section("缺口", gap, empty_gap_explicit=True),
-            _render_dem3_rubric_checklist(),
         ]
     )
+    # DEM-3 人工 rubric 默认剔除(#674 拍板);仅显式开启时挂勾选面
+    if include_dem3_rubric:
+        parts.append(_render_dem3_rubric_checklist())
     return "\n".join(parts).rstrip() + "\n"
 
 
