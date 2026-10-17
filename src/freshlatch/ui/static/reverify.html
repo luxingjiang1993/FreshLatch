@@ -336,6 +336,16 @@
     <button onclick="closeRenew()">取消</button>
   </div>
 </div></div>
+<div id="precheck-modal" class="modal"><div class="box">
+  <p><b>本地权重预检</b></p>
+  <div id="precheck-body" style="color:#57606a"></div>
+  <div id="precheck-progress" role="status" style="margin-top:8px"></div>
+  <div style="margin-top:12px">
+    <button class="ok" id="btn-precheck-retry" onclick="precheckRetryDownload()">重试下载</button>
+    <button class="bm25" id="btn-precheck-bm25" onclick="precheckChooseBm25()">先用 BM25(精度降级)</button>
+    <button onclick="closePrecheck()">取消</button>
+  </div>
+</div></div>
 <script>
 let STATE = {claims: [], question: "", latch: {thread_id: null, pending: []},
              retrieve_zero_hits: [],
@@ -1377,6 +1387,78 @@ async function showSource(docId, anchor, asOf, sentenceId, role){
     if(target) target.scrollIntoView({behavior:'smooth', block:'center'});
   }
 }
+// -- I-02(#679):开始复验前的本地权重预检面板 ----------------------------------------
+let PRECHECK_RESOLVE = null;
+let PRECHECK_POLL = null;
+
+async function fetchRetrievalPrecheck(){
+  // 纯文件层预检,毫秒级。预检接口自身失败不硬拦(不是闸),返回 null 继续老路径。
+  try{
+    const r = await fetch('/api/retrieval/precheck');
+    const j = await r.json();
+    return j.ok ? null : j;
+  }catch(e){ return null; }
+}
+
+function renderPrecheckDownload(d){
+  const el = document.getElementById('precheck-progress');
+  const retry = document.getElementById('btn-precheck-retry');
+  if(!d){ el.textContent=''; retry.disabled=false; return; }
+  if(d.state==='running'){ el.textContent='下载中,已用时 '+(d.elapsed_s||0)+' 秒……'; retry.disabled=true; }
+  else if(d.state==='ok'){ el.textContent='下载完成,权重已就绪。'; retry.disabled=false; }
+  else if(d.state==='error'){ el.textContent='失败原因:'+d.error; retry.disabled=false; }
+  else { el.textContent=''; retry.disabled=false; }
+}
+
+function renderPrecheckPanel(p){
+  const missing = [];
+  if(!p.embedding) missing.push('embedding 模型(BAAI/bge-small-zh-v1.5)');
+  if(!p.reranker) missing.push('精排模型(BAAI/bge-reranker-base,'+String(p.reranker_size_hint||'约 1.1GB')+')');
+  let h = '<p>开始复验前需要本地检索权重,未检测到:'+esc(missing.join('、'))+'。</p>';
+  h += '<p>两份权重合计约 1.2GB(其中精排 '+esc(String(p.reranker_size_hint||'约 1.1GB'))
+     + '),首次下载请留够磁盘与网络;reranker 首次加载约 8 秒。</p>';
+  if(p.cache_dir) h += '<p>缓存目录:'+esc(String(p.cache_dir))+'</p>';
+  if(p.offline) h += '<p>当前为离线模式(HF_HUB_OFFLINE/FRESHLATCH_EMBED_OFFLINE),不会自动下载。</p>';
+  h += '<p>也可以先用 BM25(精度降级):本跑轨迹记 bm25_fallback,只对本跑生效,不改默认检索臂。</p>';
+  document.getElementById('precheck-body').innerHTML = h;
+  renderPrecheckDownload(p.download);
+}
+
+function openPrecheckPanel(p){
+  renderPrecheckPanel(p);
+  document.getElementById('precheck-modal').style.display = 'block';
+  return new Promise((resolve)=>{ PRECHECK_RESOLVE = resolve; });
+}
+
+function stopPrecheckPoll(){
+  if(PRECHECK_POLL){ clearInterval(PRECHECK_POLL); PRECHECK_POLL = null; }
+}
+
+function closePrecheckModal(result){
+  stopPrecheckPoll();
+  document.getElementById('precheck-modal').style.display = 'none';
+  if(PRECHECK_RESOLVE){ PRECHECK_RESOLVE(result); PRECHECK_RESOLVE = null; }
+}
+
+function closePrecheck(){ closePrecheckModal('cancel'); }
+function precheckChooseBm25(){ closePrecheckModal('bm25'); }
+
+async function precheckRetryDownload(){
+  const r = await fetch('/api/retrieval/precheck/download',{method:'POST'});
+  const j = await r.json().catch(()=>({}));
+  if(j.error){ document.getElementById('precheck-progress').textContent = j.error; return; }
+  startPrecheckPoll();
+}
+
+function startPrecheckPoll(){
+  stopPrecheckPoll();
+  PRECHECK_POLL = setInterval(async ()=>{
+    const p = await fetchRetrievalPrecheck();
+    if(p === null){ closePrecheckModal('ready'); return; }  // 权重已就绪,继续正常复验
+    renderPrecheckPanel(p);
+  }, 2000);
+}
+
 async function runReverify(){
   const btn = document.getElementById('btn-run');
   btn.disabled = true;
@@ -1385,8 +1467,29 @@ async function runReverify(){
   if(budgetPoll) clearInterval(budgetPoll);
   budgetPoll = setInterval(pollBudget, 400);
   try{
-    const j = await (await fetch('/api/reverify',{method:'POST'})).json();
-    if(j.error){ document.getElementById('status').textContent = j.error; return; }
+    // I-02(#679):缺权重先出可操作面板(≤10s,纯文件层预检),不进入无反馈长挂起
+    const pre = await fetchRetrievalPrecheck();
+    let acceptBm25 = false;
+    if(pre){
+      const choice = await openPrecheckPanel(pre);
+      if(choice === 'cancel'){
+        document.getElementById('status').textContent = '已取消复验:本地权重未就绪';
+        return;
+      }
+      if(choice === 'bm25') acceptBm25 = true;  // ready → 权重已就绪,正常跑
+    }
+    const init = {method:'POST'};
+    if(acceptBm25){
+      init.headers = {'Content-Type':'application/json'};
+      init.body = JSON.stringify({accept_bm25_fallback:true});
+    }
+    const resp = await fetch('/api/reverify', init);
+    const j = await resp.json();
+    if(j.error){
+      document.getElementById('status').textContent =
+        (j.error_code ? ('['+j.error_code+'] ') : '') + j.error;
+      return;
+    }
     STATE.claims = j.claims; STATE.latch = j.latch; PENDING_DECISIONS = [];
     STATE.retrieve_zero_hits = j.retrieve_zero_hits || [];
     STATE.trajectory = j.trajectory; STATE.audit = j.audit || null;

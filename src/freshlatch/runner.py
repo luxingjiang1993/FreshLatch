@@ -249,6 +249,11 @@ class RunContext:
     eval_retrieval_mode: str | None = None
     # 运维开关。None 表示沿用 PRODUCTION_RETRIEVAL_MODE。不改那个常量。
     retrieval_switch: str | None = None
+    # I-02(#679)：用户在预检面板已知情缺权重，本跑选「先用 BM25（精度降级）」。
+    # 只作用于本 Run：整臂走 bm25_fallback（轨迹字段），不改 PRODUCTION_RETRIEVAL_MODE，
+    # 也不写运维开关；与 set_retrieval_switch("bm25")（last_retrieval_mode=bm25 持久记号）
+    # 语义可区分。eval 夹具的 eval_retrieval_mode 优先级仍更高。
+    bm25_fallback_accepted: bool = False
     # 最近一次成功 retrieve 的 manifest。预算耗尽时清空。
     last_retrieval_manifest: dict | None = None
     # 服务端会话租户。代码注入,不是模型输出,也不是客户端 filter。
@@ -284,6 +289,10 @@ class RunContext:
     def _active_retrieval_mode(self) -> str:
         if self.mode == "eval" and self.eval_retrieval_mode:
             return self.eval_retrieval_mode
+        if self.bm25_fallback_accepted:
+            # 预检知情降级（#679 I-02）：本跑轨迹记 bm25_fallback，区别于
+            # set_retrieval_switch("bm25") 的 last_retrieval_mode=bm25。
+            return "bm25_fallback"
         if self.retrieval_switch:
             return self.retrieval_switch
         return PRODUCTION_RETRIEVAL_MODE
@@ -772,6 +781,7 @@ class Runner:
                                 "decoding": self.ctx.decoding.__dict__,
                                 "guardrails": self.ctx.guardrails.__dict__,
                                 "invalidation_list": sorted(self.ctx.invalidation_list),
+                                "bm25_fallback": self.ctx.bm25_fallback_accepted,
                                 "soft_close_message": BUDGET_EXHAUSTED_MESSAGE},
                                ensure_ascii=False) + "\n")
             # 失败路径字段随事件原样落盘,parse_failure_replay 只读这些行。

@@ -2148,6 +2148,9 @@ def test_real_client_pins_first_request_and_does_not_retry_500(tmp_path: Path, m
         return httpx.Response(200, json=_chat_completion(content))
 
     def factory(**kw):
+        # #679 I-07:LLMClient 现在自带 trust_env=False 的 http_client;
+        # 测试要用 MockTransport,弹掉传入的再换成自己的。
+        kw.pop("http_client", None)
         return openai.OpenAI(http_client=httpx.Client(transport=httpx.MockTransport(ok_handler)), **kw)
 
     monkeypatch.setattr(llm_mod, "OpenAI", factory)
@@ -2188,6 +2191,7 @@ def test_real_client_pins_first_request_and_does_not_retry_500(tmp_path: Path, m
         return httpx.Response(500, json={"error": {"message": "boom", "type": "server_error"}})
 
     def err_factory(**kw):
+        kw.pop("http_client", None)
         return openai.OpenAI(http_client=httpx.Client(transport=httpx.MockTransport(err_handler)), **kw)
 
     monkeypatch.setattr(llm_mod, "OpenAI", err_factory)

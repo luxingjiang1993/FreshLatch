@@ -144,9 +144,11 @@ def test_llm_client_local_lms_uses_resolved_endpoint_and_placeholder_key(monkeyp
     seen: dict[str, str] = {}
 
     class _FakeOpenAI:
-        def __init__(self, *, api_key: str, base_url: str) -> None:
+        def __init__(self, *, api_key: str, base_url: str, http_client=None) -> None:
             seen["api_key"] = api_key
             seen["base_url"] = base_url
+            # #679 I-07:LLMClient 默认装配 trust_env=False 的 http_client,桩照单全收
+            assert http_client is not None and http_client.trust_env is False
 
     monkeypatch.setattr(llm_mod, "OpenAI", _FakeOpenAI)
     monkeypatch.setattr(llm_mod, "load_dotenv", lambda *_args, **_kwargs: None)
