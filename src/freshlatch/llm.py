@@ -12,7 +12,9 @@ from datetime import datetime, timezone
 from typing import Any
 
 from dotenv import find_dotenv, load_dotenv
-from openai import OpenAI
+from openai import APIConnectionError, APITimeoutError, OpenAI
+
+import httpx
 
 from freshlatch.model_profile import resolve_model
 from freshlatch.models import DEFAULT_MODEL, MODEL_REGISTRY
@@ -25,6 +27,51 @@ DASHSCOPE_BASE_URL = _default_base
 
 # 未标记 accepts_tools_strict 时是否传 function.strict。结论写在 LLMClient.chat。
 DEFAULT_ENDPOINT_ACCEPTS_TOOLS_STRICT = True
+
+
+def default_http_client() -> httpx.Client:
+    """OpenAI-compat 传输默认装配:trust_env=False(#679 I-07)。
+
+    不读 HTTP(S)_PROXY / NO_PROXY 环境变量——坏值(如 NO_PROXY 裸写 ``::1``)
+    不会污染请求路径;确需走代理的部署显式传 http_client 构造。
+    """
+    return httpx.Client(trust_env=False)
+
+
+PROXY_ERROR_CODE = "PROXY_NO_PROXY_CONFIG"
+PROXY_ERROR_MESSAGE = (
+    "代理/NO_PROXY 配置异常或网络不可达,请求未成功发出。怎么办:"
+    "1) 检查环境变量 HTTP_PROXY / HTTPS_PROXY / NO_PROXY:"
+    "NO_PROXY 多值用英文逗号分隔,IPv6 要写成 [::1];"
+    "2) 本服务默认 trust_env=False,不读上述变量;确需代理请显式配置后重启进程;"
+    "3) 确认本机网络后重试;若本地权重也未就绪,可在预检面板选「先用 BM25(精度降级)」。"
+)
+
+# 传输层异常家族:代理坏了、连不上、超时都算。栈上任何一层命中即映射。
+_TRANSPORT_ERROR_TYPES: tuple[type[BaseException], ...] = (
+    APIConnectionError,
+    APITimeoutError,
+    httpx.ProxyError,
+    httpx.NetworkError,
+    httpx.TimeoutException,
+    httpx.ConnectError,
+    httpx.ConnectTimeout,
+    httpx.ReadTimeout,
+    httpx.WriteTimeout,
+    httpx.PoolTimeout,
+)
+
+
+def describe_llm_transport_error(exc: BaseException) -> dict | None:
+    """把 OpenAI-compat/httpx 传输层异常映射成可操作中文负载。
+
+    命中返回 {"error_code", "error"}(error 含「代理/NO_PROXY 配置异常」+ 怎么办);
+    非传输层异常返回 None,调用方走内部错误路径。沿 __cause__ 链向下看一层。
+    """
+    chain = (exc, getattr(exc, "__cause__", None))
+    if not any(isinstance(node, _TRANSPORT_ERROR_TYPES) for node in chain if node is not None):
+        return None
+    return {"error_code": PROXY_ERROR_CODE, "error": PROXY_ERROR_MESSAGE}
 
 
 def endpoint_accepts_tools_strict(client: Any) -> bool:
@@ -156,6 +203,7 @@ class LLMClient:
             self._client = OpenAI(
                 api_key=key,
                 base_url=resolved_base,
+                http_client=default_http_client(),
             )
         return self._client
 

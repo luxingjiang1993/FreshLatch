@@ -9,9 +9,13 @@ from __future__ import annotations
 
 import html
 import json
+import logging
 import os
+import threading
+import time
 import uuid  # noqa: E402
 from dataclasses import asdict
+from datetime import datetime, timezone
 from pathlib import Path
 
 from fastapi import FastAPI, File, Query, Request, UploadFile
@@ -23,6 +27,7 @@ from freshlatch.claim_ledger import (  # noqa: E402
     export_claim_ledger_md,
     get_claim_ledger,
 )
+from freshlatch.llm import describe_llm_transport_error  # noqa: E402
 from freshlatch.evidence_bound import (  # noqa: E402
     PatchDraftStore,
     confirm_patch,
@@ -122,6 +127,59 @@ _state: dict = {"claims": [], "question": "", "trajectory": None, "running": Fal
 _prepublish = PrepublishRegistry()
 _t1: T1SourceSession | None = None
 ACTIVE_PACK: PackPaths
+
+logger = logging.getLogger(__name__)
+
+# I-02(#679):本地权重下载任务(后台线程)。单测 monkeypatch _warmup_local_weights
+# 成确定性 noop/fast-fail,零真实下载。
+_WEIGHT_DOWNLOAD_TIMEOUT_S = 1800.0  # 30 分钟软上限;超限由 GET 预检判超时,不另起看门狗
+_WEIGHT_DOWNLOAD_LOCK = threading.Lock()
+_WEIGHT_DOWNLOAD_JOB: dict = {
+    "state": "idle",  # idle | running | ok | error
+    "error": None,    # 失败原因(中文 + 异常类型);成功/未开始为 None
+    "started_at": None,
+    "started_monotonic": None,
+}
+
+
+def _warmup_local_weights() -> None:
+    """下载并预热两份本地权重(embedding + reranker,合计约 1.2GB,其中 reranker 约 1.1GB)。"""
+    from freshlatch.store.local_embed import embed_texts_local
+    from freshlatch.store.neural_rerank import warmup_neural_rerank
+
+    embed_texts_local(["预热"])
+    warmup_neural_rerank()
+
+
+def _run_weight_download_job() -> None:
+    try:
+        _warmup_local_weights()
+    except Exception as exc:  # noqa: BLE001 —— 失败原因要给人看,不向上抛穿线程边界
+        message = f"下载/预热失败:{type(exc).__name__}: {exc}"[:500]
+        with _WEIGHT_DOWNLOAD_LOCK:
+            _WEIGHT_DOWNLOAD_JOB["state"] = "error"
+            _WEIGHT_DOWNLOAD_JOB["error"] = message
+    else:
+        with _WEIGHT_DOWNLOAD_LOCK:
+            _WEIGHT_DOWNLOAD_JOB["state"] = "ok"
+            _WEIGHT_DOWNLOAD_JOB["error"] = None
+
+
+def _weight_download_status() -> dict:
+    """下载任务投影;running 超软上限时在本读取点判超时(无后台看门狗线程)。"""
+    with _WEIGHT_DOWNLOAD_LOCK:
+        job = dict(_WEIGHT_DOWNLOAD_JOB)
+    status = {"state": job["state"], "error": job["error"], "started_at": job["started_at"]}
+    if job["state"] == "running":
+        elapsed = time.monotonic() - (job["started_monotonic"] or time.monotonic())
+        status["elapsed_s"] = int(elapsed)
+        if elapsed > _WEIGHT_DOWNLOAD_TIMEOUT_S:
+            status["state"] = "error"
+            status["error"] = "下载超时(已超过 30 分钟)。请检查网络后点「重试下载」。"
+            with _WEIGHT_DOWNLOAD_LOCK:
+                _WEIGHT_DOWNLOAD_JOB["state"] = "error"
+                _WEIGHT_DOWNLOAD_JOB["error"] = status["error"]
+    return status
 
 
 def bind_active_pack(pack_id: str | None = None) -> PackPaths:
@@ -779,12 +837,82 @@ def api_import_draft(req: DraftImportRequest) -> JSONResponse:
     })
 
 
+@app.get("/api/retrieval/precheck")
+def api_retrieval_precheck() -> JSONResponse:
+    """I-02(#679):开始复验前的本地权重预检(纯文件层 stat,毫秒级,不加载模型不触网)。
+
+    缺权重时 UI 出可操作面板:约 1.1GB 说明、下载进度/失败原因,
+    并列「重试下载」与「先用 BM25(精度降级)」。
+    """
+    from freshlatch.store.local_embed import (
+        embed_offline_requested,
+        local_embed_cache_dir,
+    )
+    from freshlatch.ui.weight_precheck import (
+        local_embed_weights_ready,
+        neural_rerank_weights_ready,
+    )
+
+    cache_dir = local_embed_cache_dir()
+    embedding = local_embed_weights_ready()
+    reranker = neural_rerank_weights_ready()
+    return JSONResponse({
+        "ok": embedding and reranker,
+        "embedding": embedding,
+        "reranker": reranker,
+        "offline": embed_offline_requested(),
+        "cache_dir": cache_dir,
+        "reranker_size_hint": "约 1.1GB",
+        "download": _weight_download_status(),
+    })
+
+
+@app.post("/api/retrieval/precheck/download")
+def api_retrieval_precheck_download() -> JSONResponse:
+    """后台下载/预热两份本地权重;进度与失败原因经 GET 预检轮询。离线模式拒绝。"""
+    from freshlatch.store.local_embed import embed_offline_requested
+
+    if embed_offline_requested():
+        return JSONResponse(
+            {"error_code": "EMBED_OFFLINE",
+             "error": ("离线模式已启用(HF_HUB_OFFLINE=1 或 FRESHLATCH_EMBED_OFFLINE=1),"
+                       "不会发起下载。请在有网环境运行 python scripts/warmup_local_embed.py,"
+                       "再用 FASTEMBED_CACHE_PATH 指向该缓存。")},
+            status_code=409,
+        )
+    with _WEIGHT_DOWNLOAD_LOCK:
+        already_running = _WEIGHT_DOWNLOAD_JOB["state"] == "running"
+        if not already_running:
+            _WEIGHT_DOWNLOAD_JOB.update({
+                "state": "running",
+                "error": None,
+                "started_at": datetime.now(timezone.utc).isoformat(),
+                "started_monotonic": time.monotonic(),
+            })
+    if already_running:
+        # 锁外取状态:_weight_download_status 内部自取同一把非可重入锁,
+        # 在锁内调用会自死锁(#679 单测 test_download_rejects_double_start 钉住)。
+        return JSONResponse(
+            {"error": "下载已在进行中", "download": _weight_download_status()},
+            status_code=409,
+        )
+    threading.Thread(target=_run_weight_download_job, daemon=True).start()
+    return JSONResponse({"download": _weight_download_status()})
+
+
+class ReverifyRequest(BaseModel):
+    """I-02(#679):预检面板「先用 BM25(精度降级)」的知情确认。缺省不改变任何行为。"""
+
+    accept_bm25_fallback: bool = False
+
+
 @app.post("/api/reverify")
-def api_reverify() -> JSONResponse:
+def api_reverify(req: ReverifyRequest | None = None) -> JSONResponse:
     """复验动作(由一键样例进入):端到端真主链(Lead 裸循环 + 规则闸),轨迹落盘。
 
     整轮跑完(W3 起)进 HumanLatch:图在收尾节点 interrupt,红/黄灯主张进待审清单,
     复验单顶部出「待人工」横幅(轮次级单 interrupt,一次 resume 传整个决定列表)。
+    网络层异常映射成可操作中文(代理/NO_PROXY 配置异常),不裸抛英文堆栈(I-07/#679)。
     """
     if _state["running"]:
         return JSONResponse({"error": "已有复验在进行中"}, status_code=409)
@@ -802,10 +930,28 @@ def api_reverify() -> JSONResponse:
     _state["running"] = True
     try:
         runner = Runner(_store(), checksum_fn=make_checksum_fn(CORPUS))
+        if req is not None and req.accept_bm25_fallback:
+            # I-02(#679):预检知情降级——本跑整臂 bm25_fallback(轨迹字段),
+            # 不改 PRODUCTION_RETRIEVAL_MODE,也不写 set_retrieval_switch 运维开关。
+            runner.ctx.bm25_fallback_accepted = True
         _state["run_ctx"] = runner.ctx
         _state["budget"] = _budget_from_ctx(runner.ctx)
         _sync_prepublish(new_run=True)  # 新 Run 进发前列表;状态=复验中
-        result = runner.run(list(_state["claims"]))
+        try:
+            result = runner.run(list(_state["claims"]))
+        except Exception as exc:
+            mapped = describe_llm_transport_error(exc)
+            if mapped is not None:
+                return JSONResponse(mapped, status_code=502)
+            logger.exception(
+                "复验主链未捕获异常 claim_count=%s", len(_state["claims"])
+            )
+            return JSONResponse(
+                {"error_code": "REVERIFY_INTERNAL",
+                 "error": ("复验执行失败(内部错误已记入服务端日志,界面不回显堆栈)。"
+                           "怎么办:稍后重试;若反复出现,请记录时间与操作步骤后反馈。")},
+                status_code=500,
+            )
         _state["trajectory"] = result.trajectory_path
         _state["budget"] = _budget_from_ctx(runner.ctx)  # 会话内保留用量摘要(DEM-4)
         # DEM-5:记录零命中清单供 UI 强提示;不改写任何主张 status
