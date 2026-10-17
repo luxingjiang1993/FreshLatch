@@ -33,7 +33,7 @@ class HumanLatchError(Exception):
 class LatchState(TypedDict, total=False):
     """图状态:只装可序列化纯数据(claim 快照字典,不装 Claim 对象)。"""
 
-    pending: list[dict]   # 待审主张快照 [{claim_id, statement, status, reason}]
+    pending: list[dict]   # 待审主张快照 [{claim_id, statement, status, reason, voided}]
     decisions: list[dict]  # resume 传入的整个决定列表
     results: list[dict]    # execute 落档结果
 
@@ -92,9 +92,22 @@ def human_review_allows_tool(approval: object | None, tool_name: str) -> bool:
     return approval.tool_name == tool_name and bool(approval.claim_id)
 
 
+# pending 资格(I-05 #693):status ∈ {stale, unknown} 且未 voided。
+# 与 is_patch_eligible(evidence_bound.py)同模式:voided 先拦,再看 status。
+# 根因:discard 只置 voided、保留机器 status,只看 status 会让已作废主张回 pending。
+_PENDING_STATUSES = frozenset({"stale", "unknown"})
+
+
+def _pending_eligible(c: Claim) -> bool:
+    """硬过滤:voided(含历史 status=="void" 的漏网)一律不进人审待审清单。"""
+    if c.voided:
+        return False
+    return c.status in _PENDING_STATUSES
+
+
 def _pending_item(c: Claim) -> dict:
     return {"claim_id": c.claim_id, "statement": c.statement,
-            "status": c.status, "reason": c.reason}
+            "status": c.status, "reason": c.reason, "voided": c.voided}
 
 
 def _build_graph(apply_fn: Callable[[list[dict]], list[dict]]):
@@ -103,8 +116,11 @@ def _build_graph(apply_fn: Callable[[list[dict]], list[dict]]):
     from langgraph.types import interrupt
 
     def prepare_review(state: LatchState) -> dict:
-        # 幂等、零副作用:只整理待审清单(红/黄灯 = stale/unknown)
-        return {"pending": [p for p in state.get("pending", []) if p.get("status") in ("stale", "unknown")]}
+        # 幂等、零副作用:只整理待审清单(红/黄灯 = stale/unknown 且未 voided,I-05 #693)。
+        # 与 enter_round 同源复查;仅对含 voided 键的新快照生效——旧 checkpoint 快照
+        # 无此键按未作废放行(跨版本恢复边缘,写路径 INVALIDATED 闸仍兜底 renew)。
+        return {"pending": [p for p in state.get("pending", [])
+                            if p.get("status") in _PENDING_STATUSES and not p.get("voided")]}
 
     def await_review(state: LatchState) -> dict:
         # 收尾节点中断:把待审清单抛给复验单;resume 值 = 整个决定列表(轮次级批量,§5.2)
@@ -167,7 +183,7 @@ class HumanLatch:
         if self.mode == "eval":
             return LatchRound(thread_id=None, pending=[], ts=ts)  # 代码级跳过(ADR-0006 §7)
         self._claims_by_id = {c.claim_id: c for c in claims}
-        pending = [_pending_item(c) for c in claims if c.status in ("stale", "unknown")]
+        pending = [_pending_item(c) for c in claims if _pending_eligible(c)]
         self._pending_ids = {p["claim_id"] for p in pending}
         if not pending:
             return LatchRound(thread_id=None, pending=[], ts=ts)

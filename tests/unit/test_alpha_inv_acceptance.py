@@ -13,6 +13,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+from freshlatch.gates.human_latch import apply_decisions
 from freshlatch.gates.rule_gate import GateContext, GateDecision, rule_gate
 from freshlatch.latch import HumanLatch
 from freshlatch.models import Claim
@@ -108,11 +109,15 @@ def test_inv1_void_stay_red_100_percent(tmp_path):
     assert fresh_attempt.error_code == "INVALIDATED"
     assert not fresh_attempt.green and not fresh_attempt.allowed
 
-    # 路径 B:人审续命写路径打回(另开一轮;作废名单仍生效)
+    # 路径 B:人审续命写路径打回(作废名单仍生效)
+    # I-05(#693):voided 主张被 pending 硬过滤,另开一轮进不了待审清单(选取源防线);
+    # 直测写路径 apply_decisions,renew 仍被 INVALIDATED 打回(Stay-Red 语义不变)。
     rnd2 = latch.enter_round(claims, ts="20260922-200100")
-    renew = latch.decide(
-        rnd2.thread_id,
+    assert rnd2.pending == [] and not rnd2.waiting  # voided ∉ pending
+    renew = apply_decisions(
+        store, {claim.claim_id: claim},
         [{"claim_id": claim.claim_id, "action": "renew", "evidence_id": EID}],
+        pending_ids=None,
     )
     assert renew[0]["ok"] is False
     assert renew[0]["error_code"] == "INVALIDATED"

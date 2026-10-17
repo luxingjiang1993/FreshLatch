@@ -90,6 +90,47 @@ def test_decide_unknown_claim_and_bad_action_rejected(tmp_path):
     assert results[1]["error_code"] == INVALID_ACTION
 
 
+# -- I-05(#693):pending 硬过滤 voided -------------------------------------------------
+
+def test_pending_excludes_voided_after_discard(tmp_path):
+    """discard 只置 voided、保留机器 status(仍 stale|unknown),再进人审不得回 pending。"""
+    latch = make_latch(make_store(tmp_path), tmp_path)
+    claims = make_claims()
+    rnd1 = latch.enter_round(claims, ts="20260920-120000")
+    latch.decide(rnd1.thread_id, [{"claim_id": "c1", "action": "discard"}])
+    assert claims[0].voided and claims[0].status == "stale"  # 机器判定保留(根因)
+    rnd2 = latch.enter_round(claims, ts="20260920-130000")
+    assert [p["claim_id"] for p in rnd2.pending] == ["c3"]  # voided 的 c1 ∉ pending
+    # unknown 被 discard 同样排除(voided 与 status 值无关)
+    latch.decide(rnd2.thread_id, [{"claim_id": "c3", "action": "discard"}])
+    assert claims[2].voided and claims[2].status == "unknown"
+    rnd3 = latch.enter_round(claims, ts="20260920-140000")
+    assert rnd3.pending == [] and not rnd3.waiting  # 全 voided/fresh → 轮次直接完成
+
+
+def test_pending_excludes_status_void(tmp_path):
+    """status == "void" 同排除(防历史/异常漏网);voided 标记只是双保险。"""
+    latch = make_latch(make_store(tmp_path), tmp_path)
+    claims = [Claim(claim_id="c1", statement="历史作废", status="void"),
+              Claim(claim_id="c3", statement="T1 无原文覆盖", status="unknown")]
+    rnd = latch.enter_round(claims, ts="20260920-120000")
+    assert [p["claim_id"] for p in rnd.pending] == ["c3"]
+
+
+def test_pending_keeps_disputed_not_voided(tmp_path):
+    """disputed 改账不改 status/voided:仍 stale|unknown 且未 void → 下一轮仍进 pending。"""
+    latch = make_latch(make_store(tmp_path), tmp_path)
+    claims = make_claims()
+    rnd1 = latch.enter_round(claims, ts="20260920-120000")
+    results = latch.decide(rnd1.thread_id, [
+        {"claim_id": "c1", "action": "disputed", "reviewer_note": "台账结论:口径待商"}])
+    assert results[0]["ok"] is True
+    assert not claims[0].voided and claims[0].status == "stale"  # 改账不动机器判定
+    rnd2 = latch.enter_round(claims, ts="20260920-130000")
+    assert "c1" in {p["claim_id"] for p in rnd2.pending}
+    assert "c3" in {p["claim_id"] for p in rnd2.pending}
+
+
 def test_no_pending_round_skips_interrupt(tmp_path):
     latch = make_latch(make_store(tmp_path), tmp_path)
     claims = [Claim(claim_id="c2", statement="仍成立", status="fresh")]
