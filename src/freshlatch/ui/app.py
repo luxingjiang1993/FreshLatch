@@ -8,7 +8,10 @@ HumanLatch 端点(W3 起,§5.5)为同步 def 端点:FastAPI 线程池执行,同�
 from __future__ import annotations
 
 import html
+import json
 import os
+import uuid  # noqa: E402
+from dataclasses import asdict
 from pathlib import Path
 
 from fastapi import FastAPI, File, Query, Request, UploadFile
@@ -39,7 +42,6 @@ from freshlatch.prepublish import (  # noqa: E402
     list_t1_checksums,
     project_gate_results,
 )
-import uuid  # noqa: E402
 from freshlatch.patch_events import record_human_review_events  # noqa: E402
 from freshlatch.publish_hook import (  # noqa: E402
     HOOK_BIND_HOST_ENV,
@@ -529,30 +531,84 @@ def api_publish_hook_check(
     return JSONResponse(body, status_code=deny_http_status(result.code))
 
 
-def _sheet_must_keep() -> bool:
-    """#665:已有待拍板或勿发时,import 不得覆盖当前复验单。"""
-    latch = _state.get("latch") or {}
-    if latch.get("pending"):
-        return True
+# I-01 / #678:run snapshot(判定面)schema 版本。同库 pack sqlite JSON blob;
+# LangGraph checkpoint 仍只救人审 interrupt,不冒充判定面 snapshot。
+RUN_SNAPSHOT_VERSION = 1
+
+
+def _write_run_snapshot() -> None:
+    """I-01(#678):复验结束/人审变更时,把判定面写进同库 pack sqlite 的 JSON blob。
+
+    判定面 = 判定(status)/理由(reason)/voided/active_run_id/包结论(disposition)。
+    无 blob 能力的 store(InMemoryStore)静默跳过——与 list_t1_checksums 的
+    getattr 降级同风格,不把 snapshot 变成 RetrievalStore 契约。
+    """
+    save = getattr(_store(), "save_run_snapshot", None)
+    if save is None:
+        return
     claims = list(_state.get("claims") or [])
-    if not claims:
-        return False
-    return disposition_for_claims(claims) == "勿发"
+    blob = json.dumps({
+        "version": RUN_SNAPSHOT_VERSION,
+        "active_run_id": _state.get("active_run_id"),
+        "question": _state.get("question") or "",
+        "claims": [asdict(c) for c in claims],
+        "latch": _state.get("latch") or dict(EMPTY_LATCH),
+        "trajectory": str(_state["trajectory"]) if _state.get("trajectory") else None,
+        "retrieve_zero_hits": list(_state.get("retrieve_zero_hits") or []),
+        "budget": dict(_state.get("budget") or EMPTY_BUDGET),
+        "bound_t1_checksums": dict(_state.get("bound_t1_checksums") or {}),
+        "disposition": disposition_for_claims(claims),
+    }, ensure_ascii=False)
+    save(blob)
 
 
-def _preserved_import_payload() -> dict:
-    """幂等加载:原样返回当前会话,不新建 Run,不改 latch。"""
-    rid = _state.get("active_run_id")
-    row = None
-    if rid:
-        found = _prepublish.get(str(rid))
-        if found is not None:
-            row = found.to_dict()
-    return {
-        "imported": len(_state.get("claims") or []),
-        "preserved": True,
-        "run": row,
-    }
+def _read_run_snapshot() -> dict | None:
+    load = getattr(_store(), "load_run_snapshot", None)
+    if load is None:
+        return None
+    raw = load()
+    if not raw:
+        return None
+    try:
+        snap = json.loads(raw)
+    except ValueError:
+        return None  # 坏 blob 不当场炸 boot;按空 snapshot 处理
+    if snap.get("version") != RUN_SNAPSHOT_VERSION:
+        return None
+    return snap
+
+
+def _restore_run_snapshot(snap: dict) -> None:
+    """进程重启(F5/新标签落到新进程)后从 snapshot 恢复判定面,不洗成 demo。"""
+    _state["claims"] = [Claim(**c) for c in (snap.get("claims") or [])]
+    _state["question"] = snap.get("question") or ""
+    _state["latch"] = snap.get("latch") or dict(EMPTY_LATCH)
+    _state["trajectory"] = snap.get("trajectory")
+    _state["active_run_id"] = snap.get("active_run_id")
+    _state["retrieve_zero_hits"] = list(snap.get("retrieve_zero_hits") or [])
+    _state["budget"] = snap.get("budget") or dict(EMPTY_BUDGET)
+    _state["bound_t1_checksums"] = dict(snap.get("bound_t1_checksums") or {})
+    if _state["active_run_id"]:
+        # 进程内注册表随重启丢了,补回当前 Run 行(不覆盖已绑 checksum)
+        _sync_prepublish(new_run=False)
+
+
+def _active_run_conflict() -> JSONResponse | None:
+    """I-01(#678):非空 active_run 时 import 硬 409(breaking vs #669 的 200+preserved)。
+
+    非空 = 绑定了 active_run_id 且判定面非空(claims 或 latch pending)。
+    洗态只走高级「重置」POST /api/session/reset(页内 advanced-evidence 区)。
+    """
+    if not _state.get("active_run_id"):
+        return None
+    if not _state.get("claims") and not (_state.get("latch") or {}).get("pending"):
+        return None
+    return JSONResponse({
+        "error": "当前复验单已绑定非空 Run,导入会覆盖判定面,已阻止",
+        "code": "ACTIVE_RUN_CONFLICT",
+        "active_run_id": _state.get("active_run_id"),
+        "reset_hint": "请先走高级「重置」(POST /api/session/reset)确认洗态后再导入",
+    }, status_code=409)
 
 
 def _clear_live_sheet() -> None:
@@ -572,7 +628,17 @@ def _clear_live_sheet() -> None:
 
 @app.get("/api/boot")
 def api_boot() -> dict:
-    """页面加载/刷新:幂等读取当前会话。不调用 import,不洗勿发与待拍板。"""
+    """页面加载/刷新:幂等读取当前会话。不调用 import,不洗勿发与待拍板。
+
+    I-01(#678):内存空(进程重启/F5 落到新进程)且 snapshot 非空时,从同库
+    pack sqlite 的 JSON blob 恢复判定面(判定/理由/voided/active_run_id/包结论)。
+    无 active_run 或 snapshot 为空时不恢复,也不阻挡 demo 导入。
+    """
+    if (not _state.get("running") and not _state.get("claims")
+            and not _state.get("active_run_id")):
+        snap = _read_run_snapshot()
+        if snap and (snap.get("claims") or snap.get("active_run_id")):
+            _restore_run_snapshot(snap)
     return api_claims()
 
 
@@ -582,18 +648,22 @@ def api_session_reset() -> JSONResponse:
     if _state.get("running"):
         return JSONResponse({"error": "复验进行中,不能重置"}, status_code=409)
     _clear_live_sheet()
+    clear = getattr(_store(), "clear_run_snapshot", None)
+    if clear is not None:
+        clear()  # I-01(#678):洗态同时洗 snapshot,否则 boot 会从旧 blob 复活判定面
     return JSONResponse({"reset": True, "latch": dict(EMPTY_LATCH)})
 
 
 @app.post("/api/import")
-def api_import() -> dict:
+def api_import():
     """JSON docket 高级入口(Workflow):只读 statement 与 t0_evidence_ids,不做新调查。
 
-    #665:会话里已有勿发或待拍板时本调用改为幂等加载,不覆盖。
-    清空只走 POST /api/session/reset。
+    #678(I-01):非空 active_run 时硬 409 + 高级重置指引——breaking vs #669 的
+    200+preserved;确认重置后才可导入。成功导入后写 run snapshot(判定面与磁盘一致)。
     """
-    if _sheet_must_keep():
-        return _preserved_import_payload()
+    conflict = _active_run_conflict()
+    if conflict is not None:
+        return conflict
     docket = load_docket(DEMO_DOCKET)
     _state["claims"] = docket.claims
     _state["question"] = docket.question  # 单一真相:当前课题包 docket
@@ -601,6 +671,7 @@ def api_import() -> dict:
     _state["trajectory"] = None
     _state["active_run_id"] = None
     row = _sync_prepublish(new_run=True)
+    _write_run_snapshot()
     return {"imported": len(docket.claims), "run": row}
 
 
@@ -688,15 +759,17 @@ def api_import_draft(req: DraftImportRequest) -> JSONResponse:
         docket, assigned = parse_claim_import_draft(req.text, question=req.question)
     except ClaimImportError as e:
         return JSONResponse({"error": str(e)}, status_code=400)
-    # #665:合法草稿也不覆盖已有勿发/待拍板;清空走高级重置
-    if _sheet_must_keep():
-        return JSONResponse(_preserved_import_payload())
+    # #678(I-01):非空 active_run 时硬 409(breaking vs #665/#669 的 200+preserved)
+    conflict = _active_run_conflict()
+    if conflict is not None:
+        return conflict
     _state["claims"] = docket.claims
     _state["question"] = docket.question
     _state["latch"] = dict(EMPTY_LATCH)
     _state["trajectory"] = None
     _state["active_run_id"] = None
     row = _sync_prepublish(new_run=True)
+    _write_run_snapshot()
     return JSONResponse({
         "imported": len(docket.claims),
         "assigned_ids": assigned,
@@ -721,7 +794,11 @@ def api_reverify() -> JSONResponse:
             status_code=400,
         )
     if not _state["claims"]:
-        api_import()
+        # 内联 docket 加载,不调 api_import()(非空 active_run 时它会硬 409)
+        docket = load_docket(DEMO_DOCKET)
+        _state["claims"] = docket.claims
+        _state["question"] = docket.question
+        _sync_prepublish(new_run=True)
     _state["running"] = True
     try:
         runner = Runner(_store(), checksum_fn=make_checksum_fn(CORPUS))
@@ -736,6 +813,7 @@ def api_reverify() -> JSONResponse:
         rnd = _latch().enter_round(_state["claims"])  # 无红/黄灯则 thread_id=None 直接完成
         _state["latch"] = {"thread_id": rnd.thread_id, "pending": rnd.pending}
         run_row = _sync_prepublish(new_run=False)
+        _write_run_snapshot()  # I-01(#678):复验结束,判定面落盘
     finally:
         _state["running"] = False
         _state["run_ctx"] = None
@@ -794,6 +872,7 @@ def api_latch_decide(req: DecideRequest) -> JSONResponse:
     )
     _state["latch"] = dict(EMPTY_LATCH)
     run_row = _sync_prepublish(new_run=False)
+    _write_run_snapshot()  # I-01(#678):人审变更后 snapshot 立刻更新
     extras = _detail_extras(store)
     return JSONResponse({
         "results": results,
@@ -819,6 +898,7 @@ def api_latch_rerun(req: RerunRequest) -> JSONResponse:
         entry = _latch().rerun(claim)
     except HumanLatchError as e:
         return JSONResponse({"error": str(e)}, status_code=400)
+    _write_run_snapshot()  # I-01(#678):重跑可能改写判定/续命,snapshot 同步
     return JSONResponse({"entry": entry, "claim": _one_claim_for_ui(_store(), claim)})
 
 
@@ -913,6 +993,7 @@ def api_patch_confirm(req: ConfirmPatchRequest) -> JSONResponse:
     if not result.ok:
         return JSONResponse(result.to_dict(), status_code=400)
     run_row = _sync_prepublish(new_run=False)
+    _write_run_snapshot()  # I-01(#678):确认改稿改写判定面,snapshot 同步
     extras = _detail_extras(store)
     return JSONResponse({
         **result.to_dict(),

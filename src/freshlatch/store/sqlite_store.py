@@ -150,6 +150,9 @@ _PATCH_ADDED_COLUMNS = (
     ("valid_to", "TEXT"),
 )
 
+# Run snapshot(I-01 / #678)在 documents 表里的 reserved doc_id;不新开表/不新开 DB。
+RUN_SNAPSHOT_DOC_ID = "__freshlatch_run_snapshot__"
+
 
 class SQLiteStore(RetrievalStore):
     def __init__(self, path: str | Path) -> None:
@@ -321,6 +324,36 @@ class SQLiteStore(RetrievalStore):
             conn.execute(
                 "INSERT INTO rerun_log VALUES (?,?,?,?,?,?)",
                 (ts, claim_id, thread_id, verdict, nth, note),
+            )
+
+    # -- Run snapshot(I-01 / #678)-------------------------------------------------
+    # 判定面(claims 判定/理由/voided/active_run_id/包结论)落盘为 JSON blob。
+    # 不新开表/不新开 DB:复用 documents 表 reserved doc_id 行。
+    # reserved 行不进 retrieve(chunks 表)、不进 T1 checksum 投影(as_of='T1')。
+
+    def save_run_snapshot(self, blob: str) -> None:
+        """覆写当前 Run snapshot(JSON blob)。复验结束/人审变更时由 UI 层调用。"""
+        with self._conn() as conn:
+            conn.execute(
+                "INSERT OR REPLACE INTO documents "
+                "(doc_id, as_of, source_type, title, doc_version, checksum, full_text) "
+                "VALUES (?,?,?,?,?,?,?)",
+                (RUN_SNAPSHOT_DOC_ID, "T0", "system", "run snapshot", "1.0", "", blob),
+            )
+
+    def load_run_snapshot(self) -> str | None:
+        with self._conn() as conn:
+            row = conn.execute(
+                "SELECT full_text FROM documents WHERE doc_id = ? AND as_of = 'T0'",
+                (RUN_SNAPSHOT_DOC_ID,),
+            ).fetchone()
+        return row["full_text"] if row else None
+
+    def clear_run_snapshot(self) -> None:
+        with self._conn() as conn:
+            conn.execute(
+                "DELETE FROM documents WHERE doc_id = ? AND as_of = 'T0'",
+                (RUN_SNAPSHOT_DOC_ID,),
             )
 
     # -- 读取 -----------------------------------------------------------------
