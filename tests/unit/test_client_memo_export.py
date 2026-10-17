@@ -1,8 +1,9 @@
-"""Client Memo 导出契约(INV-2/INV-3;支撑 DEM-3 机检边界)。
+"""Client Memo 导出契约(INV-2/INV-3;I-03 #674/#677 禁语表与 external_reason 模板)。
 
 seam: Client Memo 导出契约(扩既有 export/sheet 形态;不新开第四类 harness)。
 读投影、不跑复验;与复验单/内部审计导出分离。DEM-3 完整 rubric 仍人工勾选,
-本套件只锁字段在位与禁语,不升格为产品验证。
+默认不进 Client Memo(#674 拍板);本套件只锁字段在位与禁语零命中,
+不升格为产品验证。
 """
 
 from __future__ import annotations
@@ -30,8 +31,20 @@ SRC = REPO_ROOT / "src"
 # INV-3 / DEM-3 禁止项(机检边界;人工 rubric 另挂勾选面)
 FORBIDDEN_ROLE = re.compile(r"Lead|Critic")
 FORBIDDEN_VERDICT = re.compile(r"建议进入|建议不进入")
+# I-03 禁语表初值(#674 拍板):ADR-/GATE/DEM-/闸/异议/路由/DIMENSION_MISMATCH + 角色/裁决句
+FORBIDDEN_MACHINE_TOKENS = re.compile(
+    r"\bADR-\d+\b|\bGATE\b|\bDEM-\d+\b|\bDIMENSION_MISMATCH\b|闸|异议|路由"
+)
 # 字符级偏移 span 形态(本批禁止);允许 doc_id#anchor@as_of
 CHAR_SPAN = re.compile(r"#\w+:\d+-\d+")
+
+# 报告 H 节(中文本地化问题清单)机器自白样例:作污染输入,导出须零泄漏
+H_SECTION_SAMPLES = [
+    "[闸打回:DIMENSION_MISMATCH] Auditor 维度异议:反证未锚在主张同一前提/度量维度,"
+    "stale 打回(ADR-0010 不变量 7),路由 unknown + 异议记录",
+    "提出的反证因逻辑错误(将支持误判为推翻)且方向与事实相反,不予采纳。",
+    "重跑后仍红(第 2 次)",
+]
 
 
 def _make_store(tmp_path) -> SQLiteStore:
@@ -127,14 +140,16 @@ def test_client_memo_required_fields_inv2(tmp_path):
     assert "## 缺口" in md
 
     assert "c-fresh" in md
-    assert "T1 同口径仍成立" in md
+    assert "现有证据支持该主张仍然成立。" in md  # external_reason 模板结论
     assert "c-void" in md
-    assert "T1 推翻原前提" in md
+    assert "该主张已被后续证据推翻,不再成立。" in md
     assert "c-gap" in md
+    assert "现有证据不足以确认该主张。" in md
     assert "无 T1 覆盖" in md
 
     assert "`t0-doc#p1@T1`" in md
-    assert "](evidence:t0-doc#p1@T1)" in md
+    assert "  - 证据: `t0-doc#p1@T1`" in md  # 纯文本证据,无 scheme 链接
+    assert "](evidence:" not in md
     assert CHAR_SPAN.search(md) is None
 
 
@@ -149,13 +164,74 @@ def test_client_memo_forbids_roles_and_commercial_verdict_inv3(tmp_path):
         question="课题问句",
         generated_at="2026-09-22T12:00:00+08:00",
     )
-    body = md.split("## DEM-3")[0]  # 勾选面可出现禁语字样作检查项标题
-    assert FORBIDDEN_ROLE.search(body) is None
-    assert FORBIDDEN_VERDICT.search(body) is None
+    assert FORBIDDEN_ROLE.search(md) is None
+    assert FORBIDDEN_VERDICT.search(md) is None
     # 审计轨迹/人审标签不得进客户向备忘
     assert "人审作废" not in md
     assert "重跑后仍红" not in md
     assert "Lead/Critic 轨迹仅审计" not in md
+
+
+def test_client_memo_external_reason_template_shape(tmp_path):
+    """I-03:external_reason = 一句客户向结论 + 证据列表;模板/规则层,无 LLM。"""
+    store, claims, _ = _seed_memo_fixture(tmp_path)
+    md = render_client_memo_markdown(
+        [project_claim(store, c) for c in claims],
+        question="课题",
+        generated_at="2026-09-22T12:00:00+08:00",
+    )
+    # 三分栏各得模板结论句(规则层,不读机器 reason)
+    held_block = md.split("## 仍成立", 1)[1].split("## ", 1)[0]
+    voided_block = md.split("## 已作废", 1)[1].split("## ", 1)[0]
+    gap_block = md.split("## 缺口", 1)[1].split("## ", 1)[0]
+    assert "现有证据支持该主张仍然成立。" in held_block
+    assert "该主张已被后续证据推翻,不再成立。" in voided_block
+    assert "现有证据不足以确认该主张。" in gap_block
+    # 证据列表:纯文本,一条一个
+    assert "  - 证据: `t0-doc#p1@T1`" in held_block
+    # 机器 reason(internal_reason 侧)不进客户向默认面
+    assert "T1 同口径仍成立" not in md
+    assert "T1 推翻原前提" not in md
+
+
+def test_client_memo_internal_reason_not_in_default_face(tmp_path):
+    """I-03:internal_reason 仅审计;即使投影带该字段也不进客户向默认面。"""
+    store, claims, _ = _seed_memo_fixture(tmp_path)
+    projections = [project_claim(store, c) for c in claims]
+    projections[0]["internal_reason"] = (
+        "[闸打回:DIMENSION_MISMATCH] Auditor 维度异议:路由 unknown(ADR-0010)"
+    )
+    md = render_client_memo_markdown(
+        projections,
+        question="课题",
+        generated_at="2026-09-22T12:00:00+08:00",
+    )
+    assert "internal_reason" not in md
+    assert FORBIDDEN_MACHINE_TOKENS.search(md) is None
+
+
+def test_client_memo_zero_forbidden_with_h_section_samples(tmp_path):
+    """I-03:报告 H 节样例污染输入 → 默认导出对禁语表零命中(初值表钉死)。"""
+    store, claims, _ = _seed_memo_fixture(tmp_path)
+    projections = [project_claim(store, c) for c in claims]
+    # 污染:机器 reason 塞 H 节样例;课题问句塞机器 token
+    projections[0]["reason"] = H_SECTION_SAMPLES[0]
+    projections[1]["reason"] = H_SECTION_SAMPLES[1]
+    projections[2]["reason"] = H_SECTION_SAMPLES[2]
+    md = render_client_memo_markdown(
+        projections,
+        question="课题含 GATE 闸打回 DIMENSION_MISMATCH 异议路由 ADR-0010 DEM-3 字样",
+        generated_at="2026-09-22T12:00:00+08:00",
+    )
+    for pattern in (
+        FORBIDDEN_ROLE,
+        FORBIDDEN_VERDICT,
+        FORBIDDEN_MACHINE_TOKENS,
+    ):
+        assert pattern.search(md) is None, f"禁语命中: {pattern.pattern}"
+    # H 节样例原文碎片不得泄漏
+    for sample in H_SECTION_SAMPLES:
+        assert sample not in md
 
 
 def test_client_memo_gap_column_explicit_no_t1_when_empty(tmp_path):
@@ -191,16 +267,18 @@ def test_client_memo_separated_from_sheet_export(tmp_path):
     assert memo_md.startswith("# 客户向复验备忘")
     assert "## 仍成立" in memo_md
     assert memo_md != sheet_md
-    assert "建议进入" not in memo_md.split("## DEM-3")[0]
+    assert "建议进入" not in memo_md
+    assert "## DEM-3" not in memo_md  # I-03:默认导出剔除 rubric 段
 
 
 def test_dem3_manual_rubric_checklist_surface(tmp_path):
-    """DEM-3:五条「是」+禁止项「无」保留人工勾选面;不升格为产品断言。"""
+    """DEM-3:五条「是」+禁止项「无」保留人工勾选面(显式开启);不升格为产品断言。"""
     store, claims, _ = _seed_memo_fixture(tmp_path)
     md = render_client_memo_markdown(
         [project_claim(store, c) for c in claims],
         question="课题",
         generated_at="2026-09-22T12:00:00+08:00",
+        include_dem3_rubric=True,
     )
     assert "## DEM-3" in md
     assert "人工" in md
@@ -239,7 +317,8 @@ def test_cli_client_memo_subcommand(tmp_path):
     assert text.startswith("# 客户向复验备忘")
     assert "## 仍成立" in text
     assert "需补丁" in text  # 页眉标记
-    assert FORBIDDEN_ROLE.search(text.split("## DEM-3")[0]) is None
+    assert FORBIDDEN_ROLE.search(text) is None
+    assert "## DEM-3" not in text  # 默认导出不含 rubric 段
 
 
 def test_cli_module_client_memo_invocation(tmp_path):
