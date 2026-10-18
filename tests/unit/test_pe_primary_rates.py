@@ -277,8 +277,13 @@ def test_saved_result_matches_one_compare_primary(monkeypatch):
     assert t_ids is not None and b2_ids is not None
     assert pack["report"]["k"] == len(t_ids)
     readme = _lf(_README)
-    assert _sha(readme.split("## Snapshot", 1)[0]) == _LEDE_SHA256
-    assert _sha(_lf(_DIAGRAM)) == _DIAGRAM_SHA256
+    # #401：导语与结构图的 101c81e 哈希只在主指标三行仍是「未填」时核对。
+    # 回放不改写这两个文件，由下方字节比较保证。
+    primary = _false_accept(repo)
+    rates_unfilled = all(primary[name][2] == "未填" for name in ("T 对 C", "T 对 B1", "T 对 B2"))
+    if rates_unfilled:
+        assert _sha(readme.split("## Snapshot", 1)[0]) == _LEDE_SHA256
+        assert _sha(_lf(_DIAGRAM)) == _DIAGRAM_SHA256
     entry = _lf(_APP).split('if __name__ == "__main__":', 1)[1]
     assert _sha(entry) == _ENTRY_SHA256
     for path, blob in before.items():
