@@ -1,5 +1,7 @@
 # Grill 前置阅读清单 + 待钉决策清单
 
+> SUPERSEDED / 2026-10：下文把 `docs/roadmap.md` 文首 NOW 写成现行 frontier（未换臂 / 冻 bm25，以及 I0「Hard-Gold 未开」）已过时。现行检索默认见 `docs/ops/口径一页纸.md` + `CONTEXT.md` + `docs/evidence/retrieval-decision.md`。本页词表不在本 PR 改。
+
 > 用途：开 `grill-with-docs` / `grilling` 前给 coding agent 与你自己用。  
 > 配套执行路线图：`docs/roadmap.md`（v3.1）。  
 > 开场提示词模板：[prompts/grill-with-docs-freshlatch.md](./prompts/grill-with-docs-freshlatch.md)  
