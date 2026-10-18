@@ -1,4 +1,4 @@
-"""CLI:`python -m freshlatch.eval run|control|control-c|report|quality-gate|arm-table|temporal-prereg|patch-establishment|public-pack`(§4.1)。
+"""CLI:`python -m freshlatch.eval run|control|control-c|report|auditor-arm|quality-gate|arm-table|temporal-prereg|patch-establishment|public-pack`(§4.1)。
 
 run --gold data/eval/gold.json [--runs N]   金标对账(LLM,手动/milestone 触发,不进 CI)
 control                                      无工具假绿对照(旧仪器;判 alive = 假绿,对照成立)
@@ -27,7 +27,7 @@ from freshlatch.eval.retrieve_eval import (  # noqa: E402
     run_trap_eval,
 )
 from freshlatch.eval.runner import run_gold  # noqa: E402
-from freshlatch.llm import DecodingParams  # noqa: E402
+from freshlatch.llm import DecodingParams, LLMClient  # noqa: E402
 from freshlatch.packs import PackPaths, resolve_pack  # noqa: E402
 from freshlatch.store.sqlite_store import SQLiteStore  # noqa: E402
 
@@ -172,6 +172,21 @@ def build_parser(pack: PackPaths | None = None) -> argparse.ArgumentParser:
         help="只估 token/¥，不调用 API、不写分",
     )
 
+    p_aa = sub.add_parser(
+        "auditor-arm",
+        help="Auditor 判定臂离线评测(I-08;生产 Auditor + 闸后落档;无 SQLite)",
+    )
+    p_aa.add_argument("--gold", default="data/eval/auditor_arm_gold.json")
+    p_aa.add_argument("--corpus-t1", default="data/corpus/t1",
+                      help="T1 语料目录(证据块文本唯一真相来源)")
+    p_aa.add_argument("--doctrine", default="skills/freshness_audit/SKILL.md",
+                      help="freshness_audit 教义(system prompt);缺失则显式兜底并逐样本落 skill_fallback")
+    p_aa.add_argument("--temperature", type=float, default=0.0,
+                      help="默认 0.0 = 生产判定路径(决议 #691 锁定);非零仅采样实验用,"
+                      "报告逐运行记录实际值")
+    p_aa.add_argument("--seed", type=int, default=None)
+    p_aa.add_argument("--out", default="docs/evidence/auditor-arm-eval")
+
     p_pub = sub.add_parser(
         "public-pack",
         help="固定公开 eval 包本地回放（零付费 API，冒烟层）",
@@ -206,6 +221,36 @@ def main(argv: list[str] | None = None) -> None:
         raise SystemExit(code)
 
     # 公开包不打开 SQLite，也不构造 LLM 客户端。
+    if args.cmd == "auditor-arm":
+        from freshlatch.eval.auditor_arm import (
+            console_summary,
+            load_auditor_arm_gold,
+            load_t1_texts,
+            run_auditor_arm,
+            validate_samples_against_texts,
+            write_auditor_arm_outputs,
+        )
+
+        gold = load_auditor_arm_gold(args.gold)
+        doctrine_path = Path(args.doctrine)
+        doctrine = (doctrine_path.read_text(encoding="utf-8")
+                    if doctrine_path.is_file() else None)
+        if doctrine is None:
+            print(f"WARN: 教义表缺失({args.doctrine}),按兜底人格执行,"
+                  "逐样本落 skill_fallback(不静默降级)", file=sys.stderr)
+        t1_texts = load_t1_texts(args.corpus_t1)
+        validate_samples_against_texts(gold.samples, t1_texts)
+        raw = run_auditor_arm(
+            gold.samples, LLMClient(), doctrine=doctrine,
+            decoding=DecodingParams(temperature=args.temperature, seed=args.seed),
+            t1_texts=t1_texts, thresholds=gold.thresholds,
+            protocol_note=gold.protocol_note, gold_path=str(args.gold),
+        )
+        print(console_summary(raw))
+        md_path, json_path = write_auditor_arm_outputs(raw, args.out)
+        print(f"报告: {md_path}\n原始 JSON: {json_path}")
+        return
+
     if args.cmd == "public-pack":
         from freshlatch.eval.public_pack import (
             replay_public_pack,
