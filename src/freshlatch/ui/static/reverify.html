@@ -234,6 +234,7 @@
  <button class="big" id="btn-run" onclick="startSample()">一键样例</button>
 </header>
 <div id="reverify-progress" role="status">正在用新材料核对旧结论（大约两分钟）</div>
+<button class="ghost" type="button" id="btn-cancel-run" onclick="cancelReverifyRun()" hidden>取消复验</button>
 <div id="audit-panel" aria-live="polite">
  <b>审计视图</b> · 复验 / 反证 / 闸(排障用;不改变作废·续命·闸语义)
  <div id="audit-body" style="margin-top:6px">__AUDIT_BODY__</div>
@@ -1479,11 +1480,104 @@ function startPrecheckPoll(){
   }, 2000);
 }
 
+let REVERIFY_POLL = null;  // I-10(#696):五态轮询句柄;无 SSE,进度只走轮询
+function stopReverifyPoll(){
+  if(REVERIFY_POLL){ clearInterval(REVERIFY_POLL); REVERIFY_POLL = null; }
+}
+function setCancelRunVisible(visible){
+  const b = document.getElementById('btn-cancel-run');
+  if(!b) return;
+  b.hidden = !visible;
+  if(visible) b.disabled = false;
+}
+function renderRunProgress(j){
+  // 轮询面渲染:完成数/总数 + 当前主张;cancelling 时禁止重复点取消
+  const bar = document.getElementById('reverify-progress');
+  if(!bar) return;
+  const total = j.total || 0, done = j.done || 0;
+  let msg = '复验中 ' + done + '/' + total;
+  if(j.current_claim_id) msg += ' · 当前 ' + j.current_claim_id;
+  if(j.status === 'cancelling'){
+    msg = '正在取消… 已完成 ' + done + '/' + total + '(当前主张收尾后即停)';
+    const b = document.getElementById('btn-cancel-run');
+    if(b) b.disabled = true;
+  }
+  bar.textContent = msg;
+}
+async function cancelReverifyRun(){
+  // I-10(#696):整轮取消(协作点=主张边界);状态经轮询面收敛到 cancelled
+  const b = document.getElementById('btn-cancel-run');
+  if(b) b.disabled = true;
+  try{
+    await fetch('/api/reverify/cancel', {method:'POST'});
+  }catch(e){}
+}
+function renderReverifyResult(j){
+  // done 负载与原同步响应同形状:渲染路径不分叉(双轨已退役)
+  STATE.claims = j.claims; STATE.latch = j.latch; PENDING_DECISIONS = [];
+  STATE.retrieve_zero_hits = j.retrieve_zero_hits || [];
+  STATE.trajectory = j.trajectory; STATE.audit = j.audit || null;
+  STATE.retrieval_used = j.retrieval_used;
+  STATE.decoding = j.decoding;
+  absorbDetailExtras(j);
+  if(j.budget) renderBudget(j.budget);
+  renderViewChrome();
+  renderClaims();
+  const zc = (STATE.retrieve_zero_hits||[]).length;
+  const b = j.budget || STATE.budget || {};
+  if(VIEW_MODE === "audit"){
+    document.getElementById('status').textContent =
+      STATUS_DONE_AUDIT + ' · 步数 '+b.steps_used+'/'+b.lead_max_steps
+      +' · 检索 '+b.retrieval_used+'/'+b.retrieval_budget
+      +(zc?(' · 零命中 '+zc+' 次'):'')
+      +' · 见下方工具轨迹';
+  } else {
+    document.getElementById('status').textContent =
+      STATUS_DONE_CRAFTSMAN
+      +' · 步数 '+b.steps_used+'/'+b.lead_max_steps
+      +' · 检索 '+b.retrieval_used+'/'+b.retrieval_budget
+      +(zc?(' · 零命中 '+zc+' 次'):'');
+  }
+}
+function pollReverifyRun(runId){
+  // 五态轮询:running/cancelling 续等;done 渲染结果;failed 上中文错误;cancelled 保部分结果
+  return new Promise((resolve)=>{
+    const tick = async ()=>{
+      let j = null;
+      try{
+        const resp = await fetch('/api/reverify/progress?run_id='
+                                 + encodeURIComponent(runId));
+        j = await resp.json();
+      }catch(e){ return; }  // 网络抖动:下一拍再试
+      if(!j || !j.status) return;
+      if(j.status === 'running' || j.status === 'cancelling'){
+        renderRunProgress(j);
+        return;
+      }
+      stopReverifyPoll();
+      if(j.status === 'done'){
+        renderReverifyResult(j);
+      } else if(j.status === 'failed'){
+        document.getElementById('status').textContent =
+          (j.error_code ? ('['+j.error_code+'] ') : '') + (j.error || '复验失败');
+      } else if(j.status === 'cancelled'){
+        document.getElementById('status').textContent =
+          '已取消本轮复验:已完成 '+j.done+'/'+j.total
+          +' 条结果保留,未进人审;可再次开始';
+        await reloadClaimsFromServer();
+      }
+      resolve(j);
+    };
+    REVERIFY_POLL = setInterval(tick, 1000);
+    tick();
+  });
+}
 async function runReverify(){
   const btn = document.getElementById('btn-run');
   btn.disabled = true;
   // 职人默认成交面不用角色专名;审计视图才展开查询/命中/依据/原因
   showSampleProgress();
+  setCancelRunVisible(true);
   if(budgetPoll) clearInterval(budgetPoll);
   budgetPoll = setInterval(pollBudget, 400);
   try{
@@ -1503,6 +1597,7 @@ async function runReverify(){
       init.headers = {'Content-Type':'application/json'};
       init.body = JSON.stringify({accept_bm25_fallback:true});
     }
+    // I-10(#696):异步启动,立刻拿 run_id;结果/错误/取消全经轮询面收敛
     const resp = await fetch('/api/reverify', init);
     const j = await resp.json();
     if(j.error){
@@ -1510,33 +1605,11 @@ async function runReverify(){
         (j.error_code ? ('['+j.error_code+'] ') : '') + j.error;
       return;
     }
-    STATE.claims = j.claims; STATE.latch = j.latch; PENDING_DECISIONS = [];
-    STATE.retrieve_zero_hits = j.retrieve_zero_hits || [];
-    STATE.trajectory = j.trajectory; STATE.audit = j.audit || null;
-    STATE.retrieval_used = j.retrieval_used;
-    STATE.decoding = j.decoding;
-    absorbDetailExtras(j);
-    if(j.budget) renderBudget(j.budget);
-    renderViewChrome();
-    renderClaims();
-    const zc = (STATE.retrieve_zero_hits||[]).length;
-    const b = j.budget || STATE.budget || {};
-    if(VIEW_MODE === "audit"){
-      document.getElementById('status').textContent =
-        STATUS_DONE_AUDIT + ' · 步数 '+b.steps_used+'/'+b.lead_max_steps
-        +' · 检索 '+b.retrieval_used+'/'+b.retrieval_budget
-        +(zc?(' · 零命中 '+zc+' 次'):'')
-        +' · 见下方工具轨迹';
-    } else {
-      document.getElementById('status').textContent =
-        STATUS_DONE_CRAFTSMAN
-        +' · 步数 '+b.steps_used+'/'+b.lead_max_steps
-        +' · 检索 '+b.retrieval_used+'/'+b.retrieval_budget
-        +(zc?(' · 零命中 '+zc+' 次'):'');
-    }
+    await pollReverifyRun(j.run_id);
   } finally {
     if(budgetPoll){ clearInterval(budgetPoll); budgetPoll = null; }
     hideSampleProgress();
+    setCancelRunVisible(false);
     btn.disabled = false;
   }
 }

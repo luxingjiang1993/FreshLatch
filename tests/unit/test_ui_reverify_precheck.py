@@ -64,6 +64,20 @@ def _seed_ready_t1_and_claims(client: TestClient) -> None:
     client.post("/api/import")
 
 
+def _poll_terminal(client: TestClient, run_id: str) -> dict:
+    """I-10(#696):reverify 已 async——POST 只返回 run_id,终态经 progress 轮询。"""
+    deadline = time.monotonic() + 10
+    body = None
+    while time.monotonic() < deadline:
+        r = client.get("/api/reverify/progress", params={"run_id": run_id})
+        assert r.status_code == 200
+        body = r.json()
+        if body["status"] in ("done", "failed", "cancelled"):
+            return body
+        time.sleep(0.01)
+    pytest.fail(f"轮询超时:run_id={run_id} 最后状态={body}")
+
+
 # -- 权重文件层预检(纯 stat,毫秒级) ----------------------------------------------------
 
 
@@ -283,7 +297,10 @@ def test_run_meta_records_bm25_fallback_flag(tmp_path, monkeypatch):
 
 
 def test_reverify_accepts_bm25_fallback_flag(client, monkeypatch):
-    """accept_bm25_fallback=true 透传到 RunContext;响应仍是既有 200 形状。"""
+    """accept_bm25_fallback=true 透传到 RunContext;终态响应仍是既有负载形状。
+
+    I-10(#696):POST 只返回 run_id,断言改经 progress 轮询的 done 负载。
+    """
     _seed_ready_t1_and_claims(client)
     seen: dict = {}
 
@@ -291,7 +308,7 @@ def test_reverify_accepts_bm25_fallback_flag(client, monkeypatch):
         def __init__(self, store, **_kwargs):
             self.ctx = appmod.RunContext(store=store)
 
-        def run(self, claims):
+        def run(self, claims, **kwargs):  # kwargs:I-10 progress/should_cancel 钩子
             seen["accepted"] = self.ctx.bm25_fallback_accepted
             return RunResult(
                 claims=list(claims), decisions={}, trajectory_path=None,
@@ -308,54 +325,62 @@ def test_reverify_accepts_bm25_fallback_flag(client, monkeypatch):
     )
     r = client.post("/api/reverify", json={"accept_bm25_fallback": True})
     assert r.status_code == 200
+    assert _poll_terminal(client, r.json()["run_id"])["status"] == "done"
     assert seen["accepted"] is True
     # 常规调用(无 body)不受影响
     r2 = client.post("/api/reverify")
     assert r2.status_code == 200
+    assert _poll_terminal(client, r2.json()["run_id"])["status"] == "done"
     assert seen["accepted"] is False
 
 
 def test_reverify_maps_transport_error_to_chinese(client, monkeypatch):
-    """坏代理/NO_PROXY 走到 OpenAI-compat 路径时:502 + 中文可操作错误,无英文堆栈。"""
+    """坏代理/NO_PROXY 走到 OpenAI-compat 路径时:failed 负载中文可操作,无英文堆栈。
+
+    I-10(#696):错误经 progress 轮询面给出(GET 200 + error 字段);映射语义不变。
+    """
     _seed_ready_t1_and_claims(client)
 
     class _FailingRunner:
         def __init__(self, store, **_kwargs):
             self.ctx = appmod.RunContext(store=store)
 
-        def run(self, claims):
+        def run(self, claims, **kwargs):
             request = httpx.Request("POST", "https://dashscope.example/v1/chat")
             raise APIConnectionError(request=request, message="连接经代理失败")
 
     monkeypatch.setattr(appmod, "Runner", _FailingRunner)
     r = client.post("/api/reverify")
-    assert r.status_code == 502
-    body = r.json()
+    assert r.status_code == 200
+    body = _poll_terminal(client, r.json()["run_id"])
+    assert body["status"] == "failed"
     assert body["error_code"] == PROXY_ERROR_CODE
     assert "代理/NO_PROXY 配置异常" in body["error"]
     assert "怎么办" in body["error"]
-    assert "Traceback" not in r.text
-    assert "ssl." not in r.text
+    assert "Traceback" not in json.dumps(body, ensure_ascii=False)
+    assert "ssl." not in json.dumps(body, ensure_ascii=False)
 
 
 def test_reverify_internal_error_is_chinese_not_bare_500(client, monkeypatch):
+    """后台异常 → failed 态中文负载;running 收口,不卡后续。"""
     _seed_ready_t1_and_claims(client)
 
     class _BoomRunner:
         def __init__(self, store, **_kwargs):
             self.ctx = appmod.RunContext(store=store)
 
-        def run(self, claims):
+        def run(self, claims, **kwargs):
             raise RuntimeError("english internal detail must not leak")
 
     monkeypatch.setattr(appmod, "Runner", _BoomRunner)
     r = client.post("/api/reverify")
-    assert r.status_code == 500
-    body = r.json()
+    assert r.status_code == 200
+    body = _poll_terminal(client, r.json()["run_id"])
+    assert body["status"] == "failed"
     assert body["error_code"] == "REVERIFY_INTERNAL"
     assert "复验执行失败" in body["error"]
-    assert "english internal detail" not in r.text
-    assert "Traceback" not in r.text
+    assert "english internal detail" not in json.dumps(body, ensure_ascii=False)
+    assert "Traceback" not in json.dumps(body, ensure_ascii=False)
     assert appmod._state["running"] is False  # finally 收口,不卡 running
 
 
