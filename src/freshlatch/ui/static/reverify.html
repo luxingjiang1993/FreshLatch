@@ -1091,7 +1091,8 @@ function renderT1Checksums(){
   for(const r of rows){
     h += '<li>'+esc(r.doc_id||'')
        + (r.title?(' · '+esc(r.title)):'')
-       + ' · <code>'+esc(r.checksum||'(空)')+'</code></li>';
+       // I-13(决议 #706):历史/异常空值显式「未计算」,不糊成空白或裸空串
+       + ' · <code>'+esc(r.checksum||'未计算')+'</code></li>';
   }
   h += '</ul>';
   body.innerHTML = h;

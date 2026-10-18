@@ -25,7 +25,12 @@ from pathlib import Path
 from typing import Callable, Literal
 
 from freshlatch.store.base import Document, RetrievalStore
-from freshlatch.store.checksum import write_corpus_doc
+from freshlatch.store.checksum import (
+    aggregate_checksum,
+    corpus_doc_path,
+    sha256_hex,
+    write_corpus_doc,
+)
 from freshlatch.store.ingest import ingest_into, parse_document_text, wrap_paste_as_t1_markdown
 
 SourceKind = Literal["none", "upload", "paste", "synthetic", "url"]
@@ -56,7 +61,9 @@ class T1SourceState:
     network_enabled: bool = False  # 插座默认关
     message: str = "未选定合法 T1 来源,不得假装已有最新事实"
     ingested_chunks: int = 0
-    checksum: str = ""  # 薄 URL/落盘成功后可见;失败保持空
+    # 决议 #706(I-13):snapshot 写入即算即写,禁止长期空串;空 = 未计算/不可算
+    # (历史/异常数据由展示层显式「未计算」标注)。Run 绑定不再是首次指纹时刻。
+    checksum: str = ""  # 薄 URL/粘贴确认/上传/合成包在写入瞬间产出;失败保持空
     source_url: str = ""  # 最近一次成功薄 URL;失败零写时清空
 
 
@@ -280,6 +287,7 @@ class T1SourceSession:
         # 落盘语料文件:与 doc.checksum 同口径,供 make_checksum_fn / 档3b 跨轮腐烂现算
         if self.corpus_root is not None:
             write_corpus_doc(self.corpus_root, doc.doc_id, doc.as_of, doc.full_text)
+        # I-13(决议 #706):写入瞬间即算即写 checksum,不在 Run 绑定时才首次出指纹
         self._state = T1SourceState(
             kind="paste",
             paste_status="confirmed",
@@ -289,6 +297,7 @@ class T1SourceSession:
             network_enabled=False,
             message="粘贴变更已确认入库,可作为 T1 检索与续命锚定",
             ingested_chunks=len(chunks),
+            checksum=doc.checksum or "",
         )
         return ActionResult(ok=True, state=self._state)
 
@@ -299,6 +308,10 @@ class T1SourceSession:
         if not (root / "t1").is_dir():
             return ActionResult(ok=False, error=f"合成评测包缺少 t1/: {root}")
         n = ingest_into(self.store, root)
+        # I-13(决议 #706):合成包选用瞬间聚合语料文件指纹,与单文档口径同族
+        # (逐文件 sha256 再聚合,aggregate_checksum 两阶哈希,不另开第二套指纹)。
+        files = sorted((root / "t1").glob("*.md"))
+        snap_checksum = aggregate_checksum(files, root=root) if files else ""
         self._paste_text = ""
         self._state = T1SourceState(
             kind="synthetic",
@@ -309,6 +322,7 @@ class T1SourceSession:
             network_enabled=False,
             message="已选用内置合成评测包(synthetic)",
             ingested_chunks=n,
+            checksum=snap_checksum,
         )
         return ActionResult(ok=True, state=self._state)
 
@@ -344,12 +358,28 @@ class T1SourceSession:
         if not parsed:
             return ActionResult(ok=False, error="上传文件无可入库内容")
         total = 0
+        written_paths: list[Path] = []
         for doc, chunks in parsed:
             self.store.add_document(doc, chunks)
             # 与粘贴同口径:上传也必须落盘,否则 checksum_fn 恒 None、腐烂假牙
             if self.corpus_root is not None:
                 write_corpus_doc(self.corpus_root, doc.doc_id, doc.as_of, doc.full_text)
+                written_paths.append(
+                    corpus_doc_path(self.corpus_root, doc.doc_id, doc.as_of)
+                )
             total += len(chunks)
+        # I-13(决议 #706):snapshot 写入即算;单文件 = 该文档指纹,多文件 = 语料文件
+        # 两阶聚合(aggregate_checksum,与合成包同族);无 corpus_root 时退化为
+        # 文档指纹排序聚合(仍只含刚写入内容的 sha256,不读库列)。
+        docs = [d for d, _ in parsed]
+        if len(docs) == 1:
+            snap_checksum = docs[0].checksum or ""
+        elif self.corpus_root is not None and written_paths:
+            snap_checksum = aggregate_checksum(written_paths, root=self.corpus_root)
+        else:
+            snap_checksum = sha256_hex(
+                "\n".join(sorted(d.checksum or "" for d in docs)).encode("utf-8")
+            )
         self._paste_text = ""
         self._state = T1SourceState(
             kind="upload",
@@ -360,6 +390,7 @@ class T1SourceSession:
             network_enabled=False,
             message=f"已上传并入库 {total} 个 T1 chunk",
             ingested_chunks=total,
+            checksum=snap_checksum,
         )
         return ActionResult(ok=True, state=self._state)
 

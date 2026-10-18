@@ -221,3 +221,75 @@ def test_upload_rejects_non_utf8(client):
     )
     assert r.status_code == 400
     assert "UTF-8" in r.json()["error"]
+
+
+# -- I-13 / 决议 #706:checksum 写入即算(时点一致) ---------------------------------
+
+
+def test_paste_confirm_snapshot_checksum_written_at_once(client):
+    """粘贴确认(=snapshot 写入)后即可从状态读到非空 checksum,与库列/语料文件同口径。"""
+    from freshlatch.store.checksum import corpus_doc_path, sha256_hex
+
+    r = client.post("/api/t1-source/paste", json={"text": "变更:时点锚词SeaDesk"})
+    assert r.status_code == 200
+    # 草稿态不写 checksum 不算违例;确认入库(写入瞬间)必须产出
+    assert client.post("/api/t1-source/confirm").status_code == 200
+    snap = client.get("/api/t1-source").json()
+    assert snap["checksum"], "确认入库后 snapshot checksum 不得为空串(写入即算)"
+    chunk = appmod._store().get_chunk("paste-change", "p1", as_of="T1")
+    assert chunk is not None
+    assert snap["checksum"] == chunk.checksum
+    path = corpus_doc_path(client.tmp_corpus, "paste-change", "T1")
+    assert snap["checksum"] == sha256_hex(path.read_bytes())
+
+
+def test_upload_snapshot_checksum_written_at_once(client):
+    """上传入库(=snapshot 写入)后 checksum 非空,且与落盘语料文件同口径。"""
+    from freshlatch.store.checksum import corpus_doc_path, sha256_hex
+
+    md = (
+        "---\n"
+        "doc_id: upload-timing\n"
+        "as_of: T1\n"
+        "source_type: private\n"
+        "title: 时点样例\n"
+        "checksum:\n"
+        "---\n"
+        "## p1\n"
+        "时点锚词:交付口径已改。\n"
+    )
+    r = client.post(
+        "/api/t1-source/upload",
+        files=[("files", ("upload-timing.md", md.encode("utf-8"), "text/markdown"))],
+    )
+    assert r.status_code == 200
+    snap = client.get("/api/t1-source").json()
+    assert snap["checksum"], "上传后 snapshot checksum 不得为空串(写入即算)"
+    chunk = appmod._store().get_chunk("upload-timing", "p1", as_of="T1")
+    assert chunk is not None
+    assert chunk.checksum == snap["checksum"]
+    assert snap["checksum"] == sha256_hex(
+        corpus_doc_path(client.tmp_corpus, "upload-timing", "T1").read_bytes()
+    )
+
+
+def test_synthetic_snapshot_checksum_written_at_once(client, monkeypatch):
+    """合成包选用(=snapshot 写入)后 checksum 非空。"""
+    monkeypatch.setattr(appmod, "CORPUS", client.real_corpus)
+    appmod._reset_t1_source(appmod._store())
+    r = client.post("/api/t1-source/synthetic")
+    assert r.status_code == 200
+    snap = client.get("/api/t1-source").json()
+    assert snap["ready"] is True
+    assert snap["checksum"], "合成包选用后 snapshot checksum 不得为空串(写入即算)"
+
+
+def test_checksum_field_name_unchanged_and_empty_marked_not_calculated():
+    """契约回归:字段名仍 checksum;空值审计文案显式「未计算」,职人不露 hex 红线不漂。"""
+    html = appmod.HTML_PAGE
+    # 展示层空值文案固定「未计算」(历史/异常数据不糊成空白)
+    assert "未计算" in html
+    assert "(空)" not in html
+    # checksum hex 只在审计折叠区(高级/证据 details)渲染,职人首屏无 hex 块
+    assert 'id="t1-checksums"' in html
+    assert 'id="advanced-evidence"' in html
