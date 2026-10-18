@@ -177,6 +177,6 @@ Next hop: Hard-Gold **passed** (#259). On 2026-10-07 a human set `PRODUCTION_RET
 
 ## License & disclaimer
 
-No standalone `LICENSE` file yet. Confirm your own compliance needs before use.
+License: MIT. The full text is in [`LICENSE`](LICENSE). Confirm your own compliance needs before use.
 
 **Disclaimer:** FreshLatch outputs reverify contrast and HumanLatch records. **Not legal advice. Not automated commercial decisions.** Synthetic demos explain product shape only; keep real client confidentials out of public portfolios.
