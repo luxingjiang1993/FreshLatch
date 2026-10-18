@@ -58,6 +58,6 @@
 | spawn_critic(focus) 词表 | #14 | 《spawn_critic-focus词表设计评估.md》 |
 | 模型冒烟(qwen-flash go) | #2 | 《dashscope模型冒烟验证.md》 |
 | 领域词表 | — | `CONTEXT.md` |
-| 立项依据(冲突以切片为准) | — | `docs/product/FreshLatch-立项切片.md` |
+| 立项依据（历史切片；现行冲突以已接受 ADR + `CONTEXT.md` 为准） | — | `docs/product/FreshLatch-立项切片.md`（stub；全文 `docs/_archive/2026-10/product/FreshLatch-立项切片.md`） |
 | 双判一致;Auditor 在场 = 闸层不变量(废止 Lead `spawn_auditor`) | #20,#25,#48 | ADR-0009、ADR-0010;规格回填见 `03-工具表与白名单.md` §3.6 |
 | 生产补丁/放行 SLO 与实验—生产防火墙 | #557（改编未合并 #508） | ADR-0042；本波索引 `docs/ops/生产观测最小6-索引.md`；评估草案留在 #508 |

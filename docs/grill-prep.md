@@ -1,11 +1,11 @@
 # Grill 前置阅读清单 + 待钉决策清单
 
-> SUPERSEDED / 2026-10：下文把 `docs/roadmap.md` 文首 NOW 写成现行 frontier（未换臂 / 冻 bm25，以及 I0「Hard-Gold 未开」）已过时。现行检索默认见 `docs/ops/口径一页纸.md` + `CONTEXT.md` + `docs/evidence/retrieval-decision.md`。本页词表不在本 PR 改。
+> SUPERSEDED / 2026-10：下文把 `docs/roadmap.md` 文首 NOW 写成现行 frontier（未换臂 / 冻 bm25，以及 I0「Hard-Gold 未开」）已过时。现行检索默认见 `docs/ops/口径一页纸.md` + `CONTEXT.md` + `docs/evidence/retrieval-decision.md`。包结论现行四值见 `CONTEXT.md`；本页 Q3 / glossary 里的三值是 Phase V1 历史题面。
 
 > 用途：开 `grill-with-docs` / `grilling` 前给 coding agent 与你自己用。  
-> 配套执行路线图：`docs/roadmap.md`（v3.1）。  
+> 配套执行路线图：`docs/roadmap.md`（v3.1；现行页是 stub，阶段全文 `docs/_archive/2026-10/roadmap.md`）。  
 > 开场提示词模板：[prompts/grill-with-docs-freshlatch.md](./prompts/grill-with-docs-freshlatch.md)  
-> **身份：** 本页是 **历史阅读包**（V1 及后续阶段已实现）。现行 frontier 见 `docs/roadmap.md` 文首 NOW：Hard-Gold #259 已过线、未换臂、改臂 Gate 人终收或冻 bm25；C′ 为 backlog。
+> **身份：** 本页是 **历史阅读包**（V1 及后续阶段已实现）。当时写的现行 frontier 指向 `docs/roadmap.md` 文首 NOW：Hard-Gold #259 已过线、未换臂、改臂 Gate 人终收或冻 bm25；C′ 为 backlog。该 NOW 段只留在归档全文 `docs/_archive/2026-10/roadmap.md`；现行 `docs/roadmap.md` 是 stub。
 
 > 原则：路线图定阶段与边界；本页定「读什么」和「必须先烤死什么」。  
 > ~~未钉死前不要 implement V1~~（不再作为现行禁令）。
@@ -15,7 +15,7 @@
 ## 0. 会话怎么开
 
 1. 先读完 §1 阅读包（agent 可自行打开仓内文件；找得到的事实不要问用户）。  
-2. 以 `docs/roadmap.md` 为设计树根。  
+2. 以 `docs/roadmap.md` 为设计树根（v3.1 阶段序在归档全文 `docs/_archive/2026-10/roadmap.md`；现行页是 stub）。 
 3. 本页 §2 是 **第一轮 frontier 推荐题**（可整轮抛出）；§3 是后续轮才解封的题。  
 4. 每轮产出：更新本页勾选 + 必要时写 ADR / glossary（`grill-with-docs` → grilling + domain-modeling）。  
 5. **共享理解确认前**：不改产品代码；I0 纯文档/表可与 grill 并行。
@@ -28,7 +28,7 @@
 
 | # | 路径 / 对象 | 读什么 |
 |---|-------------|--------|
-| 1 | `docs/roadmap.md` | 阶段序、In/Out/Exit、硬边界、论文路线 A、`patch_events` 意图 |
+| 1 | `docs/roadmap.md`（stub；阶段全文 `docs/_archive/2026-10/roadmap.md`） | 阶段序、In/Out/Exit、硬边界、论文路线 A、`patch_events` 意图（v3.1 历史，不是现行 frontier） |
 | 2 | 本文件 | 待钉决策；避免重复发明问题 |
 | 3 | Phase A retrieve / Gate 相关 **现有 spec 或 ADR**（`docs/spec/`、`docs/adr/`、`docs/verification/` 内与 retrieve、gate、disposition、金标相关者） | 现有枚举与契约，防 V1 另起一套口径 |
 | 4 | 现成 **eval / 金标 / 评测报告**（仓内 `docs/evidence/`、`docs/task-completion/` 或 eval 脚本产物；以实际文件名为准） | I0「为何 BM25」的数字从哪来、能否复跑 |
@@ -90,6 +90,8 @@
 ---
 
 ### Q3 — 包结论 ↔ 现有闸 / 金标口径
+
+> **SUPERSEDED / 2026-10-18：** 下面的题面与推荐是 Phase V1 grill 当时的三值（可发 / 需补丁 / 勿发）和「禁止第四套状态词」。历史题面保留。**现行**包结论是封闭四值，见 `CONTEXT.md`：**可发（全部仍成立）/ 可发（含作废）/ 需补丁 / 勿发**（ADR-0027 四档修订）。
 
 **问题：** 包级「可发 / 需补丁 / 勿发」如何由条文闸结果聚合？与现有枚举是否一一映射还是新层？
 
@@ -196,7 +198,7 @@ BOI / GenAI 暂行办法 / 个保审计办法 — 见会话记录；适合 `regu
 | # | 拍板 |
 |---|------|
 | Q7 | C vs T **只后台 JSONL**；发前 UI 无开关 |
-| Q15 | 包映射：未收口 stale→勿发；有 unknown→需补丁；**全 fresh 无人审→可发**；红灯人审收口且无未处理 unknown→可发 |
+| Q15 | 包映射：未收口 stale→勿发；有 unknown→需补丁；**全 fresh 无人审→可发**；红灯人审收口且无未处理 unknown→可发（当时单档「可发」；现行按有无作废拆成可发（全部仍成立）/ 可发（含作废），见 `CONTEXT.md`） |
 | Q16 | URL 失败四态：非白名单 / 超时网络 / 非文本或空 / 落盘前校验失败 → 不入库，可回落粘贴；PDF URL 另票 |
 | Q17 | V1 **不做**薄对话（留 V1.5）；禁对话改 disposition |
 | Q18 | **开 ADR-0027**（垂直+包结论新层+薄 URL 白名单，一条短 ADR） |
@@ -460,7 +462,7 @@ BOI / GenAI 暂行办法 / 个保审计办法 — 见会话记录；适合 `regu
 **共享理解:** 已确认（2026-09-29）。  
 
 **已落盘:**  
-`docs/accounting-card.md` · `docs/eval-retrieve.md` · `docs/contribution-boundary.md` · `docs/adr/0026-i0-冒烟层与reports为数字真相源.md` · `docs/research/I0-冒烟层与数字真相源设计评估.md` · `docs/evidence/i0/ACCEPTANCE.md`  
+`docs/accounting-card.md` · `docs/eval-retrieve.md`（全文 `docs/_archive/2026-10/eval-retrieve.md`；现行页是 stub） · `docs/contribution-boundary.md` · `docs/adr/0026-i0-冒烟层与reports为数字真相源.md` · `docs/research/I0-冒烟层与数字真相源设计评估.md` · `docs/evidence/i0/ACCEPTANCE.md`  
 
 **I0 Exit:** **DONE**（2026-09-29；证据见 ACCEPTANCE）。  
 **V1 Round 1–2:** 已钉（见 §2d）。**共享理解已确认（含 2026-09-29 再确认）**；ADR-0027 / 评估 / CONTEXT 已落。规格/#168 已走过；远程 #169–#175 CLOSED。  
@@ -501,7 +503,7 @@ BOI / GenAI 暂行办法 / 个保审计办法 — 见会话记录；适合 `regu
 | **Gate** | 对主张/包的可审计复验（检索→裁决→人审路径） |
 | **Verify+** | Gate + 入库 + 报告级汇总 + 带确认改稿 + 薄对话 |
 | **Studio** | 多工作站外壳；冻结；须穿同一 Gate |
-| **disposition（包结论）** | 可发 / 需补丁 / 勿发（聚合层） |
+| **disposition（包结论）** | **现行**封闭四值，见 `CONTEXT.md`：可发（全部仍成立）/ 可发（含作废）/ 需补丁 / 勿发。§2 Q3 题面里的「可发 / 需补丁 / 勿发」是 Phase V1 历史三值 |
 | **retrieval arm** | BM25 / dense / hybrid / hybrid+rerank；生产默认 `hybrid+rerank`（本地 `BAAI/bge-reranker-base` 重排 hybrid top-10；一键回退 `set_retrieval_switch("bm25")`）→ **已迁 CONTEXT** |
 | **HumanLatch** | 人审状态机与误判样本驱动说明（I1 将钉 corpus 形态） |
 | **失败三分法 / 漏拦·误拦** | **评测·答辩标签**（非生产 Gate 枚举）；定义与映射见 I1 ADR/评估；corpus 在 `docs/evidence/i1/` |
@@ -568,3 +570,4 @@ BOI / GenAI 暂行办法 / 个保审计办法 — 见会话记录；适合 `regu
 | 2026-10-03 | **I3 Round 1–3** 全认；共享理解确认；评估+ADR-0032+CONTEXT+roadmap 落盘；下一跳 to-spec |
 | 2026-10-03 | **I3 to-spec**：`docs/spec/20-PhaseI3-InterviewHardening.md`；[#248](https://github.com/luxingjiang1993/FreshLatch/issues/248)；下一跳 to-tickets |
 | 2026-10-03 | **I3 to-tickets + enrich**：#249–#253；Frontier #249；`.scratch/i3-tickets/INDEX.md` |
+| 2026-10-18 | 包结论：Q3 / Q15 / glossary 标明 Phase V1 三值为历史；现行四值指向 `CONTEXT.md`。roadmap / eval-retrieve 全文指针改到归档 |

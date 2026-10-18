@@ -42,7 +42,7 @@
 | hybrid（RRF k=60） | 1.0000 | ≥ min(BM25,dense) → 通过线 pass |
 | hybrid+rerank | 1.0000 | **非**严格更好；p95=11.4ms；**生产默认关** |
 
-详表与复跑：[`docs/eval-retrieve.md`](./eval-retrieve.md) → `reports/retrieve-arm-compare.md` / `retrieve-rerank-compare.md` / `retrieve-bm25-baseline.md`。
+详表与复跑：[`docs/_archive/2026-10/eval-retrieve.md`](./_archive/2026-10/eval-retrieve.md)（现行 [`docs/eval-retrieve.md`](./eval-retrieve.md) 是 stub）→ `reports/retrieve-arm-compare.md` / `retrieve-rerank-compare.md` / `retrieve-bm25-baseline.md`。
 
 ---
 
@@ -58,7 +58,7 @@
 
 ## 5. 指针
 
-- 复跑与命令：[`eval-retrieve.md`](./eval-retrieve.md)  
+- 复跑与命令：[`docs/_archive/2026-10/eval-retrieve.md`](./_archive/2026-10/eval-retrieve.md)（现行 `docs/eval-retrieve.md` 是 stub）
 - 贡献边界：[`contribution-boundary.md`](./contribution-boundary.md)  
 - Hard-Gold：roadmap Backlog 另票；**本期未开**  
 - 评估全文：`docs/research/I0-冒烟层与数字真相源设计评估.md`

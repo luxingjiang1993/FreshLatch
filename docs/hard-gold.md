@@ -17,7 +17,7 @@
 
 - **n ≥ 20**
 - **traps / 对抗类 ≥ 30%**（`category ∈ {trap, adversarial}`）
-- 增益门公式沿用 I0 / `docs/eval-retrieve.md` §3；**不事后改门凑换臂**
+- 增益门公式沿用 I0 / `docs/_archive/2026-10/eval-retrieve.md` §3（现行 `docs/eval-retrieve.md` 是 stub；§3 在归档全文）；**不事后改门凑换臂**
 - Exit：**断言** `PRODUCTION_RETRIEVAL_MODE == "bm25"`
 
 ## 3. 复跑
