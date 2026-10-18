@@ -4,7 +4,8 @@
 > 词表：`CONTEXT.md`  
 > 权威 ADR：`0027`（垂直 / 包结论 / 薄 URL / patch_events）；上游 `0016`（T1 三卡）、`0002`（复验单 UI）、`0006`（HumanLatch）  
 > 评估：`docs/research/V1-发前闭环垂直与包结论设计评估.md`  
-> 路线图：`docs/roadmap.md` Phase V1  
+> 路线图：`docs/roadmap.md` Phase V1（现行页是 stub；阶段全文 `docs/_archive/2026-10/roadmap.md`）  
+> **SUPERSEDED / 包结论词表（2026-10-18）：** 下文「包级结论仅三值」以及「可发|需补丁|勿发」是 Phase V1 当时的历史口径，保留不改写。**现行**包结论为封闭四值，见 `CONTEXT.md` 与下方 User Story 16 注。 
 > **测试主缝（已确认 2026-09-29）：发前 Run 边界** —  
 > `主张集 + 合法 T1（三卡|薄 URL）→ 复验/规则闸 → 包结论(disposition) → 人审 → 发前列表/Run 详情投影 + patch_events 追加`  
 > 子缝（仅当主缝测不到时）：① disposition 纯函数聚合；② 薄 URL 入库 fail-closed；③ patch_events 追加写。**优先只暴露主缝。**
@@ -36,6 +37,9 @@
 13. As a 语料管理员, I want PDF URL 自动解析本期不做（另票）, so that V1 不抢发前闭环带宽。
 14. As a 复验操作者, I want 既有「开始复验」与规则闸行为保持, so that V1 不重写闸语义。
 15. As a 复验操作者, I want 主张级仍用 fresh/stale/unknown/void, so that 词表不漂移。
+
+> **SUPERSEDED：** 下一则是 Phase V1 历史规格里的三值包结论（可发 / 需补丁 / 勿发），以及「不发明第四套词」。当时这样写，是为了对人可讲、不另造近义词。**现行**包结论是封闭四值，见 `CONTEXT.md`：**可发（全部仍成立）/ 可发（含作废）/ 需补丁 / 勿发**（ADR-0027 四档修订，决议 #688 / #694）。本文件其余仍写三值或单档「可发」的句子同属这段历史规格，不回写成「V1 当时已有四值」。
+
 16. As a 报告读者, I want 包级结论仅三值：可发 / 需补丁 / 勿发, so that 对人可讲、不发明第四套词。
 17. As a 报告读者, I want 未收口 stale → 勿发, so that 红灯未处理不能装可发。
 18. As a 报告读者, I want 无未收口 stale 但有 unknown/缺口 → 需补丁, so that 缺口可见。
@@ -69,7 +73,7 @@
 ### 主缝与模块
 
 - **主缝**：发前 Run 边界（见文首）。对外可测行为：给定 Run 输入（主张集 + T1 选择含薄 URL）→ 产出包结论 + 可追责轨迹（含 T1 checksum）+ 可选 patch_events 行；列表/详情只是投影。
-- **disposition**：纯函数聚合模块（输入主张态+人审收口标志 → 可发|需补丁|勿发）；UI/API 只消费结果，禁止平行发明状态词。
+- **disposition**：纯函数聚合模块（输入主张态+人审收口标志 → 可发|需补丁|勿发）；UI/API 只消费结果，禁止平行发明状态词。此条是 Phase V1 历史三值契约；现行四值见文首注与 User Story 16。
 - **薄 URL**：T1 来源增量服务：校验 Host ∈ {`www.mckinsey.com`} → GET → 抽取正文 → 结构锚切块 → ingest；失败四态映射为明确错误码/短中文，零写。
 - **发前列表**：薄 API + UI 壳；Run 详情路由到既有复验单并注入包结论条。
 - **patch_events**：追加写 JSONL（目录 `data/patch_events/`）；后台/脚本写入；发前 UX 不暴露 arm 切换。

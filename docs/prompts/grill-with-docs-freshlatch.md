@@ -1,5 +1,7 @@
 # Grill 开场提示词模板（FreshLatch / 蓝海项目5）
 
+> **SUPERSEDED / 2026-10：** 复制区把 `docs/roadmap.md` 当成现行阶段全文。该页已是 stub，阶段全文在 `docs/_archive/2026-10/roadmap.md`。现行检索与包结论见 `docs/ops/口径一页纸.md` + `CONTEXT.md`（包结论四值：可发（全部仍成立）/ 可发（含作废）/ 需补丁 / 勿发）。下面复制区仍是历史 grill 开场，不改写成当时已有四值。
+
 把下面「复制区」整段贴给 Cursor coding agent。按需改 `[方括号]`。
 
 ---
