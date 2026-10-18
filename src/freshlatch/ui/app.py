@@ -22,6 +22,7 @@ from fastapi import FastAPI, File, Query, Request, UploadFile
 from fastapi.responses import HTMLResponse, JSONResponse, Response
 from pydantic import BaseModel
 
+from freshlatch.api_errors import error_body, install_error_handlers  # noqa: E402
 from freshlatch.claim_import import ClaimImportError, parse_claim_import_draft  # noqa: E402
 from freshlatch.claim_ledger import (  # noqa: E402
     export_claim_ledger_md,
@@ -50,16 +51,20 @@ from freshlatch.prepublish import (  # noqa: E402
 from freshlatch.patch_events import record_human_review_events  # noqa: E402
 from freshlatch.publish_hook import (  # noqa: E402
     HOOK_BIND_HOST_ENV,
+    HOOK_CHECKSUM_DRIFT,
     HOOK_DEFAULT_BIND_HOST,
+    HOOK_DO_NOT_PUBLISH,
+    HOOK_MISSING_RUN_ID,
+    HOOK_NEEDS_PATCH_NO_ACK,
     HOOK_TOKEN_ENV,
     HOOK_TOKEN_HEADER,
     HOOK_UNAUTHORIZED,
+    HOOK_UNBOUND_RUN,
     deny_http_status,
     evaluate_publish_hook,
 )
 from freshlatch.runner import RunContext, Runner, load_docket  # noqa: E402
 from freshlatch.publish_hook import (  # noqa: E402
-    HOOK_CHECKSUM_DRIFT,
     checksums_fresh,
 )
 from freshlatch.sheet import (  # noqa: E402
@@ -132,6 +137,7 @@ EMPTY_BUDGET = {
 del _G
 
 app = FastAPI(title="FreshLatch 复验单")
+install_error_handlers(app, log_prefix="ui")
 _state: dict = {"claims": [], "question": "", "trajectory": None, "running": False,
                 "latch": dict(EMPTY_LATCH),
                 "budget": dict(EMPTY_BUDGET),
@@ -509,11 +515,13 @@ def api_client_memo_export(
         out_path=None,  # HTTP 响应体交付;服务端不落盘
     )
     if not hook.allow:
-        # deny 零写:不返回 Markdown 体
+        # deny 零写:不返回 Markdown 体;错误载荷走统一契约(决议 #705 I-12)
         status = 403
         if hook.code == HOOK_CHECKSUM_DRIFT:
             status = 409
-        return JSONResponse(hook.to_dict(), status_code=status)
+        body = hook.to_dict()
+        body.update(hook_error_body(hook.code, hook.message))
+        return JSONResponse(body, status_code=status)
 
     assert md is not None
     return Response(
@@ -554,6 +562,30 @@ class PublishHookCheckRequest(BaseModel):
     ack_needs_patch: bool = False
 
 
+# 决议 #705 I-12:deny 载荷带「怎么办」hint(职人向中文);码不变、状态码语义不变
+HOOK_HINTS: dict[str, str] = {
+    HOOK_MISSING_RUN_ID: "请在请求体里带上本次发前 Run 的 run_id 后重试",
+    HOOK_UNBOUND_RUN: "请确认 run_id 对应一次已生成的发前 Run;无包结论时需先在复验单收口再导出",
+    HOOK_DO_NOT_PUBLISH: "请先在复验单完成人审收口(作废/续命/改账),使包结论变为可发后再导出",
+    HOOK_CHECKSUM_DRIFT: "T1 语料或 Run 状态已变化:请重跑一轮复验后再导出",
+    HOOK_NEEDS_PATCH_NO_ACK: "如接受「需补丁」页眉约束,请带 ack_needs_patch=true 重试",
+    HOOK_UNAUTHORIZED: f"请携带正确的 {HOOK_TOKEN_HEADER} 头(对应 {HOOK_TOKEN_ENV} 配置)",
+}
+
+
+def hook_error_body(result_code: str, message: str) -> dict:
+    """publish-hook deny 的统一错误载荷(决议 #705 I-12)。
+
+    在既有结构化字段之上补 ok/error_code/hint;`code` 为旧键别名,
+    与域内 PublishHookResult.code 同值,三出口(UI/CLI/HTTP)不另造近义词。
+    """
+    return error_body(
+        result_code,
+        message,
+        HOOK_HINTS.get(result_code, "请按提示修正后重试;仍失败请联系运维"),
+    )
+
+
 def _hook_token_denied(request: Request) -> JSONResponse | None:
     """可选共享密钥头:仅当环境变量已配置时强制校验;缺失配置则本机冒烟可测。"""
     expected = (os.environ.get(HOOK_TOKEN_ENV) or "").strip()
@@ -562,13 +594,12 @@ def _hook_token_denied(request: Request) -> JSONResponse | None:
     provided = (request.headers.get(HOOK_TOKEN_HEADER) or "").strip()
     if provided == expected:
         return None
-    body = {
+    body = hook_error_body(HOOK_UNAUTHORIZED, "入站 check 共享密钥头校验失败")
+    body.update({
         "allow": False,
         "disposition": None,
-        "code": HOOK_UNAUTHORIZED,
-        "message": "入站 check 共享密钥头校验失败",
         "requires_needs_patch_banner": False,
-    }
+    })
     return JSONResponse(body, status_code=403)
 
 
@@ -602,6 +633,8 @@ def api_publish_hook_check(
     body = result.to_dict()
     if result.allow:
         return JSONResponse(body, status_code=200)
+    # deny:统一错误契约(决议 #705 I-12):error_code/hint 补齐,码与状态码语义不变
+    body.update(hook_error_body(result.code, result.message))
     return JSONResponse(body, status_code=deny_http_status(result.code))
 
 

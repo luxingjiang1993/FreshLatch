@@ -18,6 +18,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
+from freshlatch.api_errors import error_body, install_error_handlers
 from freshlatch.store.tenant_acl import resolve_pre_retrieval_tenant
 
 # 服务端凭证映射。格式：token=tenant_id，多项用逗号分隔。未配置则未就绪。
@@ -61,6 +62,7 @@ app = FastAPI(
     redoc_url=None,
     openapi_url=None,
 )
+install_error_handlers(app, log_prefix="serving")
 
 
 def parse_serving_key_map(raw: str | None) -> tuple[dict[str, str], str | None]:
@@ -171,22 +173,24 @@ def _clean_client_tenant(value: str | None) -> str | None:
 
 def _unauthorized() -> JSONResponse:
     return JSONResponse(
-        {
-            "ok": False,
-            "code": SERVING_UNAUTHORIZED,
-            "message": "缺少或错误的服务端凭证",
-        },
+        error_body(
+            SERVING_UNAUTHORIZED,
+            "缺少或错误的服务端凭证",
+            "请检查 Bearer 令牌或 "
+            f"{SERVING_API_KEY_HEADER} 头是否与服务端 "
+            f"{SERVING_KEYS_ENV} 里配置的凭证一致",
+        ),
         status_code=401,
     )
 
 
 def _tenant_mismatch() -> JSONResponse:
     return JSONResponse(
-        {
-            "ok": False,
-            "code": SERVING_TENANT_MISMATCH,
-            "message": "客户端 tenant_id 与服务端身份映射不一致",
-        },
+        error_body(
+            SERVING_TENANT_MISMATCH,
+            "客户端 tenant_id 与服务端身份映射不一致",
+            "请去掉请求里的 tenant_id 声明,或改用与服务端凭证映射一致的租户",
+        ),
         status_code=403,
     )
 

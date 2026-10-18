@@ -12,6 +12,7 @@ import os
 import pytest
 from fastapi.testclient import TestClient
 
+from freshlatch.api_errors import INTERNAL_ERROR, REQUEST_VALIDATION_FAILED
 import freshlatch.ui.app as appmod
 from freshlatch.models import Claim
 from freshlatch.publish_hook import (
@@ -159,6 +160,90 @@ def test_token_absent_env_allows_localhost_smoke(client, monkeypatch):
     r = client.post("/api/publish-hook/check", json={"run_id": run_id})
     assert r.status_code == 200
     assert r.json()["allow"] is True
+
+
+def test_deny_payload_unified_error_contract(client):
+    """决议 #705 I-12:deny 载荷 = 域字段 + error_code/hint;状态码语义不变。
+
+    `code` 为旧键兼容别名,与 error_code 同值(UI/CLI/HTTP 不另造近义词)。
+    """
+    stale_run = _seed_run(status="stale")
+    r = client.post("/api/publish-hook/check", json={"run_id": stale_run})
+    assert r.status_code == deny_http_status(HOOK_DO_NOT_PUBLISH)
+    body = r.json()
+    assert body["allow"] is False
+    assert body["error_code"] == HOOK_DO_NOT_PUBLISH
+    assert body["code"] == HOOK_DO_NOT_PUBLISH
+    assert body["message"]
+    assert body["hint"]
+
+    missing = client.post("/api/publish-hook/check", json={})
+    assert missing.status_code == deny_http_status(HOOK_MISSING_RUN_ID)
+    assert missing.json()["error_code"] == HOOK_MISSING_RUN_ID
+    assert missing.json()["hint"]
+
+    unbound = client.post("/api/publish-hook/check", json={"run_id": "run-not-exist"})
+    assert unbound.json()["error_code"] == HOOK_UNBOUND_RUN
+    assert unbound.json()["hint"]
+
+    unknown_run = _seed_run(status="unknown")
+    denied_np = client.post(
+        "/api/publish-hook/check",
+        json={"run_id": unknown_run, "ack_needs_patch": False},
+    )
+    assert denied_np.status_code == 409
+    assert denied_np.json()["error_code"] == HOOK_NEEDS_PATCH_NO_ACK
+    assert denied_np.json()["hint"]
+
+
+def test_token_denied_payload_has_hint(client, monkeypatch):
+    """共享密钥头 deny 也走统一契约:中文 message + error_code + hint。"""
+    monkeypatch.setenv(HOOK_TOKEN_ENV, "secret-for-test")
+    r = client.post("/api/publish-hook/check", json={"run_id": "x"})
+    assert r.status_code == 403
+    body = r.json()
+    assert body["allow"] is False
+    assert body["error_code"] == HOOK_UNAUTHORIZED
+    assert body["code"] == HOOK_UNAUTHORIZED
+    assert body["message"]
+    assert body["hint"]
+
+
+def test_malformed_json_body_is_unified_422(client):
+    """默认 422 / 请求体解析失败 → 中文统一契约;无英文 detail。"""
+    r = client.post(
+        "/api/publish-hook/check",
+        data="{not-json",
+        headers={"Content-Type": "application/json"},
+    )
+    assert r.status_code == 422
+    body = r.json()
+    assert body["ok"] is False
+    assert body["error_code"] == REQUEST_VALIDATION_FAILED
+    assert body["message"]
+    assert body["hint"]
+    assert "detail" not in body
+
+
+def test_unhandled_exception_is_safe_500(client, monkeypatch):
+    """安全 5xx:中文 + 稳定 code,无堆栈;异常细节不进响应体。"""
+    monkeypatch.setattr(appmod, "_hook_token_denied", lambda request: None)
+
+    def _boom(**kwargs):
+        raise RuntimeError("boom-secret-trace")
+
+    monkeypatch.setattr(appmod, "evaluate_publish_hook", _boom)
+    # ServerErrorMiddleware 处理后仍会向上重抛,5xx 断言须关 raise_server_exceptions
+    safe_client = TestClient(appmod.app, raise_server_exceptions=False)
+    r = safe_client.post("/api/publish-hook/check", json={"run_id": "x"})
+    assert r.status_code == 500
+    body = r.json()
+    assert body["ok"] is False
+    assert body["error_code"] == INTERNAL_ERROR
+    assert body["message"] == "服务内部错误"
+    assert body["hint"]
+    assert "Traceback" not in r.text
+    assert "boom-secret-trace" not in r.text
 
 
 def test_default_bind_host_is_loopback():
