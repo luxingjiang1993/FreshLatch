@@ -266,6 +266,36 @@ def test_ui_audit_ignores_free_text_reason(tmp_path):
     assert projected["parsed"] is False
 
 
+# -- I-11(#710 / 决议 #704):职人首屏只留问题句/包结论/主 CTA/T1 白话状态 -----------------
+
+
+def test_i11_checksum_hex_stays_in_collapsible_audit_area(client):
+    """checksum hex 不压职人首屏:只在「高级/证据」折叠区内,默认不展开(无 open)。"""
+    html = client.get("/").text
+    assert '<details id="advanced-evidence">' in html  # 无 open 属性 = 默认折叠
+    advanced = html.split('id="advanced-evidence"', 1)[1].split('id="craftsman-badges"', 1)[0]
+    assert 'id="t1-checksums"' in advanced
+    assert "checksum" in advanced
+
+
+def test_i11_craftsman_first_screen_keeps_only_core_blocks(client):
+    """职人首屏保留主 CTA/包结论/三类清单;噪音元素有职人隐藏规则,审计视图仍露出。"""
+    html = client.get("/").text
+    assert 'id="btn-run"' in html  # 主 CTA(一键样例)
+    assert 'id="disposition-bar"' in html  # 包结论
+    assert 'id="vernacular-lists"' in html  # 三类清单(决议 #704 明确不改)
+    assert 'id="t1-status-short"' in html  # T1 白话状态(JS 渲染分支)
+    for rule in (
+        'html[data-view="craftsman"] #budget-progress{display:none}',
+        'html[data-view="craftsman"] #pack-badge{display:none}',
+        'html[data-view="craftsman"] #btn-import-draft{display:none}',
+    ):
+        assert rule in html
+    audit = client.get("/?view=audit").text
+    assert 'id="audit-panel" class="visible"' in audit
+    assert "SYNTHETIC" in audit  # 审计视图保留原 SYNTHETIC 标签
+
+
 def test_abstention_enum_unchanged():
     """Unknown reason 只读封闭枚举。旧码拼写不变;B-02 加入 conflicting_evidence。"""
     assert ABSTENTION_REASONS == frozenset({

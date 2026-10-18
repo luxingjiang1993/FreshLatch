@@ -94,3 +94,47 @@ def test_served_html_injects_view_mode_default():
     assert f'let VIEW_MODE = "{VIEW_MODE_DEFAULT}"' in html
     assert 'id="view-craftsman" class="on"' in html
     assert 'id="audit-panel" class="visible"' not in html
+
+
+# -- I-11(#710 / 决议 #704):职人首屏降噪 -------------------------------------------------
+
+
+def test_i11_craftsman_first_screen_noise_hidden_by_view_css():
+    """预算计数/课题标签/导入稿入口只在审计视图露出;元素保留在 DOM(测试 seam 不变)。"""
+    for rule in (
+        'html[data-view="craftsman"] #budget-progress{display:none}',
+        'html[data-view="craftsman"] #pack-badge{display:none}',
+        'html[data-view="craftsman"] #btn-import-draft{display:none}',
+    ):
+        assert rule in HTML_PAGE, f"缺职人隐藏规则: {rule}"
+    assert 'id="budget-progress"' in HTML_PAGE
+    assert 'id="pack-badge"' in HTML_PAGE
+    assert 'id="btn-import-draft"' in HTML_PAGE
+    # SYNTHETIC 短中文由服务端按视图注入(见 test_i11_served_html_synthetic_label)
+    from freshlatch.ui.app import SYN_BADGE_FULL_TEXT
+    assert SYN_BADGE_FULL_TEXT in HTML_PAGE
+
+
+def test_i11_t1_status_plain_language_branch():
+    """职人首屏只露白话 T1 状态(就绪/缺源料);三卡面板只在审计视图渲染。"""
+    assert "function renderT1StatusShort(" in HTML_PAGE
+    assert "已就绪" in HTML_PAGE
+    assert "缺源料" in HTML_PAGE
+    assert 'id="t1-status-short"' in HTML_PAGE
+    branch = '(VIEW_MODE === "audit") ? renderT1Source() : renderT1StatusShort()'
+    assert branch in HTML_PAGE
+    # 导入稿全文同样只进审计视图
+    assert 'if(VIEW_MODE === "audit"){' in HTML_PAGE
+    assert 'id="claim-import-draft"' in HTML_PAGE
+
+
+def test_i11_served_html_synthetic_label():
+    """职人服务态 HTML 用短中文「当前为演示合成包」;审计视图保留原标签。"""
+    from freshlatch.ui.app import SYN_BADGE_FULL_TEXT, SYN_BADGE_SHORT_TEXT
+
+    craftsman = TestClient(app).get("/").text
+    assert SYN_BADGE_SHORT_TEXT in craftsman
+    assert SYN_BADGE_FULL_TEXT not in craftsman
+    audit = TestClient(app).get("/?view=audit").text
+    assert SYN_BADGE_FULL_TEXT in audit
+    assert SYN_BADGE_SHORT_TEXT not in audit

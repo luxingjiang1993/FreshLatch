@@ -300,3 +300,31 @@ def test_human_verbs_status_enum_and_no_role_names(tmp_path, monkeypatch):
         assert "续命" in html
     finally:
         _restore(saved)
+
+
+def test_i11_first_screen_reduction_keeps_badge_slot_and_verdict(tmp_path, monkeypatch):
+    """I-11(#710):首屏降噪不动只读徽章槽与机器判定;职人仍无角色专名。"""
+    path = tmp_path / "verified.jsonl"
+    _write_jsonl(path, _verified_events())
+    client, saved = _client(tmp_path, monkeypatch)
+    try:
+        appmod._state["trajectory"] = path
+        appmod._state["claims"] = [
+            Claim(claim_id="c-ok", statement="仍成立", status="fresh",
+                  t1_evidence_ids=[EVIDENCE_ID]),
+        ]
+        html = client.get("/").text
+        slot = _badge_slot(html)
+        assert 'class="badge verified"' in slot
+        # 主 CTA 与 T1 白话状态分支在职人首屏保留
+        assert 'id="btn-run"' in html
+        branch = '(VIEW_MODE === "audit") ? renderT1Source() : renderT1StatusShort()'
+        assert branch in appmod.HTML_PAGE
+        # 职人隐藏规则只藏噪音,不藏徽章槽/三类清单
+        assert 'html[data-view="craftsman"] #craftsman-badges' not in appmod.HTML_PAGE
+        assert 'id="vernacular-lists"' in html
+        body = client.get("/api/claims").json()
+        assert body["claims"][0]["status"] == "fresh"
+        assert body["claims"][0]["badge"] == "verified"
+    finally:
+        _restore(saved)
