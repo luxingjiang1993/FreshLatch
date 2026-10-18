@@ -7,6 +7,7 @@ import pytest
 from freshlatch.eval.checks import parse_evidence_id as checks_parse
 from freshlatch.eval.x1_checks import check_x1
 from freshlatch.eval.x1_checks import parse_evidence_id as x1_parse
+from freshlatch.evidence_id import display_evidence_id
 from freshlatch.evidence_id import parse_evidence_id as canonical
 from freshlatch.gates.human_latch import parse_evidence_id as latch_parse
 
@@ -28,6 +29,32 @@ CASES = [
 @pytest.mark.parametrize("eid,expected", CASES)
 def test_parse_evidence_id_contract(parse, eid, expected):
     assert parse(eid) == expected
+
+
+# I-04(#695 决议 #689):仅显示层映射,parse_evidence_id 契约零改。
+DISPLAY_CASES = [
+    # 剥 t0-/t1- 前缀;#pN → 第 N 节;@Tx → Tx 快照
+    ("t0-competitor-notes#p2@T1", "文档 competitor-notes · 第 2 节 · T1 快照"),
+    ("t1-doc#p10@T0", "文档 doc · 第 10 节 · T0 快照"),
+    # 无前缀原样作文档名
+    ("doc-a#p2@T1", "文档 doc-a · 第 2 节 · T1 快照"),
+    # 非 p 形 anchor 保留原串(#689:非 p 形保留原 anchor)
+    ("t0-doc#intro@T1", "文档 doc · intro · T1 快照"),
+    # doc_id 可含 #、双前缀可剥:与 parse_evidence_id 最后一个 #/@ 语义一致
+    ("t0-doc#p1#x@T1", "文档 doc#p1 · x · T1 快照"),
+    ("t0-t1-doc#p1@T1", "文档 doc · 第 1 节 · T1 快照"),
+    # 解析失败 → 回退原串
+    ("garbage", "garbage"),
+    ("doc#p2@T2", "doc#p2@T2"),
+    ("no-hash@T1", "no-hash@T1"),
+    (None, ""),
+    (123, "123"),
+]
+
+
+@pytest.mark.parametrize("eid,expected", DISPLAY_CASES)
+def test_display_evidence_id_readable_sentence(eid, expected):
+    assert display_evidence_id(eid) == expected
 
 
 def test_x1_rejects_illegal_as_of_as_empty_doc(tmp_path: Path):

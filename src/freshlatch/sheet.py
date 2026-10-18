@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Any
 
 from freshlatch.evidence_bound import is_patch_eligible
+from freshlatch.evidence_id import display_evidence_id
 from freshlatch.latch import HumanLatch
 from freshlatch.models import Claim
 from freshlatch.prepublish import disposition_for_claims
@@ -800,7 +801,8 @@ def _render_client_memo_entry(proj: dict[str, Any], *, gap_no_t1: bool = False) 
     lines = [f"- **{cid}**: {conclusion}"]
     if eids:
         for eid in eids:
-            lines.append(f"  - 证据: `{eid}`")
+            # I-04(#695 决议 #689):主文可读句;括号保留完整原 id(纯文本无 scheme)
+            lines.append(f"  - 证据: {display_evidence_id(eid)}（原文 `{eid}`）")
     elif gap_no_t1:
         lines.append("  - 证据: 无 T1 覆盖")
     return "\n".join(lines)

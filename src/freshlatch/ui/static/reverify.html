@@ -493,6 +493,24 @@ function auditScoreText(scores){
   }
   return any ? parts.join(' · ') : '分 无';
 }
+function displayEvidenceId(e){
+  // I-04(#695 决议 #689):仅显示层映射,与 src/freshlatch/evidence_id.py 同公式:
+  // 最后一个 # 分 doc/anchor,最后一个 @ 取 as_of(只认 T0|T1),失败回退原串。
+  const s = String(e==null?'':e);
+  const at = s.lastIndexOf('@');
+  if(at < 0) return s;
+  const asOf = s.slice(at+1);
+  if(asOf !== 'T0' && asOf !== 'T1') return s;
+  const body = s.slice(0, at);
+  const hash = body.lastIndexOf('#');
+  if(hash < 0) return s;
+  const docId = body.slice(0, hash), anchor = body.slice(hash+1);
+  if(!docId || !anchor) return s;
+  const name = docId.replace(/^t[01]-/,'').replace(/^t[01]-/,'');
+  const pm = /^p(\d+)$/.exec(anchor);
+  const section = pm ? ('第 '+pm[1]+' 节') : anchor;
+  return '文档 '+name+' · '+section+' · '+asOf+' 快照';
+}
 function spanLinkHtml(item, role){
   // 可见文本是 evidence_id#句 id。点选走 openClaimSpan,不靠字符偏移。
   const css = role === "support" ? "span-support" : "span-oppose";
@@ -1296,13 +1314,15 @@ function renderClaims(){
     h += '<div>'+esc(c.statement)+'</div>';
     if(c.reason) h += '<div class="reason">'+esc(c.reason)+'</div>';
     h += '<div class="ev protocol-inline">';
+    // I-04(#695):主文渲可读句;锚点内附原 id <code>(选中复制可得完整 id),
+    // 悬停 title 保留完整原 id;审计/时间线面仍显示原串
     for(const e of c.t0_evidence_ids||[]) {
       const bare=(e.split('@')[0]||'').split('#'); const asOf=e.split('@')[1]||'T0';
-      h += '<a onclick="event.stopPropagation();showSource(&quot;'+bare[0]+'&quot;,&quot;'+bare[1]+'&quot;,&quot;'+asOf+'&quot;)">'+esc(e)+'</a>';
+      h += '<a title="'+esc(e)+'" onclick="event.stopPropagation();showSource(&quot;'+bare[0]+'&quot;,&quot;'+bare[1]+'&quot;,&quot;'+asOf+'&quot;)">'+esc(displayEvidenceId(e))+' <code>'+esc(e)+'</code></a>';
     }
     for(const e of c.t1_evidence_ids||[]) {
       const bare=(e.split('@')[0]||'').split('#'); const asOf=e.split('@')[1]||'T1';
-      h += '<a onclick="event.stopPropagation();showSource(&quot;'+bare[0]+'&quot;,&quot;'+bare[1]+'&quot;,&quot;'+asOf+'&quot;)">'+esc(e)+'</a>';
+      h += '<a title="'+esc(e)+'" onclick="event.stopPropagation();showSource(&quot;'+bare[0]+'&quot;,&quot;'+bare[1]+'&quot;,&quot;'+asOf+'&quot;)">'+esc(displayEvidenceId(e))+' <code>'+esc(e)+'</code></a>';
     }
     h += '</div>';
     h += '<div class="latch" style="margin-top:6px">';

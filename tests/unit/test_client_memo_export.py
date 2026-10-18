@@ -148,7 +148,8 @@ def test_client_memo_required_fields_inv2(tmp_path):
     assert "无 T1 覆盖" in md
 
     assert "`t0-doc#p1@T1`" in md
-    assert "  - 证据: `t0-doc#p1@T1`" in md  # 纯文本证据,无 scheme 链接
+    # I-04(#695):主文可读句 + 括号保留完整原 id;纯文本证据,无 scheme 链接
+    assert "  - 证据: 文档 doc · 第 1 节 · T1 快照（原文 `t0-doc#p1@T1`）" in md
     assert "](evidence:" not in md
     assert CHAR_SPAN.search(md) is None
 
@@ -187,8 +188,8 @@ def test_client_memo_external_reason_template_shape(tmp_path):
     assert "现有证据支持该主张仍然成立。" in held_block
     assert "该主张已被后续证据推翻,不再成立。" in voided_block
     assert "现有证据不足以确认该主张。" in gap_block
-    # 证据列表:纯文本,一条一个
-    assert "  - 证据: `t0-doc#p1@T1`" in held_block
+    # 证据列表:主文可读句 + 完整原 id,一条一个
+    assert "  - 证据: 文档 doc · 第 1 节 · T1 快照（原文 `t0-doc#p1@T1`）" in held_block
     # 机器 reason(internal_reason 侧)不进客户向默认面
     assert "T1 同口径仍成立" not in md
     assert "T1 推翻原前提" not in md
@@ -232,6 +233,24 @@ def test_client_memo_zero_forbidden_with_h_section_samples(tmp_path):
     # H 节样例原文碎片不得泄漏
     for sample in H_SECTION_SAMPLES:
         assert sample not in md
+
+
+def test_client_memo_unparseable_evidence_falls_back_to_raw(tmp_path):
+    """I-04(#695):显示层解析失败 → 证据行回退原串,不静默丢弃。"""
+    store = _make_store(tmp_path)
+    claim = Claim(
+        claim_id="c-raw",
+        statement="回退主张",
+        t1_evidence_ids=["not-an-evidence-id"],
+        status="fresh",
+        reason="回退",
+    )
+    md = render_client_memo_markdown(
+        [project_claim(store, claim)],
+        question="课题",
+        generated_at="2026-09-22T12:00:00+08:00",
+    )
+    assert "  - 证据: not-an-evidence-id" in md
 
 
 def test_client_memo_gap_column_explicit_no_t1_when_empty(tmp_path):
