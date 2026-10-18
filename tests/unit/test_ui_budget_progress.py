@@ -6,6 +6,8 @@
 
 from __future__ import annotations
 
+import time
+
 import pytest
 from fastapi.testclient import TestClient
 
@@ -84,7 +86,11 @@ def test_api_claims_reads_live_run_ctx_while_running(client):
 
 
 def test_reverify_keeps_budget_summary_after_complete(client, monkeypatch):
-    """完成后会话内仍可读用量摘要(不丢进度)。"""
+    """完成后会话内仍可读用量摘要(不丢进度)。
+
+    I-10(#696):reverify 已 async——POST 立刻返回 run_id,经 progress 轮询取回
+    与原同步响应同形状的 done 负载(含 budget)。
+    """
     # T1 三卡硬条件:未选定不得开复验
     assert client.post("/api/t1-source/synthetic").status_code == 200
     appmod._state["claims"] = [
@@ -98,7 +104,7 @@ def test_reverify_keeps_budget_summary_after_complete(client, monkeypatch):
                 guardrails=Guardrails(lead_max_steps=18, retrieval_budget=24),
             )
 
-        def run(self, claims, **kwargs):
+        def run(self, claims, **kwargs):  # kwargs:I-10 progress/should_cancel 钩子
             self.ctx.lead_steps_used = 5
             self.ctx.retrieval_used = 9
             return RunResult(
@@ -116,7 +122,16 @@ def test_reverify_keeps_budget_summary_after_complete(client, monkeypatch):
 
     r = client.post("/api/reverify")
     assert r.status_code == 200
-    body = r.json()
+    run_id = r.json()["run_id"]
+    deadline = time.monotonic() + 10
+    body = None
+    while time.monotonic() < deadline:
+        body = client.get("/api/reverify/progress",
+                          params={"run_id": run_id}).json()
+        if body["status"] == "done":
+            break
+        time.sleep(0.01)
+    assert body is not None and body["status"] == "done"
     assert body["budget"]["steps_used"] == 5
     assert body["budget"]["lead_max_steps"] == 18
     assert body["budget"]["retrieval_used"] == 9

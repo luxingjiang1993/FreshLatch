@@ -9,6 +9,8 @@
 
 from __future__ import annotations
 
+import time
+
 import pytest
 from fastapi.testclient import TestClient
 
@@ -25,10 +27,23 @@ def client(tmp_path, monkeypatch):
     appmod._state.update({
         "claims": [], "question": "", "trajectory": None,
         "running": False, "latch": dict(appmod.EMPTY_LATCH),
-        "retrieve_zero_hits": [],
+        "active_run_id": None, "retrieve_zero_hits": [],
     })
     appmod._reset_t1_source(store)
+    appmod._reset_run_task()
     return TestClient(appmod.app)
+
+
+def _poll_done(client, run_id):
+    deadline = time.monotonic() + 10
+    body = None
+    while time.monotonic() < deadline:
+        body = client.get("/api/reverify/progress",
+                          params={"run_id": run_id}).json()
+        if body["status"] in ("done", "failed", "cancelled"):
+            return body
+        time.sleep(0.01)
+    pytest.fail(f"轮询超时:run_id={run_id} 最后状态={body}")
 
 
 # -- 源码/DOM 红线(DEM-5 成交面) ----------------------------------------------------
@@ -86,7 +101,7 @@ def test_reverify_exposes_zero_hits_without_auto_unknown(client, monkeypatch, tm
             self.store = store
             self.ctx = RunContext(store=store)
 
-        def run(self, claims):
+        def run(self, claims, **kwargs):  # kwargs:I-10 progress/should_cancel 钩子
             # 与真 Runner 同构:原地改写传入列表;故意保持 fresh——
             # 证明 UI/API 不会因零命中清单把判定改成 unknown
             for c in claims:
@@ -116,7 +131,8 @@ def test_reverify_exposes_zero_hits_without_auto_unknown(client, monkeypatch, tm
 
     r = client.post("/api/reverify")
     assert r.status_code == 200
-    body = r.json()
+    body = _poll_done(client, r.json()["run_id"])
+    assert body["status"] == "done"
     assert body["retrieve_zero_hits"]
     assert body["retrieve_zero_hits"][0]["hits"] == 0
     assert body["retrieve_zero_hits"][0]["query"] == "找不到的关键词XYZ"

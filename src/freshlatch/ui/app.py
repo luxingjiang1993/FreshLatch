@@ -86,6 +86,19 @@ _PATCH_EVENTS_DIR = None
 # #200:Evidence-bound 草案暂存(按 Run 隔离;未 confirm 不改正文/不写正式账本)
 _PATCH_DRAFTS = PatchDraftStore()
 
+# I-10(#696):异步复验任务(整轮唯一;MVP 单并发,重入由 _state["running"] 挡)。
+# 五态:running | cancelling | cancelled | done | failed。退役同步阻塞双轨;
+# 无服务端推送通道,进度只靠本记录轮询(#679 红线:不接 WS/SSE 类通道)。
+_RUN_TASK_LOCK = threading.Lock()
+_RUN_TASK: dict | None = None
+
+
+def _reset_run_task() -> None:
+    """测试/洗态入口:退役当前任务记录(不打断已在跑的后台线程本身)。"""
+    global _RUN_TASK
+    with _RUN_TASK_LOCK:
+        _RUN_TASK = None
+
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent.parent
 # 占位与切换前第一课题路径一致;import 末尾 bind_active_pack 按 active_pack 覆盖
 CORPUS = REPO_ROOT / "data" / "corpus"
@@ -682,6 +695,8 @@ def _clear_live_sheet() -> None:
     _state["run_ctx"] = None
     # 解开当前指针,避免下次 upsert 把勿发行改写成空表
     _prepublish.active_run_id = None
+    # I-10(#696):洗态同时退役异步任务记录,避免旧 run_id 轮询面残留
+    _reset_run_task()
 
 
 @app.get("/api/boot")
@@ -906,13 +921,139 @@ class ReverifyRequest(BaseModel):
     accept_bm25_fallback: bool = False
 
 
+def _new_run_task(run_id: str, *, total: int, accept_bm25: bool) -> None:
+    """登记整轮异步任务;run_id 与 Phase 0 active_run_id 同线(不另开身份)。"""
+    global _RUN_TASK
+    with _RUN_TASK_LOCK:
+        _RUN_TASK = {
+            "run_id": run_id,
+            "status": "running",  # 五态之一;收口只经 _run_reverify_task/cancel 端点改写
+            "done": 0,
+            "total": total,
+            "current_claim_id": None,
+            "cancel_event": threading.Event(),
+            "accept_bm25": accept_bm25,
+            "result": None,   # done 时挂完整结果负载(与原同步响应同形状)
+            "error": None,    # failed 时挂中文错误负载(error_code/error)
+        }
+
+
+def _run_reverify_task(run_id: str) -> None:
+    """I-10(#696)后台主链:异步跑复验,五态收口经 _RUN_TASK 供轮询。
+
+    取消语义(决议 #690):已完成主张判定保留(Runner 原地改写);取消整轮
+    不进 latch;清 active_run(无半残 run);快照仍写,部分判定面落盘可恢复。
+    协作点 = 主张边界,单主张内部不打断(MVP);取消若落在全部主张完成后,
+    按完成收口(done),不丢人审入口。
+    """
+    with _RUN_TASK_LOCK:
+        task = _RUN_TASK
+    if task is None or task["run_id"] != run_id:
+        return
+    accept_bm25 = task["accept_bm25"]
+
+    def _progress(*, current: str | None = None, done: int | None = None) -> None:
+        with _RUN_TASK_LOCK:
+            t = _RUN_TASK
+            if t is None or t["run_id"] != run_id:
+                return
+            if current is not None:
+                t["current_claim_id"] = current
+            if done is not None:
+                t["done"] = done
+                t["current_claim_id"] = None
+
+    def _should_cancel() -> bool:
+        with _RUN_TASK_LOCK:
+            t = _RUN_TASK
+        return bool(t is not None and t["run_id"] == run_id
+                    and t["cancel_event"].is_set())
+
+    def _set_status(status: str) -> None:
+        with _RUN_TASK_LOCK:
+            t = _RUN_TASK
+            if t is not None and t["run_id"] == run_id:
+                t["status"] = status
+
+    try:
+        runner = Runner(_store(), checksum_fn=make_checksum_fn(CORPUS))
+        if accept_bm25:
+            # I-02(#679):预检知情降级——本跑整臂 bm25_fallback(轨迹字段),
+            # 不改 PRODUCTION_RETRIEVAL_MODE,也不写 set_retrieval_switch 运维开关。
+            runner.ctx.bm25_fallback_accepted = True
+        _state["run_ctx"] = runner.ctx
+        _state["budget"] = _budget_from_ctx(runner.ctx)
+        result = runner.run(list(_state["claims"]),
+                            progress=_progress, should_cancel=_should_cancel)
+        _state["trajectory"] = result.trajectory_path
+        _state["budget"] = _budget_from_ctx(runner.ctx)  # 会话内保留用量摘要(DEM-4)
+        # DEM-5:记录零命中清单供 UI 强提示;不改写任何主张 status
+        _state["retrieve_zero_hits"] = list(result.retrieve_zero_hits)
+        with _RUN_TASK_LOCK:
+            t = _RUN_TASK
+            cancelled = bool(t is not None and t["run_id"] == run_id
+                             and t["cancel_event"].is_set())
+            done = t["done"] if (t is not None and t["run_id"] == run_id) else 0
+        if cancelled and done < len(_state["claims"]):
+            # 整轮取消:收口不进 latch(未完成项不塞人审);清 active_run。
+            _state["latch"] = dict(EMPTY_LATCH)
+            _state["active_run_id"] = None
+            _prepublish.active_run_id = None
+            _write_run_snapshot()  # 部分判定面落盘:已完成主张结果保留
+            _set_status("cancelled")
+        else:
+            rnd = _latch().enter_round(_state["claims"])  # 无红/黄灯则 thread_id=None 直接完成
+            _state["latch"] = {"thread_id": rnd.thread_id, "pending": rnd.pending}
+            run_row = _sync_prepublish(new_run=False)
+            _write_run_snapshot()  # I-01(#678):复验结束,判定面落盘
+            store = _store()
+            extras = _detail_extras(store)
+            with _RUN_TASK_LOCK:
+                t = _RUN_TASK
+                if t is not None and t["run_id"] == run_id:
+                    t["result"] = {
+                        "claims": _claims_for_ui(store),
+                        "trajectory": str(result.trajectory_path),
+                        "audit": _audit_for_ui(),
+                        "retrieval_used": result.retrieval_used,
+                        "steps_by_claim": result.steps_by_claim,
+                        "decoding": result.decoding.__dict__,
+                        "latch": _state["latch"],
+                        "retrieve_zero_hits": list(_state["retrieve_zero_hits"]),
+                        "budget": dict(_state["budget"]),
+                        "run": run_row,
+                        **extras,
+                    }
+                    t["status"] = "done"
+    except Exception as exc:  # noqa: BLE001 —— 跨线程边界,映射成中文可操作负载
+        mapped = describe_llm_transport_error(exc)
+        if mapped is None:
+            logger.exception(
+                "复验主链未捕获异常 claim_count=%s", len(_state["claims"])
+            )
+            mapped = {
+                "error_code": "REVERIFY_INTERNAL",
+                "error": ("复验执行失败(内部错误已记入服务端日志,界面不回显堆栈)。"
+                          "怎么办:稍后重试;若反复出现,请记录时间与操作步骤后反馈。"),
+            }
+        with _RUN_TASK_LOCK:
+            t = _RUN_TASK
+            if t is not None and t["run_id"] == run_id:
+                t["error"] = mapped
+                t["status"] = "failed"
+    finally:
+        _state["running"] = False
+        _state["run_ctx"] = None
+
+
 @app.post("/api/reverify")
 def api_reverify(req: ReverifyRequest | None = None) -> JSONResponse:
-    """复验动作(由一键样例进入):端到端真主链(Lead 裸循环 + 规则闸),轨迹落盘。
+    """复验动作(由一键样例进入):异步任务化(I-10/#696),校验后立刻返回 run_id。
 
-    整轮跑完(W3 起)进 HumanLatch:图在收尾节点 interrupt,红/黄灯主张进待审清单,
-    复验单顶部出「待人工」横幅(轮次级单 interrupt,一次 resume 传整个决定列表)。
-    网络层异常映射成可操作中文(代理/NO_PROXY 配置异常),不裸抛英文堆栈(I-07/#679)。
+    主链在后台线程跑(端到端真主链:Lead 裸循环 + 规则闸),轨迹落盘;
+    进度经 GET /api/reverify/progress 轮询(五态),整轮取消经
+    POST /api/reverify/cancel(协作点=主张边界;单主张跳过 OUT;无 SSE)。
+    run_id 与 Phase 0 active_run_id 同线;同步阻塞双轨已退役。
     """
     if _state["running"]:
         return JSONResponse({"error": "已有复验在进行中"}, status_code=409)
@@ -926,58 +1067,62 @@ def api_reverify(req: ReverifyRequest | None = None) -> JSONResponse:
         docket = load_docket(DEMO_DOCKET)
         _state["claims"] = docket.claims
         _state["question"] = docket.question
-        _sync_prepublish(new_run=True)
     _state["running"] = True
     try:
-        runner = Runner(_store(), checksum_fn=make_checksum_fn(CORPUS))
-        if req is not None and req.accept_bm25_fallback:
-            # I-02(#679):预检知情降级——本跑整臂 bm25_fallback(轨迹字段),
-            # 不改 PRODUCTION_RETRIEVAL_MODE,也不写 set_retrieval_switch 运维开关。
-            runner.ctx.bm25_fallback_accepted = True
-        _state["run_ctx"] = runner.ctx
-        _state["budget"] = _budget_from_ctx(runner.ctx)
-        _sync_prepublish(new_run=True)  # 新 Run 进发前列表;状态=复验中
-        try:
-            result = runner.run(list(_state["claims"]))
-        except Exception as exc:
-            mapped = describe_llm_transport_error(exc)
-            if mapped is not None:
-                return JSONResponse(mapped, status_code=502)
-            logger.exception(
-                "复验主链未捕获异常 claim_count=%s", len(_state["claims"])
-            )
-            return JSONResponse(
-                {"error_code": "REVERIFY_INTERNAL",
-                 "error": ("复验执行失败(内部错误已记入服务端日志,界面不回显堆栈)。"
-                           "怎么办:稍后重试;若反复出现,请记录时间与操作步骤后反馈。")},
-                status_code=500,
-            )
-        _state["trajectory"] = result.trajectory_path
-        _state["budget"] = _budget_from_ctx(runner.ctx)  # 会话内保留用量摘要(DEM-4)
-        # DEM-5:记录零命中清单供 UI 强提示;不改写任何主张 status
-        _state["retrieve_zero_hits"] = list(result.retrieve_zero_hits)
-        rnd = _latch().enter_round(_state["claims"])  # 无红/黄灯则 thread_id=None 直接完成
-        _state["latch"] = {"thread_id": rnd.thread_id, "pending": rnd.pending}
-        run_row = _sync_prepublish(new_run=False)
-        _write_run_snapshot()  # I-01(#678):复验结束,判定面落盘
-    finally:
+        # 新 Run 进发前列表(状态=复验中),active_run_id 定线与 Phase 0 同轨
+        _sync_prepublish(new_run=True)
+    except Exception:
         _state["running"] = False
-        _state["run_ctx"] = None
-    store = _store()
-    extras = _detail_extras(store)
-    return JSONResponse({
-        "claims": _claims_for_ui(store),
-        "trajectory": str(result.trajectory_path),
-        "audit": _audit_for_ui(),
-        "retrieval_used": result.retrieval_used,
-        "steps_by_claim": result.steps_by_claim,
-        "decoding": result.decoding.__dict__,
-        "latch": _state["latch"],
-        "retrieve_zero_hits": list(_state["retrieve_zero_hits"]),
-        "budget": dict(_state["budget"]),
-        "run": run_row,
-        **extras,
-    })
+        raise
+    run_id = _state["active_run_id"]
+    _new_run_task(run_id, total=len(_state["claims"]),
+                  accept_bm25=bool(req is not None and req.accept_bm25_fallback))
+    try:
+        threading.Thread(target=_run_reverify_task, args=(run_id,),
+                         daemon=True).start()
+    except Exception:
+        _state["running"] = False
+        _reset_run_task()
+        raise
+    return JSONResponse({"run_id": run_id, "status": "running"})
+
+
+@app.get("/api/reverify/progress")
+def api_reverify_progress(run_id: str = Query(...)) -> JSONResponse:
+    """I-10(#696)轮询面:status ∈ {running, cancelling, cancelled, done, failed}。
+
+    done 附完整结果负载(与原同步响应同形状);failed 附中文错误负载;
+    GET 恒 200(任务存在即资源存在),错误语义走 body 字段,错误码不抬 HTTP 层。
+    """
+    with _RUN_TASK_LOCK:
+        task = _RUN_TASK
+        if task is None or task["run_id"] != run_id:
+            return JSONResponse({"error": f"未找到复验任务 {run_id}"},
+                                status_code=404)
+        body: dict = {"run_id": task["run_id"], "status": task["status"],
+                      "done": task["done"], "total": task["total"],
+                      "current_claim_id": task["current_claim_id"]}
+        if task["status"] == "done" and task["result"]:
+            body.update(task["result"])
+        elif task["status"] == "failed" and task["error"]:
+            body.update(task["error"])
+    return JSONResponse(body)
+
+
+@app.post("/api/reverify/cancel")
+def api_reverify_cancel() -> JSONResponse:
+    """I-10(#696)整轮取消:置 cancelling + cancel_event;协作点 = 主张边界。
+
+    收口(后台线程):已完成主张结果保留;不进 latch;清 active_run,无半残 run。
+    """
+    with _RUN_TASK_LOCK:
+        task = _RUN_TASK
+        if task is None or task["status"] in ("done", "failed", "cancelled"):
+            return JSONResponse({"error": "当前没有可取消的复验"}, status_code=409)
+        task["cancel_event"].set()
+        task["status"] = "cancelling"
+        run_id = task["run_id"]
+    return JSONResponse({"run_id": run_id, "status": "cancelling"})
 
 
 class DecideRequest(BaseModel):

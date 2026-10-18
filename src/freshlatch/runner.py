@@ -533,12 +533,31 @@ class Runner:
                               critic_doctrine=self._doctrine.get("devil_advocate"),
                               auditor_doctrine=self._doctrine.get("freshness_audit"))
 
-    def run(self, claims: list[Claim], *, trajectory_dir: str | Path = "reports/trajectories") -> RunResult:
+    def run(
+        self,
+        claims: list[Claim],
+        *,
+        trajectory_dir: str | Path = "reports/trajectories",
+        progress=None,
+        should_cancel=None,
+    ) -> RunResult:
+        """逐主张复验并落盘轨迹。
+
+        I-10(#696)可选协作钩子(整轮取消/进度轮询;缺省 None 不改变任何行为):
+        - progress(current=claim_id) 在主张开跑前回调;progress(done=N) 在主张收口后回调。
+        - should_cancel() 在每个主张边界检查;返回 True 则整轮提前退出,
+          已完成主张的判定保留(与取消语义一致),其余主张不处理。
+        """
         from freshlatch.gates.basis_rot import apply_rot_if_mismatch
 
         decisions: dict[str, ClaimDecision] = {}
         steps_by_claim: dict[str, int] = {}
+        completed = 0
         for claim in claims:
+            if should_cancel is not None and should_cancel():
+                break
+            if progress is not None:
+                progress(current=claim.claim_id)
             # 档 3b:复验入口机械前置——fresh∧basis 不符则掉灯,本轮不进 Lead
             rot = apply_rot_if_mismatch(self.ctx.store, claim, self._checksum_fn)
             if rot.outcome == "applied":
@@ -553,12 +572,18 @@ class Runner:
                 self.ctx.emit({"type": "claim_result", "claim_id": claim.claim_id,
                                "status": claim.status, "reason": claim.reason,
                                "auditor_verdict": None, "basis_rot": True})
+                completed += 1
+                if progress is not None:
+                    progress(done=completed)
                 continue
             lead = self._spawn_lead(claim)
             decision = lead.run()
             decisions[claim.claim_id] = decision
             steps_by_claim[claim.claim_id] = lead.steps_used
             self._finalize(claim, decision)
+            completed += 1
+            if progress is not None:
+                progress(done=completed)
 
         tdir = Path(trajectory_dir)
         tdir.mkdir(parents=True, exist_ok=True)
@@ -788,7 +813,9 @@ class Runner:
             for ev in self.ctx.events:
                 f.write(json.dumps(ev, ensure_ascii=False, default=str) + "\n")
             for c in claims:
-                d = decisions[c.claim_id]
+                d = decisions.get(c.claim_id)
+                if d is None:
+                    continue  # I-10(#696):整轮取消提前退出,未处理主张无判定行
                 # 生产终态：字段集与语义不得因 I1 挂标漂移
                 f.write(json.dumps({"type": "claim_final", "claim_id": c.claim_id,
                                     "statement": c.statement, "status": c.status,
