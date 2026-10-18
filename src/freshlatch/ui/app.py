@@ -145,6 +145,7 @@ _state: dict = {"claims": [], "question": "", "trajectory": None, "running": Fal
                 "retrieve_zero_hits": [],  # DEM-5:本轮 retrieve 空命中;仅提示,不改写判定
                 "active_run_id": None,  # 发前列表当前绑定 Run(#173)
                 # #229:Run 绑定瞬间的 T1 checksum 快照;导出时与当前比对机械新鲜度
+                # #712(I-13):checksum 于 T1 来源 snapshot 写入即算,此处只钉对照副本
                 "bound_t1_checksums": {}}
 _prepublish = PrepublishRegistry()
 _t1: T1SourceSession | None = None
@@ -368,7 +369,12 @@ def _current_t1_checksum_map(store: SQLiteStore | None = None) -> dict[str, str]
 
 
 def _bind_run_checksums(store: SQLiteStore | None = None) -> None:
-    """把当前 T1 checksum 钉到 active Run(新 Run / 首次绑定时)。"""
+    """把当前 T1 checksum 钉到 active Run(新 Run / 首次绑定时)。
+
+    I-13(决议 #706 / #712):首次指纹时刻已前移到 T1 来源 snapshot 写入
+    (粘贴确认/上传/合成包/薄 URL 均写入即算);此处仅是发前导出的机械
+    新鲜度对照快照,不再是 checksum 的诞生时刻。
+    """
     _state["bound_t1_checksums"] = _current_t1_checksum_map(store)
 
 
