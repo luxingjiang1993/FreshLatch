@@ -110,8 +110,9 @@ def test_no_full_mckinsey_pdf_corpus_in_repo():
 def test_readme_and_product_docs_nail_advisor_vertical():
     root = repo_root()
     readme = (root / "README.md").read_text(encoding="utf-8")
-    assert "单一垂直" in readme
-    assert "顾问报告" in readme
+    # 英文门面写 Single vertical / advisor reports。中文钉留在 docs/product，不回写进 README。
+    assert "Single vertical" in readme
+    assert "advisor reports" in readme
     # thesis-1 / QuoteTTL 不算第二垂直
     pack_readme = (PACK_DIR / "README.md").read_text(encoding="utf-8")
     assert "顾问报告" in pack_readme

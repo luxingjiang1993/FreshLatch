@@ -136,13 +136,14 @@ def test_unfilled_primary_rates_freeze_five_surfaces():
     result = _lf(_RESULT)
     cells = _primary_false_accept(result)
     assert _BASELINE == "101c81e0b631d53ecf4d1db913a2ab6ae86e43e5"
+    # #401：三行 false-accept 仍是「未填」时，五处表面相对 101c81e 冻结。
+    # 抽检一致率、评委 κ、延迟、成本都不解开该冻结。三行已填则不拦文档门面。
     if _rates_unfilled(result):
         assert all(value != "0" for value in cells.values())
-    # 抽检一致率、评委 κ、延迟、成本都不改这五处。
+        _assert_frozen_surfaces()
     assert "Cohen's κ" in result
     assert "qwen-deepseek" in result
     assert "抽检一致率" in result
-    _assert_frozen_surfaces()
 
 
 def test_k_zero_false_accept_is_undefined_and_surfaces_stay_frozen():
