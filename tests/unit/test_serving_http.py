@@ -14,6 +14,7 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 
+from freshlatch.api_errors import INTERNAL_ERROR, REQUEST_VALIDATION_FAILED
 import freshlatch.serving.app as serving
 from freshlatch.serving.app import (
     SERVING_API_KEY_HEADER,
@@ -46,6 +47,71 @@ def _auth(token: str, *, scheme: str = "bearer") -> dict[str, str]:
     if scheme == "bearer":
         return {"Authorization": f"Bearer {token}"}
     return {SERVING_API_KEY_HEADER: token}
+
+
+def test_error_contract_unified_4xx(client, monkeypatch):
+    """决议 #705 I-12:4xx 统一 message(中文)+error_code(STABLE_SNAKE)+hint。
+
+    `code` 为旧键兼容别名,与 error_code 同值;HTTP 状态码语义不变。
+    """
+    monkeypatch.setenv(SERVING_KEYS_ENV, "key-a=tenant-a")
+    r401 = client.get("/api/session", headers=_auth("wrong"))
+    assert r401.status_code == 401
+    body = r401.json()
+    assert body["ok"] is False
+    assert body["error_code"] == SERVING_UNAUTHORIZED
+    assert body["code"] == body["error_code"]
+    assert body["message"] == "缺少或错误的服务端凭证"
+    assert body["hint"]
+
+    r403 = client.get(
+        "/api/session", params={"tenant_id": "tenant-b"}, headers=_auth("key-a"),
+    )
+    assert r403.status_code == 403
+    b403 = r403.json()
+    assert b403["ok"] is False
+    assert b403["error_code"] == SERVING_TENANT_MISMATCH
+    assert b403["code"] == b403["error_code"]
+    assert b403["message"]
+    assert b403["hint"]
+
+
+def test_validation_error_replaces_default_422(client, monkeypatch):
+    """默认 422 / 请求体解析失败 → 中文统一契约;无英文 detail,细节只进日志。"""
+    monkeypatch.setenv(SERVING_KEYS_ENV, "key-a=tenant-a")
+    bad = client.post(
+        "/api/session",
+        data="{not-json",
+        headers={"Content-Type": "application/json"},
+    )
+    assert bad.status_code == 422
+    body = bad.json()
+    assert body["ok"] is False
+    assert body["error_code"] == REQUEST_VALIDATION_FAILED
+    assert body["message"]
+    assert body["hint"]
+    assert "detail" not in body
+
+
+def test_unhandled_exception_is_safe_500(client, monkeypatch):
+    """安全 5xx:中文 + 稳定 code,无堆栈;异常细节不进响应体。"""
+    monkeypatch.setenv(SERVING_KEYS_ENV, "key-a=tenant-a")
+
+    def _boom(request, client_tenants):
+        raise RuntimeError("boom-secret-trace")
+
+    monkeypatch.setattr(serving, "authorize_session", _boom)
+    # ServerErrorMiddleware 处理后仍会向上重抛,5xx 断言须关 raise_server_exceptions
+    safe_client = TestClient(app, raise_server_exceptions=False)
+    r = safe_client.get("/api/session", headers=_auth("key-a"))
+    assert r.status_code == 500
+    body = r.json()
+    assert body["ok"] is False
+    assert body["error_code"] == INTERNAL_ERROR
+    assert body["message"] == "服务内部错误"
+    assert body["hint"]
+    assert "Traceback" not in r.text
+    assert "boom-secret-trace" not in r.text
 
 
 def test_missing_auth_is_401_even_with_client_tenant(client):

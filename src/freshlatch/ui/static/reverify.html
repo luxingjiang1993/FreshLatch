@@ -1043,12 +1043,32 @@ async function exportClientMemo(){
     method: 'POST'
   });
   if(!r.ok){
-    let detail = '拒绝导出';
-    try{
-      const j = await r.json();
-      detail = (j.code||'') + (j.message?(' · '+j.message):'');
-    }catch(e){}
-    if(msg) msg.textContent = detail;
+    // 决议 #705 I-12:职人只看 message+hint;error_code 次要、可复制
+    let j = null;
+    try{ j = await r.json(); }catch(e){}
+    const main = (j && (j.message || j.error)) || '拒绝导出';
+    const hintText = (j && j.hint) || '';
+    const ec = (j && (j.error_code || j.code)) || '';
+    if(msg){
+      msg.textContent = main;
+      if(hintText){
+        const h = document.createElement('span');
+        h.className = 'hint';
+        h.style.display = 'block';
+        h.textContent = hintText;
+        msg.appendChild(h);
+      }
+      if(ec){
+        const c = document.createElement('code');
+        c.textContent = ec;
+        c.title = '点击复制 error_code';
+        c.style.cssText = 'cursor:pointer;font-size:12px;color:#57606a;margin-left:6px';
+        c.onclick = function(){
+          if(navigator.clipboard) navigator.clipboard.writeText(ec);
+        };
+        msg.appendChild(c);
+      }
+    }
     return;
   }
   const text = await r.text();
