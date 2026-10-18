@@ -112,6 +112,9 @@ BADGE = {
     "void": ("void · 已作废", "#8250df"),
 }
 MAIN_BUTTON_TEXT = "一键样例"  # #663 首页主 CTA。复验动作由样例串联进入
+# I-11(#710 / 决议 #704):SYNTHETIC 在职人视图换成短中文;审计视图保留原标签。
+SYN_BADGE_FULL_TEXT = "SYNTHETIC · 合成语料,非真实客户数据"
+SYN_BADGE_SHORT_TEXT = "当前为演示合成包"
 VIEW_MODE_DEFAULT = "craftsman"  # DEM-6:默认职人视图(去角色化成交面)
 # HTML 模板占位:index() 注入 VIEW_MODE_DEFAULT,避免 Python/JS 默认值漂移
 _VIEW_MODE_TOKEN = "__VIEW_MODE_DEFAULT__"
@@ -1502,6 +1505,9 @@ def index(view: str = Query(default="")) -> str:
         page = page.replace('id="view-craftsman" class="on"', 'id="view-craftsman"')
         page = page.replace('id="view-audit"', 'id="view-audit" class="on"', 1)
         page = page.replace('id="audit-panel"', 'id="audit-panel" class="visible"', 1)
+    else:
+        # I-11(#710):职人 SYNTHETIC 短中文;审计视图保留原标签(上方分支不动)
+        page = page.replace(SYN_BADGE_FULL_TEXT, SYN_BADGE_SHORT_TEXT, 1)
     audit = _audit_for_ui()
     badge_html = _render_craftsman_badges(audit["badges"]) if mode == "craftsman" else ""
     page = page.replace(_CRAFTSMAN_BADGES_TOKEN, badge_html)

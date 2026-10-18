@@ -156,6 +156,15 @@
  #t1-checksums.craftsman-soft{display:block}
  /* #664 职人主路径藏协议串;展开「高级/证据」仍可见。不改判定。 */
  html[data-view="craftsman"] .protocol-inline{display:none}
+/* I-11(#710 / 决议 #704):职人首屏降噪——预算计数/课题标签/导入稿入口只在审计视图露出。
+   元素保留在 DOM(测试 seam 与审计视图不变),职人仅 CSS 隐藏,不删功能。 */
+html[data-view="craftsman"] #budget-progress{display:none}
+html[data-view="craftsman"] #pack-badge{display:none}
+html[data-view="craftsman"] #btn-import-draft{display:none}
+/* I-11:职人首屏的 T1 白话状态条(就绪/缺源料);三卡面板留在审计视图 */
+#t1-status-short{margin:0 16px 10px;background:#fff;border:1px solid #d0d7de;border-radius:6px;
+                 padding:8px 12px;font-size:14px;color:#0a2540}
+#t1-status-short[data-ready="0"]{background:#fff8c5;border-color:#d4a72c}
  #vernacular-lists{margin:0 16px 10px;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
  #vernacular-lists h2{grid-column:1 / -1;margin:0;font-size:16px;color:#0a2540}
  .vernacular-card{background:#fff;border:1px solid #d0d7de;border-radius:6px;padding:10px 12px}
@@ -229,7 +238,7 @@
  </div>
  <span id="status"></span>
  <span style="flex:1"></span>
- <button class="ghost" type="button" onclick="toggleImportPanel()">主张导入稿</button>
+ <button class="ghost" type="button" id="btn-import-draft" onclick="toggleImportPanel()">主张导入稿</button>
  <button class="ghost" type="button" onclick="importDocket()">导入合成 docket(高级)</button>
  <button class="big" id="btn-run" onclick="startSample()">一键样例</button>
 </header>
@@ -685,6 +694,22 @@ async function resetSession(){
 }
 async function refreshT1Source(){
   T1SRC = await (await fetch('/api/t1-source')).json();
+}
+function t1KindLabel(kind){
+  // I-11(#710):职人首屏白话标签;协议名不进主路径
+  const names = {upload:'上传语料包', paste:'粘贴变更要点',
+                 synthetic:'内置合成评测包', url:'薄 URL'};
+  return names[kind] || '未选定';
+}
+function renderT1StatusShort(){
+  // I-11(#710 / 决议 #704):职人首屏只露白话 T1 状态(就绪/缺源料);
+  // 三卡面板(上传/粘贴/合成/薄 URL)留在审计视图,Activation 主路径走「一键样例」。
+  const ready = !!T1SRC.ready;
+  const text = ready
+    ? 'T1 来源已就绪（' + t1KindLabel(T1SRC.kind) + '）'
+    : 'T1 来源缺源料：点「一键样例」直接用演示包，或切审计视图上传/粘贴材料';
+  return '<div id="t1-status-short" role="status" data-ready="'+(ready?'1':'0')+'">'
+       + esc(text) + '</div>';
 }
 function renderT1Source(){
   // T1 来源三卡(ADR-0016):合法入口全集;粘贴须确认入库;合成标明 synthetic
@@ -1285,7 +1310,10 @@ function renderClaims(){
   renderClaimLedger();
   const el = document.getElementById('claims');
   if(!el) return;
-  let h = '<div id="import-panel" class="'+(IMPORT_PANEL_OPEN?'open':'')+'">'
+  let h = '';
+  // I-11(#710):导入稿全文只在审计视图露出;职人不默认展开
+  if(VIEW_MODE === "audit"){
+    h += '<div id="import-panel" class="'+(IMPORT_PANEL_OPEN?'open':'')+'">'
         + '<b>主张导入稿</b>'
         + '<div class="hint">每条以 <code>## claim_id</code> 起头、其后正文一段;'
         + '缺 id 时系统分配 <code>c-import-N</code>。只导入已签发主张,不做散文抽取或模型切分。</div>'
@@ -1295,7 +1323,9 @@ function renderClaims(){
         + '<button type="button" onclick="importClaimDraft()">导入主张导入稿</button> '
         + '<button type="button" onclick="toggleImportPanel()">收起</button>'
         + '</div></div>';
-  h += renderT1Source();
+  }
+  // I-11:职人只露白话 T1 状态;三卡面板留在审计视图(不改 Activation 主路径)
+  h += (VIEW_MODE === "audit") ? renderT1Source() : renderT1StatusShort();
   h += renderZeroHitBanner();
   // #664:协议旁注改挂「高级/证据」,职人主路径不铺
   h += '<div id="banner-wrap"></div>';
