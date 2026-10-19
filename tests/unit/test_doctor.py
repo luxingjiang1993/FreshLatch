@@ -287,11 +287,14 @@ def test_cli_module_offline_smoke(weights_ready, clean_proxy_env):
 
     env = {k: v for k, v in dict(os.environ).items() if k not in PROXY_VARS}
     env["PYTHONUTF8"] = "1"  # 管道 stdout 在 Windows 默认 cp936,钉死 UTF-8 使编码检查确定
+    # 父侧解码钉死 utf-8(CI runner locale 为 cp1252,text=True 会按 locale 解码炸掉)。
     proc = subprocess.run(
         [sys.executable, "-m", "freshlatch.doctor", "--offline"],
-        capture_output=True, text=True, timeout=60, env=env,
+        capture_output=True, timeout=60, env=env,
     )
-    assert proc.returncode == 0, proc.stdout + proc.stderr
-    assert "环境自检" in proc.stdout
-    assert "网络可达" in proc.stdout
-    assert "全部通过" in proc.stdout
+    out = proc.stdout.decode("utf-8")
+    err = proc.stderr.decode("utf-8", errors="replace")
+    assert proc.returncode == 0, out + err
+    assert "环境自检" in out
+    assert "网络可达" in out
+    assert "全部通过" in out
