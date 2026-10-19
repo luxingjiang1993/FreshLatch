@@ -105,9 +105,10 @@ Interview / demo / external copy: only [`docs/ops/口径一页纸.md`](docs/ops/
 | Retrieval default decision | [`docs/evidence/retrieval-decision.md`](docs/evidence/retrieval-decision.md) |
 | Local embed / rerank warm-up | [`docs/ops/local-embed.md`](docs/ops/local-embed.md) |
 | Specs | [`docs/spec/README.md`](docs/spec/README.md) |
-| Evidence | [`docs/evidence/`](docs/evidence/) |
 | License | [`LICENSE`](LICENSE) |
 | Agent norms | [`AGENTS.md`](AGENTS.md) |
+
+附录：[`docs/evidence/`](docs/evidence/)
 
 ---
 
