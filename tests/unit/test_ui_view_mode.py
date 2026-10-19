@@ -138,3 +138,67 @@ def test_i11_served_html_synthetic_label():
     audit = TestClient(app).get("/?view=audit").text
     assert SYN_BADGE_FULL_TEXT in audit
     assert SYN_BADGE_SHORT_TEXT not in audit
+
+
+# -- #735 IR-PACK P0:AC0.2 首屏状态条 / AC0.3 面试视图 -------------------------------
+
+
+def test_ac02_first_screen_experiment_status_line():
+    """AC0.2:首屏一句「主实验未立 · Sheet=工具」;中性灰条,不压主 CTA。"""
+    assert 'id="ir-pack-banner"' in HTML_PAGE
+    assert "主实验未立 · Sheet=工具" in HTML_PAGE
+    html = TestClient(app).get("/").text
+    assert "主实验未立 · Sheet=工具" in html
+    assert "主实验未立" not in re.search(
+        r'id="btn-run"[^>]*>([^<]*)<', html
+    ).group(1)  # 主 CTA 文案不被压
+
+
+def test_ac03_interview_view_mode_exists_and_default_hidden():
+    """AC0.3:面试视图可切换;默认只露 Sheet+HumanLatch,运维/检索面板默认隐藏。"""
+    assert 'id="view-interview"' in HTML_PAGE
+    assert 'setViewMode(&quot;interview&quot;)' in HTML_PAGE
+    # 默认隐藏规则(保留在 DOM,不删功能)
+    for rule in (
+        'html[data-view="interview"] #audit-panel{display:none}',
+        'html[data-view="interview"] #advanced-evidence{display:none}',
+        'html[data-view="interview"] #budget-progress{display:none}',
+        'html[data-view="interview"] #btn-import-draft{display:none}',
+    ):
+        assert rule in HTML_PAGE, f"缺面试隐藏规则: {rule}"
+    # 可开关打开
+    assert "function toggleInterviewPanels(" in HTML_PAGE
+    assert 'id="btn-interview-panels"' in HTML_PAGE
+    assert 'html[data-view="interview"].panels-open #audit-panel{display:block}' in HTML_PAGE
+    assert 'html[data-view="interview"].panels-open #advanced-evidence{display:block}' in HTML_PAGE
+
+
+def test_ac03_served_interview_html():
+    """AC0.3:/?view=interview 注入面试态;审计面板不默认展开;SYNTHETIC 短中文。"""
+    from freshlatch.ui.app import SYN_BADGE_FULL_TEXT, SYN_BADGE_SHORT_TEXT
+
+    html = TestClient(app).get("/?view=interview").text
+    assert 'data-view="interview"' in html
+    assert 'id="view-interview" class="on"' in html
+    assert 'id="audit-panel" class="visible"' not in html
+    assert SYN_BADGE_SHORT_TEXT in html
+    assert SYN_BADGE_FULL_TEXT not in html
+
+
+def test_ac03_default_view_unchanged():
+    """AC0.3 不改默认视图:默认仍是职人(DEM-6 红线),面试是显式开关。"""
+    assert VIEW_MODE_DEFAULT == "craftsman"
+    html = TestClient(app).get("/").text
+    assert 'id="view-craftsman" class="on"' in html
+    assert 'id="view-interview" class="on"' not in html
+
+
+def test_ac01_claim_card_uses_external_reason_with_collapsible_diagnostic():
+    """AC0.1:用户面渲染 external_reason;机器原文进可折叠诊断;审计视图直出原文。"""
+    assert "c.external_reason" in HTML_PAGE
+    assert 'details class="diagnostic"' in HTML_PAGE
+    assert '机器诊断(内部标记,可折叠)' in HTML_PAGE
+    assert 'VIEW_MODE === "audit"' in HTML_PAGE  # 审计视图是诊断面,直出原文
+    # 黑话不直出用户面:JS 不得内嵌角色专名(由投影层清洗)
+    for role in ("Lead", "Critic", "Auditor"):
+        assert role not in HTML_PAGE

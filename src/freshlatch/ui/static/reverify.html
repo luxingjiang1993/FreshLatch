@@ -161,6 +161,30 @@
 html[data-view="craftsman"] #budget-progress{display:none}
 html[data-view="craftsman"] #pack-badge{display:none}
 html[data-view="craftsman"] #btn-import-draft{display:none}
+/* #735 AC0.3(IR-PACK):面试视图默认只露 Sheet+HumanLatch;
+   运维/检索面板(审计面/高级证据/预算/包标签/导入稿/徽章槽)默认隐藏,
+   保留在 DOM,「运维/检索面板」开关一键打开;不删功能、不改闸。 */
+html[data-view="interview"] #audit-panel{display:none}
+html[data-view="interview"] #advanced-evidence{display:none}
+html[data-view="interview"] #budget-progress{display:none}
+html[data-view="interview"] #pack-badge{display:none}
+html[data-view="interview"] #btn-import-draft{display:none}
+html[data-view="interview"] #craftsman-badges{display:none}
+html[data-view="interview"] #btn-interview-panels{display:inline-block}
+html[data-view="craftsman"] #btn-interview-panels,
+html[data-view="audit"] #btn-interview-panels{display:none}
+html[data-view="interview"].panels-open #audit-panel{display:block}
+html[data-view="interview"].panels-open #advanced-evidence{display:block}
+html[data-view="interview"].panels-open #budget-progress{display:block}
+html[data-view="interview"].panels-open #pack-badge{display:inline}
+html[data-view="interview"].panels-open #btn-import-draft{display:inline-block}
+html[data-view="interview"].panels-open #craftsman-badges{display:block}
+/* #735 AC0.2:首屏一句「主实验未立 · Sheet=工具」;中性灰条,不压主 CTA,不用红黄 */
+#ir-pack-banner{margin:0 16px 10px;padding:6px 12px;font-size:13px;color:#57606a;
+                background:#f6f8fa;border:1px solid #d0d7de;border-radius:6px}
+/* #735 AC0.1:机器理由(闸码/ADR)进可折叠诊断,不直出用户面 */
+details.diagnostic{margin-top:4px;font-size:12px;color:#57606a}
+details.diagnostic summary{cursor:pointer;color:#6e7781}
 /* I-11:职人首屏的 T1 白话状态条(就绪/缺源料);三卡面板留在审计视图 */
 #t1-status-short{margin:0 16px 10px;background:#fff;border:1px solid #d0d7de;border-radius:6px;
                  padding:8px 12px;font-size:14px;color:#0a2540}
@@ -230,7 +254,9 @@ html[data-view="craftsman"] #btn-import-draft{display:none}
  <span class="view-toggle" role="group" aria-label="视图密度">
   <button type="button" id="view-craftsman" class="on" onclick="setViewMode(&quot;craftsman&quot;)">职人视图</button>
   <button type="button" id="view-audit" onclick="setViewMode(&quot;audit&quot;)">审计视图</button>
+  <button type="button" id="view-interview" onclick="setViewMode(&quot;interview&quot;)">面试视图</button>
  </span>
+ <button class="ghost" type="button" id="btn-interview-panels" onclick="toggleInterviewPanels()">运维/检索面板</button>
  <div id="budget-progress" aria-live="polite" title="护栏预算进度(α-demo)">
   <div class="budget-row">
    <span class="budget-label">步数</span>
@@ -249,6 +275,7 @@ html[data-view="craftsman"] #btn-import-draft{display:none}
  <button class="ghost" type="button" onclick="importDocket()">导入合成 docket(高级)</button>
  <button class="big" id="btn-run" onclick="startSample()">一键样例</button>
 </header>
+<div id="ir-pack-banner" role="note">主实验未立 · Sheet=工具</div>
 <div id="reverify-progress" role="status">正在用新材料核对旧结论（大约两分钟）</div>
 <button class="ghost" type="button" id="btn-cancel-run" onclick="cancelReverifyRun()" hidden>取消复验</button>
 <div id="audit-panel" aria-live="polite">
@@ -436,13 +463,15 @@ async function reloadClaimsFromServer(){
 
 function setViewMode(mode){
   // 只改呈现密度:不提交人审、不触发复验端点
-  VIEW_MODE = (mode === "audit") ? "audit" : "craftsman";
+  VIEW_MODE = (mode === "audit") ? "audit"
+            : (mode === "interview") ? "interview" : "craftsman";
   document.documentElement.setAttribute("data-view", VIEW_MODE);
   document.getElementById("view-craftsman").classList.toggle("on", VIEW_MODE === "craftsman");
   document.getElementById("view-audit").classList.toggle("on", VIEW_MODE === "audit");
+  document.getElementById("view-interview").classList.toggle("on", VIEW_MODE === "interview");
   renderViewChrome();
   renderClaims();  // 切出审计时清掉 override 过滤后的卡片子集,只改呈现
-  // 切回职人时收起状态栏工程细节;有本轮结果则按密度重写短状态
+  // 切回职人/面试时收起状态栏工程细节;有本轮结果则按密度重写短状态
   if(STATE.trajectory){
     document.getElementById("status").textContent =
       (VIEW_MODE === "audit")
@@ -453,6 +482,12 @@ function setViewMode(mode){
     document.getElementById("status").textContent =
       (VIEW_MODE === "audit") ? STATUS_RUNNING_AUDIT : STATUS_RUNNING_CRAFTSMAN;
   }
+}
+function toggleInterviewPanels(){
+  // #735 AC0.3:面试模式下运维/检索面板默认隐藏;开关只改呈现,不碰任何 API
+  const on = document.documentElement.classList.toggle("panels-open");
+  const btn = document.getElementById("btn-interview-panels");
+  if(btn) btn.classList.toggle("on", on);
 }
 function showSampleProgress(){
   // #663:复验进行中露出白话进度,并写上大约两分钟的预期
@@ -1407,7 +1442,20 @@ function renderClaims(){
     if(c.last_confirmed_at) h += '<span class="badge" style="color:#1a7f37">续命 · '
                     + esc(c.last_confirmed_at)+'</span>';
     h += '<div>'+esc(c.statement)+'</div>';
-    if(c.reason) h += '<div class="reason">'+esc(c.reason)+'</div>';
+    // #735 AC0.1:用户面默认吃 external_reason(人话,无闸码/ADR/角色名);
+    // 机器原文进可折叠诊断;审计视图是诊断面,仍直出原文
+    const rawReason = (typeof c.reason === 'string') ? c.reason : '';
+    if(VIEW_MODE === "audit"){
+      if(rawReason) h += '<div class="reason">'+esc(rawReason)+'</div>';
+    } else {
+      const userReason = (typeof c.external_reason === 'string' && c.external_reason)
+        ? c.external_reason : rawReason;
+      if(userReason) h += '<div class="reason">'+esc(userReason)+'</div>';
+      if(rawReason && rawReason !== userReason){
+        h += '<details class="diagnostic"><summary>机器诊断(内部标记,可折叠)</summary>'
+           + '<div class="reason">'+esc(rawReason)+'</div></details>';
+      }
+    }
     h += '<div class="ev protocol-inline">';
     // I-04(#695):主文渲可读句;锚点内附原 id <code>(选中复制可得完整 id),
     // 悬停 title 保留完整原 id;审计/时间线面仍显示原串

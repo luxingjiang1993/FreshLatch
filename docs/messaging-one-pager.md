@@ -26,6 +26,7 @@ Through about 2027-01-14, if still missing (a) a regressible refusal-edge fixtur
 - `PRODUCTION_RETRIEVAL_MODE = hybrid+rerank` (local `BAAI/bge-reranker-base`, reranks hybrid top-10)
 - BM25 only via `set_retrieval_switch("bm25")` fallback; **not** the production default
 - Hard-Gold / #259 evidence is citable; **not** a closed statistical product pass
+- Interview/demo UI runs are **合成语料 · 本机 demo** only (#735) — never present them as a customer deployment or live service
 
 ---
 
