@@ -1,6 +1,6 @@
 ﻿# AGENTS.md — slim (with Agent Guards + Matt Pocock)
 
-Keep this short. Per-ticket state lives in `tasks/*.md` (or Matt’s tracker), not here.
+Keep this short. Per-ticket state lives in Matt's tracker; historical ticket bodies are archived under `docs/_archive/2026-10/tasks/` (DOC-TREE-C #729), not here.
 
 ## Role
 - **Human**: goal, Trust, ship / merge

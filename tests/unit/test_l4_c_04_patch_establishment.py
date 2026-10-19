@@ -93,7 +93,8 @@ NEW_TEXT = (
     MEASUREMENT,
     ROOT / "src" / "freshlatch" / "eval" / "patch_establishment.py",
     ROOT / "src" / "freshlatch" / "eval" / "__main__.py",
-    ROOT / "tasks" / "L4-C-04.md",
+    # DOC-TREE-C(#729):票正文 L4-C-04.md 随根 tasks/** 考古迁入 archive。
+    ROOT / "docs" / "_archive" / "2026-10" / "tasks" / "L4-C-04.md",
     Path(__file__),
 )
 
@@ -170,7 +171,7 @@ def test_docs_and_tests_omit_banned_needles() -> None:
 
 
 def test_new_pages_keep_superiority_and_l5_negated() -> None:
-    pages = (PREREG, RESULT, ROOT / "tasks" / "L4-C-04.md")
+    pages = (PREREG, RESULT, ROOT / "docs" / "_archive" / "2026-10" / "tasks" / "L4-C-04.md")
     for path in pages:
         for line in path.read_text(encoding="utf-8").splitlines():
             if any(token in line for token in ("优于 RARR", "优于 KPR", "结果乙", "L5")):

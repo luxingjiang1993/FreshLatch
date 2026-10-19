@@ -24,7 +24,8 @@ TICKET_PATHS = (
     "docs/agents/hooks/hooks.json",
     "docs/agents/hooks/deny_exit_2.py",
     "tests/unit/test_l4_sk_01.py",
-    "tasks/L4-SK-01.md",
+    # DOC-TREE-C(#729):根 tasks/** 考古已迁入 archive,票正文在归档副本。
+    "docs/_archive/2026-10/tasks/L4-SK-01.md",
 )
 
 
