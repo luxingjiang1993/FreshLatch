@@ -344,7 +344,7 @@ def test_docs_point_at_s7_and_ci_skips_probe():
     assert "chat completions" in connectivity
     assert "CI" in connectivity
     assert "不" in connectivity and "探针" in connectivity
-    status = (REPO_ROOT / "docs" / "plans" / "model-unified-mgmt" / "00-status.md").read_text(
+    status = (REPO_ROOT / "docs" / "_archive" / "2026-10" / "plans" / "model-unified-mgmt" / "00-status.md").read_text(
         encoding="utf-8"
     )
     assert "scripts/smoke_model_connectivity.py" in status
