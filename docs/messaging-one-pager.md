@@ -19,6 +19,8 @@
 **90-day kill (kills only the "product ready" narrative, not the portfolio):**  
 Through about 2027-01-14, if still missing (a) a regressible refusal-edge fixture, (b) ≥1 design-partner per-session log, and (c) min-6 weekly report continuous dry-runs → drop "product ready" talk; demote to engineering portfolio + L3 research track.
 
+Kill-trio status pointers (2026-10-20 · PHASE1-PACK #742): **(a) already in-repo** — `tests/eval/test_g2_should_abstain.py` + `tests/eval/fixtures/g2_should_abstain.json` (GOLD-TABLE v0, six refusal edges, CI-collected; runbook [`docs/ops/拒答行为夹具.md`](ops/拒答行为夹具.md)); fixture-green ≠ registered pass. **(b)** protocol = [`docs/ops/设计伙伴按次日志.md`](ops/设计伙伴按次日志.md), no sessions yet (§E; Owner outreach). **(c)** mechanism = [`docs/ops/min6-周报空转跑法.md`](ops/min6-周报空转跑法.md) + skeleton + first dry-run copy `docs/evidence/slo-min6/周报-2026-10-09至2026-10-15.md`.
+
 ---
 
 ## 2. Production defaults (docs aligned with code)
