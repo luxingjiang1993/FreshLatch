@@ -1,3 +1,5 @@
+> **SUPERSEDED：** 已归档口径 / 非现行真源。文中「生产默认仍为 bm25」是该次验收当时的记录，不是现行产品检索默认。现行入口 → docs/ops/口径一页纸.md + CONTEXT.md + docs/evidence/retrieval-decision.md
+
 # Phase I2 DoD close · smoke-level
 
 > **档：** 冒烟 / 面试安全轮（确定性硬门 + 注入 1× LLM 冒烟）。不报方差；不作渗透认证；**不是** Hard-Gold；**不是**安全通过率。  

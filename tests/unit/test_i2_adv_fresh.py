@@ -6,7 +6,7 @@ from freshlatch.gates.rule_gate import GateContext, GateDecision, rule_gate
 from freshlatch.models import Claim
 
 PAGE = Path("docs/evidence/i2/adv-fresh-t001.md")
-INDEX = Path("docs/research/adversarial/INDEX.md")
+INDEX = Path("docs/_archive/2026-10/research/adversarial/INDEX.md")
 ACCEPTANCE = Path("docs/evidence/i2/ACCEPTANCE.md")
 
 CLAIM_TEXT = "竞品席位标价仍为 120 元每月。"

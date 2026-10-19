@@ -12,7 +12,7 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parent.parent.parent
 ACCEPTANCE = REPO / "docs" / "evidence" / "beta-plus-3b" / "ACCEPTANCE.md"
 GOLD = REPO / "data" / "eval" / "gold.json"
-RESEARCH = next((REPO / "docs" / "research").glob("*3b*跨轮*"))
+RESEARCH = next((REPO / "docs" / "_archive" / "2026-10" / "research").glob("*3b*跨轮*"))
 
 
 def test_acceptance_pastes_prelock_invariant_verbatim():

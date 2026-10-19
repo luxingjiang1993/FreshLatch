@@ -1,3 +1,5 @@
+> **SUPERSEDED：** 已归档口径 / 非现行真源。文中「生产默认仍为 bm25」是该次验收当时的记录，不是现行产品检索默认。现行入口 → docs/ops/口径一页纸.md + CONTEXT.md + docs/evidence/retrieval-decision.md
+
 # Phase V1.5 ACCEPTANCE
 
 > **层身份：冒烟 / 对客 demo 层**（零 LLM CI 夹具可复跑）。不报方差；不作统计显著声明；**禁止**单次运行报 C vs T 显著。本页不是 Hard-Gold，不是改生产默认臂授权，不是论文 n≥30 结论。  
