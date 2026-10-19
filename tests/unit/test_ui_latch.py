@@ -48,8 +48,8 @@ def _seed_claims():
 
 
 def test_void_double_confirm_modal_present():
-    """§5.3 步骤 1:点「作废」→ 双重确认弹窗文案「作废后重跑不得再绿」。"""
-    assert "作废后重跑不得再绿" in appmod.HTML_PAGE
+    """§5.3 步骤 1:点「作废」→ 双重确认弹窗文案「作废后重跑不得再变有效」(#736 AC0.5 去颜色字)。"""
+    assert "作废后重跑不得再变有效" in appmod.HTML_PAGE
     assert 'id="modal"' in appmod.HTML_PAGE
     assert "confirmVoid" in appmod.HTML_PAGE
 

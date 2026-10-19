@@ -111,8 +111,9 @@ DEMO_DOCKET = REPO_ROOT / "data" / "t0_docket.json"
 CHECKPOINTS = REPO_ROOT / "data" / "checkpoints.db"
 
 BADGE = {
-    "fresh": ("绿 · 仍成立", "#1a7f37"),
-    "stale": ("红 · 已失效", "#cf222e"),
+    # #736 AC0.5:用户面不读颜色字——有效/失效直说(与 reverify.html 的 JS BADGE 同改)
+    "fresh": ("有效 · 仍成立", "#1a7f37"),
+    "stale": ("失效", "#cf222e"),
     "unknown": ("灰 · 证据不足", "#6e7781"),
     "void": ("void · 已作废", "#8250df"),
 }

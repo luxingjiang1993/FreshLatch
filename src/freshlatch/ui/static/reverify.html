@@ -289,6 +289,8 @@ details.diagnostic summary{cursor:pointer;color:#6e7781}
 <div id="disposition-bar" aria-live="polite">
  <span>包结论 · <span id="disp-value" class="disp">—</span></span>
  <span class="meta" id="disp-run-meta"></span>
+ <!-- #736 AC0.5:disposition 四值不改,只给人话注脚(勿发/需改) -->
+ <span class="meta">勿发=先别发 · 需补丁=改了再发</span>
  <label class="ack-needs-patch" id="ack-needs-patch-wrap" hidden>
   <input type="checkbox" id="ack-needs-patch">
   确认需补丁仍导出
@@ -310,7 +312,7 @@ details.diagnostic summary{cursor:pointer;color:#6e7781}
  </article>
  <article id="list-needs-you" class="vernacular-card" data-map="latch pending">
   <h3>要你确认</h3>
-  <p class="vernacular-def">系统拦下，需你拍板</p>
+  <p class="vernacular-def">系统拦下，需你拍板；拍板前整包闩住、发不出去</p>
   <ul id="list-needs-you-items"><li class="vernacular-empty">这条里还没有</li></ul>
   <p id="renew-blocked-note" role="status"></p>
  </article>
@@ -354,7 +356,7 @@ details.diagnostic summary{cursor:pointer;color:#6e7781}
 <div id="modal" class="modal"><div class="box">
   <p><b>作废确认</b></p>
   <p id="modal-claim" style="color:#57606a"></p>
-  <p>作废后重跑不得再绿,确认?</p>
+  <p>作废后重跑不得再变有效,确认?</p>
   <button class="ok" onclick="confirmVoid()">确认作废</button>
   <button onclick="closeModal()">取消</button>
 </div></div>
@@ -424,7 +426,8 @@ const STATUS_RUNNING_AUDIT = "正在用新材料核对旧结论（大约两分�
 const STATUS_DONE_AUDIT = "复验完成";  // 详情拼在 audit 面板,状态栏保持短句
 let REVERIFY_RUNNING = false;  // 样例进入复验后为真;切视图时用来保住白话进度
 function esc(s){return s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}
-const BADGE = {fresh:["绿 · 仍成立","#1a7f37"],stale:["红 · 已失效","#cf222e"],
+// #736 AC0.5:用户面不读颜色字——有效/失效直说(与 ui/app.py 的 BADGE 同改)
+const BADGE = {fresh:["有效 · 仍成立","#1a7f37"],stale:["失效","#cf222e"],
                unknown:["灰 · 证据不足","#6e7781"],void:["void · 已作废","#8250df"]};
 
 function renderBudget(b){
@@ -1762,7 +1765,7 @@ function openVoidConfirm(cid){
   document.getElementById('modal').style.display = 'block';
 }
 function closeModal(){ document.getElementById('modal').style.display = 'none'; MODAL_CLAIM = null; }
-function confirmVoid(){  // 双重确认弹窗的第二重(§5.3:点作废 → 弹窗「作废后重跑不得再绿,确认?」)
+function confirmVoid(){  // 双重确认弹窗的第二重(§5.3:点作废 → 弹窗「作废后重跑不得再变有效,确认?」)
   if(MODAL_CLAIM){
     PENDING_DECISIONS = PENDING_DECISIONS.filter(x=>x.claim_id!==MODAL_CLAIM);
     PENDING_DECISIONS.push({claim_id: MODAL_CLAIM, action: 'discard'});
