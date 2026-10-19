@@ -48,7 +48,7 @@ from freshlatch.prepublish import (  # noqa: E402
     list_t1_checksums,
     project_gate_results,
 )
-from freshlatch.patch_events import record_human_review_events  # noqa: E402
+from freshlatch.patch_events import iter_events, record_human_review_events  # noqa: E402
 from freshlatch.publish_hook import (  # noqa: E402
     HOOK_BIND_HOST_ENV,
     HOOK_CHECKSUM_DRIFT,
@@ -146,7 +146,10 @@ _state: dict = {"claims": [], "question": "", "trajectory": None, "running": Fal
                 "active_run_id": None,  # 发前列表当前绑定 Run(#173)
                 # #229:Run 绑定瞬间的 T1 checksum 快照;导出时与当前比对机械新鲜度
                 # #712(I-13):checksum 于 T1 来源 snapshot 写入即算,此处只钉对照副本
-                "bound_t1_checksums": {}}
+                "bound_t1_checksums": {},
+                # I-14(#713 / 决议 #707):本轮 token 记账(LLMClient 桶快照);
+                # None = 本轮尚无记账,审计指标折叠不显示 token 行
+                "token_usage": None}
 _prepublish = PrepublishRegistry()
 _t1: T1SourceSession | None = None
 ACTIVE_PACK: PackPaths
@@ -236,6 +239,39 @@ def _current_budget() -> dict:
     if _state.get("running") and _state.get("run_ctx") is not None:
         return _budget_from_ctx(_state["run_ctx"])
     return dict(_state.get("budget") or EMPTY_BUDGET)
+
+
+def _run_metrics(store) -> dict:
+    """I-14(#713 / 决议 #707):审计「本轮指标 / 记账」只读投影。
+
+    复用 active_run_id(不另造 run id);进行中数字与五态轮询同源(_current_budget),
+    完成后是会话内只读投影。token 仅在本轮已记账(_state["token_usage"])时出现;
+    不含美元成本,不提供 JSON/CSV 导出。
+    patch_events 行按本轮主张 claim_id 过滤(账本行不绑 run_id,这是诚实口径);
+    latch_log 行按 active_run_id 过滤。
+    """
+    run_id = _state.get("active_run_id")
+    budget = _current_budget()
+    claim_ids = {c.claim_id for c in (_state.get("claims") or [])}
+    patch_events_rows = 0
+    if claim_ids:
+        patch_events_rows = sum(
+            1 for e in iter_events(events_dir=_PATCH_EVENTS_DIR)
+            if str(e.get("claim_id") or "") in claim_ids
+        )
+    latch_log_rows = 0
+    if run_id and hasattr(store, "list_latch_rows"):
+        latch_log_rows = sum(
+            1 for row in store.list_latch_rows() if row.get("run_id") == run_id
+        )
+    return {
+        "run_id": run_id,
+        "steps_used": budget["steps_used"],
+        "retrieval_used": budget["retrieval_used"],
+        "token_usage": _state.get("token_usage"),  # None = 未记账,UI 不显示 token 行
+        "patch_events_rows": patch_events_rows,
+        "latch_log_rows": latch_log_rows,
+    }
 
 
 def _store() -> SQLiteStore:
@@ -446,6 +482,8 @@ def _detail_extras(store: SQLiteStore) -> dict:
         "patch_drafts": _patch_drafts_payload(),
         # #228:主张台账旁路(invalidation_list ∪ latch_log discard/renew);与 patch_events 分缝
         "claim_ledger": ledger,
+        # I-14(#713):审计「本轮指标 / 记账」只读投影;复用 active_run_id
+        "run_metrics": _run_metrics(store),
     }
 
 
@@ -670,6 +708,8 @@ def _write_run_snapshot() -> None:
         "retrieve_zero_hits": list(_state.get("retrieve_zero_hits") or []),
         "budget": dict(_state.get("budget") or EMPTY_BUDGET),
         "bound_t1_checksums": dict(_state.get("bound_t1_checksums") or {}),
+        # I-14(#713):token 记账随判定面落盘,重启后只读投影仍完整
+        "token_usage": _state.get("token_usage"),
         "disposition": disposition_for_claims(claims),
     }, ensure_ascii=False)
     save(blob)
@@ -701,6 +741,7 @@ def _restore_run_snapshot(snap: dict) -> None:
     _state["retrieve_zero_hits"] = list(snap.get("retrieve_zero_hits") or [])
     _state["budget"] = snap.get("budget") or dict(EMPTY_BUDGET)
     _state["bound_t1_checksums"] = dict(snap.get("bound_t1_checksums") or {})
+    _state["token_usage"] = snap.get("token_usage")  # I-14(#713):随判定面恢复
     if _state["active_run_id"]:
         # 进程内注册表随重启丢了,补回当前 Run 行(不覆盖已绑 checksum)
         _sync_prepublish(new_run=False)
@@ -734,6 +775,7 @@ def _clear_live_sheet() -> None:
     _state["retrieve_zero_hits"] = []
     _state["budget"] = dict(EMPTY_BUDGET)
     _state["bound_t1_checksums"] = {}
+    _state["token_usage"] = None  # I-14(#713):洗态同时退役本轮 token 记账
     _state["run_ctx"] = None
     # 解开当前指针,避免下次 upsert 把勿发行改写成空表
     _prepublish.active_run_id = None
@@ -1029,6 +1071,10 @@ def _run_reverify_task(run_id: str) -> None:
                             progress=_progress, should_cancel=_should_cancel)
         _state["trajectory"] = result.trajectory_path
         _state["budget"] = _budget_from_ctx(runner.ctx)  # 会话内保留用量摘要(DEM-4)
+        # I-14(#713):token 记账——收口瞬间快照 LLMClient 单桶;无桶(假件)则不记账
+        token_bucket = getattr(getattr(runner, "llm", None), "token_usage", None)
+        if token_bucket is not None:
+            _state["token_usage"] = token_bucket.to_dict()
         # DEM-5:记录零命中清单供 UI 强提示;不改写任何主张 status
         _state["retrieve_zero_hits"] = list(result.retrieve_zero_hits)
         with _RUN_TASK_LOCK:
@@ -1040,6 +1086,7 @@ def _run_reverify_task(run_id: str) -> None:
             # 整轮取消:收口不进 latch(未完成项不塞人审);清 active_run。
             _state["latch"] = dict(EMPTY_LATCH)
             _state["active_run_id"] = None
+            _state["token_usage"] = None  # I-14(#713):随 active_run 一并退役
             _prepublish.active_run_id = None
             _write_run_snapshot()  # 部分判定面落盘:已完成主张结果保留
             _set_status("cancelled")
@@ -1110,6 +1157,7 @@ def api_reverify(req: ReverifyRequest | None = None) -> JSONResponse:
         _state["claims"] = docket.claims
         _state["question"] = docket.question
     _state["running"] = True
+    _state["token_usage"] = None  # I-14(#713):新 Run 起跑即清旧记账,防跨轮残留
     try:
         # 新 Run 进发前列表(状态=复验中),active_run_id 定线与 Phase 0 同轨
         _sync_prepublish(new_run=True)

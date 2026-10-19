@@ -191,3 +191,86 @@ def test_run_gold_without_token_bucket_still_emits_zero_block(tmp_path):
         "total_tokens": 0,
     }
     assert raw["per_run"][0]["token_usage"]["total_tokens"] == 0
+
+
+def test_ui_run_metrics_token_matches_llm_client_bucket(tmp_path, monkeypatch):
+    """I-14(#713 / 决议 #707):UI 复验完成后 token 记账进 run_metrics 只读投影。
+
+    禁网:LLMClient 指向 127.0.0.1:9,桶值由本测试显式灌;UI 层不触网。
+    """
+    import time
+
+    from fastapi.testclient import TestClient
+
+    import freshlatch.ui.app as appmod
+    from freshlatch.guardrails import Guardrails
+    from freshlatch.llm import DecodingParams
+    from freshlatch.models import Claim
+    from freshlatch.runner import RunContext, RunResult
+
+    store = appmod.SQLiteStore(tmp_path / "t.db")
+    monkeypatch.setattr(appmod, "_store", lambda: store)
+    monkeypatch.setattr(appmod, "CHECKPOINTS", tmp_path / "cp.db")
+    appmod._state.update({
+        "claims": [],
+        "question": "",
+        "trajectory": None,
+        "running": False,
+        "latch": dict(appmod.EMPTY_LATCH),
+        "budget": dict(appmod.EMPTY_BUDGET),
+        "run_ctx": None,
+        "retrieve_zero_hits": [],
+        "active_run_id": None,
+        "token_usage": None,
+    })
+    appmod._reset_t1_source(store)
+    client = TestClient(appmod.app)
+
+    assert client.post("/api/t1-source/synthetic").status_code == 200
+    appmod._state["claims"] = [Claim(claim_id="c1", statement="demo", status="unknown")]
+
+    fake_llm = LLMClient(api_key="test-key", base_url="http://127.0.0.1:9")
+    fake_llm.token_usage.add(7, 3)
+
+    class _FakeRunner:
+        def __init__(self, store, **_kwargs):
+            self.ctx = RunContext(store=store, guardrails=Guardrails())
+            self.llm = fake_llm  # I-14:收口快照此桶(禁网)
+
+        def run(self, claims, **kwargs):
+            self.ctx.lead_steps_used = 2
+            self.ctx.retrieval_used = 1
+            return RunResult(
+                claims=list(claims), decisions={}, trajectory_path=None,
+                steps_by_claim={"c1": 2}, retrieval_used=1,
+                decoding=DecodingParams(), retrieve_zero_hits=[],
+            )
+
+    class _FakeLatch:
+        def enter_round(self, claims):
+            return type("R", (), {"thread_id": None, "pending": []})()
+
+    monkeypatch.setattr(appmod, "Runner", _FakeRunner)
+    monkeypatch.setattr(appmod, "_latch", lambda: _FakeLatch())
+
+    run_id = client.post("/api/reverify").json()["run_id"]
+    deadline = time.monotonic() + 10
+    body = None
+    while time.monotonic() < deadline:
+        body = client.get("/api/reverify/progress",
+                          params={"run_id": run_id}).json()
+        if body["status"] == "done":
+            break
+        time.sleep(0.01)
+    assert body is not None and body["status"] == "done"
+
+    # token 投影 = LLMClient 单桶 to_dict;与 eval 缝 K5 schema 一致(prompt/completion/total)
+    assert body["run_metrics"]["token_usage"] == fake_llm.token_usage.to_dict() == {
+        "prompt_tokens": 7,
+        "completion_tokens": 3,
+        "total_tokens": 10,
+    }
+    # 只读投影绑定既有 active_run_id;不另造第二套 run id
+    assert body["run_metrics"]["run_id"] == run_id
+    j = client.get("/api/claims").json()
+    assert j["run_metrics"]["token_usage"]["total_tokens"] == 10
