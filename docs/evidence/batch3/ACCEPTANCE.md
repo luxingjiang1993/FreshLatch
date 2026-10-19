@@ -51,9 +51,9 @@
 
 主张 c3-form 锚点（旧 #32 规格锚定与主张误伤探针）不是本批 γ。不得把下列文件当成 Batch 3 交付或通过线：
 
-- `docs/implementation/c3-fix-spec-anchor-and-probe.md`
-- `docs/verification/c3-fix-acceptance-report.md`
-- `docs/task-completion/task-33-c3-fix-behavioral-acceptance.md`
+- `docs/_archive/2026-10/implementation/c3-fix-spec-anchor-and-probe.md`
+- `docs/_archive/2026-10/verification/c3-fix-acceptance-report.md`
+- `docs/_archive/2026-10/task-completion/task-33-c3-fix-behavioral-acceptance.md`
 
 ## 3. 消融 / 多 seed
 

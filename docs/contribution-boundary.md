@@ -29,7 +29,7 @@
 
 组合说法：检索子系统可独立测量、可降级。2026-10-07 起生产默认是本地 `BAAI/bge-reranker-base` 的 `hybrid+rerank`（只重排 hybrid top-10）。BM25 是回退，不是默认。
 
-Phase A 冒烟复跑的历史入口在归档页 `docs/eval-retrieve.md`（原文 `docs/_archive/2026-10/eval-retrieve.md`）。那一页记录当时「为何仍 BM25」，不要把它的现在时当成现行默认臂。
+Phase A 冒烟复跑的历史入口在归档页 `docs/_archive/2026-10/eval-retrieve.md`。那一页记录当时「为何仍 BM25」，不要把它的现在时当成现行默认臂。
 
 ---
 
@@ -66,7 +66,7 @@ Related Work 祖先（RARR / PAVE / 事实检查等）可承认。边界话术�
 - **I2 已落地（冒烟，2026-09-29）：** 安全三例（ACL tenant 过滤 · 注入 Gate 拒绿 · poison 元数据剔除）可复现；注入 1× Lead→Auditor 冒烟 fail-closed；薄表 `docs/security.md`。评估见 `docs/_archive/2026-10/research/I2-安全三例设计评估.md`；ADR-0030；硬 Exit `docs/evidence/i2/ACCEPTANCE.md`；关门 `docs/evidence/i2/I2-DoD-CLOSE.md`。档=冒烟；≠ #4；不是渗透认证，不是安全通过率，不是 Hard-Gold。落地当时不改生产默认臂。
 - **V2 已落地（冒烟·采用层，2026-09-30）：** 发前钩子（Memo UI+CLI 同闸 + 入站 check allow/deny）+ 主张台账只读投影（discard∪renew）；零新写表；未做 Word/Notion/开放 webhook 平台；未图谱/CMS；未 Memo 商业裁决；未整包再验挂钩子；未解冻 Studio。评估见 `docs/_archive/2026-10/research/V2-发前钩子与主张台账设计评估.md`；ADR-0031；硬 Exit `docs/evidence/v2/ACCEPTANCE.md`；关门 `docs/evidence/v2/V2-DoD-CLOSE.md`。档=冒烟·采用层；`curl` ≠ 平台已交付；不硬绑「可发」；不报采用率；不是 Hard-Gold。落地当时未改默认臂。
 
-整协议口径（已入库 T1 才能裁定；`web→落盘→再验`；补丁 ⊆ T1；人确认；对话不改正式裁决）以 `docs/ops/口径一页纸.md` 与 `CONTEXT.md` 为准。历史阶段路线见归档的 `docs/roadmap.md`。
+整协议口径（已入库 T1 才能裁定；`web→落盘→再验`；补丁 ⊆ T1；人确认；对话不改正式裁决）以 `docs/ops/口径一页纸.md` 与 `CONTEXT.md` 为准。历史阶段路线见归档的 `docs/_archive/2026-10/roadmap.md`。
 
 ---
 
@@ -75,6 +75,6 @@ Related Work 祖先（RARR / PAVE / 事实检查等）可承认。边界话术�
 - 面试 / 对外：[`docs/ops/口径一页纸.md`](ops/口径一页纸.md)
 - 词表：[`CONTEXT.md`](../CONTEXT.md)（含包结论四值）
 - 检索决策链：[`docs/evidence/retrieval-decision.md`](evidence/retrieval-decision.md)
-- Phase A 冒烟叙事（历史，页首已标明 2026-10-07 默认已改）：[`accounting-card.md`](./accounting-card.md)
-- 规格：`docs/spec/10-PhaseA-RAG.md`（契约；不是本贡献清单的替代）
+- Phase A 冒烟叙事（历史，页首已标明 2026-10-07 默认已改）：[`accounting-card.md`](_archive/2026-10/accounting-card.md)
+- 规格：`docs/_archive/2026-10/spec/10-PhaseA-RAG.md`（契约；不是本贡献清单的替代）
 - 结构总览：[`docs/architecture/2026-10-overview.md`](architecture/2026-10-overview.md)
