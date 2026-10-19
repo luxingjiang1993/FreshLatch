@@ -82,9 +82,9 @@ def test_contribution_boundary_i1_row_names_triad_corpus_and_smoke():
     i1_rows = [ln for ln in text.splitlines() if ln.startswith("| I1 |")]
     assert len(i1_rows) == 1
     row = i1_rows[0]
-    assert "失败三分法 + 可复盘误判样本" in row
-    assert "冒烟" in row
-    assert "不报方差" in row
+    assert "Failure triad + reviewable misjudgment samples" in row
+    assert "smoke" in row
+    assert "does not report variance" in row
     assert "ACCEPTANCE.md" in text
 
 

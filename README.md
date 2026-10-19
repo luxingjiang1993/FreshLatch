@@ -81,7 +81,7 @@ Warm-up notes: `docs/ops/local-embed.md`.
 
 ## Honest status
 
-Interview / demo / external copy: only [`docs/ops/口径一页纸.md`](docs/ops/口径一页纸.md).
+Interview / demo / external copy: only [`docs/messaging-one-pager.md`](docs/messaging-one-pager.md).
 
 | | |
 |--|--|
@@ -97,10 +97,11 @@ Interview / demo / external copy: only [`docs/ops/口径一页纸.md`](docs/ops/
 
 | Topic | Link |
 |-------|------|
-| Interview / demo one-pager (CN) | [`docs/ops/口径一页纸.md`](docs/ops/口径一页纸.md) |
+| Interview / demo one-pager | [`docs/messaging-one-pager.md`](docs/messaging-one-pager.md) |
 | Architecture overview (2026-10) | [`docs/architecture/2026-10-overview.md`](docs/architecture/2026-10-overview.md) |
 | Product pointer | [`docs/product/FreshLatch.md`](docs/product/FreshLatch.md) |
-| Glossary | [`CONTEXT.md`](CONTEXT.md) |
+| Glossary | [`docs/glossary.md`](docs/glossary.md) |
+| Glossary pointer | [`CONTEXT.md`](CONTEXT.md) |
 | Contribution boundary | [`docs/contribution-boundary.md`](docs/contribution-boundary.md) |
 | Retrieval default decision | [`docs/evidence/retrieval-decision.md`](docs/evidence/retrieval-decision.md) |
 | Local embed / rerank warm-up | [`docs/ops/local-embed.md`](docs/ops/local-embed.md) |
@@ -108,7 +109,9 @@ Interview / demo / external copy: only [`docs/ops/口径一页纸.md`](docs/ops/
 | License | [`LICENSE`](LICENSE) |
 | Agent norms | [`AGENTS.md`](AGENTS.md) |
 
-附录：[`docs/evidence/`](docs/evidence/)
+**Appendix:** [`docs/evidence/`](docs/evidence/)
+
+Archive hub: [`docs/_archive/2026-10/README.md`](docs/_archive/2026-10/README.md)
 
 ---
 
