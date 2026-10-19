@@ -13,7 +13,7 @@ from fastapi.testclient import TestClient
 
 import freshlatch.ui.app as appmod
 from freshlatch.guardrails import Guardrails
-from freshlatch.llm import DecodingParams
+from freshlatch.llm import DecodingParams, TokenUsage
 from freshlatch.models import Claim
 from freshlatch.runner import RunContext, RunResult
 from freshlatch.store.base import InMemoryStore
@@ -33,6 +33,8 @@ def client(tmp_path, monkeypatch):
         "budget": dict(appmod.EMPTY_BUDGET),
         "run_ctx": None,
         "retrieve_zero_hits": [],
+        "active_run_id": None,
+        "token_usage": None,  # I-14(#713):防跨用例残留
     })
     appmod._reset_t1_source(store)
     return TestClient(appmod.app)
@@ -90,12 +92,15 @@ def test_reverify_keeps_budget_summary_after_complete(client, monkeypatch):
 
     I-10(#696):reverify 已 async——POST 立刻返回 run_id,经 progress 轮询取回
     与原同步响应同形状的 done 负载(含 budget)。
+    I-14(#713):done 负载同时带 run_metrics 只读投影(token 来自 LLMClient 桶快照)。
     """
     # T1 三卡硬条件:未选定不得开复验
     assert client.post("/api/t1-source/synthetic").status_code == 200
     appmod._state["claims"] = [
         Claim(claim_id="c1", statement="demo", status="unknown"),
     ]
+    fake_llm = _FakeLLM()
+    fake_llm.token_usage.add(11, 4)
 
     class _FakeRunner:
         def __init__(self, store, **_kwargs):
@@ -103,6 +108,7 @@ def test_reverify_keeps_budget_summary_after_complete(client, monkeypatch):
                 store=store,
                 guardrails=Guardrails(lead_max_steps=18, retrieval_budget=24),
             )
+            self.llm = fake_llm  # I-14:收口快照此桶
 
         def run(self, claims, **kwargs):  # kwargs:I-10 progress/should_cancel 钩子
             self.ctx.lead_steps_used = 5
@@ -137,10 +143,79 @@ def test_reverify_keeps_budget_summary_after_complete(client, monkeypatch):
     assert body["budget"]["retrieval_used"] == 9
     assert body["budget"]["retrieval_budget"] == 24
 
+    # I-14(#713):run_metrics 只读投影绑定既有 active_run_id,token 为桶快照
+    metrics = body["run_metrics"]
+    assert metrics["run_id"] == run_id
+    assert metrics["steps_used"] == 5
+    assert metrics["retrieval_used"] == 9
+    assert metrics["token_usage"] == {
+        "prompt_tokens": 11,
+        "completion_tokens": 4,
+        "total_tokens": 15,
+    }
+    assert isinstance(metrics["patch_events_rows"], int)
+    assert isinstance(metrics["latch_log_rows"], int)
+    assert metrics["latch_log_rows"] == 0  # 本轮无 latch_log 行
+
     j = client.get("/api/claims").json()
     assert j["running"] is False
     assert j["budget"]["steps_used"] == 5
     assert j["budget"]["retrieval_used"] == 9
+    # 只读投影不另造 run id:与判定面 active_run_id 同线
+    assert j["run_metrics"]["run_id"] == j["active_run_id"] == run_id
+    assert j["run_metrics"]["token_usage"]["total_tokens"] == 15
+
+
+def test_run_metrics_token_hidden_when_not_recorded(client, monkeypatch):
+    """I-14(#713):runner 无 LLM 桶(未记账)→ token_usage 为 None,UI 不显示 token 行。"""
+    assert client.post("/api/t1-source/synthetic").status_code == 200
+    appmod._state["claims"] = [
+        Claim(claim_id="c1", statement="demo", status="unknown"),
+    ]
+
+    class _BareRunner:
+        def __init__(self, store, **_kwargs):
+            self.ctx = RunContext(store=store, guardrails=Guardrails())
+
+        def run(self, claims, **kwargs):
+            return RunResult(
+                claims=list(claims), decisions={}, trajectory_path=None,
+                steps_by_claim={"c1": 1}, retrieval_used=1,
+                decoding=DecodingParams(), retrieve_zero_hits=[],
+            )
+
+    monkeypatch.setattr(appmod, "Runner", _BareRunner)
+    monkeypatch.setattr(appmod, "_latch", lambda: _FakeLatch())
+
+    run_id = client.post("/api/reverify").json()["run_id"]
+    deadline = time.monotonic() + 10
+    body = None
+    while time.monotonic() < deadline:
+        body = client.get("/api/reverify/progress",
+                          params={"run_id": run_id}).json()
+        if body["status"] == "done":
+            break
+        time.sleep(0.01)
+    assert body["status"] == "done"
+    assert body["run_metrics"]["token_usage"] is None
+    assert body["run_metrics"]["run_id"] == run_id
+
+
+def test_run_metrics_surface_no_dollar_no_json_csv_export():
+    """I-14(#713)红线:指标面无美元字段、无 JSON/CSV 导出入口。"""
+    html = appmod.HTML_PAGE
+    block = html.split('id="run-metrics"', 1)[1].split('id="advanced-dynamic"', 1)[0]
+    for banned in ("$", "cost", "usd", "美元", "export", "csv", "download"):
+        assert banned not in block.lower(), f"指标折叠命中禁面: {banned}"
+    src = open(appmod.__file__, encoding="utf-8").read()
+    assert "run-metrics/export" not in src
+    assert "run_metrics/export" not in src
+
+
+class _FakeLLM:
+    """带 TokenUsage 单桶的假 LLM(禁网;桶值由用例显式灌)。"""
+    def __init__(self):
+        self.token_usage = TokenUsage()
 
 
 def test_status_line_uses_guardrails_budget_not_hardcoded_24():

@@ -189,6 +189,13 @@ html[data-view="craftsman"] #btn-import-draft{display:none}
  #advanced-evidence #t1-checksums,
  #advanced-evidence #gate-results,
  #advanced-evidence #claim-ledger{margin:8px 0 0}
+ /* I-14(#713 / 决议 #707):本轮指标只读投影;审计可折叠,默认收起;无美元、无导出 */
+ #run-metrics{margin:8px 0 0;background:#fff;border:1px solid #d0d7de;border-radius:6px;
+              padding:8px 12px;font-size:13px;color:#57606a}
+ #run-metrics summary{cursor:pointer;font-weight:600;color:#0a2540}
+ #run-metrics .hint{font-size:12px;margin:6px 0;color:#57606a}
+ #run-metrics .metric-row{margin:4px 0;font-variant-numeric:tabular-nums}
+ #run-metrics .metric-row b{color:#0a2540}
  a.nav-prepublish{color:#fff;font-size:13px;margin-left:8px}
  /* #200 Evidence-bound 改稿条带:挂在主张卡内增量区(表单闭环) */
  .patch-strip{margin-top:8px;padding:8px 10px;border:1px dashed #d0d7de;border-radius:6px;
@@ -305,6 +312,11 @@ html[data-view="craftsman"] #btn-import-draft{display:none}
  <div id="claim-ledger-body">尚无人审作废/续命记录。</div>
  <button type="button" class="export-md" onclick="exportClaimLedgerMd()">导出台账 Markdown</button>
 </details>
+<details id="run-metrics" aria-live="polite">
+ <summary>本轮指标 / 记账</summary>
+ <p class="hint">只读投影(复用 active_run_id,不另造 run id):步数 / 检索命中 / token(仅已记账)/ patch_events 与 latch_log 行数。不做成本换算,只读展示,不落任何文件。</p>
+ <div id="run-metrics-body">尚无本轮指标。</div>
+</details>
  <div id="advanced-dynamic"></div>
 </details>
 <div id="craftsman-badges" aria-hidden="true">__CRAFTSMAN_BADGES__</div>
@@ -362,7 +374,7 @@ let STATE = {claims: [], question: "", latch: {thread_id: null, pending: []},
              trajectory: null, audit: null, retrieval_used: null, decoding: null,
              budget: null, disposition: null, run_status: null,
              active_run_id: null, t1_checksums: [], gate_results: [],
-             archived_t1_ids: [], patch_drafts: {}};
+             archived_t1_ids: [], patch_drafts: {}, run_metrics: null};
 let T1SRC = {kind:'none', ready:false, paste_status:'none', synthetic:false,
              network_enabled:false, message:'', cards:[]};
 let PASTE_DRAFT_TEXT = '';  // 重绘三卡时保留粘贴框内容
@@ -1158,6 +1170,35 @@ function renderClaimLedger(){
   }
   body.innerHTML = h;
 }
+function renderRunMetrics(){
+  // I-14(#713 / 决议 #707):本轮指标只读投影;无美元字段;无导出按钮
+  const body = document.getElementById('run-metrics-body');
+  if(!body) return;
+  const m = STATE.run_metrics;
+  if(!m || (!m.run_id && m.steps_used == null)){
+    body.textContent = '尚无本轮指标。';
+    return;
+  }
+  let h = '<div class="metric-row"><b>Run</b> · '
+       + esc(m.run_id ? String(m.run_id) : '(未绑定)') + '</div>';
+  h += '<div class="metric-row"><b>步数</b> · '
+     + esc(String(Number(m.steps_used) || 0)) + '</div>';
+  h += '<div class="metric-row"><b>检索命中</b> · '
+     + esc(String(Number(m.retrieval_used) || 0)) + '</div>';
+  const tu = m.token_usage;
+  if(tu && typeof tu === 'object'){
+    // token 仅已记账时出现;美元成本刻意不算(假精确,决议 #707)
+    h += '<div class="metric-row"><b>token</b> · prompt '
+       + esc(String(Number(tu.prompt_tokens) || 0))
+       + ' · completion ' + esc(String(Number(tu.completion_tokens) || 0))
+       + ' · total ' + esc(String(Number(tu.total_tokens) || 0)) + '</div>';
+  }
+  h += '<div class="metric-row"><b>patch_events 行数</b> · '
+     + esc(String(Number(m.patch_events_rows) || 0)) + '</div>';
+  h += '<div class="metric-row"><b>latch_log 行数</b> · '
+     + esc(String(Number(m.latch_log_rows) || 0)) + '</div>';
+  body.innerHTML = h;
+}
 async function exportClaimLedgerMd(){
   // #228:旁路导出 Markdown;只读,不写库
   const r = await fetch('/api/claim-ledger/export.md');
@@ -1179,6 +1220,7 @@ function absorbDetailExtras(j){
   if(j.archived_t1_ids) STATE.archived_t1_ids = j.archived_t1_ids;
   if(j.patch_drafts) STATE.patch_drafts = j.patch_drafts;
   if(j.claim_ledger) STATE.claim_ledger = j.claim_ledger;
+  if(j.run_metrics) STATE.run_metrics = j.run_metrics;  // I-14(#713):只读指标投影
 }
 function overrideFilterOn(){
   const box = document.getElementById('filter-override');
@@ -1329,6 +1371,7 @@ function renderClaims(){
   renderT1Checksums();
   renderGateResults();
   renderClaimLedger();
+  renderRunMetrics();  // I-14(#713):审计折叠内只读指标投影
   const el = document.getElementById('claims');
   if(!el) return;
   let h = '';

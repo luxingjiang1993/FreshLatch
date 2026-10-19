@@ -229,3 +229,59 @@ def test_prepublish_surface_has_no_ct_arm_switch():
     # 模块允许 arm 枚举常量,但不得暴露「给 UX 切换」的 API 名
     assert "ux_arm_switch" not in pe_mod
     assert "set_arm_from_ui" not in pe_mod
+
+
+def test_run_metrics_patch_events_rows_filtered_by_current_claims(monkeypatch, tmp_path):
+    """I-14(#713):patch_events 行数按本轮主张 claim_id 只读统计。
+
+    账本行不绑 run_id → 诚实口径是按 claim_id 过滤;不属本轮主张的行不进计数。
+    零 SQLite 新写表;只读投影。
+    """
+    from freshlatch.models import Claim
+    from freshlatch.ui import app as appmod
+
+    events_dir = tmp_path / "pe"
+    pe.append_event(_sample_event(claim_id="c-run-1"), events_dir=events_dir)
+    pe.append_event(
+        _sample_event(claim_id="c-run-1", ts="2026-09-28T17:30:00+00:00"),
+        events_dir=events_dir,
+    )
+    pe.append_event(_sample_event(claim_id="c-other-run"), events_dir=events_dir)
+    monkeypatch.setattr(appmod, "_PATCH_EVENTS_DIR", events_dir)
+
+    store = appmod.SQLiteStore(tmp_path / "t.db")
+    monkeypatch.setattr(appmod, "_store", lambda: store)
+    monkeypatch.setitem(appmod._state, "claims",
+                        [Claim(claim_id="c-run-1", statement="s", status="unknown")])
+    monkeypatch.setitem(appmod._state, "active_run_id", "run-x")
+    monkeypatch.setitem(appmod._state, "token_usage", None)
+    monkeypatch.setitem(appmod._state, "budget", dict(appmod.EMPTY_BUDGET))
+    monkeypatch.setitem(appmod._state, "running", False)
+
+    metrics = appmod._run_metrics(store)
+    assert metrics["run_id"] == "run-x"
+    assert metrics["patch_events_rows"] == 2  # 只数本轮主张的行
+    assert metrics["latch_log_rows"] == 0
+    assert metrics["token_usage"] is None  # 未记账不出现 token
+
+
+def test_run_metrics_no_claims_bound_counts_zero(monkeypatch, tmp_path):
+    """未绑定主张时本轮口径无行可数;不拿全库账本冒充本轮。"""
+    from freshlatch.ui import app as appmod
+
+    events_dir = tmp_path / "pe"
+    pe.append_event(_sample_event(claim_id="c-run-1"), events_dir=events_dir)
+    monkeypatch.setattr(appmod, "_PATCH_EVENTS_DIR", events_dir)
+
+    store = appmod.SQLiteStore(tmp_path / "t.db")
+    monkeypatch.setattr(appmod, "_store", lambda: store)
+    monkeypatch.setitem(appmod._state, "claims", [])
+    monkeypatch.setitem(appmod._state, "active_run_id", None)
+    monkeypatch.setitem(appmod._state, "token_usage", None)
+    monkeypatch.setitem(appmod._state, "budget", dict(appmod.EMPTY_BUDGET))
+    monkeypatch.setitem(appmod._state, "running", False)
+
+    metrics = appmod._run_metrics(store)
+    assert metrics["patch_events_rows"] == 0
+    assert metrics["latch_log_rows"] == 0
+    assert metrics["run_id"] is None
