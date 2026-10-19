@@ -17,7 +17,7 @@ from freshlatch.ui.app import HTML_PAGE
 
 REPO = Path(__file__).resolve().parent.parent.parent
 RESEARCH = REPO / "docs" / "_archive" / "2026-10" / "research" / "ε-如何读复验文案链设计评估.md"
-ACCEPTANCE = REPO / "docs" / "evidence" / "batch5" / "ACCEPTANCE.md"
+ACCEPTANCE = REPO / "docs" / "_archive" / "2026-10" / "evidence" / "batch5" / "ACCEPTANCE.md"
 
 
 def test_comments_forbid_copy_escalation():

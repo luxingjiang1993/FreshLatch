@@ -2,7 +2,7 @@
 
 测口:Latch/Gate 套件 + Client Memo 导出契约。
 明确不用:freshlatch.eval 主跑、改 gold、假绿统计主口。
-跑完更新 docs/evidence/batch1/alpha-acceptance.md 中的机器执行戳。
+跑完更新 docs/_archive/2026-10/evidence/batch1/alpha-acceptance.md 中的机器执行戳。
 """
 
 from __future__ import annotations
@@ -16,7 +16,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-ACCEPTANCE = REPO_ROOT / "docs" / "evidence" / "batch1" / "alpha-acceptance.md"
+ACCEPTANCE = (
+    REPO_ROOT / "docs" / "_archive" / "2026-10" / "evidence" / "batch1" / "alpha-acceptance.md"
+)
 DEM7 = REPO_ROOT / "scripts" / "dem7_time_to_sheet.py"
 DEM7_OUT = REPO_ROOT / "reports" / "batch1_alpha" / "dem7"
 
