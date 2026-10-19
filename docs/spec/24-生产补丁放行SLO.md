@@ -5,7 +5,7 @@
 > 来源：`/grill-with-docs`（生产补丁/放行 SLO）共享理解 → `/to-spec`；min-6 锁「按推荐」2026-10-12（Asia/Shanghai）  
 > 词表：`CONTEXT.md`（生产补丁/放行 SLO · 实验—生产防火墙 · 生产观测最小 6 SLI）  
 > 权威 ADR：**0042**（#508 草案曾编号 0034；tip `2a3fadd` 上 0034 已被 patch-events 占用，不覆盖）；上游 `0029`（Evidence-bound）、`0031`（发前钩子）、`0023`（override）、`0006`（HumanLatch）、`0028`（失败三分，仅 phase-2 种子）  
-> 评估草案（不复制）：[#508 上的设计评估](https://github.com/luxingjiang1993/FreshLatch/blob/b24b6f573652b156a798dfa3f3fd1985a9e3348d/docs/research/生产补丁放行SLO设计评估.md)  
+> 评估草案（不复制）：[#508 上的设计评估](https://github.com/luxingjiang1993/FreshLatch/blob/b24b6f573652b156a798dfa3f3fd1985a9e3348d/docs/_archive/2026-10/research/生产补丁放行SLO设计评估.md)  
 > 运营宽表：`docs/ops/生产补丁放行SLO.md` · 本波索引：`docs/ops/生产观测最小6-索引.md`  
 > **测试主缝（宽表，2026-10-09，仍有效作 program draft）**：运营指标分层与实验防火墙 —  
 > `硬闸不变量(无证/未确认出门/自红转绿/无T1绿灯) + 观测周报字段(改对/误放误拒成对/作废/override/再验失败) + 离线 must_stale multi-run + 禁止回写 RESULT-Y/金标进生产 score → 同一纪律页可勾选`  

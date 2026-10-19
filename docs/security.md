@@ -1,7 +1,7 @@
 # FreshLatch 安全演示（I2）
 
 > **层：冒烟。** 本页不是渗透认证，不报安全通过率，不报方差。硬 Exit 只有下面硬表三行。
-> 权威：ADR-0030 · 父规格 #213。夹具正文由 #214 / #215 落地，本页只做薄表互链。不改 `docs/research/adversarial/INDEX.md`，不把目录升版写成 I2 Done。
+> 权威：ADR-0030 · 父规格 #213。夹具正文由 #214 / #215 落地，本页只做薄表互链。不改 `docs/_archive/2026-10/research/adversarial/INDEX.md`，不把目录升版写成 I2 Done。
 
 ## 硬表
 
@@ -24,7 +24,7 @@
 | ogx-evals | 企业多租户 ABAC、CTLR/AVR 评测矩阵 | 薄 `tenant_id` 真 `retrieve` 过滤即可；无租户管理面 / 完整 RBAC |
 | SafeRAG | RAG 安全基准全景（Noise/Conflict/Toxicity/DoS 等） | I2 = 面试安全轮三例冒烟；≠ 安全平台或渗透认证 |
 
-本机索引：`历史项目代码供参考/FreshLatch-roadmap-refs/`（清单见 `docs/FreshLatch-完整版参考清单.md`）。
+本机索引：历史项目代码供参考/FreshLatch-roadmap-refs/（清单若未入仓则仅本机路径，不链悬空 docs）。
 
 ## 可选（不计入 I2 Exit）
 

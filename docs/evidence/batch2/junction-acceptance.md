@@ -1,7 +1,7 @@
 # Batch 2 交界与边界验收注记（#117）
 
 > 层：invariant。单次确定性可复现。不是统计证明，不是产品已验证。
-> 预锁句来源：`docs/research/β-checksum与HumanLatch-renew交界设计评估.md` §4；ADR-0017。事后改句 = 本批交界验收作废。
+> 预锁句来源：`docs/_archive/2026-10/research/β-checksum与HumanLatch-renew交界设计评估.md` §4；ADR-0017。事后改句 = 本批交界验收作废。
 
 ## 预锁可引用句
 

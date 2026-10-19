@@ -1,7 +1,7 @@
 # ADR-0006: HumanLatch 中断机制与作废/续命闭环设计
 
 - **状态**: Accepted(2026-09-20,工单 #11 拍板)
-- **相关**: ADR-0002(复验单 UI 形态)、ADR-0004(Agent 循环裸 tools 路线)、研究 `docs/research/langgraph-interrupt人审模式研究.md`(工单 #7)
+- **相关**: ADR-0002(复验单 UI 形态)、ADR-0004(Agent 循环裸 tools 路线)、研究 `docs/_archive/2026-10/research/langgraph-interrupt人审模式研究.md`(工单 #7)
 
 ## 背景
 

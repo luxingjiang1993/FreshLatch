@@ -2,7 +2,7 @@
 
 - **状态**: Accepted
 - **日期**: 2026-10-10
-- **相关**: `docs/research/冲乙预注册载体相对PREREG-Y设计评估.md`；[#518](https://github.com/luxingjiang1993/FreshLatch/issues/518)；父图 [#517](https://github.com/luxingjiang1993/FreshLatch/issues/517)；上游 ADR-0037（路线 Y · 只冲乙）/ ADR-0038（缺额解锁）；整合参考 `docs/research/冲甲冲乙行动方案整合.md`（PR #516）；姊妹票 #519（仪器）/#520（门闩）
+- **相关**: `docs/_archive/2026-10/research/冲乙预注册载体相对PREREG-Y设计评估.md`；[#518](https://github.com/luxingjiang1993/FreshLatch/issues/518)；父图 [#517](https://github.com/luxingjiang1993/FreshLatch/issues/517)；上游 ADR-0037（路线 Y · 只冲乙）/ ADR-0038（缺额解锁）；整合参考 `docs/_archive/2026-10/research/冲甲冲乙行动方案整合.md`（PR #516）；姊妹票 #519（仪器）/#520（门闩）
 - **说明**: 编号顺延开 PR 上的 0034–0038 之后。本文件**不**改写 ADR-0037 正文；只钉「相对 Y 的载体/n/成立线」三题拍板，供合入后与 0037/0038 并列引用。
 
 ## 背景

@@ -92,7 +92,7 @@ SQLITE_COLUMNS = {
         "id", "memory_ids", "reason", "proposed_at", "confirmed_at", "confirmed_by",
     },
 }
-C4_PATH = "docs/research/C4-合成数据释放协议草稿.md"
+C4_PATH = "docs/_archive/2026-10/research/C4-合成数据释放协议草稿.md"
 FORBIDDEN_UPGRADE = (
     "多垂类已 Port",
     "数据集已对外可用",

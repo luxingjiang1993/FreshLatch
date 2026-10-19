@@ -2,7 +2,7 @@
 
 **状态：协议已锁 · 冲乙正式主跑已激活**
 
-锁死日期：2026-10-09。评估见 `docs/research/patch_events-路线Y只冲乙仅锁T-C设计评估.md`。ADR-0037。决议：本会话 grilling 四题均「按推荐」（Ronin 代理人；真人 Oriental Ronin）。
+锁死日期：2026-10-09。评估见 `docs/_archive/2026-10/research/patch_events-路线Y只冲乙仅锁T-C设计评估.md`。ADR-0037。决议：本会话 grilling 四题均「按推荐」（Ronin 代理人；真人 Oriental Ronin）。
 
 **冲乙整合升格（#518 / ADR-0039）**：本页为地图 #517 冲乙正式预注册载体（**修订升格**，不另开字母页）。正式 n=400 与 T−C 成立线（点>0.05∧下界>0）维持 ADR-0037。相对旧 `PREREG.md` / B / C 的主证据作废关系保持。仪器与门闩见下节 Amendment（#519 / #520 · ADR-0040 / ADR-0041）。当时写入时未激活；现行激活见文首状态行与「激活批注」。
 

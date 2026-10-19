@@ -141,7 +141,7 @@ Auditor `dimension_match=true`；问题在元/缺口受理，不在维度跨检�
 - [ ] `python -m compileall -q src` exit 0  
 - [ ] `python -m pytest tests/ -q` 全绿；不删测凑绿  
 - [ ] 本跑 c10 实录 + 最小缺口合成形 ⇒ `is_meta_only_disproof` True；#241 形与 c3/c7 合法锚不红  
-- [ ] 标记增补表写入本规格或 `docs/research/` 短补丁（预登记）  
+- [ ] 标记增补表写入本规格或 `docs/_archive/2026-10/research/` 短补丁（预登记）  
 
 **B. 表现层（decoding 锁定；N=1 只报命中不报方差）**
 
@@ -177,14 +177,14 @@ Auditor `dimension_match=true`；问题在元/缺口受理，不在维度跨检�
 - `src/freshlatch/roles/lead.py` / `critic.py` / `gates/rule_gate.py`（共用函数接线，通常无需新出口）  
 - `skills/reverify/SKILL.md` / `skills/freshness_audit/references/verdict-rubric.md` / persona（辅）  
 - `tests/unit/test_meta_gate.py` 等（扩夹具）  
-- `docs/research/` 短补丁（标记增补预登记）  
+- `docs/_archive/2026-10/research/` 短补丁（标记增补预登记）  
 - `docs/spec/19-must-unknown-c10-缺口误stale.md`（本规格；实现后回填）  
 - 报告：`reports/report-*.md` / `reports/trajectories/`
 
 ## 参考
 
 - #241 · `docs/spec/16-must-unknown-c9-护栏.md`（上游 must_unknown，CLOSED）  
-- ADR-0008 · `docs/research/c9元陈述句法闸设计评估.md` · #241 算法 A 补丁  
+- ADR-0008 · `docs/_archive/2026-10/research/c9元陈述句法闸设计评估.md` · #241 算法 A 补丁  
 - §18 · `docs/spec/18-must-fresh-c5-反事实敏感性.md`（同次跑另一漏点，分票）  
 - `data/eval/gold.json` · docket `c10` · 语料 `t0-talent-salary`  
 - 证据：`reports/report-20261001-010433.md` · `reports/trajectories/run-20261001-010402.jsonl`
@@ -199,7 +199,7 @@ Auditor `dimension_match=true`；问题在元/缺口受理，不在维度跨检�
 ## Post-mortem（实现后回填 · #246）
 
 - **解码锁定**：`qwen-flash` · `temperature=0.0` · `seed=None` · 报告 UTC `2026-09-30T17:51:05` 附近。
-- **确定性**：`test_meta_gate.py` / `test_c9_meta_gate_routing.py` 覆盖 c10 实录、日期噪声形、放弃追踪 72% 假锚；标记增补见 `docs/research/c10缺口误stale-标记增补补丁.md`；全量 pytest **705 passed**。
+- **确定性**：`test_meta_gate.py` / `test_c9_meta_gate_routing.py` 覆盖 c10 实录、日期噪声形、放弃追踪 72% 假锚；标记增补见 `docs/_archive/2026-10/research/c10缺口误stale-标记增补补丁.md`；全量 pytest **705 passed**。
 - **实现主缝**：`meta_gate` 标记增补 + T0/T1/年月噪声剥除；教义「过时未更新≠推翻」。
 - **表现层（N=1 冒烟，不报方差）**：
   - 报告：`reports/report-20261001-015105.md`

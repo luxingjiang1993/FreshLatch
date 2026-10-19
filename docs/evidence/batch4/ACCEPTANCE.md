@@ -4,7 +4,7 @@
 > 实现票：[#128](https://github.com/luxingjiang1993/FreshLatch/issues/128) / [#129](https://github.com/luxingjiang1993/FreshLatch/issues/129) / [#130](https://github.com/luxingjiang1993/FreshLatch/issues/130)
 > 决策锁：ADR-0019 / ADR-0020 / ADR-0021
 > 主缝：`active_pack`（`tests/unit/test_active_pack.py`）
-> 释放规矩：`docs/research/C4-合成数据释放协议草稿.md`
+> 释放规矩：`docs/_archive/2026-10/research/C4-合成数据释放协议草稿.md`
 
 ## 验收层（不得跨层升格）
 
@@ -33,7 +33,7 @@ Port 通过线不含 LLM 采样。单次 `run_gold` 即使将来补跑，也只�
 
 ## 3. C4 文档纪律
 
-引用 `docs/research/C4-合成数据释放协议草稿.md`。
+引用 `docs/_archive/2026-10/research/C4-合成数据释放协议草稿.md`。
 
 **默认未释放。** 推进 main ≠ 已释放。C4 卡存在不等于数据集已对外可用。「已释放」须同时满足该卡 §6 门闩（SPDX + 人批 + 语义化版本 + 分发物一致）。本批不执行对外发布。
 

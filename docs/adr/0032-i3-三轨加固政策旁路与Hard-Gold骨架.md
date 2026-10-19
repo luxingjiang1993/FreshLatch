@@ -2,7 +2,7 @@
 
 - **状态**: Accepted
 - **日期**: 2026-10-03
-- **相关**: `docs/research/I3-面试加固三轨设计评估.md`、`docs/grill-prep.md` §2i、roadmap Phase I3；上游 ADR-0003 / 0026（增益门与默认臂）、ADR-0030（I2 旁路思维）、ADR-0031（禁整包再验挂钩子）
+- **相关**: `docs/_archive/2026-10/research/I3-面试加固三轨设计评估.md`、`docs/grill-prep.md` §2i、roadmap Phase I3；上游 ADR-0003 / 0026（增益门与默认臂）、ADR-0030（I2 旁路思维）、ADR-0031（禁整包再验挂钩子）
 
 ## 背景
 

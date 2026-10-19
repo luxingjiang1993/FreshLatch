@@ -2,7 +2,7 @@
 
 - **状态**: Accepted
 - **日期**: 2026-09-23
-- **相关**: ADR-0017、ADR-0006 §4、`docs/research/checksum链激活契约.md` §6、`docs/research/β+-档3a-fresh-validity_basis设计评估.md`、工单 #110
+- **相关**: ADR-0017、ADR-0006 §4、`docs/_archive/2026-10/research/checksum链激活契约.md` §6、`docs/_archive/2026-10/research/β+-档3a-fresh-validity_basis设计评估.md`、工单 #110
 
 ## 背景
 

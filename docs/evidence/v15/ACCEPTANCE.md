@@ -13,7 +13,7 @@
 |------|------|------|
 | 规格 | `docs/spec/12-PhaseV1.5-EvidenceBound.md` | 在仓 |
 | ADR-0029 | `docs/adr/0029-v1.5-evidence-bound补丁与独立确认API.md` | 在仓 |
-| 评估 | `docs/research/V1.5-Evidence-bound补丁设计评估.md` | 在仓 |
+| 评估 | `docs/_archive/2026-10/research/V1.5-Evidence-bound补丁设计评估.md` | 在仓 |
 | propose/confirm | `src/freshlatch/evidence_bound.py` | 在仓（#198/#199） |
 | 导出 | `src/freshlatch/evidence_bound_export.py` | 在仓（#201） |
 | 复验单条带 UI | `src/freshlatch/ui/app.py` | 在仓（#200） |

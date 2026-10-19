@@ -3,7 +3,7 @@
 > **to-spec 来源**: 地图 [#517](https://github.com/luxingjiang1993/FreshLatch/issues/517) · 决议 #518/#519/#520（均「按推荐」）· Matt `/to-spec`（本仓按 [to-spec 模板](https://github.com/mattpocock/skills/blob/main/skills/engineering/to-spec/SKILL.md) 合成，**不再访谈**）  
 > **ADR**: ADR-0039 · ADR-0040 · ADR-0041（继任 ADR-0037 / 0038）  
 > **协议**: `docs/evidence/patch-events/PREREG-Y.md`（**未激活** · 已合入整合升格 / 仪器 / 门闩 Amendment）  
-> **评估**: `docs/research/冲乙预注册载体相对PREREG-Y设计评估.md` · `冲乙共享仪器最小集设计评估.md` · `冲乙门闩与冒烟功率条款设计评估.md`  
+> **评估**: `docs/_archive/2026-10/research/冲乙预注册载体相对PREREG-Y设计评估.md` · `冲乙共享仪器最小集设计评估.md` · `冲乙门闩与冒烟功率条款设计评估.md`  
 > **先验卷**: 卷 27（路线 Y 只冲乙骨架；本卷为其**增量升格**，不废卷 27 已派 PE-Y-01…04 的继承价值）  
 > **卷号**: 28  
 > **语言**: 中文。技术词保留 English 原词。  

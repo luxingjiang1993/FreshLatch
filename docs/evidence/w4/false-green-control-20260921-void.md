@@ -44,6 +44,6 @@
 
 ## 新对照的门闩
 
-[决议:新假绿对照预登记](https://github.com/luxingjiang1993/FreshLatch/issues/46) 已落盘:`docs/evidence/w4/false-green-control-prereg.md`(评估见 `docs/research/新假绿对照预登记设计评估.md`)。
+[决议:新假绿对照预登记](https://github.com/luxingjiang1993/FreshLatch/issues/46) 已落盘:`docs/evidence/w4/false-green-control-prereg.md`(评估见 `docs/_archive/2026-10/research/新假绿对照预登记设计评估.md`)。
 
 此后改 `CONTROL_PROMPT` 必须逐字拷贝该预登记锁定正文;新运行必须用该通过线 / 作废线 / decoding。仍不得用 2026-09-21 格子校准任何数字。未按锁定件改 prompt 就跑,读数不可引用。

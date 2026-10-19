@@ -2,7 +2,7 @@
 
 - **状态**: Accepted
 - **日期**: 2026-09-29
-- **相关**: `docs/research/I0-冒烟层与数字真相源设计评估.md`、`docs/accounting-card.md`、`docs/eval-retrieve.md`、ADR-0003（#156）、roadmap Phase I0
+- **相关**: `docs/_archive/2026-10/research/I0-冒烟层与数字真相源设计评估.md`、`docs/accounting-card.md`、`docs/eval-retrieve.md`、ADR-0003（#156）、roadmap Phase I0
 
 ## 背景
 

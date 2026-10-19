@@ -5,7 +5,7 @@
 > **档：** 冒烟 / 采用层（零 LLM CI 夹具可复跑）。不报采用率；不报方差；不作统计显著声明。**不是** Hard-Gold；**不是** webhook/插件平台已交付；**不是**改生产默认臂授权。  
 > **日期：** 2026-09-30  
 > **Refs：** [#232](https://github.com/luxingjiang1993/FreshLatch/issues/232)（本票 · Exit 代收） / parent [#226](https://github.com/luxingjiang1993/FreshLatch/issues/226) / blocked-by [#231](https://github.com/luxingjiang1993/FreshLatch/issues/231) CLOSED via [PR #237](https://github.com/luxingjiang1993/FreshLatch/pull/237) · `GROK-PROXY-APPROVED #231`  
-> **规格 / 决议：** `docs/spec/14-PhaseV2-PublishHook.md` · ADR-0031 · 评估 `docs/research/V2-发前钩子与主张台账设计评估.md`  
+> **规格 / 决议：** `docs/spec/14-PhaseV2-PublishHook.md` · ADR-0031 · 评估 `docs/_archive/2026-10/research/V2-发前钩子与主张台账设计评估.md`  
 > **硬 Exit 权威：** `docs/evidence/v2/ACCEPTANCE.md`（文首冒烟·采用层声明；硬条六勾；升「可发」非硬条；`curl`/TestClient ≠ 开放 webhook 平台）
 
 本页是 V2 Exit 的可引用关门摘要。Exit 由 Ronin 代批（等 `GROK-PROXY-APPROVED #232`）；实现本摘要的 PR 合 main 后可关本票。**不**自行 close 父规格 #226（建议 Ronin 在本票代批后收口）。

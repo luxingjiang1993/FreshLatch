@@ -5,7 +5,7 @@
 > **档：** 冒烟 / 对客 demo 层（零 LLM CI）。不报方差；不作统计升格；**不是** Hard-Gold；**不是** C vs T 显著。  
 > **日期：** 2026-09-29  
 > **Refs：** [#203](https://github.com/luxingjiang1993/FreshLatch/issues/203) CLOSED（`GROK-PROXY-APPROVED #203`） / parent [#196](https://github.com/luxingjiang1993/FreshLatch/issues/196) / blocked-by [#202](https://github.com/luxingjiang1993/FreshLatch/issues/202) closed via [PR #210](https://github.com/luxingjiang1993/FreshLatch/pull/210)  
-> **规格 / 决议：** `docs/spec/12-PhaseV1.5-EvidenceBound.md` · ADR-0029 · 评估 `docs/research/V1.5-Evidence-bound补丁设计评估.md`  
+> **规格 / 决议：** `docs/spec/12-PhaseV1.5-EvidenceBound.md` · ADR-0029 · 评估 `docs/_archive/2026-10/research/V1.5-Evidence-bound补丁设计评估.md`  
 > **硬 Exit 权威：** `docs/evidence/v15/ACCEPTANCE.md`（文首冒烟声明；硬条四勾；升「可发」仅加分）
 
 本页是 V1.5 Exit 的可引用关门摘要。Exit 已由 Ronin 代批（`GROK-PROXY-APPROVED #203`）；实现 PR [#211](https://github.com/luxingjiang1993/FreshLatch/pull/211)。

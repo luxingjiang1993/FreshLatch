@@ -2,7 +2,7 @@
 
 > **锁定语**:本文写于跑任何「主链抗假绿」有效证明之前。事后修改本文的通过线、作废线、decoding、主张集或仅表明句模板,视为该次运行无效(ADR-0007;HARKing)。
 > **层级**:产品侧工程 / 冒烟证明。通过只表示「这一次主链跑出 must_stale→fresh 合计为 0」。不报方差,不升格为一期测量闭合,不宣布判定层已愈,不宣布产品已愈假绿,不替代 K3 / K6-4。
-> **决议**:[决议:主链抗假绿评测构念与通过线](https://github.com/luxingjiang1993/FreshLatch/issues/82);修窗策略见 [决议:主链压不住假绿时的修复策略族](https://github.com/luxingjiang1993/FreshLatch/issues/83)。评估见 `docs/research/主链抗假绿评测构念与通过线设计评估.md`、`docs/research/主链压不住假绿时的修复策略族设计评估.md`。
+> **决议**:[决议:主链抗假绿评测构念与通过线](https://github.com/luxingjiang1993/FreshLatch/issues/82);修窗策略见 [决议:主链压不住假绿时的修复策略族](https://github.com/luxingjiang1993/FreshLatch/issues/83)。评估见 `docs/_archive/2026-10/research/主链抗假绿评测构念与通过线设计评估.md`、`docs/_archive/2026-10/research/主链压不住假绿时的修复策略族设计评估.md`。
 > **仪器 C**:`docs/evidence/w4/false-green-control-c-prereg.md` 与 `CONTROL_PROMPT_C` **冻结只读**;C 对照成立句保留。不得用 C 的 4/4 校准本文任何数字,不得改写 C / 旧仪器 / K3 / K6-4 已锁仅表明句。
 
 ## 构念

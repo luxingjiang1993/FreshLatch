@@ -1,7 +1,7 @@
 # Phase V2 ACCEPTANCE
 
 > **层身份：冒烟 / 采用层**（零 LLM CI 夹具可复跑）。不报采用率；不报方差；不作统计显著声明。本页不是 Hard-Gold，不是改生产默认臂授权，不是 webhook/插件平台已交付证明。  
-> **判据：** ADR-0031 Exit 预锁；`docs/spec/14-PhaseV2-PublishHook.md`；评估 `docs/research/V2-发前钩子与主张台账设计评估.md` Q19。  
+> **判据：** ADR-0031 Exit 预锁；`docs/spec/14-PhaseV2-PublishHook.md`；评估 `docs/_archive/2026-10/research/V2-发前钩子与主张台账设计评估.md` Q19。  
 > **日期：** 2026-09-30  
 > **对齐：** `origin/main` 合入 #227–#230 后 · Issue [#231](https://github.com/luxingjiang1993/FreshLatch/issues/231)
 
@@ -16,7 +16,7 @@
 |------|------|------|
 | 规格 | `docs/spec/14-PhaseV2-PublishHook.md` | 在仓 |
 | ADR-0031 | `docs/adr/0031-v2-发前钩子与主张台账.md` | 在仓 |
-| 评估 | `docs/research/V2-发前钩子与主张台账设计评估.md` | 在仓 |
+| 评估 | `docs/_archive/2026-10/research/V2-发前钩子与主张台账设计评估.md` | 在仓 |
 | 闸核心 | `src/freshlatch/publish_hook.py` | 在仓（#227） |
 | 主张台账 | `src/freshlatch/claim_ledger.py` | 在仓（#228） |
 | Memo 套闸 | `src/freshlatch/sheet.py` + CLI/UI | 在仓（#229） |

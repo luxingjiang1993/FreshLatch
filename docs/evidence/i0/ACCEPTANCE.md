@@ -14,7 +14,7 @@
 | eval-retrieve + 命令 | `docs/eval-retrieve.md` | 在仓 |
 | contribution-boundary v0 | `docs/contribution-boundary.md` | 在仓 |
 | 决议 ADR | `docs/adr/0026-i0-冒烟层与reports为数字真相源.md` | 在仓 |
-| 评估 | `docs/research/I0-冒烟层与数字真相源设计评估.md` | 在仓 |
+| 评估 | `docs/_archive/2026-10/research/I0-冒烟层与数字真相源设计评估.md` | 在仓 |
 | 数字 SoT | `reports/retrieve-*.md`（#166 / PR #167） | 在仓 |
 
 ## 2. 可复跑（机器）

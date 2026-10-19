@@ -2,7 +2,7 @@
 
 > 层：`smoke`。n=1，冒烟检查。不报方差，不报统计显著。
 > 入口：既有 `python -m freshlatch.eval run`（`run_gold`）。不新开评测 harness。
-> 判据：`docs/research/C3-判定拉齐预登记卡.md` γ-SMOKE-1/2；ADR-0018。本记录不改判据、不改 `data/eval/gold.json`。
+> 判据：`docs/_archive/2026-10/research/C3-判定拉齐预登记卡.md` γ-SMOKE-1/2；ADR-0018。本记录不改判据、不改 `data/eval/gold.json`。
 > 代码指针：加固已在 `feature/future-roadmap` 的 `919d18e`（#118 / PR #124）之后。本跑次 commit `db85e679f95839af5295e69617283e71cfaaf265`。
 > 托管端点会漂移，跨会话复现只能近似。
 

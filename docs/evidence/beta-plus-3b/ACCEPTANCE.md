@@ -1,7 +1,7 @@
 # β+ 档 3b ACCEPTANCE
 
 > 验收层声明：降级路径 = invariant（确定性）；不得升格「跨轮重检上线 = 统计结论」「checksum 已证明 latch」「demo 掉灯 = 产品验证成功」。
-> 决策锁：ADR-0025；评估见 `docs/research/β+-档3b-跨轮腐烂重检设计评估.md`；规格 #140；实装 #143 / #144。
+> 决策锁：ADR-0025；评估见 `docs/_archive/2026-10/research/β+-档3b-跨轮腐烂重检设计评估.md`；规格 #140；实装 #143 / #144。
 > 本文件不改 `data/eval/gold.json`。不自动 void。不重开 ADR-0017 / ADR-0024。不等待档 3a。
 
 ## 1. 预锁 invariant（改字 = 本批 invariant 验收作废并须重登）

@@ -2,7 +2,7 @@
 
 - **状态**: Accepted
 - **日期**: 2026-10-08
-- **相关**: `docs/research/patch_events-路线B冲甲可识别选取设计评估.md`、[#431](https://github.com/luxingjiang1993/FreshLatch/issues/431)、[#432](https://github.com/luxingjiang1993/FreshLatch/issues/432)；协议页 `docs/evidence/patch-events/PREREG-B.md`；废止主证据资格：`docs/evidence/patch-events/PREREG.md` + 现 n=30 `RESULT.md` 链（动机附录可留）
+- **相关**: `docs/_archive/2026-10/research/patch_events-路线B冲甲可识别选取设计评估.md`、[#431](https://github.com/luxingjiang1993/FreshLatch/issues/431)、[#432](https://github.com/luxingjiang1993/FreshLatch/issues/432)；协议页 `docs/evidence/patch-events/PREREG-B.md`；废止主证据资格：`docs/evidence/patch-events/PREREG.md` + 现 n=30 `RESULT.md` 链（动机附录可留）
 - **说明**: 已废除的路线 A 关单曾口称「ADR-0034」但从未落盘；本文件为首次占用该编号，内容为路线 B，不继承 #420 拍板。
 
 ## 背景

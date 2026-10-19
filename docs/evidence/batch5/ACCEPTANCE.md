@@ -1,7 +1,7 @@
 # Batch 5（ε）ACCEPTANCE
 
 > 验收层声明：管道字段 = invariant；读法源可见性 = demo/文案；对抗目录 = RESEARCH 文档纪律。禁止跨层升格。
-> 决策锁：ADR-0022、ADR-0023；评估见 `docs/research/ε-如何读复验文案链设计评估.md`、`docs/research/ε-对抗套件目录与版本化设计评估.md`、`docs/research/ε-override与void事件管道字段设计评估.md`。
+> 决策锁：ADR-0022、ADR-0023；评估见 `docs/_archive/2026-10/research/ε-如何读复验文案链设计评估.md`、`docs/_archive/2026-10/research/ε-对抗套件目录与版本化设计评估.md`、`docs/_archive/2026-10/research/ε-override与void事件管道字段设计评估.md`。
 > 本文件不改 `data/eval/gold.json`。不锁 Override Rate 通过线。不报对抗统计通过率。不重审假绿对照是否成立。
 
 ## 1. 读法源（文案 / demo，非缝）
@@ -46,7 +46,7 @@
 
 ## 3. 对抗目录（RESEARCH 纪律，非缝）
 
-`docs/research/adversarial/README.md` 与 `INDEX.md` 在仓，`catalog_version` 为 `0.1.0` 骨架。INDEX 无 `pass_rate` 列/字样。ATK-FG-01..03 与 ATK-CS-01..04 只指针，不复制通过线正文。
+`docs/_archive/2026-10/research/adversarial/README.md` 与 `INDEX.md` 在仓，`catalog_version` 为 `0.1.0` 骨架。INDEX 无 `pass_rate` 列/字样。ATK-FG-01..03 与 ATK-CS-01..04 只指针，不复制通过线正文。
 
 目录存在 ≠ 仪器已过 / 对抗成立。本批不跑对抗夹具、不报统计通过率、不把 skeleton 行写成仪器已过。
 

@@ -98,6 +98,7 @@ Interview / demo / external copy: only [`docs/ops/口径一页纸.md`](docs/ops/
 | Topic | Link |
 |-------|------|
 | Interview / demo one-pager (CN) | [`docs/ops/口径一页纸.md`](docs/ops/口径一页纸.md) |
+| Architecture overview (2026-10) | [`docs/architecture/2026-10-overview.md`](docs/architecture/2026-10-overview.md) |
 | Product pointer | [`docs/product/FreshLatch.md`](docs/product/FreshLatch.md) |
 | Glossary | [`CONTEXT.md`](CONTEXT.md) |
 | Contribution boundary | [`docs/contribution-boundary.md`](docs/contribution-boundary.md) |

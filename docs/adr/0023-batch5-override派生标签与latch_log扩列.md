@@ -2,7 +2,7 @@
 
 - **状态**: Accepted
 - **日期**: 2026-09-23
-- **相关**: `docs/research/ε-override与void事件管道字段设计评估.md`、ADR-0006、ADR-0015、地图 #96 / 工单 #108
+- **相关**: `docs/_archive/2026-10/research/ε-override与void事件管道字段设计评估.md`、ADR-0006、ADR-0015、地图 #96 / 工单 #108
 
 ## 背景
 

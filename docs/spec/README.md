@@ -48,16 +48,16 @@
 |---|---|---|
 | 目录结构与模块划分 | #3 | ADR-0001 |
 | 复验单 UI = FastAPI+HTML | #4 | ADR-0002 |
-| 存储检索 = SQLite+BM25 多 stage 管线 | #5 | ADR-0003、《检索路线选型评估.md》 |
-| Agent 循环 = 裸 tools 自写循环(ReAct) | #6 | ADR-0004、《Agent循环实现选型评估.md》 |
-| LangGraph interrupt 人审模式研究 | #7 | 《langgraph-interrupt人审模式研究.md》 |
-| 合成语料与金标(12 主张三档) | #8 | 《语料金标设计评估.md》 |
-| 评测 harness 与假绿对照 | #9 | ADR-0005、《评测harness与假绿对照设计评估.md》 |
-| Skills 文件内容设计 | #10 | 《Skills文件设计评估.md》 |
-| HumanLatch 作废/续命最小闭环 | #11 | ADR-0006、《HumanLatch闭环设计评估.md》 |
-| W4 验收标准操作化 | #12 | ADR-0007、《W4验收标准操作化评估.md》 |
-| spawn_critic(focus) 词表 | #14 | 《spawn_critic-focus词表设计评估.md》 |
-| 模型冒烟(qwen-flash go) | #2 | 《dashscope模型冒烟验证.md》 |
+| 存储 = SQLite（ADR-0003）；默认检索臂 = hybrid+rerank（见 retrieval-decision）；BM25 仅回退 | #5 | ADR-0003、`docs/_archive/2026-10/research/检索路线选型评估.md` |
+| Agent 循环 = 裸 tools 自写循环(ReAct) | #6 | ADR-0004、`docs/_archive/2026-10/research/Agent循环实现选型评估.md` |
+| LangGraph interrupt 人审模式研究 | #7 | `docs/_archive/2026-10/research/langgraph-interrupt人审模式研究.md` |
+| 合成语料与金标(12 主张三档) | #8 | `docs/_archive/2026-10/research/语料金标设计评估.md` |
+| 评测 harness 与假绿对照 | #9 | ADR-0005、`docs/_archive/2026-10/research/评测harness与假绿对照设计评估.md` |
+| Skills 文件内容设计 | #10 | `docs/_archive/2026-10/research/Skills文件设计评估.md` |
+| HumanLatch 作废/续命最小闭环 | #11 | ADR-0006、`docs/_archive/2026-10/research/HumanLatch闭环设计评估.md` |
+| W4 验收标准操作化 | #12 | ADR-0007、`docs/_archive/2026-10/research/W4验收标准操作化评估.md` |
+| spawn_critic(focus) 词表 | #14 | `docs/_archive/2026-10/research/spawn_critic-focus词表设计评估.md` |
+| 模型冒烟(qwen-flash go) | #2 | `docs/_archive/2026-10/research/dashscope模型冒烟验证.md` |
 | 领域词表 | — | `CONTEXT.md` |
 | 立项依据（历史切片；现行冲突以已接受 ADR + `CONTEXT.md` 为准） | — | `docs/product/FreshLatch-立项切片.md`（stub；全文 `docs/_archive/2026-10/product/FreshLatch-立项切片.md`） |
 | 双判一致;Auditor 在场 = 闸层不变量(废止 Lead `spawn_auditor`) | #20,#25,#48 | ADR-0009、ADR-0010;规格回填见 `03-工具表与白名单.md` §3.6 |
