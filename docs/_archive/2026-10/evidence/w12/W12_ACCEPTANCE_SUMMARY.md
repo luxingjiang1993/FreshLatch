@@ -1,4 +1,4 @@
-> **SUPERSEDED：** 已归档口径 / 非现行真源。本页不是现行产品验收通过证明。现行入口 → docs/ops/口径一页纸.md + CONTEXT.md + docs/evidence/retrieval-decision.md
+> **SUPERSEDED：** 已归档口径 / 非现行真源。本页不是现行产品验收通过证明。现行入口 → docs/messaging-one-pager.md + CONTEXT.md + docs/evidence/retrieval-decision.md
 
 # W12标准验证总结报告
 

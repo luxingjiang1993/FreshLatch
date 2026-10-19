@@ -2,7 +2,7 @@
 >
 > 非现行真源 / Not current source of truth
 >
-> 现行入口 → [docs/ops/口径一页纸.md](../docs/ops/口径一页纸.md) + [CONTEXT.md](../CONTEXT.md) + [docs/evidence/retrieval-decision.md](../docs/evidence/retrieval-decision.md)
+> 现行入口 → [docs/messaging-one-pager.md](../docs/messaging-one-pager.md) + [CONTEXT.md](../CONTEXT.md) + [docs/evidence/retrieval-decision.md](../docs/evidence/retrieval-decision.md)
 >
 > 归档副本：[docs/_archive/2026-10/tasks/DOC-02.md](../docs/_archive/2026-10/tasks/DOC-02.md)
 

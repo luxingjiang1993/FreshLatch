@@ -1,80 +1,80 @@
-# Contribution Boundary — 可写贡献与禁用话术
+# Contribution Boundary — writable claims and banned talk
 
-> **更新（2026-10）：** 按 Hard-Gold 之后的默认臂变更改写。生产检索默认已是 `hybrid+rerank`。
-> **现行口径：** [`docs/ops/口径一页纸.md`](ops/口径一页纸.md) + [`CONTEXT.md`](../CONTEXT.md) + [`docs/evidence/retrieval-decision.md`](evidence/retrieval-decision.md)。
-> **范围：** 对外可写的贡献边界。不是整条发前闭环的交付证明，也不是注册通过或产品就绪。
-> **前版：** v0（I0）曾把生产默认写成钉死 bm25，并禁止说「dense / hybrid / rerank 已是生产默认」。该禁令在 2026-10-07 拍板之后不成立，已从黑名单删除。
-
----
-
-## 1. 生产检索（现行）
-
-- 默认臂：`hybrid+rerank`。精排是本地 `BAAI/bge-reranker-base`，只重排 hybrid 已经给出的 top-10。
-- BM25 只作回退：`set_retrieval_switch("bm25")`。它不改常量 `PRODUCTION_RETRIEVAL_MODE`，也不是生产默认。
-- 只切回词重叠精排：`set_retrieval_switch("hybrid+rerank_lexical")`。
-- 缺向量记 `bm25_fallback`。reranker 失败记 `last_rerank_mode=lexical_fallback`。
-- Hard-Gold / #259 的证据可以引用。那不是闭合统计意义上的产品通过，也不是「BM25 统计显著最优」。
-
-决策链见 `docs/evidence/retrieval-decision.md`。I3 骨架规格已归档：`docs/_archive/2026-10/hard-gold.md`（第 6 节是 2026-10-07 变更记录）。现行默认以本页与口径一页纸为准。
+> **Update (2026-10):** Rewritten after the post–Hard-Gold default-arm change. Production retrieval default is now `hybrid+rerank`.
+> **Current framing:** [`docs/messaging-one-pager.md`](messaging-one-pager.md) + [`CONTEXT.md`](../CONTEXT.md) (glossary pointer) + [`docs/evidence/retrieval-decision.md`](evidence/retrieval-decision.md).
+> **Scope:** Externally writable contribution boundary. Not proof that the full pre-send loop is delivered, and not a registration pass or product-ready claim.
+> **Prior:** v0 (I0) pinned production default to BM25 and banned saying "dense / hybrid / rerank is already the production default." That ban does not hold after the 2026-10-07 decision and was removed from the blacklist.
 
 ---
 
-## 2. 可以写的贡献（诚实）
+## 1. Production retrieval (current)
 
-| 可写 | 含义 |
-|------|------|
-| **可测 retrieve 子系统** | `claim→查询变换→retrieve→有序 evidence_id + retrieval_mode`；Agent 只当调用方，不可自选生产臂 |
-| **评测臂与生产臂分离** | 评测可强制 bm25 / dense / hybrid / hybrid+rerank / bm25_fallback。生产默认是 `hybrid+rerank`。BM25 只经 `set_retrieval_switch("bm25")` 回退 |
-| **降级诚实** | 向量失败 → BM25 并标记 `bm25_fallback`，不静默空结果 |
+- Default arm: `hybrid+rerank`. Rerank is local `BAAI/bge-reranker-base`, only reranking the hybrid top-10.
+- BM25 is fallback only: `set_retrieval_switch("bm25")`. It does not change the constant `PRODUCTION_RETRIEVAL_MODE`, and it is not the production default.
+- Lexical-only rerank: `set_retrieval_switch("hybrid+rerank_lexical")`.
+- Missing vectors record `bm25_fallback`. Reranker failure records `last_rerank_mode=lexical_fallback`.
+- Hard-Gold / #259 evidence is citable. That is not a closed statistical product pass, and not "BM25 is statistically significantly best."
 
-组合说法：检索子系统可独立测量、可降级。2026-10-07 起生产默认是本地 `BAAI/bge-reranker-base` 的 `hybrid+rerank`（只重排 hybrid top-10）。BM25 是回退，不是默认。
-
-Phase A 冒烟复跑的历史入口在归档页 `docs/_archive/2026-10/eval-retrieve.md`。那一页记录当时「为何仍 BM25」，不要把它的现在时当成现行默认臂。
+Decision chain: `docs/evidence/retrieval-decision.md`. I3 skeleton spec archived: `docs/_archive/2026-10/hard-gold.md` (section 6 is the 2026-10-07 change log). Current default follows this page and the messaging one-pager.
 
 ---
 
-## 3. 禁用话术（黑名单 · 口述与文档均禁）
+## 2. Writable contributions (honest)
 
-1. 「我们做了 **agentic RAG**」（Phase A 明确 Out）
-2. 「评测 **证明** BM25 **统计显著**最优」，或把冒烟持平说成换臂的统计证明
-3. 「**首次**带证据改稿」或对外装形式化 **proof-carrying / PCC**
-4. 「**Phase A = 整条发前闭环已交付**」（发前闭环属 V1+；Evidence-bound 属 V1.5）
-5. **SaaS / PMF / L5 / 注册通过**（含 `counted_as_pass=true`、领域标杆、产品已就绪）
-6. **开放聊天当作正式裁决**（开放 `web_search` 为主路径、聊天化主 UI 已交付、对话改正式裁决）
+| Writable | Meaning |
+|----------|---------|
+| **Measurable retrieve subsystem** | `claim→query transform→retrieve→ordered evidence_id + retrieval_mode`; Agent is caller only and cannot pick the production arm |
+| **Eval arm ≠ production arm** | Eval may force bm25 / dense / hybrid / hybrid+rerank / bm25_fallback. Production default is `hybrid+rerank`. BM25 only via `set_retrieval_switch("bm25")` fallback |
+| **Honest degradation** | Vector failure → BM25 marked `bm25_fallback`; no silent empty results |
 
-Related Work 祖先（RARR / PAVE / 事实检查等）可承认。边界话术用「发前新鲜度复验协议」。不要把 v0 冒烟写成已完成的整协议，也不要把现行默认臂说回 BM25。
+Combined claim: the retrieval subsystem is independently measurable and degradable. Since 2026-10-07 the production default is `hybrid+rerank` with local `BAAI/bge-reranker-base` (hybrid top-10 only). BM25 is fallback, not default.
 
-已删除的旧禁令：「dense / hybrid / rerank 已是生产默认」不得说。2026-10 起生产默认就是 `hybrid+rerank`，这句可以按 §1 的范围说。
-
----
-
-## 4. 阶段落地记录（冒烟档 · 落地当时的默认臂）
-
-下表是各阶段追加的贡献面。冒烟档不报方差，不作统计显著。落地当时生产默认臂仍是 `bm25` 的句子，只描述那一天，不描述 2026-10-07 之后的现行默认（现行见 §1）。
-
-| 阶段 | 将追加 / 已写入的贡献面 |
-|------|------------------------|
-| V1 | 单垂直发前路径；T1 落盘；包结论；`patch_events` 起记 |
-| I1 | 失败三分法 + 可复盘误判样本（冒烟层口径：不报方差，不作统计显著） |
-| V1.5 | Evidence-bound / attested patch（人确认 + 强制再验）；论文主投实验 |
-| I2 | 安全三例可复现 demo：越权召回 · 间接注入 · 检索投毒（≠ idea #4；ADR-0030） |
-| V2 | 发前钩子（Memo UI+CLI + 入站 check）+ 主张台账只读投影（冒烟·采用层；ADR-0031） |
-
-- **V1 已落地（冒烟，2026-09-29）：** 发前闭环主缝在仓（顾问样例包 `v1-mck-soai`、白名单薄 URL、包结论、人审、`patch_events` 起记）。证据见 `docs/evidence/v1/V1-DoD-CLOSE.md`。档=冒烟。落地当时生产默认臂仍是 `bm25`。本条不是 Hard-Gold，也不是检索臂评测升格。
-- **I1 已落地（冒烟，2026-09-29）：** 失败三分法 + 可复盘误判样本已在仓。短索引 `docs/evidence/i1/INDEX.md` 一眼：漏拦/误拦 ≥3，且 ≥1 条 `runnable=true`（金样 `i1-s005`）。证据见 `docs/evidence/i1/ACCEPTANCE.md`。档=冒烟；不报方差；生产 Gate / disposition / HumanLatch 枚举未扩；本条不是 Hard-Gold。
-- **V1.5 已落地（冒烟，2026-09-29）：** 表单 Evidence-bound（独立 `propose_patch`/`confirm_patch`、有证覆盖、单条再验、导出）；薄对话本期 Out（未实装、未 stub）；HumanLatch `VALID_ACTIONS` 未扩；发前无 C\|T 开关；Exit 不硬绑「可发」。评估见 `docs/_archive/2026-10/research/V1.5-Evidence-bound补丁设计评估.md`；ADR-0029；硬 Exit `docs/evidence/v15/ACCEPTANCE.md`；关门 `docs/evidence/v15/V15-DoD-CLOSE.md`。档=冒烟。落地当时不是 Hard-Gold，不是 C vs T 显著，不是改默认臂。
-- **I2 已落地（冒烟，2026-09-29）：** 安全三例（ACL tenant 过滤 · 注入 Gate 拒绿 · poison 元数据剔除）可复现；注入 1× Lead→Auditor 冒烟 fail-closed；薄表 `docs/security.md`。评估见 `docs/_archive/2026-10/research/I2-安全三例设计评估.md`；ADR-0030；硬 Exit `docs/evidence/i2/ACCEPTANCE.md`；关门 `docs/evidence/i2/I2-DoD-CLOSE.md`。档=冒烟；≠ #4；不是渗透认证，不是安全通过率，不是 Hard-Gold。落地当时不改生产默认臂。
-- **V2 已落地（冒烟·采用层，2026-09-30）：** 发前钩子（Memo UI+CLI 同闸 + 入站 check allow/deny）+ 主张台账只读投影（discard∪renew）；零新写表；未做 Word/Notion/开放 webhook 平台；未图谱/CMS；未 Memo 商业裁决；未整包再验挂钩子；未解冻 Studio。评估见 `docs/_archive/2026-10/research/V2-发前钩子与主张台账设计评估.md`；ADR-0031；硬 Exit `docs/evidence/v2/ACCEPTANCE.md`；关门 `docs/evidence/v2/V2-DoD-CLOSE.md`。档=冒烟·采用层；`curl` ≠ 平台已交付；不硬绑「可发」；不报采用率；不是 Hard-Gold。落地当时未改默认臂。
-
-整协议口径（已入库 T1 才能裁定；`web→落盘→再验`；补丁 ⊆ T1；人确认；对话不改正式裁决）以 `docs/ops/口径一页纸.md` 与 `CONTEXT.md` 为准。历史阶段路线见归档的 `docs/_archive/2026-10/roadmap.md`。
+Historical Phase A smoke re-run entry lives on the archive page `docs/_archive/2026-10/eval-retrieve.md`. That page records why BM25 still held then; do not read its present tense as the current default arm.
 
 ---
 
-## 5. 指针
+## 3. Banned talk (blacklist · oral and docs)
 
-- 面试 / 对外：[`docs/ops/口径一页纸.md`](ops/口径一页纸.md)
-- 词表：[`CONTEXT.md`](../CONTEXT.md)（含包结论四值）
-- 检索决策链：[`docs/evidence/retrieval-decision.md`](evidence/retrieval-decision.md)
-- Phase A 冒烟叙事（历史，页首已标明 2026-10-07 默认已改）：[`accounting-card.md`](_archive/2026-10/accounting-card.md)
-- 规格：`docs/_archive/2026-10/spec/10-PhaseA-RAG.md`（契约；不是本贡献清单的替代）
-- 结构总览：[`docs/architecture/2026-10-overview.md`](architecture/2026-10-overview.md)
+1. "We built **agentic RAG**" (explicit Phase A Out)
+2. "Eval **proves** BM25 is **statistically significantly** best," or treating smoke-level ties as statistical proof for an arm change
+3. "**First** evidence-bound edit" or presenting formal **proof-carrying / PCC** externally
+4. "**Phase A = full pre-send loop delivered**" (pre-send loop is V1+; Evidence-bound is V1.5)
+5. **SaaS / PMF / L5 / registration pass** (including `counted_as_pass=true`, domain benchmark, product ready)
+6. **Open chat as formal verdict** (open `web_search` as main path, chat-primary UI delivered, dialogue changing formal verdict)
+
+Related Work ancestors (RARR / PAVE / fact-checking, etc.) may be acknowledged. Boundary phrasing: "pre-send freshness reverify protocol." Do not cast v0 smoke as the completed full protocol, and do not describe the current default arm as BM25.
+
+Removed old ban: "must not say dense / hybrid / rerank is already the production default." As of 2026-10 the production default is `hybrid+rerank`; that sentence may be said within §1's scope.
+
+---
+
+## 4. Stage landing record (smoke band · default arm at landing time)
+
+The table below is the contribution surface each stage added. Smoke band does not report variance and is not statistical significance. Sentences that say production default was still `bm25` at landing describe that day only, not the post–2026-10-07 current default (see §1).
+
+| Stage | Contribution surface added / already written |
+|-------|-----------------------------------------------|
+| V1 | Single-vertical pre-send path; T1 ingest; package disposition; `patch_events` starts |
+| I1 | Failure triad + reviewable misjudgment samples (smoke-layer framing: does not report variance; not statistical significance) |
+| V1.5 | Evidence-bound / attested patch (human confirm + forced re-verify); paper primary experiment |
+| I2 | Security three-case reproducible demos: cross-tenant recall · indirect injection · retrieval poisoning (≠ idea #4; ADR-0030) |
+| V2 | Publish hook (Memo UI+CLI + inbound check) + claim-ledger read-only projection (smoke · adoption layer; ADR-0031) |
+
+- **V1 landed (smoke, 2026-09-29):** Pre-send loop main seam in-repo (advisor sample pack `v1-mck-soai`, allowlisted thin URL, package disposition, human review, `patch_events` starts). Evidence: `docs/evidence/v1/V1-DoD-CLOSE.md`. Band=smoke. Production default arm was still `bm25` at landing. Not Hard-Gold; not a retrieval-arm eval promotion.
+- **I1 landed (smoke, 2026-09-29):** Failure triad + reviewable misjudgment samples in-repo. Short index `docs/evidence/i1/INDEX.md` at a glance: miss/false-alarm ≥3, and ≥1 `runnable=true` (gold sample `i1-s005`). Evidence: `docs/evidence/i1/ACCEPTANCE.md`. Band=smoke; does not report variance; production Gate / disposition / HumanLatch enums not extended; not Hard-Gold.
+- **V1.5 landed (smoke, 2026-09-29):** Form Evidence-bound (independent `propose_patch`/`confirm_patch`, attested overwrite, single-claim re-verify, export); thin dialogue Out this wave (not implemented, not stubbed); HumanLatch `VALID_ACTIONS` not extended; no C|T switch on pre-send; Exit not hard-bound to "OK to send." Eval: `docs/_archive/2026-10/research/V1.5-Evidence-bound补丁设计评估.md`; ADR-0029; hard Exit `docs/evidence/v15/ACCEPTANCE.md`; close `docs/evidence/v15/V15-DoD-CLOSE.md`. Band=smoke. At landing: not Hard-Gold, not C vs T significance, not a default-arm change.
+- **I2 landed (smoke, 2026-09-29):** Security three cases (ACL tenant filter · injection Gate refuse-green · poison metadata drop) reproducible; injection 1× Lead→Auditor smoke fail-closed; thin table `docs/security.md`. Eval: `docs/_archive/2026-10/research/I2-安全三例设计评估.md`; ADR-0030; hard Exit `docs/evidence/i2/ACCEPTANCE.md`; close `docs/evidence/i2/I2-DoD-CLOSE.md`. Band=smoke; ≠ #4; not a penetration certification, not a security pass rate, not Hard-Gold. At landing: production default arm unchanged.
+- **V2 landed (smoke · adoption layer, 2026-09-30):** Publish hook (Memo UI+CLI same gate + inbound check allow/deny) + claim-ledger read-only projection (discard∪renew); zero new write tables; no Word/Notion/open webhook platform; no graph/CMS; no Memo commercial verdict; no whole-pack re-verify on the hook; Studio not unfrozen. Eval: `docs/_archive/2026-10/research/V2-发前钩子与主张台账设计评估.md`; ADR-0031; hard Exit `docs/evidence/v2/ACCEPTANCE.md`; close `docs/evidence/v2/V2-DoD-CLOSE.md`. Band=smoke · adoption layer; `curl` ≠ platform delivered; not hard-bound to "OK to send"; no adoption-rate claim; not Hard-Gold. At landing: default arm unchanged.
+
+Full-protocol framing (only ingested T1 may decide; `web→disk→re-verify`; patches ⊆ T1; human confirm; dialogue does not change formal verdict) follows `docs/messaging-one-pager.md` and `CONTEXT.md`. Historical stage roadmap: archived `docs/_archive/2026-10/roadmap.md`.
+
+---
+
+## 5. Pointers
+
+- Interview / external: [`docs/messaging-one-pager.md`](messaging-one-pager.md)
+- Glossary SSOT: [`docs/glossary.md`](glossary.md) · short pointer [`CONTEXT.md`](../CONTEXT.md)
+- Retrieval decision chain: [`docs/evidence/retrieval-decision.md`](evidence/retrieval-decision.md)
+- Phase A smoke narrative (historical; header marks 2026-10-07 default change): [`accounting-card.md`](_archive/2026-10/accounting-card.md)
+- Spec: `docs/_archive/2026-10/spec/10-PhaseA-RAG.md` (contract; not a substitute for this contribution list)
+- Structure overview: [`docs/architecture/2026-10-overview.md`](architecture/2026-10-overview.md)

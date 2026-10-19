@@ -1,7 +1,7 @@
 # docs/_archive/2026-10 — 归档 hub
 
 > **非现行真源。** 本目录保存 2026-10 facade 迁入的历史全文。  
-> **现行入口：** [`docs/ops/口径一页纸.md`](../../ops/口径一页纸.md) · [`CONTEXT.md`](../../../CONTEXT.md) · [`docs/evidence/retrieval-decision.md`](../../evidence/retrieval-decision.md) · [`docs/architecture/2026-10-overview.md`](../../architecture/2026-10-overview.md) · [`docs/contribution-boundary.md`](../../contribution-boundary.md)  
+> **现行入口：** [`docs/messaging-one-pager.md`](../../messaging-one-pager.md) · [`CONTEXT.md`](../../../CONTEXT.md) · [`docs/evidence/retrieval-decision.md`](../../evidence/retrieval-decision.md) · [`docs/architecture/2026-10-overview.md`](../../architecture/2026-10-overview.md) · [`docs/contribution-boundary.md`](../../contribution-boundary.md)  
 > 历史分析见 archive：[`evidence/`](evidence/)（#731：模块级评估、L4 计划与诊断、batch1–5、full-repo、w12）。
 
 | 子目录 / 文件 | 原角色（历史） |

@@ -291,7 +291,7 @@ def test_fake_quote_fixture_is_not_fresh_and_names_numeric_mismatch(tmp_path):
 
 def test_context_registers_numeric_mismatch():
     """词表登记与代码常量是同一符号。"""
-    text = (REPO / "CONTEXT.md").read_text(encoding="utf-8")
+    text = (REPO / "docs" / "glossary.md").read_text(encoding="utf-8")
     assert "**numeric_mismatch**:" in text
     assert "**verbatim 数字闸**:" in text
     assert "`numeric_mismatch`" in text.split("**abstention reason**:", 1)[1].split("**", 1)[0]

@@ -11,7 +11,7 @@ HARD_IDS = ("acl-t001", "inj-t001", "poison-t001")
 
 
 def _hard_section(text: str) -> str:
-    head, _, _rest = text.partition("## 可选")
+    head, _, _rest = text.partition("## Optional")
     return head
 
 
@@ -19,14 +19,14 @@ def test_security_md_exists_with_three_hard_rows():
     """硬表三行齐全，含规定列，并声明冒烟层。"""
     text = SECURITY.read_text(encoding="utf-8")
     hard = _hard_section(text)
-    assert "冒烟" in hard
-    assert "不是渗透认证" in hard
+    assert "smoke" in hard
+    assert "not a penetration certification" in hard
     for column in COLUMNS:
         assert column in hard
     for demo_id in HARD_IDS:
         assert demo_id in hard
     assert "adv-fresh-t001" not in hard
-    assert "不计入 I2 Exit" in text
+    assert "not counted toward I2 Exit" in text
     assert "adv-fresh-t001" in text
 
 
