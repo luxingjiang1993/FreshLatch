@@ -240,3 +240,50 @@ def test_cli_module_invocation(tmp_path):
     assert proc.returncode == 0, proc.stderr
     assert out.exists()
     assert "复验单已写出" in (proc.stdout or "")
+
+
+# -- #735 AC0.1(IR-PACK):用户面 reason 投影 -------------------------------------------
+
+
+def test_external_reason_hides_gate_jargon(tmp_path):
+    """含闸码/ADR/角色名的机器 reason 不直出用户面;external_reason 回退人话模板。
+
+    薄投影层优先:Claim.reason 机器原文不动(诊断/审计面单一真相),
+    用户面吃 external_reason;未大拆 Claim.reason。
+    """
+    store = _make_store(tmp_path)
+    raw = ("[闸打回:GATE_DIMENSION_MISMATCH] 登记维度不符; 原理由: "
+           "[Auditor 双判推翻 Lead fresh] 证据冲突(ADR-0011 机械跨检)")
+    claim = Claim(
+        claim_id="c-gate",
+        statement="主张 c-gate 陈述",
+        status="unknown",
+        reason=raw,
+    )
+    proj = project_claim(store, claim)
+    assert proj["reason"] == raw  # 机器原文保留在诊断面
+    ext = proj["external_reason"]
+    assert ext
+    assert ext != raw
+    for jargon in ("[闸打回", "ADR-", "Auditor", "Lead", "机械跨检", "双判", "闸"):
+        assert jargon not in ext
+    assert "人工复核" in ext  # unknown → 人话兜底
+
+
+def test_external_reason_passes_clean_text_and_empty(tmp_path):
+    """干净人话 reason 原样透传;空 reason 投影为空字符串,不编造。"""
+    store = _make_store(tmp_path)
+    clean = Claim(
+        claim_id="c-clean",
+        statement="主张 c-clean 陈述",
+        status="stale",
+        reason="新材料与结论冲突,建议复核",
+    )
+    proj = project_claim(store, clean)
+    assert proj["external_reason"] == "新材料与结论冲突,建议复核"
+
+    empty = Claim(claim_id="c-empty", statement="主张 c-empty 陈述",
+                  status="fresh", reason="")
+    proj_empty = project_claim(store, empty)
+    assert proj_empty["external_reason"] == ""
+    assert proj_empty["reason"] == ""

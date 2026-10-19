@@ -111,8 +111,9 @@ DEMO_DOCKET = REPO_ROOT / "data" / "t0_docket.json"
 CHECKPOINTS = REPO_ROOT / "data" / "checkpoints.db"
 
 BADGE = {
-    "fresh": ("绿 · 仍成立", "#1a7f37"),
-    "stale": ("红 · 已失效", "#cf222e"),
+    # #736 AC0.5:用户面不读颜色字——有效/失效直说(与 reverify.html 的 JS BADGE 同改)
+    "fresh": ("有效 · 仍成立", "#1a7f37"),
+    "stale": ("失效", "#cf222e"),
     "unknown": ("灰 · 证据不足", "#6e7781"),
     "void": ("void · 已作废", "#8250df"),
 }
@@ -1579,8 +1580,10 @@ def _render_audit_body(audit: dict) -> str:
 @app.get("/", response_class=HTMLResponse)
 def index(view: str = Query(default="")) -> str:
     # 注入单一真相默认视图,避免 Python 常量与 JS 初值漂移。
-    # view=audit 只改呈现,不改闸。审计正文来自 project_audit。
-    mode = "audit" if view == "audit" else VIEW_MODE_DEFAULT
+    # view=audit / view=interview 只改呈现,不改闸。审计正文来自 project_audit。
+    # #735 AC0.3:interview(面试视图)默认只露 Sheet+HumanLatch,运维/检索面板
+    # 由前端「运维/检索面板」开关打开;默认视图仍是职人(DEM-6 不变)。
+    mode = view if view in ("audit", "interview") else VIEW_MODE_DEFAULT
     page = HTML_PAGE.replace(_VIEW_MODE_TOKEN, mode)
     # #664 只同步呈现密度。data-view 决定职人主路径是否折叠协议词,不改判定。
     page = page.replace(
@@ -1588,12 +1591,17 @@ def index(view: str = Query(default="")) -> str:
         f'<html lang="zh" data-view="{mode}">',
         1,
     )
-    if mode != "craftsman":
-        page = page.replace('id="view-craftsman" class="on"', 'id="view-craftsman"')
+    # 「on」按钮态:模板默认带职人 on;先摘再按 mode 挂,避免双 on
+    page = page.replace('id="view-craftsman" class="on"', 'id="view-craftsman"')
+    if mode == "audit":
         page = page.replace('id="view-audit"', 'id="view-audit" class="on"', 1)
         page = page.replace('id="audit-panel"', 'id="audit-panel" class="visible"', 1)
+    elif mode == "interview":
+        page = page.replace('id="view-interview"', 'id="view-interview" class="on"', 1)
     else:
-        # I-11(#710):职人 SYNTHETIC 短中文;审计视图保留原标签(上方分支不动)
+        page = page.replace('id="view-craftsman"', 'id="view-craftsman" class="on"', 1)
+    if mode != "audit":
+        # I-11(#710):职人/面试 SYNTHETIC 短中文;审计视图保留原标签
         page = page.replace(SYN_BADGE_FULL_TEXT, SYN_BADGE_SHORT_TEXT, 1)
     audit = _audit_for_ui()
     badge_html = _render_craftsman_badges(audit["badges"]) if mode == "craftsman" else ""

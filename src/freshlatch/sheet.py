@@ -90,7 +90,9 @@ def project_claim(store: RetrievalStore, claim: Claim) -> dict[str, Any]:
         "t0_evidence_ids": list(claim.t0_evidence_ids),
         "t1_evidence_ids": list(claim.t1_evidence_ids),
         "status": claim.status,
-        "reason": claim.reason,
+        "reason": claim.reason,  # 机器原文(诊断/审计面;#735 不直出用户面)
+        # #735 AC0.1:用户面人话投影;含闸码/ADR/角色名时按 status 回退人话模板
+        "external_reason": user_reason(claim.status, claim.reason),
         "voided": claim.voided,
         "voided_at": claim.voided_at,
         "last_confirmed_at": claim.last_confirmed_at,  # 续命时间戳(§5.4)
@@ -107,6 +109,38 @@ UI_BADGE_PARTIAL = "partial"
 UI_BADGE_ABSTAIN = "abstain"
 # stale / void 已有机器结论,不套 partial。
 _UI_BADGE_SKIP_PARTIAL = frozenset({"stale", "void"})
+
+# ---- #735 AC0.1:用户面 reason 投影(IR-PACK) ----
+# 机器 reason 里的黑话(闸码括注/ADR/角色名/机械比对标记)不直出用户面;
+# 含黑话时按 status 回退到人话模板,机器原文留在 reason 键走诊断/审计面。
+_USER_REASON_JARGON = re.compile(
+    r"\[[^\]]+\]"  # [闸打回:…] / [机械跨检…] / [双判未一致] 等闸码括注
+    r"|\bADR-\d+\b|\bGATE\b|\bDEM-\d+\b|\bDIMENSION_MISMATCH\b"
+    r"|\bLead\b|\bCritic\b|\bAuditor\b"
+    r"|闸|机械跨检|双判"
+)
+
+# 按 status 的人话兜底(纯规则模板,无 LLM;与客户向备忘同风格)。
+_USER_REASON_FALLBACK = {
+    "fresh": "机器复核通过:现有证据仍支撑该结论。",
+    "stale": "新材料与该结论冲突,该结论已失效。",
+    "unknown": "现有证据不足以确认该结论,已转人工复核。",
+    "void": "该结论已由人工作废。",
+}
+
+
+def user_reason(status: object, reason: object) -> str:
+    """用户面 reason 投影:干净文本原样透传;含黑话按 status 回退人话模板。
+
+    不改 Claim.reason(机器原文仍是诊断/审计面的单一真相);
+    本函数只服务投影层,UI 默认面吃 external_reason,黑话进可折叠诊断。
+    """
+    text = (reason or "").strip() if isinstance(reason, str) else ""
+    if not text:
+        return ""
+    if not _USER_REASON_JARGON.search(text):
+        return text
+    return _USER_REASON_FALLBACK.get(str(status), "该结论的机器理由含内部标记,详见可折叠诊断。")
 
 
 def project_audit(trajectory: str | Path | None) -> dict[str, Any]:
