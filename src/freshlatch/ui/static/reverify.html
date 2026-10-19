@@ -378,8 +378,10 @@ details.diagnostic summary{cursor:pointer;color:#6e7781}
 <div id="renew-modal" class="modal"><div class="box">
   <p><b>续命确认</b></p>
   <p id="renew-claim" style="color:#57606a"></p>
-  <p>续命 = 人主张「该主张在 T1 仍然成立」。必须锚 T1 原文证据(ADR-0006 §4),
-     证据从<b>本轮已检索的 T1 块</b>下拉选择,不接受自由填写:</p>
+  <p>续命 = 人主张「该主张在 T1 仍然成立」。必须锚定至少 1 条<b>本轮已检索的 T1 块</b>里的原文证据,
+     从下拉选择、不接受自由填写(可先「点回原文核对」再确认):</p>
+  <details class="diagnostic"><summary>机器诊断(内部标记,可折叠)</summary>
+    <div class="reason">规则锚点:renew 必须锚 T1 原文证据(ADR-0006 §4);无证据不可续命(交互层 §5.4)。</div></details>
   <select id="renew-evidence"></select>
   <div style="margin-top:12px">
     <button class="renew-ok" onclick="confirmRenew()">确认续命</button>

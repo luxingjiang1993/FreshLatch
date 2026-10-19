@@ -174,7 +174,8 @@ def _apply_renew(store, claim: Claim, d: HumanDecision, now: Callable[[], dateti
     if not str(d.evidence_id or "").strip():
         return DecisionResult(claim.claim_id, ok=False, action="renew",
                               error_code="RENEW_NO_EVIDENCE",
-                              detail="续命必须带 T1 原文证据(evidence_id 至少 1 个,ADR-0006 §4)")
+                              detail="续命必须锚定至少 1 条 T1 原文证据"
+                                     "(从「本轮已检索的 T1 块」下拉选择,不接受自由填写)")
     # 重放幂等(合成夹具 · 非真事故复盘):已有同证据 renew 行则零写跳过
     if _renew_already_logged(store, claim.claim_id, str(d.evidence_id)):
         return DecisionResult(claim.claim_id, ok=True, action="renew",
