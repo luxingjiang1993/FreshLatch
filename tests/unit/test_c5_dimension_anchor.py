@@ -29,7 +29,7 @@ from freshlatch.store.base import InMemoryStore
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 RUBRIC = REPO_ROOT / "skills/freshness_audit/references/verdict-rubric.md"
 SKILL = REPO_ROOT / "skills/reverify/SKILL.md"
-GLOSSARY = REPO_ROOT / "CONTEXT.md"
+GLOSSARY = REPO_ROOT / "docs" / "glossary.md"
 # c5 事故轨迹(修复后冒烟,checkpoint 介导的维度混淆翻转;轨迹目录不入库,缺失则跳过)
 C5_FIXTURE = REPO_ROOT / "reports/trajectories/run-20260920-223219.jsonl"
 

@@ -126,9 +126,9 @@ def test_readme_and_product_docs_nail_advisor_vertical():
             product_hits.append(path.name)
     assert product_hits, "docs/product/ 须可见「顾问报告」为近端唯一垂直"
 
-    context = (root / "CONTEXT.md").read_text(encoding="utf-8")
-    assert "顾问报告" in context
-    assert "单一" in context or "唯一" in context
+    glossary = (root / "docs" / "glossary.md").read_text(encoding="utf-8")
+    assert "顾问报告" in glossary
+    assert "单一" in glossary or "唯一" in glossary
 
 
 def test_pack_not_registered_as_second_active_pack_vertical():

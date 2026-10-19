@@ -371,7 +371,7 @@ def test_permission_tier_names_and_rule_gate_preamble():
     assert TOOL_TIER_2 == "tool_tier_2"
     gate = (REPO / "src/freshlatch/gates/rule_gate.py").read_text(encoding="utf-8")
     assert "\n".join(gate.splitlines()[:4]) == _RULE_GATE_PREAMBLE
-    context = (REPO / "CONTEXT.md").read_text(encoding="utf-8")
+    context = (REPO / "docs" / "glossary.md").read_text(encoding="utf-8")
     for name in (TOOL_TIER_0, TOOL_TIER_1, TOOL_TIER_2):
         assert f"**{name}**:" in context
     block = context.split("**tool_tier_0**:", 1)[1].split("**CRAG grade", 1)[0]

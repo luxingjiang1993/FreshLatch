@@ -32,10 +32,10 @@ idea #4 stale-masquerade `adv-fresh-t001` may ship in the same wave as interview
 
 ## Thin ACL scope (A-P4)
 
-Thin ACL ≠ full SaaS multi-tenancy. CI matrix `tests/unit/test_acl_cross_tenant_matrix.py` only locks cross-tenant read/write/session denial under server-side credential mapping: identity comes from `FRESHLATCH_SERVING_API_KEYS`; a client-supplied `tenant_id` alone is not access. No tenant admin UI, SSO, billing isolation, or full RBAC. This section is not a new I2 hard-table row.
+薄 ACL ≠ 完整 SaaS 多租户. Thin ACL ≠ full SaaS multi-tenancy. CI matrix `tests/unit/test_acl_cross_tenant_matrix.py` only locks cross-tenant read/write/session denial under server-side credential mapping: identity comes from `FRESHLATCH_SERVING_API_KEYS`; a client-supplied `tenant_id` alone is not access. No tenant admin UI, SSO, billing isolation, or full RBAC. This section is not a new I2 hard-table row.
 
 ## Red-team paired regression (A-P6)
 
-Red-team paired regression ≠ full adversarial security certification. `tests/unit/test_redteam_accept_reject_pairs.py` feeds should-deny and should-not-deny pairs through the same fixture path: should-deny must deny or abstain; should-not-deny must not false-refuse on that path. Pairs that touch ACL / Serving fail-closed across tenants and when unauthorized; identity still comes from `FRESHLATCH_SERVING_API_KEYS` server-side mapping. This section is not a new I2 hard-table row, does not report attack success rate, and does not replace penetration certification.
+红队成对回归 ≠ 完整对抗安全认证. Red-team paired regression ≠ full adversarial security certification. `tests/unit/test_redteam_accept_reject_pairs.py` feeds should-deny and should-not-deny pairs through the same fixture path: should-deny must deny or abstain; should-not-deny must not false-refuse on that path. Pairs that touch ACL / Serving fail-closed across tenants and when unauthorized; identity still comes from `FRESHLATCH_SERVING_API_KEYS` server-side mapping. This section is not a new I2 hard-table row, does not report attack success rate, and does not replace penetration certification.
 
-Optional scan: garak may run in a private environment. This repo's CI does not invoke garak, and paid or external-network garak is not a merge gate. Sample and block-ship bar: `docs/ops/可选-garak-tool-injection扫描.md`. Default: not required CI.
+Optional scan: garak may run in a private environment. 本仓 CI 不调用 garak, and 付费或外网 garak is not a merge gate. This repo's CI does not invoke garak, and paid or external-network garak is not a merge gate. Sample and block-ship bar: `docs/ops/可选-garak-tool-injection扫描.md`. Default: not required CI.

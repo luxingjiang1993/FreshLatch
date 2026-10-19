@@ -29,7 +29,7 @@ from freshlatch.store.sqlite_store import SQLiteStore
 REPO = Path(__file__).resolve().parents[2]
 LOOP_PATH = REPO / "src/freshlatch/roles/loop.py"
 RUNNER_PATH = REPO / "src/freshlatch/runner.py"
-CONTEXT_PATH = REPO / "CONTEXT.md"
+CONTEXT_PATH = REPO / "docs" / "glossary.md"
 EVIDENCE_ID = "fix-memo#p1@T1"
 DOC = "fix-memo"
 
