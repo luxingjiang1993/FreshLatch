@@ -4,7 +4,7 @@ from pathlib import Path
 
 SECURITY = Path("docs/security.md")
 INDEX = Path("docs/evidence/i2/INDEX.md")
-ADVERSARIAL = Path("docs/research/adversarial/INDEX.md")
+ADVERSARIAL = Path("docs/_archive/2026-10/research/adversarial/INDEX.md")
 
 COLUMNS = ("threat", "demo_id", "layer", "repro_cmd", "expected", "smoke_note")
 HARD_IDS = ("acl-t001", "inj-t001", "poison-t001")
