@@ -1,3 +1,5 @@
+> **SUPERSEDED：** 已归档口径 / 非现行真源。文中「生产默认仍为 bm25」是该次验收当时的记录，不是现行产品检索默认。现行入口 → docs/ops/口径一页纸.md + CONTEXT.md + docs/evidence/retrieval-decision.md
+
 # V1 发前主缝贯通冒烟证据 (#174)
 
 > 层身份:**冒烟/脚本验收**(零 LLM CI)。不报方差,不作统计升格。

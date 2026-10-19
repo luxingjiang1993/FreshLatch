@@ -1,6 +1,7 @@
 # FreshLatch 实施规格汇编
 
 > **历史规格横幅：** 本目录含 W1–W4 开工汇编及后续阶段卷。实施中如与本卷冲突，以已接受 **ADR** + 根目录 `CONTEXT.md` 为准。
+> **2026-10 短桩：** 卷 08、10–14、20、21 正文已归档，原路径只留三态短桩。`docs/research/` 与 `docs/plans/` 整树见各自目录的 README 短桩。
 > 工单:[汇编全部决策 → W1–W4 实施规格 #13](https://github.com/luxingjiang1993/FreshLatch/issues/13)
 > 性质:前置决议的**汇编**(后期卷另有独立 to-spec);不含新决策。
 > 语言:全中文,技术词保留英文原词;术语以 `CONTEXT.md` 词表为准。

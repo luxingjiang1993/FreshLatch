@@ -15,7 +15,7 @@
 - 缺向量记 `bm25_fallback`。reranker 失败记 `last_rerank_mode=lexical_fallback`。
 - Hard-Gold / #259 的证据可以引用。那不是闭合统计意义上的产品通过，也不是「BM25 统计显著最优」。
 
-决策链见 `docs/evidence/retrieval-decision.md`。`docs/hard-gold.md` 第 6 节记录 2026-10-07 的生产默认变更。
+决策链见 `docs/evidence/retrieval-decision.md`。I3 骨架规格已归档：`docs/_archive/2026-10/hard-gold.md`（第 6 节是 2026-10-07 变更记录）。现行默认以本页与口径一页纸为准。
 
 ---
 

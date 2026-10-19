@@ -24,7 +24,7 @@ from freshlatch.store.sqlite_store import SQLiteStore
 ROOT = Path(__file__).resolve().parents[2]
 HARD_GOLD = ROOT / "data" / "eval" / "retrieve_hard_gold.json"
 SMOKE_GOLD = ROOT / "data" / "eval" / "retrieve_gold.json"
-SPEC = ROOT / "docs" / "hard-gold.md"
+SPEC = ROOT / "docs" / "_archive" / "2026-10" / "hard-gold.md"
 CORPUS = ROOT / "data" / "corpus"
 TRAPS = ROOT / "data" / "traps"
 
