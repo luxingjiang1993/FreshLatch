@@ -5,7 +5,7 @@
 > **档：** 冒烟 / 面试加固（I3）。不报方差；不作统计显著；**不是**改生产默认臂授权；**不是**政策平台；**不是**真事故复盘。  
 > **日期：** 2026-10-02  
 > **Refs：** [#253](https://github.com/luxingjiang1993/FreshLatch/issues/253)（本票 · Exit 代收） / parent [#248](https://github.com/luxingjiang1993/FreshLatch/issues/248) / 子票 #249–#252  
-> **规格 / 决议：** `docs/spec/20-PhaseI3-InterviewHardening.md` · ADR-0032 · 评估 `docs/research/I3-面试加固三轨设计评估.md`  
+> **规格 / 决议：** `docs/spec/20-PhaseI3-InterviewHardening.md` · ADR-0032 · 评估 `docs/_archive/2026-10/research/I3-面试加固三轨设计评估.md`  
 > **硬 Exit 权威：** `docs/evidence/i3/ACCEPTANCE.md`（文首层标签；三轨分节互不顶替）
 
 本页是 I3 Exit 的可引用关门摘要。Exit 由 Ronin 代批（等 `GROK-PROXY-APPROVED #253`）；实现本摘要的 PR 合 main 后可关本票。

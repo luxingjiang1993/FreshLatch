@@ -2,7 +2,7 @@
 
 > **层：冒烟 / 面试弹药。** 本页是 idea #4 的恰好 1 条合成样例（主张 + T1 摘录，非整本镜像）。不报方差，不作统计升格，不是 Hard-Gold。
 > **I2 ≠ #4。本条不计入 I2 Exit。** 硬 Exit 仍是 `acl-t001` / `inj-t001` / `poison-t001`，不依赖本页。
-> 不改 `docs/research/adversarial/INDEX.md`，不把 catalog 升版或「目录有行」写成 I2 Done。`catalog_version` 保持 `0.1.0`。
+> 不改 `docs/_archive/2026-10/research/adversarial/INDEX.md`，不把 catalog 升版或「目录有行」写成 I2 Done。`catalog_version` 保持 `0.1.0`。
 > ACCEPTANCE 全文属 #218。本页先写下可选勾文案；#218 落盘时只放进可选分节，不得写进硬勾。
 
 ## 样例

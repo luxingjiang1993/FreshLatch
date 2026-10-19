@@ -3,7 +3,7 @@
 - **状态**: Accepted
 - **日期**: 2026-09-21
 - **作者**: Cursor Grok 4.6
-- **相关**: 立项切片 §11、ADR-0013、`docs/research/MemoryForensics操作定义对齐与论文路径设计评估.md`
+- **相关**: 立项切片 §11、ADR-0013、`docs/_archive/2026-10/research/MemoryForensics操作定义对齐与论文路径设计评估.md`
 
 ## 背景
 

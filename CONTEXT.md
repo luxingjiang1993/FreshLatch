@@ -297,7 +297,7 @@ _Avoid_: 记忆插件、Mem0、记忆体检产品
 ## 闸与人审
 
 **规则闸 (Gate)**:
-纯函数/Workflow 层,强制执行不变量:`stale` / `unknown` 不得绿灯、无 `t1_evidence_ids` 不得 `fresh`、checksum 对不上不得 fresh/续命(**Batch 2 半激活**,ADR-0017:renew 半边接线真 `checksum_fn`=语料现算 sha256且禁读库列,以确定性负例验收;fresh 半边仍**结构性空转**——不构造 `validity_basis`;不得升格为「checksum 已证明 latch」;盘点见 docs/research/checksum链激活契约.md,决议见 docs/research/β-checksum激活契约与空转设计评估.md)、stale 必须携带可点回 T1 反证 id、stale 反证不得为纯元陈述、fresh 需双判一致(`auditor_verdict` 在场且非 dissent,ADR-0009)、stale 反证经 Auditor 维度核对异议时打回落 unknown + 异议记录(ADR-0010)、登记维度 ≠ 反证自标维度时机械跨检打回 unknown + 机械比对异议(`DIMENSION_CROSSCHECK_MISMATCH`,ADR-0011;两维任一缺失回落 Auditor 语义核对;**受理层预检先行、闸层转兜底**,ADR-0012)、续命(renew)必须带 ≥1 个锚 T1 的 evidence_id(ADR-0006 §4;renew 是人审 L0 出口,不受双判一致约束)。绿灯唯一出口。
+纯函数/Workflow 层,强制执行不变量:`stale` / `unknown` 不得绿灯、无 `t1_evidence_ids` 不得 `fresh`、checksum 对不上不得 fresh/续命(**Batch 2 半激活**,ADR-0017:renew 半边接线真 `checksum_fn`=语料现算 sha256且禁读库列,以确定性负例验收;fresh 半边仍**结构性空转**——不构造 `validity_basis`;不得升格为「checksum 已证明 latch」;盘点见 docs/_archive/2026-10/research/checksum链激活契约.md,决议见 docs/_archive/2026-10/research/β-checksum激活契约与空转设计评估.md)、stale 必须携带可点回 T1 反证 id、stale 反证不得为纯元陈述、fresh 需双判一致(`auditor_verdict` 在场且非 dissent,ADR-0009)、stale 反证经 Auditor 维度核对异议时打回落 unknown + 异议记录(ADR-0010)、登记维度 ≠ 反证自标维度时机械跨检打回 unknown + 机械比对异议(`DIMENSION_CROSSCHECK_MISMATCH`,ADR-0011;两维任一缺失回落 Auditor 语义核对;**受理层预检先行、闸层转兜底**,ADR-0012)、续命(renew)必须带 ≥1 个锚 T1 的 evidence_id(ADR-0006 §4;renew 是人审 L0 出口,不受双判一致约束)。绿灯唯一出口。
 _Avoid_: 校验器、检查器
 
 **Policy-as-code（thin · #8）**:
@@ -309,7 +309,7 @@ _Avoid_: 政策引擎已交付、把禁区塞进并改写 rule_gate 不变量语
 _Avoid_: 与 stale/unknown 混称、把政策拒说成检索投毒已拦
 
 **checksum 半激活 / 结构性空转**:
-checksum 链按半边诚实登记启用态:已宣称激活的半边须接线且确定性负例打得响;未激活半边明示结构性空转,不得宣传全链已启用。套套逻辑(`checksum_fn` 读与 basis 同源库列)视为假激活。操作验收句在评估文档与 ADR-0017,不进本定义扩写。Batch 2 攻击面用例表(ATK-CS-*)见 docs/research/β-checksum攻击面用例集合设计评估.md。β+ 档 3a(ADR-0024):方向已锁为将来 list 同构全员受检,本批仍不构造 fresh `validity_basis`;单 doc 主证据激活已否;实装须另票预登记。评估见 docs/research/β+-档3a-fresh-validity_basis设计评估.md。β+ 档 3b(ADR-0025):跨轮腐烂重检方向已锁——复验入口与 UI 拉单双触发、同一 `check_basis`/`apply_rot`,不符→`unknown`+机械码;无 basis 的 fresh 不检;实装须另票。评估见 docs/research/β+-档3b-跨轮腐烂重检设计评估.md。
+checksum 链按半边诚实登记启用态:已宣称激活的半边须接线且确定性负例打得响;未激活半边明示结构性空转,不得宣传全链已启用。套套逻辑(`checksum_fn` 读与 basis 同源库列)视为假激活。操作验收句在评估文档与 ADR-0017,不进本定义扩写。Batch 2 攻击面用例表(ATK-CS-*)见 docs/_archive/2026-10/research/β-checksum攻击面用例集合设计评估.md。β+ 档 3a(ADR-0024):方向已锁为将来 list 同构全员受检,本批仍不构造 fresh `validity_basis`;单 doc 主证据激活已否;实装须另票预登记。评估见 docs/_archive/2026-10/research/β+-档3a-fresh-validity_basis设计评估.md。β+ 档 3b(ADR-0025):跨轮腐烂重检方向已锁——复验入口与 UI 拉单双触发、同一 `check_basis`/`apply_rot`,不符→`unknown`+机械码;无 basis 的 fresh 不检;实装须另票。评估见 docs/_archive/2026-10/research/β+-档3b-跨轮腐烂重检设计评估.md。
 _Avoid_: checksum 已启用(含糊全称)、开关已打开、档3a已启用、跨轮重检已上线(决议未实装时)
 
 **元陈述 (meta-statement)**:
@@ -321,7 +321,7 @@ _Avoid_: 状态说明、跟踪备注
 _Avoid_: 过期/冲突/元陈述包(路线图旧称「过期」须读作快照取代)
 
 **HumanLatch**:
-人审工作流:人对每条红/黄灯主张点「作废」、「续命」或「disputed 改账」(续命必须带 T1 evidence_id;disputed 必须写下结论,可再打开,不改机器 status,不写冻结 gold / floors),并确认记忆隔离。Agent 不得自己把红灯改回绿灯。续命生效链次序(Batch 2):格式→点回→闸(含 checksum)→仅绿后写 validity_basis;失败零写;`error_code`+短中文透传(见 docs/research/β-checksum与HumanLatch-renew交界设计评估.md)。跨轮腐烂重检(ADR-0025)不得自动 void、不得篡改人审 L0;机器仅可将带 basis 的 fresh 机械落 unknown。
+人审工作流:人对每条红/黄灯主张点「作废」、「续命」或「disputed 改账」(续命必须带 T1 evidence_id;disputed 必须写下结论,可再打开,不改机器 status,不写冻结 gold / floors),并确认记忆隔离。Agent 不得自己把红灯改回绿灯。续命生效链次序(Batch 2):格式→点回→闸(含 checksum)→仅绿后写 validity_basis;失败零写;`error_code`+短中文透传(见 docs/_archive/2026-10/research/β-checksum与HumanLatch-renew交界设计评估.md)。跨轮腐烂重检(ADR-0025)不得自动 void、不得篡改人审 L0;机器仅可将带 basis 的 fresh 机械落 unknown。
 
 **作废名单 (Invalidation List)**:
 被人作废的主张 id 清单;进名单的主张重跑时不得再判 fresh。删除文件另闸,可先隔离不删盘。存储真相是 SQLite `invalidation_list` 表,随课题持久,与长期记忆的「已废 id」是同一份,不复制。
@@ -359,7 +359,7 @@ retrieve **难金标**轨,与冒烟 `retrieve_gold` **分文件**(如 `retrieve_
 _Avoid_: 把 n=36 冒烟称作 Hard-Gold、骨架跑过即已换臂、与主张金标混报
 
 **Hard-Gold 过线 / 改臂授权闸**:
-在骨架之上的**决策闸**:须 dense 索引 + hard 臂对比 + I0 增益门(Hybrid 通过线于 hard 集成立)才**书面授权**开改臂**实现票**(Gate);不过线则冻 bm25。hard 评测库与 A0 **同库**=corpus+traps。本闸钉流程 ≠ 已换臂。2026-10-07 真人拍板 DECISION-16 的 16 条之后，生产默认是 `hybrid+rerank`；一键回退 `set_retrieval_switch("bm25")`。那次拍板不是全库逐行人工审核，也不是本闸本身。同日精排改为本地 `BAAI/bge-reranker-base`（只重排 top-10；见下条）。操作定义见 ADR-0033 与 `docs/research/Hard-Gold过线与改臂决议设计评估.md`;证据 `docs/evidence/hard-gold-arm/`、`docs/evidence/issue-284/DECISION-16.md`、`docs/evidence/neural-rerank/`。
+在骨架之上的**决策闸**:须 dense 索引 + hard 臂对比 + I0 增益门(Hybrid 通过线于 hard 集成立)才**书面授权**开改臂**实现票**(Gate);不过线则冻 bm25。hard 评测库与 A0 **同库**=corpus+traps。本闸钉流程 ≠ 已换臂。2026-10-07 真人拍板 DECISION-16 的 16 条之后，生产默认是 `hybrid+rerank`；一键回退 `set_retrieval_switch("bm25")`。那次拍板不是全库逐行人工审核，也不是本闸本身。同日精排改为本地 `BAAI/bge-reranker-base`（只重排 top-10；见下条）。操作定义见 ADR-0033 与 `docs/_archive/2026-10/research/Hard-Gold过线与改臂决议设计评估.md`;证据 `docs/evidence/hard-gold-arm/`、`docs/evidence/issue-284/DECISION-16.md`、`docs/evidence/neural-rerank/`。
 _Avoid_: 无 dense 判过线、用主张金标/control-c 顶替、grill 直接改生产臂、把本闸称作已换 hybrid、臂对比缺 traps 仍判门
 
 **生产精排**:
@@ -367,18 +367,18 @@ _Avoid_: 无 dense 判过线、用主张金标/control-c 顶替、grill 直接�
 _Avoid_: 把 K=30 送进 cross-encoder、失败时静默仍标成神经精排、把这次切换说成全库人工 gold
 
 **I1 失败复盘（评测标签）**:
-答辩/冒烟用语,不是生产 Gate 或 disposition 枚举。桶名(找不到/找错/没用上)与漏拦/误拦的操作定义、corpus 路径见 ADR-0028 与 `docs/research/I1-失败三分法与HumanLatch语料设计评估.md`;语料落 `docs/evidence/i1/`。产品失败三桶 ≠ ops ADR-0028 评测桶:审计面上的检索空 / grade 不够 / tool_tier_2 拒不得改写成找不到 / 找错 / 没用上,见 `docs/ops/挂标-失败归因三桶.md`。
+答辩/冒烟用语,不是生产 Gate 或 disposition 枚举。桶名(找不到/找错/没用上)与漏拦/误拦的操作定义、corpus 路径见 ADR-0028 与 `docs/_archive/2026-10/research/I1-失败三分法与HumanLatch语料设计评估.md`;语料落 `docs/evidence/i1/`。产品失败三桶 ≠ ops ADR-0028 评测桶:审计面上的检索空 / grade 不够 / tool_tier_2 拒不得改写成找不到 / 找错 / 没用上,见 `docs/ops/挂标-失败归因三桶.md`。
 _Avoid_: 把三分法写成生产 status、把产品三桶与评测三桶混名、无轨迹编造样本、远程 V1 关单冒充本地 Exit 后宣称 I1 完成
 
 **I2 安全三例（评测/答辩）**:
-面试安全轮冒烟用语,不是安全认证或生产枚举。三例=越权召回 / 间接注入 / 检索投毒;操作定义与 Exit 分层见 ADR-0030 与 `docs/research/I2-安全三例设计评估.md`;证据落 `docs/evidence/i2/` 与 `docs/security.md`。idea #4 过期伪装不计入本 Exit。
+面试安全轮冒烟用语,不是安全认证或生产枚举。三例=越权召回 / 间接注入 / 检索投毒;操作定义与 Exit 分层见 ADR-0030 与 `docs/_archive/2026-10/research/I2-安全三例设计评估.md`;证据落 `docs/evidence/i2/` 与 `docs/security.md`。idea #4 过期伪装不计入本 Exit。
 _Avoid_: 安全平台已交付、用 #4 顶替 I2、单次 LLM 报安全通过率
 
 **假绿对照 (False-Green Control)**:
 无工具基线:同模型不带工具只读 T0 摘要,应把已死主张判「成立」(假绿)。本产品必须红,对照成立才说明复验真在起作用。
 
 **判定拉齐预登记 (γ / C3)**:
-Batch 3 判据与「禁改 gold 凑绿」操作化的单一真相在 `docs/research/C3-判定拉齐预登记卡.md`(ADR-0018)。通过线/加严句不在此扩写;γ 通过 ≠ 假绿对照成立。消融/多 seed 本批仅锁规格、实跑未做(未跑 ≠ 已证明;见 docs/research/γ-消融表与多seed规格时序设计评估.md)。假绿仪器与 γ/消融须分条引用、禁互相顶替(见 docs/research/γ-与假绿仪器分条措辞设计评估.md)。
+Batch 3 判据与「禁改 gold 凑绿」操作化的单一真相在 `docs/_archive/2026-10/research/C3-判定拉齐预登记卡.md`(ADR-0018)。通过线/加严句不在此扩写;γ 通过 ≠ 假绿对照成立。消融/多 seed 本批仅锁规格、实跑未做(未跑 ≠ 已证明;见 docs/_archive/2026-10/research/γ-消融表与多seed规格时序设计评估.md)。假绿仪器与 γ/消融须分条引用、禁互相顶替(见 docs/_archive/2026-10/research/γ-与假绿仪器分条措辞设计评估.md)。
 _Avoid_: 改金标凑绿、把 smoke 当统计证明、未跑称作已证明、γ 通过称作假绿已根治
 
 **金标 (Gold)**:
@@ -392,7 +392,7 @@ _Avoid_: 改金标凑绿、把 smoke 当统计证明、未跑称作已证明、�
 _Avoid_: 盲测、用户测试
 
 **第二课题包 (second-thesis pack)**:
-FreshLatch 内与第一课题同构的另一份合成课题(平行问题句、T0/T1 语料、平行 gold 子集),走同一导入→T1 三卡→复验单→作废/续命→客户备忘旅程,不改主课题闸与词表语义。Batch 4 本批唯一包为报价保质期薄切片(QuoteTTL 薄,claim 级);不是独立 QuoteTTL 产品表面,不是只改问题句的换皮。候选池、backlog 序与另图备选的单一真相在 `docs/research/δ-第二课题选题设计评估.md`(ADR-0019),不在此复制整表。
+FreshLatch 内与第一课题同构的另一份合成课题(平行问题句、T0/T1 语料、平行 gold 子集),走同一导入→T1 三卡→复验单→作废/续命→客户备忘旅程,不改主课题闸与词表语义。Batch 4 本批唯一包为报价保质期薄切片(QuoteTTL 薄,claim 级);不是独立 QuoteTTL 产品表面,不是只改问题句的换皮。候选池、backlog 序与另图备选的单一真相在 `docs/_archive/2026-10/research/δ-第二课题选题设计评估.md`(ADR-0019),不在此复制整表。
 _Avoid_: 第二产品线、多垂类已验证、QuoteTTL 产品(本包)
 
 **软 Port (soft Port)**:
@@ -404,5 +404,5 @@ _Avoid_: 硬零改、零改代码(含糊)、已多垂类 Port
 _Avoid_: 已开源数据集、数据已释放(仅因 C4 存在)、多垂类数据集已发布
 
 **对抗套件目录 (Adversarial Catalog)**:
-假绿/对抗用例的版本化索引(`docs/research/adversarial/`,`catalog_version` semver,条目 `ATK-<FAMILY>-NN`)。Batch 5 仅为骨架(ADR-0022);目录存在 ≠ 仪器已过;禁报统计通过率、禁 pass_rate 列;与金标/预登记/ATK-CS 只指针。
+假绿/对抗用例的版本化索引(`docs/_archive/2026-10/research/adversarial/`,`catalog_version` semver,条目 `ATK-<FAMILY>-NN`)。Batch 5 仅为骨架(ADR-0022);目录存在 ≠ 仪器已过;禁报统计通过率、禁 pass_rate 列;与金标/预登记/ATK-CS 只指针。
 _Avoid_: 对抗已通过证书、套件通过率表(本批)、仪器已过(仅因目录有行)

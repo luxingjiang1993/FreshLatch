@@ -2,7 +2,7 @@
 
 - **状态**: Accepted
 - **日期**: 2026-10-09
-- **相关**: `docs/research/patch_events-路线Y正式n与语料缺额设计评估.md`；上游 ADR-0037（n=400 · 只冲乙）；协议页 `docs/evidence/patch-events/PREREG-Y.md`（未激活）；实现针 PE-Y-03 / PR #497（`SPLIT-pe-v2-route-y.json` · 不可激活）；语料先例 #371 · 规格讨论 #368
+- **相关**: `docs/_archive/2026-10/research/patch_events-路线Y正式n与语料缺额设计评估.md`；上游 ADR-0037（n=400 · 只冲乙）；协议页 `docs/evidence/patch-events/PREREG-Y.md`（未激活）；实现针 PE-Y-03 / PR #497（`SPLIT-pe-v2-route-y.json` · 不可激活）；语料先例 #371 · 规格讨论 #368
 - **说明**: 本文件只钉「如何解锁正式 n 可执行」；不改成立尺、选取 R、门闩过门条件、甲防火墙；不激活正式主跑。
 
 ## 背景

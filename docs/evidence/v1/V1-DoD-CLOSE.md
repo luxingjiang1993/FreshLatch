@@ -5,7 +5,7 @@
 > **档：** 冒烟 / 零 LLM CI。不报方差，不作统计升格，不是 Hard-Gold。  
 > **日期：** 2026-09-29  
 > **Refs：** [#175](https://github.com/luxingjiang1993/FreshLatch/issues/175)（人终收，本文件不代关） / parent [#168](https://github.com/luxingjiang1993/FreshLatch/issues/168) / blocked-by [#174](https://github.com/luxingjiang1993/FreshLatch/issues/174) closed via [PR #181](https://github.com/luxingjiang1993/FreshLatch/pull/181)  
-> **规格 / 决议：** `docs/spec/11-PhaseV1-PrePublish.md` · ADR-0027 · 评估 `docs/research/V1-发前闭环垂直与包结论设计评估.md`
+> **规格 / 决议：** `docs/spec/11-PhaseV1-PrePublish.md` · ADR-0027 · 评估 `docs/_archive/2026-10/research/V1-发前闭环垂直与包结论设计评估.md`
 
 本页是 V1 Exit 的可引用关门摘要。人终收仍在 #175；Cloud 只交包，不 close issue。
 
@@ -97,7 +97,7 @@ docs/roadmap.md:71:| **In** | **单一垂直=顾问报告**（McK SoAI 03→11 �
 docs/roadmap.md:80:- [x] `patch_events` schema 已落并开始记账  
 docs/roadmap.md:229:- **自 V1 起**记账 `patch_events`（人手补丁也算）：`claim_id` / `before_disp` / `patch_span` / `t1_ids` / `human_confirm` / `reverify` / `minutes` / `arm=C|T`。
 docs/roadmap.md:238:| W1–2 | I0 + `patch_events` schema |
-docs/roadmap.md:297:| 2026-09-29 | **V1 grill DONE**：顾问报告+McK SoAI；包结论新层；薄 URL=`www.mckinsey.com`；评估见 `docs/research/V1-发前闭环垂直与包结论设计评估.md`；ADR-0027；下一跳 to-spec |
+docs/roadmap.md:297:| 2026-09-29 | **V1 grill DONE**：顾问报告+McK SoAI；包结论新层；薄 URL=`www.mckinsey.com`；评估见 `docs/_archive/2026-10/research/V1-发前闭环垂直与包结论设计评估.md`；ADR-0027；下一跳 to-spec |
 README.md:31:**单一垂直 = 顾问报告**（V1 / ADR-0027）。近端只做已签发顾问/战略主张的发前复验；样例主包为 McKinsey State of AI 公开洞察摘录（T0≈2025-03 → T1≈2025-11），见 `data/packs/v1-mck-soai/`。thesis-1 与 QuoteTTL 可留回归，**不算**第二垂直。仓内不提交整本咨报 PDF。
 exit:0
 ```

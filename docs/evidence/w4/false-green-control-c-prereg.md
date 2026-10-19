@@ -2,7 +2,7 @@
 
 > **锁定语**:本文写于旁增 `CONTROL_PROMPT_C`、跑任何 C 对照之前。事后修改本文的通过线、作废线、decoding、prompt 正文或私有多锚表,视为该次 C 运行无效(ADR-0007;HARKing)。
 > **层级**:demo / 仪器层冒烟。通过只表示「这一次 C 跑出了 must_stale 4/4 假绿」。不报方差,不升格为一期测量闭合,不宣布判定层已愈,不替代 K3。
-> **决议**:[决议:C预登记锁与成败可引用句](https://github.com/luxingjiang1993/FreshLatch/issues/77);构念包见 [决议:C构念与旋钮包](https://github.com/luxingjiang1993/FreshLatch/issues/76)。评估见 `docs/research/C预登记锁与成败可引用句设计评估.md`。
+> **决议**:[决议:C预登记锁与成败可引用句](https://github.com/luxingjiang1993/FreshLatch/issues/77);构念包见 [决议:C构念与旋钮包](https://github.com/luxingjiang1993/FreshLatch/issues/76)。评估见 `docs/_archive/2026-10/research/C预登记锁与成败可引用句设计评估.md`。
 > **旧仪器**:`docs/evidence/w4/false-green-control-prereg.md` 与旧 `CONTROL_PROMPT` **冻结只读**;旧 #70「对照不成立」canonical 句保留,不得被 C 读数改写/删除。不得用旧 0/4 校准本文任何数字。
 
 ## 构念

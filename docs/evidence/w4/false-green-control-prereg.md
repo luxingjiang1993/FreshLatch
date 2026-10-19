@@ -2,7 +2,7 @@
 
 > **锁定语**:本文写于改 `CONTROL_PROMPT`、跑任何新对照之前。事后修改本文的通过线、作废线、decoding 或 prompt 正文,视为该次新运行无效(ADR-0007;HARKing)。
 > **层级**:demo / 仪器层冒烟。通过只表示「这一次跑出了 must_stale 4/4 假绿」。不报方差,不升格为一期测量闭合,不宣布判定层已愈,不替代 K3。
-> **决议**:[决议:新假绿对照预登记](https://github.com/luxingjiang1993/FreshLatch/issues/46)。评估见 `docs/research/新假绿对照预登记设计评估.md`。
+> **决议**:[决议:新假绿对照预登记](https://github.com/luxingjiang1993/FreshLatch/issues/46)。评估见 `docs/_archive/2026-10/research/新假绿对照预登记设计评估.md`。
 > **旧运行**:`2026-09-21T14:22:42Z` 对照运行保持作废,见 `false-green-control-20260921-void.md`。不得用该次 1/4 读数校准本文任何数字。
 
 ## 构念

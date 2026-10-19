@@ -22,7 +22,7 @@ Single-context: `CONTEXT.md` + `docs/adr/` at the repo root. See `.claude/rules/
 
 每张决议类工单(grilling/prototype/research 拍出技术选型或设计拍板)关闭时,**必须一次性落齐以下四件套**,缺一不可:
 
-1. **大而全评估文档** → `docs/research/<主题>设计评估.md`(命名基准:《Agent循环实现选型评估.md》《HumanLatch闭环设计评估.md》)。固定结构:
+1. **大而全评估文档** → `docs/_archive/2026-10/research/<主题>设计评估.md`(命名基准:《Agent循环实现选型评估.md》《HumanLatch闭环设计评估.md》)。固定结构:
    - §问题 + 前置约束(哪些答案已被先前的工单/ADR 钉死)
    - §候选路线(每个决策维度的全部候选,含被否项)
    - §逐路线评估(对照表:维度 × 候选,被否理由写透)
@@ -31,7 +31,7 @@ Single-context: `CONTEXT.md` + `docs/adr/` at the repo root. See `.claude/rules/
    - §面试讲法(grilling 预案问答)
 2. **ADR** → `docs/adr/NNNN-<kebab>.md`(版本号顺延;仅在难反转+反直觉+真实取舍三条件齐备时)
 3. **词表更新** → 新术语即时落 `CONTEXT.md`
-4. **决议评论 + 关单 + 地图 Decisions-so-far 补行**(补行里必须带评估文档链接,格式「评估见 docs/research/XXX.md」)
+4. **决议评论 + 关单 + 地图 Decisions-so-far 补行**(补行里必须带评估文档链接,格式「评估见 docs/_archive/2026-10/research/XXX.md」)
 
 **Why**: 选型以 Anthropic 级面试讲解为判据——评估文档的登记册和面试讲法两节就是面试弹药库;被否选项写透才能在被追问「为什么不选 X」时答得上。
 

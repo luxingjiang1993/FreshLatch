@@ -5,7 +5,7 @@
 > **档：** 冒烟 / 面试安全轮（确定性硬门 + 注入 1× LLM 冒烟）。不报方差；不作渗透认证；**不是** Hard-Gold；**不是**安全通过率。  
 > **日期：** 2026-09-29  
 > **Refs：** [#219](https://github.com/luxingjiang1993/FreshLatch/issues/219)（本票 · Exit 代收） / parent [#213](https://github.com/luxingjiang1993/FreshLatch/issues/213) / blocked-by [#218](https://github.com/luxingjiang1993/FreshLatch/issues/218) CLOSED via [PR #224](https://github.com/luxingjiang1993/FreshLatch/pull/224) · `GROK-PROXY-APPROVED #218`  
-> **规格 / 决议：** `docs/spec/13-PhaseI2-SecurityDemos.md` · ADR-0030 · 评估 `docs/research/I2-安全三例设计评估.md`  
+> **规格 / 决议：** `docs/spec/13-PhaseI2-SecurityDemos.md` · ADR-0030 · 评估 `docs/_archive/2026-10/research/I2-安全三例设计评估.md`  
 > **硬 Exit 权威：** `docs/evidence/i2/ACCEPTANCE.md`（文首冒烟声明；硬勾三例确定性 + 注入 1× e2e）· 薄表 `docs/security.md`
 
 本页是 I2 Exit 的可引用关门摘要。Exit 由 Ronin 代批（等 `GROK-PROXY-APPROVED #219`）；实现本摘要的 PR 合 main 后可关本票。
@@ -53,7 +53,7 @@
 - [x] **UI 硬门**——未把安全三例绑成 UI 闸
 - [x] **扩 HumanLatch `VALID_ACTIONS`**——未扩
 - [x] **改生产默认检索臂**——仍 `bm25`
-- [x] **adversarial INDEX 升版 = Done**——未改 `docs/research/adversarial/INDEX.md` 叙事冒充 I2 Done
+- [x] **adversarial INDEX 升版 = Done**——未改 `docs/_archive/2026-10/research/adversarial/INDEX.md` 叙事冒充 I2 Done
 - [x] **Hard-Gold / 渗透认证 / 安全通过率/方差**——本层不宣称、不升格
 
 ## 不宣称渗透认证或 Hard-Gold

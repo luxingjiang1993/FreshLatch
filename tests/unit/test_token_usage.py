@@ -1,6 +1,6 @@
 """K5 token 入报告与单测:LLMClient 单桶累计 + run_gold raw 含用量块;禁网 mock。
 
-拍板依据:#62 / docs/research/K4K5实装形态设计评估.md —
+拍板依据:#62 / docs/_archive/2026-10/research/K4K5实装形态设计评估.md —
 仅 K5-1(金标 run_gold);顶层 + per_run token_usage;K5-2 与 control 非本期必过。
 不改闸 / gold.json / K6-4。
 """

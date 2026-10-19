@@ -2,7 +2,7 @@
 
 - **状态**: Accepted
 - **日期**: 2026-10-10
-- **相关**: `docs/research/冲乙共享仪器最小集设计评估.md`；[#519](https://github.com/luxingjiang1993/FreshLatch/issues/519)；父图 [#517](https://github.com/luxingjiang1993/FreshLatch/issues/517)；载体 ADR-0039 / #518；上游 ADR-0037；仓外原料 #521 / PR #522；门闩接口 #520；整合参考 `docs/research/冲甲冲乙行动方案整合.md` §2
+- **相关**: `docs/_archive/2026-10/research/冲乙共享仪器最小集设计评估.md`；[#519](https://github.com/luxingjiang1993/FreshLatch/issues/519)；父图 [#517](https://github.com/luxingjiang1993/FreshLatch/issues/517)；载体 ADR-0039 / #518；上游 ADR-0037；仓外原料 #521 / PR #522；门闩接口 #520；整合参考 `docs/_archive/2026-10/research/冲甲冲乙行动方案整合.md` §2
 - **说明**: 编号顺延开 PR 上的 0034–0039 之后。仪器写入**升格未激活** `PREREG-Y`，不另开字母页；不回写已跑旧 `PREREG.md` / B / C。
 
 ## 背景

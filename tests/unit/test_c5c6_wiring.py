@@ -1,7 +1,7 @@
 """#21 实装结构断言(TDD 红灯先行):SKILL.md 接线(Runner 注入,补 T6 实装债)+ 人格最小 diff
 + mark_stale 维度核对指令确定性注入 + must_fresh 干扰项语料/敏感度附表/维度疑似混淆标注。
 
-拍板依据:#19(grilling,已关)与 docs/research/c5c6工程债处置设计评估.md §4:
+拍板依据:#19(grilling,已关)与 docs/_archive/2026-10/research/c5c6工程债处置设计评估.md §4:
 - 接线层为主(事实 1:教义表在盘不在场;事实 2:事故路径 Lead 自主 mark_stale 三重裸奔);
 - 人格层最小 diff 一句指向已接线教义表(不复制铁律全文,防双拷贝漂移);
 - mark_stale 观察确定性携带维度核对指令(指令在场 ≠ 机器判维度,闸③不重开);

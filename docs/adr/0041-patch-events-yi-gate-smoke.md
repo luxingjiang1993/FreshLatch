@@ -2,7 +2,7 @@
 
 - **状态**: Accepted
 - **日期**: 2026-10-10
-- **相关**: `docs/research/冲乙门闩与冒烟功率条款设计评估.md`；[#520](https://github.com/luxingjiang1993/FreshLatch/issues/520)；父图 [#517](https://github.com/luxingjiang1993/FreshLatch/issues/517)；载体 ADR-0039 / #518；仪器 ADR-0040 / #519；先验 `GATE-Y-PROBE` / ADR-0037
+- **相关**: `docs/_archive/2026-10/research/冲乙门闩与冒烟功率条款设计评估.md`；[#520](https://github.com/luxingjiang1993/FreshLatch/issues/520)；父图 [#517](https://github.com/luxingjiang1993/FreshLatch/issues/517)；载体 ADR-0039 / #518；仪器 ADR-0040 / #519；先验 `GATE-Y-PROBE` / ADR-0037
 - **说明**: 编号顺延开 PR 上的 0034–0040 之后。本文件只钉激活前序与通过线；不改正式 n、不改乙成立尺（点>0.05）、不授权本图内正式主跑。
 
 ## 背景

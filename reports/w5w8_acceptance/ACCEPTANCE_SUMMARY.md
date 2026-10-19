@@ -2,7 +2,7 @@
 
 > **层级声明（2a）**：本文件是验收执行记录，不是「一期测量已闭合」证书。  
 > 通过的统计/冒烟项只用已锁「仅表明」句引用；未过项如实登记。  
-> **canonical 摘引入口**：下文「可引用索引」专节（决议:[决议:诚实状态落档形态与关图判据](https://github.com/luxingjiang1993/FreshLatch/issues/57)；评估见 `docs/research/诚实状态落档形态与关图判据设计评估.md`）。  
+> **canonical 摘引入口**：下文「可引用索引」专节（决议:[决议:诚实状态落档形态与关图判据](https://github.com/luxingjiang1993/FreshLatch/issues/57)；评估见 `docs/_archive/2026-10/research/诚实状态落档形态与关图判据设计评估.md`）。  
 > 收口图:[地图:W5-W8 诚实可引用状态](https://github.com/luxingjiang1993/FreshLatch/issues/51)；父图:[地图:一期评测可引用边界](https://github.com/luxingjiang1993/FreshLatch/issues/41) 已关。
 
 ## 可引用索引
@@ -58,7 +58,7 @@
 
 ### 关图检查表指针
 
-关收口图前检查表见评估 `docs/research/诚实状态落档形态与关图判据设计评估.md` §拍板。K6-4 §7.5 修窗同线复验已落档（#59）；**不得**据此写成一期评测闭合或 W5–W8 全量验收通过。
+关收口图前检查表见评估 `docs/_archive/2026-10/research/诚实状态落档形态与关图判据设计评估.md` §拍板。K6-4 §7.5 修窗同线复验已落档（#59）；**不得**据此写成一期评测闭合或 W5–W8 全量验收通过。
 
 ## 执行环境
 

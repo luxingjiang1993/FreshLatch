@@ -83,7 +83,7 @@
 
 ### 3.1 档 3b（主弹药）
 
-出处：`docs/research/β+-档3b-跨轮腐烂重检设计评估.md` §6。
+出处：`docs/_archive/2026-10/research/β+-档3b-跨轮腐烂重检设计评估.md` §6。
 
 > **Q:为什么不先做 3a 再做 3b？**
 > A:3b 读的是**已写** basis。今日 renew 已写；跨轮腐烂正是产品承诺所在。等 3a 等于让有牙的半边继续空转。
@@ -101,7 +101,7 @@
 
 ### 3.2 档 3a 方向锁（追问「为什么 fresh 还没牙」时用）
 
-出处：`docs/research/β+-档3a-fresh-validity_basis设计评估.md` §6。本批**不实装** 3a；只锁 list 方向（ADR-0024）。
+出处：`docs/_archive/2026-10/research/β+-档3a-fresh-validity_basis设计评估.md` §6。本批**不实装** 3a；只锁 list 方向（ADR-0024）。
 
 > **Q:档 2 都做了，为什么 fresh 还不补 validity_basis？**
 > A:补的时候必须先答单 doc 还是 list。单 doc 在多 evidence 下是假牙——只校主证却像全链有 checksum。我们宁可半边诚实空转，也不把假牙写成「已激活」。方向上锁的是 list，本批不实装。
@@ -137,7 +137,7 @@ pytest tests/unit/test_basis_rot.py tests/unit/test_ui_basis_rot.py tests/unit/t
 | 角色 | 路径 / 票 |
 |---|---|
 | 预锁 + 禁升格正本 | `docs/evidence/beta-plus-3b/ACCEPTANCE.md` |
-| 3b 评估 §6 | `docs/research/β+-档3b-跨轮腐烂重检设计评估.md` |
-| 3a 评估 §6 | `docs/research/β+-档3a-fresh-validity_basis设计评估.md` |
+| 3b 评估 §6 | `docs/_archive/2026-10/research/β+-档3b-跨轮腐烂重检设计评估.md` |
+| 3a 评估 §6 | `docs/_archive/2026-10/research/β+-档3a-fresh-validity_basis设计评估.md` |
 | ADR | ADR-0025（3b）、ADR-0024（3a 方向） |
 | 实装 | #143 复验入口、#144 拉单 + ACCEPTANCE、PR #145 |

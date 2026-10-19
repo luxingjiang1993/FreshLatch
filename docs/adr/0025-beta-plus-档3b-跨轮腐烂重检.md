@@ -2,7 +2,7 @@
 
 - **状态**: Accepted
 - **日期**: 2026-09-23
-- **相关**: ADR-0017、ADR-0024、ADR-0006、`docs/research/checksum链激活契约.md` §4/§6、`docs/research/β+-档3b-跨轮腐烂重检设计评估.md`、工单 #111
+- **相关**: ADR-0017、ADR-0024、ADR-0006、`docs/_archive/2026-10/research/checksum链激活契约.md` §4/§6、`docs/_archive/2026-10/research/β+-档3b-跨轮腐烂重检设计评估.md`、工单 #111
 
 ## 背景
 

@@ -3,7 +3,7 @@
 c5 事故形状(2026-09-20,修复后冒烟 run-223219):checkpoint 自动派驻的 Critic 把竞品门售价
 (39 美元/月/店,定价维度)当作「我方单会话成本仍低于竞品」主张(成本维度)的反证 mark_stale
 ——维度混淆;Lead 未独立核对即镜像 Critic 框架改判,must_fresh 翻转。处置与拍板见
-docs/evidence/w4/repro-check.md 背离三、docs/research/c5二修方向设计评估.md。
+docs/evidence/w4/repro-check.md 背离三、docs/_archive/2026-10/research/c5二修方向设计评估.md。
 
 三层修复结构断言(与 c2 同款):
 1. 口径守卫:Critic 人格 / Lead 人格 / verdict-rubric / SKILL.md 四处落齐「度量维度锚定」;

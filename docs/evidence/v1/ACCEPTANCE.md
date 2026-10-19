@@ -14,7 +14,7 @@
 |------|------|------|
 | 规格 | `docs/spec/11-PhaseV1-PrePublish.md` | 在仓 |
 | ADR-0027 | `docs/adr/0027-v1-顾问报告垂直包结论与薄URL.md` | 在仓 |
-| 评估 | `docs/research/V1-发前闭环垂直与包结论设计评估.md` | 在仓 |
+| 评估 | `docs/_archive/2026-10/research/V1-发前闭环垂直与包结论设计评估.md` | 在仓 |
 | 顾问样例包 | `data/packs/v1-mck-soai/` | 在仓 |
 | disposition | `src/freshlatch/disposition.py` | 在仓 |
 | 薄 URL / 两屏 / 主缝 | `t1_source.py` · `prepublish.py` · `ui/app.py` | 在仓 |

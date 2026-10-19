@@ -147,7 +147,7 @@ ADR-0008 / `meta_gate.py` 算法：含元标记的子句剥除后，若仍有「
 - **规格状态**：implemented（2026-09-30；算法 A 已实装；活模 N=1 见 post-fix）。  
 - **实现票**：[GitHub #241](https://github.com/luxingjiang1993/FreshLatch/issues/241)。  
 - **上游**：[GitHub #239](https://github.com/luxingjiang1993/FreshLatch/issues/239)（CLOSED；换维/反默认，本票不回退）。  
-- **算法边界补丁**：`docs/research/c9元陈述句法闸-算法A主张数字回声补丁.md`（相对 ADR-0008 增量明示）。
+- **算法边界补丁**：`docs/_archive/2026-10/research/c9元陈述句法闸-算法A主张数字回声补丁.md`（相对 ADR-0008 增量明示）。
 
 ## Post-fix（实现后回填）
 

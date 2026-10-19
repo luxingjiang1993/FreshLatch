@@ -2,7 +2,7 @@
 
 语料存储与检索层采用 **SQLite + BM25(路线 B)**:chunk 存 SQLite,`as_of=T0|T1` / `source_type` 过滤是 WHERE 子句;打分层设计为多 stage 管线(`recall → [vector] → [rerank]`),本期只实装 BM25(`rank_bm25` + `jieba`),vector / rerank stage 为骨架空实现,`vec` 列已入 schema。
 
-**为什么**:第一判据是元数据过滤干净(as_of 换源是产品核心动作)与金标可复现(评测期运行时纯本地),不是召回上限。规模经济学:20–30 篇(立项切片红线,数百 chunk)到几百篇,暴力打分都是毫秒级,FAISS 要到十万级向量才有存在价值;其结构性短板(元数据过滤脏、faiss-cpu/torch 重依赖、reranker 权重数百 MB)不随规模变好。Chroma 的唯一增量优势 SQLite 零成本同得。RAG 工程手段(假设性问题、parent-document、HyDE、MultiQuery、rerank 等 24 项)登记于 `docs/research/检索路线选型评估.md` 第 7 册,按处置分级:【实装】【留位】【承载】【触发】【弃】。
+**为什么**:第一判据是元数据过滤干净(as_of 换源是产品核心动作)与金标可复现(评测期运行时纯本地),不是召回上限。规模经济学:20–30 篇(立项切片红线,数百 chunk)到几百篇,暴力打分都是毫秒级,FAISS 要到十万级向量才有存在价值;其结构性短板(元数据过滤脏、faiss-cpu/torch 重依赖、reranker 权重数百 MB)不随规模变好。Chroma 的唯一增量优势 SQLite 零成本同得。RAG 工程手段(假设性问题、parent-document、HyDE、MultiQuery、rerank 等 24 项)登记于 `docs/_archive/2026-10/research/检索路线选型评估.md` 第 7 册,按处置分级:【实装】【留位】【承载】【触发】【弃】。
 
 **修订（#156，2026-09-28，覆盖「熔断才点菜」）**:原文曾写「一切 LLM 参与的检索增强由熔断条件触发——金标命中回放不过才点菜」。该句与 Phase A 主动建对比臂冲突,改为两条同时成立:
 

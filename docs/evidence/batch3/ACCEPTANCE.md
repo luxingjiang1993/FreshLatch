@@ -1,7 +1,7 @@
 # Batch 3（γ）ACCEPTANCE
 
-> 判据单一真相：`docs/research/C3-判定拉齐预登记卡.md` + ADR-0018。
-> 分条措辞：`docs/research/γ-与假绿仪器分条措辞设计评估.md` §4.1。
+> 判据单一真相：`docs/_archive/2026-10/research/C3-判定拉齐预登记卡.md` + ADR-0018。
+> 分条措辞：`docs/_archive/2026-10/research/γ-与假绿仪器分条措辞设计评估.md` §4.1。
 > 三节并列。禁止合成「抗假绿总通过」。
 > 本文件不改判据，不改 `data/eval/gold.json`。
 
@@ -23,7 +23,7 @@
 
 预锁可引用句：
 
-> 以 `docs/research/C3-判定拉齐预登记卡.md` 之 γ-INV/SMOKE + 禁改 gold（ADR-0018）为准；γ 通过 ≠ 假绿对照成立。
+> 以 `docs/_archive/2026-10/research/C3-判定拉齐预登记卡.md` 之 γ-INV/SMOKE + 禁改 gold（ADR-0018）为准；γ 通过 ≠ 假绿对照成立。
 
 | ID | 层 | 落点 | 本批读法 |
 |---|---|---|---|
@@ -59,7 +59,7 @@
 
 预锁可引用句：
 
-> 规格已锁（`docs/research/γ-消融表与多seed规格时序设计评估.md`）、实跑未做；未跑 ≠ 已证明。
+> 规格已锁（`docs/_archive/2026-10/research/γ-消融表与多seed规格时序设计评估.md`）、实跑未做；未跑 ≠ 已证明。
 
 同文件 §4.2 预锁句：
 

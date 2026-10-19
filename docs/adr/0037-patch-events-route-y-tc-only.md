@@ -2,7 +2,7 @@
 
 - **状态**: Accepted
 - **日期**: 2026-10-09
-- **相关**: `docs/research/patch_events-路线Y只冲乙仅锁T-C设计评估.md`；上游 ADR-0034 / ADR-0035（Draft · R / 同 after）；对照 ADR-0036（C 抄句 · **非** Y 主路径）；协议页 `docs/evidence/patch-events/PREREG-Y.md`（未激活）；冻结归档 `PREREG-B`/`RESULT-B`（#480 丙）、`PREREG-C`/`RESULT-C`（丙 · 非乙主路径）
+- **相关**: `docs/_archive/2026-10/research/patch_events-路线Y只冲乙仅锁T-C设计评估.md`；上游 ADR-0034 / ADR-0035（Draft · R / 同 after）；对照 ADR-0036（C 抄句 · **非** Y 主路径）；协议页 `docs/evidence/patch-events/PREREG-Y.md`（未激活）；冻结归档 `PREREG-B`/`RESULT-B`（#480 丙）、`PREREG-C`/`RESULT-C`（丙 · 非乙主路径）
 - **说明**: 编号顺延 Draft 上 0034–0036 之后。本文件只钉 Y 增量与甲防火墙；不回写 B/C 成立格；不重复定义 R / 同 after。
 
 ## 背景

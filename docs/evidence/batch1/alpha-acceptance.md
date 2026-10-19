@@ -1,6 +1,6 @@
 # Batch 1 α 验收记录(#94)
 
-> **预登记唯一真相**:`docs/research/C1-Batch0-1预登记卡.md`  
+> **预登记唯一真相**:`docs/_archive/2026-10/research/C1-Batch0-1预登记卡.md`  
 > **本文件**:确定性套件执行记录。失败只改实现,不改预登记判据。  
 > **测口**:Latch/Gate 套件 + Client Memo 导出契约;**不用** `freshlatch.eval` 主跑、**不改** gold / 通过线 / 假绿统计主口。
 

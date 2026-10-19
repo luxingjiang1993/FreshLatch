@@ -2,7 +2,7 @@
 
 - **状态**: Accepted
 - **日期**: 2026-10-08
-- **相关**: `docs/research/patch_events-路线B-T与B1可执行差与抬k设计评估.md`、[#465](https://github.com/luxingjiang1993/FreshLatch/issues/465)、[#466](https://github.com/luxingjiang1993/FreshLatch/issues/466)；上游 ADR-0034 · [#431](https://github.com/luxingjiang1993/FreshLatch/issues/431)/[#432](https://github.com/luxingjiang1993/FreshLatch/issues/432)；协议页 `docs/evidence/patch-events/PREREG-B.md`（激活前修订 · 正式主跑未激活）；门闩冒烟 [#438](https://github.com/luxingjiang1993/FreshLatch/issues/438)
+- **相关**: `docs/_archive/2026-10/research/patch_events-路线B-T与B1可执行差与抬k设计评估.md`、[#465](https://github.com/luxingjiang1993/FreshLatch/issues/465)、[#466](https://github.com/luxingjiang1993/FreshLatch/issues/466)；上游 ADR-0034 · [#431](https://github.com/luxingjiang1993/FreshLatch/issues/431)/[#432](https://github.com/luxingjiang1993/FreshLatch/issues/432)；协议页 `docs/evidence/patch-events/PREREG-B.md`（激活前修订 · 正式主跑未激活）；门闩冒烟 [#438](https://github.com/luxingjiang1993/FreshLatch/issues/438)
 
 ## 背景
 

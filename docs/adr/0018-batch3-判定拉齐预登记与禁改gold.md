@@ -2,7 +2,7 @@
 
 - **状态**: Accepted
 - **日期**: 2026-09-23
-- **相关**: ADR-0009–0012、`docs/research/C3-判定拉齐预登记卡.md`、`docs/research/γ-判定拉齐预登记与禁改gold设计评估.md`、地图 #96 / 工单 #100
+- **相关**: ADR-0009–0012、`docs/_archive/2026-10/research/C3-判定拉齐预登记卡.md`、`docs/_archive/2026-10/research/γ-判定拉齐预登记与禁改gold设计评估.md`、地图 #96 / 工单 #100
 
 ## 背景
 
@@ -16,7 +16,7 @@ Batch 3 将做 Auditor/维度加固。若不先锁通过线、失败态与「禁
 
 ## 决策
 
-1. **`docs/research/C3-判定拉齐预登记卡.md` 是 Batch 3（γ）判据的单一真相**（范围、分层、通过线 γ-INV/SMOKE、失败态、采样口径、禁改 gold 四条款）。
+1. **`docs/_archive/2026-10/research/C3-判定拉齐预登记卡.md` 是 Batch 3（γ）判据的单一真相**（范围、分层、通过线 γ-INV/SMOKE、失败态、采样口径、禁改 gold 四条款）。
 2. **改本卡判据或为凑 γ 通过而改 `gold.json` must_***：须另开工单，并声明 Batch 3 预登记作废且重登；静默修改 = 本批验收作废。
 3. **消融/多 seed 规格与实跑、假绿仪器分条措辞**不在本 ADR 展开（分属决策票 #101 / #102）。
 4. **本 ADR 不授权** wayfinder 会话内 `/implement`，也不授权把 γ-SMOKE 升格为统计证明或「假绿已根治」。

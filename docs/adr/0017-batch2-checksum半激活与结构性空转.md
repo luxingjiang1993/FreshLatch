@@ -2,7 +2,7 @@
 
 - **状态**: Accepted
 - **日期**: 2026-09-23
-- **相关**: ADR-0006 §4、`docs/research/checksum链激活契约.md`、`docs/research/β-checksum激活契约与空转设计评估.md`、地图 #96 / 工单 #97
+- **相关**: ADR-0006 §4、`docs/_archive/2026-10/research/checksum链激活契约.md`、`docs/_archive/2026-10/research/β-checksum激活契约与空转设计评估.md`、地图 #96 / 工单 #97
 
 ## 背景
 

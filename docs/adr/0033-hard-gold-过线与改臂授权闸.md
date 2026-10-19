@@ -2,7 +2,7 @@
 
 - **状态**: Accepted
 - **日期**: 2026-10-03
-- **相关**: `docs/research/Hard-Gold过线与改臂决议设计评估.md`、[#257](https://github.com/luxingjiang1993/FreshLatch/issues/257)、`docs/evidence/hard-gold-arm/`；上游 ADR-0003 / 0026（增益门与默认臂）、ADR-0032（Hard-Gold 骨架不改臂）
+- **相关**: `docs/_archive/2026-10/research/Hard-Gold过线与改臂决议设计评估.md`、[#257](https://github.com/luxingjiang1993/FreshLatch/issues/257)、`docs/evidence/hard-gold-arm/`；上游 ADR-0003 / 0026（增益门与默认臂）、ADR-0032（Hard-Gold 骨架不改臂）
 
 ## 背景
 
