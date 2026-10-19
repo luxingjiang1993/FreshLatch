@@ -30,7 +30,7 @@ PE-Y-05 仍停泊。`PREREG-Y` 仍未激活；配额表 n=400 未改。
 2. 既有 178 条 claim_id 与正文保留（续扩追加）；`construct_samples` 仍满 B 的 pilot/n100，且与 `SPLIT-pe-v2.json` 成员逐位一致。
 3. 扩容后库存足以在「可满 route-y 正式 100/层、层内 50/50」意义上无语料不足；满 n=400 规划后每层 leftover ≥0（共形预留可规划，未挖主配额）。共形正式名单仍「未做」直至 #501 重针。
 4. Provenance：新增 `expand_fetch_time=2026-10-09T10:00:00Z`；URL、许可、sha256、来源 offset 仍记在 `data/corpus/pe_v2/PROVENANCE.json`；主张可在对应 T0 全文逐字定位。
-5. 评估见 `docs/_archive/2026-10/research/patch_events-路线Y正式n与语料缺额设计评估.md`；ADR `docs/adr/0038-patch-events-route-y-corpus-n-unblock.md`。
+5. 评估见 `docs/research/patch_events-路线Y正式n与语料缺额设计评估.md`；ADR `docs/adr/0038-patch-events-route-y-corpus-n-unblock.md`。
 
 ## 路线 Y · CORPUS 恢复进 main（2026-10-11 · #539）
 
