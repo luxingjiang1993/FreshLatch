@@ -80,7 +80,7 @@ C4 / C5（RAG 主打、CRAG 挂点）：A 把 temporal/patch 放在检索，把 
 ### 2.5 已核实的已知事实
 
 - 生产默认检索是 hybrid+rerank，不是 BM25。常量在 `src/freshlatch/store/base.py` 的 `PRODUCTION_RETRIEVAL_MODE`。`tests/unit/test_store.py` 断言该值。`RRF_K = 60`（`src/freshlatch/store/pipeline.py`），神经精排只吃前 `NEURAL_RERANK_K = 10` 条（`src/freshlatch/store/neural_rerank.py`）。本地模型是 `BAAI/bge-small-zh-v1.5` 与 `BAAI/bge-reranker-base`（`src/freshlatch/models.py`）。
-- `docs/spec/00-架构总览.md` 图注仍写「生产默认 BM25」。该句与代码、`docs/roadmap.md`、`docs/evidence/retrieval-decision.md` 不一致。本报告以代码为准。
+- `docs/spec/00-架构总览.md` 图注仍写「生产默认 BM25」。该句与代码、`docs/_archive/2026-10/roadmap.md`、`docs/evidence/retrieval-decision.md` 不一致。本报告以代码为准。（2026-10 更正：spec/00 图注已于 R-FINAL 轮修正为「生产默认 hybrid+rerank；BM25 仅回退」，现行结构另见 `docs/architecture/2026-10-overview.md`。）
 - 冲乙 PE-Y 正式跑为丙。`docs/evidence/patch-events/RESULT-Y.md` 已落档：分层「结果丙」；T−C 95% 下界 ≤ 0，成立格写「不成立」。本评估未复跑 `compare_primary`。点估计与区间只以该页为准，此处不另算。
 - 中文文档保留英文技术词。本报告沿用 BM25、hybrid、rerank、Recall@k、MRR、embedding、chunk。
 

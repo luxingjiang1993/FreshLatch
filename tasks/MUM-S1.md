@@ -5,8 +5,8 @@
 - **Title**: `refactor(models): S0+S1 模型字面量收进 MODEL_REGISTRY（行为不变）`
 - **Trust**: Watch
 - **Paths**:
-  - `docs/plans/model-unified-mgmt/00-status.md`
-  - `docs/plans/model-unified-mgmt/01-plan.md`
+  - `docs/_archive/2026-10/plans/model-unified-mgmt/00-status.md`
+  - `docs/_archive/2026-10/plans/model-unified-mgmt/01-plan.md`
   - `src/freshlatch/models.py`
   - `src/freshlatch/eval/patch_events_verify.py`
   - `src/freshlatch/eval/patch_events_sensitivity.py`（仅 `VERIFY_PY_SHA256` 重钉 + 型号比对改读 registry）
@@ -31,7 +31,7 @@
   4. 不改 floors / gold / x1 / production arm。不开 C-04，不写 RESULT。C-04 manifest 的 `generator_model` / `nli_model` 仍为 null。
 - **Provenance**:
   - Kind: adapt
-  - Source: `src/freshlatch/models.py#MODEL_REGISTRY`；`src/freshlatch/eval/patch_events_verify.py#XNLI_MODEL_ID`；`src/freshlatch/llm.py#LLMClient.client`；批准稿 `docs/plans/model-unified-mgmt/01-plan.md`
+  - Source: `src/freshlatch/models.py#MODEL_REGISTRY`；`src/freshlatch/eval/patch_events_verify.py#XNLI_MODEL_ID`；`src/freshlatch/llm.py#LLMClient.client`；批准稿 `docs/_archive/2026-10/plans/model-unified-mgmt/01-plan.md`
   - What changed: NLI 行收入 registry（同一字符串）；`llm.py` 改读 `env_key` / `base_url`；与 registry 重复的 script 调用点改读别名
   - Why not copy as-is: 字面量散落时换模型要改多处。本票不引入 profile，也不改运行默认
 - **Tests**: updated `tests/unit/test_model_registry.py`

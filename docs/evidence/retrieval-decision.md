@@ -23,7 +23,7 @@
 |---|---|---|
 | 2026-09-28 | BM25 冒烟基线落盘：28 个文件、84 个 chunk、n=36，Recall@10=1.0000，MRR@10=0.7324。只有 BM25，没有 dense。 | `reports/retrieve-bm25-baseline.md` |
 | 2026-09-29 | I0 验收按同一指标复跑：n=36，Recall@10=1.0000，MRR@10=0.7324。 | `docs/evidence/i0/ACCEPTANCE.md` |
-| Phase A | 同一冒烟集的四臂表。dense 的 embedding 模型是 `text-embedding-v4`。BM25 1.0000，dense 0.9722，hybrid 1.0000，hybrid+rerank 1.0000（p95=11.4 ms，生产默认关）。因此保持 BM25，并要求另开 Hard-Gold。 | `reports/retrieve-arm-compare.md`、`reports/retrieve-rerank-compare.md`、`docs/accounting-card.md`（叙事页指向 Phase A / PR #167） |
+| Phase A | 同一冒烟集的四臂表。dense 的 embedding 模型是 `text-embedding-v4`。BM25 1.0000，dense 0.9722，hybrid 1.0000，hybrid+rerank 1.0000（p95=11.4 ms，生产默认关）。因此保持 BM25，并要求另开 Hard-Gold。 | `reports/retrieve-arm-compare.md`、`reports/retrieve-rerank-compare.md`、`docs/_archive/2026-10/accounting-card.md`（叙事页指向 Phase A / PR #167） |
 | 2026-10-02 | Hard-Gold 骨架并入。n=20，陷阱或对抗 8 题（40%）。验收断言默认臂仍是 bm25。 | [Issue #251](https://github.com/luxingjiang1993/FreshLatch/issues/251) · [PR #256](https://github.com/luxingjiang1993/FreshLatch/pull/256) · `docs/evidence/i3/ACCEPTANCE.md` |
 | 2026-10-03 | 改臂闸：过线才允许开实现票。这一轮不换臂。 | [Issue #257](https://github.com/luxingjiang1993/FreshLatch/issues/257) · `docs/adr/0033-hard-gold-过线与改臂授权闸.md` |
 | 2026-10-03 | Hard-Gold 同库复跑过线，未换臂。dense 的 embedding 仍是 `text-embedding-v4`（1024 维，94 个 chunk）。BM25 0.6000，dense 0.6500，hybrid 0.7500，hybrid+rerank 0.7500，p95=67.3 ms，rerank 门关闭。 | [Issue #259](https://github.com/luxingjiang1993/FreshLatch/issues/259) · `docs/evidence/hard-gold-arm/RERUN-20261003-259.md` |
@@ -42,7 +42,7 @@
 
 有一种说法是：BM25、dense、hybrid 的 Recall@10 都是 1.0，所以看不出差别，于是继续用 BM25。仓内原表不是这样。
 
-`docs/accounting-card.md` 把这张表标成演示 / 冒烟（n=36），不报方差，也不宣称统计显著。数字来自 `reports/retrieve-arm-compare.md` 与 `reports/retrieve-rerank-compare.md`：
+`docs/_archive/2026-10/accounting-card.md` 把这张表标成演示 / 冒烟（n=36），不报方差，也不宣称统计显著。数字来自 `reports/retrieve-arm-compare.md` 与 `reports/retrieve-rerank-compare.md`：
 
 | 臂 | Recall@10 | 报告里的判决 |
 |---|---:|---|

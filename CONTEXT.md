@@ -351,7 +351,7 @@ _Avoid_: 过时词匹配、记忆准确率
 ## 评测
 
 **retrieve 子系统评测**:
-与主张金标 `eval run --gold` **分轨**:入口为 `python -m freshlatch.eval retrieve`,产物在 `reports/retrieve-*.md`。I0 引用该轨数字时须遵守冒烟层预登记与 reports 为真相源(ADR-0026;`docs/accounting-card.md` / `docs/eval-retrieve.md`)。通过线与增益门正文在规格/评估文档,不在此扩写。
+与主张金标 `eval run --gold` **分轨**:入口为 `python -m freshlatch.eval retrieve`,产物在 `reports/retrieve-*.md`。I0 引用该轨数字时须遵守冒烟层预登记与 reports 为真相源(ADR-0026;`docs/_archive/2026-10/accounting-card.md` / `docs/_archive/2026-10/eval-retrieve.md`)。通过线与增益门正文在规格/评估文档,不在此扩写。
 _Avoid_: 把 retrieve 冒烟表与主张金标混报、把冒烟写成统计证明
 
 **Hard-Gold**:
