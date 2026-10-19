@@ -26,7 +26,9 @@ from freshlatch.store.sqlite_store import SQLiteStore
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 SRC = REPO_ROOT / "src"
-ACCEPTANCE_RECORD = REPO_ROOT / "docs" / "evidence" / "batch1" / "alpha-acceptance.md"
+ACCEPTANCE_RECORD = (
+    REPO_ROOT / "docs" / "_archive" / "2026-10" / "evidence" / "batch1" / "alpha-acceptance.md"
+)
 DEM7_SCRIPT = REPO_ROOT / "scripts" / "dem7_time_to_sheet.py"
 FORBIDDEN_ROLE = re.compile(r"Lead|Critic")
 FORBIDDEN_VERDICT = re.compile(r"建议进入|建议不进入")

@@ -526,8 +526,42 @@ def test_do_not_touch_and_ci_still_collects_eval():
             "AGENTS.md",
             "docs/_archive/2026-10/README.md",
         }
+        # DOC-EVIDENCE-NARROW(#731):只放行本票 MOVE 与必改链。收据与 floors 不在此列。
+        _narrow_prefixes = (
+            "docs/evidence/batch1/",
+            "docs/evidence/batch2/",
+            "docs/evidence/batch3/",
+            "docs/evidence/batch4/",
+            "docs/evidence/batch5/",
+            "docs/evidence/full-repo/",
+            "docs/evidence/w12/",
+        )
+        _narrow_files = {
+            "docs/evidence/module-level-assessment-2026-10-12.md",
+            "docs/evidence/module-level-frontier-refs-ABC-2026-10-12.md",
+            "docs/evidence/module-level-gap-checklist-2026-10-12.md",
+            "docs/evidence/l4-full-build-plan-2026-10-14.md",
+            "docs/evidence/l4-system-diagnosis-2026-10-14.md",
+            "docs/evidence/grok-system-analysis-no-fc-2026-10-14.md",
+            "docs/evidence/m8-a-layer-checklist-2026-10-14.md",
+            "tests/unit/test_chk07_w12_archive.py",
+            "tests/unit/test_renew.py",
+            "tests/unit/test_alpha_inv_acceptance.py",
+            "tests/unit/test_active_pack.py",
+            "tests/unit/test_batch5_acceptance.py",
+            "tests/unit/test_reading_source.py",
+            "scripts/run_alpha_inv_acceptance.py",
+            "docs/spec/15-整仓分层验收.md",
+            "docs/spec/17-must-fresh-c6-all-hit.md",
+            "docs/architecture/2026-10-overview.md",
+            "README.md",
+        }
         leftover = {
-            p for p in extra
-            if not p.startswith(_tree_c_prefixes) and p not in _tree_c_files
+            p
+            for p in extra
+            if not p.startswith(_tree_c_prefixes)
+            and p not in _tree_c_files
+            and not p.startswith(_narrow_prefixes)
+            and p not in _narrow_files
         }
         assert not leftover, f"未声明的改动: {sorted(leftover)}"

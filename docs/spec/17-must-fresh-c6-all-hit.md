@@ -101,7 +101,7 @@
 
 - #241（上游 must_unknown 护栏，CLOSED；all_hit 非其硬 Exit）  
 - #239（换维/反默认，CLOSED）  
-- `docs/evidence/full-repo/REPORT-20260930-REMAINING.md`（「修到 all_hit 须另开票」）  
+- `docs/_archive/2026-10/evidence/full-repo/REPORT-20260930-REMAINING.md`（「修到 all_hit 须另开票」；历史报告见 archive）  
 - `docs/evidence/i1/i1-s002-c6-误拦-找错.md`（历史同主张另一形状）  
 - `data/eval/gold.json` · `causal_chain.c6`
 

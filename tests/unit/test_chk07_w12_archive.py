@@ -10,9 +10,9 @@ NAMES = (
 )
 DOCS = (
     "docs/spec/15-整仓分层验收.md",
-    "docs/evidence/full-repo/PLAN-20260930.md",
-    "docs/evidence/full-repo/PLAN-20260930-REMAINING.md",
-    "docs/evidence/full-repo/REPORT-20260930-REMAINING.md",
+    "docs/_archive/2026-10/evidence/full-repo/PLAN-20260930.md",
+    "docs/_archive/2026-10/evidence/full-repo/PLAN-20260930-REMAINING.md",
+    "docs/_archive/2026-10/evidence/full-repo/REPORT-20260930-REMAINING.md",
 )
 
 

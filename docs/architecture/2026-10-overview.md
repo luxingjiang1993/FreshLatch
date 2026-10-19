@@ -46,3 +46,4 @@ flowchart TD
 - 贡献边界：[`docs/contribution-boundary.md`](../contribution-boundary.md)
 - 模块规格图（轻修后）：[`docs/spec/00-架构总览.md`](../spec/00-架构总览.md)
 - 归档 hub：[`docs/_archive/2026-10/README.md`](../_archive/2026-10/README.md)
+- 历史分析见 archive：[`docs/_archive/2026-10/evidence/`](../_archive/2026-10/evidence/)

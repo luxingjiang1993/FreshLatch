@@ -606,7 +606,9 @@ def test_batch2_boundary_note_fresh_idle_and_atk_refs():
     from pathlib import Path
 
     repo = Path(__file__).resolve().parents[2]
-    note = (repo / "docs/evidence/batch2/junction-acceptance.md").read_text(encoding="utf-8")
+    note = (repo / "docs/_archive/2026-10/evidence/batch2/junction-acceptance.md").read_text(
+        encoding="utf-8"
+    )
     assert JUNCTION_LOCKED in note.replace("**", "")
     assert "结构性空转" in note
     assert "不构造" in note and "validity_basis" in note

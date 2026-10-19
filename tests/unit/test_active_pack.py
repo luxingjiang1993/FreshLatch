@@ -400,7 +400,9 @@ def test_p1_switch_visible_and_same_journey(tmp_path, monkeypatch):
 def test_c4_acceptance_citation_and_no_upgrade():
     root = repo_root()
     assert (root / C4_PATH).is_file()
-    text = (root / "docs" / "evidence" / "batch4" / "ACCEPTANCE.md").read_text(encoding="utf-8")
+    text = (
+        root / "docs" / "_archive" / "2026-10" / "evidence" / "batch4" / "ACCEPTANCE.md"
+    ).read_text(encoding="utf-8")
     assert C4_PATH in text
     assert "默认未释放" in text
     assert "推进 main ≠ 已释放" in text

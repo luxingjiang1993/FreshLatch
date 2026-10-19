@@ -12,7 +12,7 @@ from freshlatch.reading_source import ACCEPTANCE_SENTENCE
 
 REPO = Path(__file__).resolve().parent.parent.parent
 CATALOG = REPO / "docs" / "_archive" / "2026-10" / "research" / "adversarial"
-ACCEPTANCE = REPO / "docs" / "evidence" / "batch5" / "ACCEPTANCE.md"
+ACCEPTANCE = REPO / "docs" / "_archive" / "2026-10" / "evidence" / "batch5" / "ACCEPTANCE.md"
 GOLD = REPO / "data" / "eval" / "gold.json"
 
 
