@@ -71,6 +71,12 @@ def test_each_sample_trajectory_ptr_resolves_and_void_not_valid_source():
     for row in labeled:
         ptr = row["trajectory_ptr"].replace("\\", "/")
         path = REPO / ptr
+        if not path.is_file() and ptr.startswith(("reports/", "tasks/")):
+            # DOC-TREE-C(#729):根 reports/**、tasks/** 考古整夹迁入 archive;
+            # events.jsonl 账本是历史记录、字节不动,此处回退到归档路径解析。
+            archived = REPO / "docs" / "_archive" / "2026-10" / ptr
+            if archived.is_file():
+                path = archived
         assert path.is_file(), f"缺失轨迹/对照锚: {ptr}"
         if ptr == void_rel or path.resolve() == VOID_CONTROL.resolve():
             # 作废页可作挂标锚,但 evidence 页须声明不作有效对照读数

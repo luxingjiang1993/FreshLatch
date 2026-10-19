@@ -49,7 +49,8 @@ NEW_TEXT_PATHS = (
     ROOT / "src" / "freshlatch" / "store" / "base.py",
     ROOT / "src" / "freshlatch" / "store" / "temporal_arm.py",
     ROOT / "src" / "freshlatch" / "store" / "sqlite_store.py",
-    ROOT / "tasks" / "L4-C-01.md",
+    # DOC-TREE-C(#729):票正文 L4-C-01.md 随根 tasks/** 考古迁入 archive。
+    ROOT / "docs" / "_archive" / "2026-10" / "tasks" / "L4-C-01.md",
     Path(__file__),
 )
 FROZEN_SHA256 = {

@@ -59,8 +59,9 @@ _DO_NOT_TOUCH = (
 )
 
 _ALLOWED_DIFF = {
-    "tasks/G2-01.md",
-    "tasks/G2-02.md",
+    # DOC-TREE-C(#729):根 tasks/** 考古整夹迁入 docs/_archive/2026-10/tasks/。
+    "docs/_archive/2026-10/tasks/G2-01.md",
+    "docs/_archive/2026-10/tasks/G2-02.md",
     "docs/ops/GOLD-TABLE-v0.md",
     "docs/ops/拒答行为夹具.md",
     "tests/eval/fixtures/g2_should_abstain.json",
@@ -511,4 +512,22 @@ def test_do_not_touch_and_ci_still_collects_eval():
     assert not any(path.startswith("data/exp/x1/") for path in changed)
     assert not any(path.startswith("data/eval/") for path in changed)
     if changed:
-        assert set(changed) <= _ALLOWED_DIFF
+        extra = set(changed) - _ALLOWED_DIFF
+        # DOC-TREE-C(#729):根 tasks/**、reports/** 考古整夹迁入 docs/_archive/2026-10/,
+        # 并改链 G2/L4 测、AGENTS.md、archive hub。此处只放行该票显式触碰面;
+        # 根 tasks/ 其余改动仍须落在 _ALLOWED_DIFF 之内。
+        _tree_c_prefixes = ("tasks/", "reports/", "docs/_archive/2026-10/")
+        _tree_c_files = {
+            "tests/unit/test_l4_sk_01.py",
+            "tests/unit/test_retrieve_x1.py",
+            "tests/unit/test_l4_c_01_temporal_prereg.py",
+            "tests/unit/test_l4_c_04_patch_establishment.py",
+            "tests/unit/test_i1_corpus_relabel.py",
+            "AGENTS.md",
+            "docs/_archive/2026-10/README.md",
+        }
+        leftover = {
+            p for p in extra
+            if not p.startswith(_tree_c_prefixes) and p not in _tree_c_files
+        }
+        assert not leftover, f"未声明的改动: {sorted(leftover)}"

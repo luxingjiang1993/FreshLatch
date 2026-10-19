@@ -684,6 +684,10 @@ def test_do_not_touch_git_diff_empty():
     HYG-01 只从 ``eval/__main__.py`` 删掉 src 导入 hack，所以该文件也不再列入。
     #323 把 ``llm.py`` 与 ``embeddings.py`` 的模型字面量改成注册表别名，值不变，
     所以这两份文件也不再列入。端点与模型名由 ``test_model_registry`` 锁定。
+    DOC-TREE-C(#729) 把根 ``reports/dense-rebuild.md`` 与 ``reports/retrieve-hard-gold-*``
+    考古迁入 ``docs/_archive/2026-10/reports/``：对 main 做 diff 时旧路径显删除、
+    归档路径显新增，留在本名单必假红，故移出；内容字节不变， AC4 锁的
+    floors（ingest / hard-gold-arm / 语料 / traps）不受影响。
     """
     probe = subprocess.run(
         ["git", "rev-parse", "--verify", "--quiet", "main^{commit}"],
@@ -700,8 +704,6 @@ def test_do_not_touch_git_diff_empty():
             "data/eval/retrieve_hard_gold.json",
             "data/corpus",
             "data/traps",
-            "reports/dense-rebuild.md",
-            "reports/retrieve-hard-gold-*",
         ],
         cwd=ROOT,
         capture_output=True,
