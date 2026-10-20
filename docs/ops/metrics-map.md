@@ -43,7 +43,7 @@ Cost / Latency Guard   e2e P95 · tokens per claim · $ per reverify (or local G
 | F · Cost & latency guardrails | F1–F4 | Protocols exist (SLI 5 / cost report / 发车检查单) |
 | G · Engineering health | G1–G3 | G1 exists; G2 baseline missing; G3 is PR discipline |
 
-Cadence (source §3): weekly = min-6 skeleton + B1/B2/B3 (write "样本不足" when thin); biweekly = F1/F2 + A1 notes; release = C4 + F4 + G1 + floors; kill window (→ ~2027-01-14) = kill trio + B1 threshold; model/privacy-tier switch = D1–D3 must pass first.
+Cadence (source §3): weekly = min-6 skeleton ([`周报骨架.md`](../evidence/slo-min6/周报骨架.md) + dry-run how-to [`min6-周报空转跑法.md`](min6-周报空转跑法.md)) + B1/B2/B3 (write "样本不足" when thin; B2/B3 rows → template [`人审-B2B3-周表模板.md`](人审-B2B3-周表模板.md); B1 = partner per-session log only — never synthetic/local fill); biweekly = F1/F2 + A1 notes; release = C4 + F4 + G1 + floors; kill window (→ ~2027-01-14) = kill trio + B1 threshold; model/privacy-tier switch = D1–D3 must pass first.
 
 ## 3. Firewall self-check (this ticket)
 
