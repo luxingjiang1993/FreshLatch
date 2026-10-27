@@ -64,6 +64,8 @@ _ALLOWED_DIFF = {
     "docs/_archive/2026-10/tasks/G2-02.md",
     "docs/ops/GOLD-TABLE-v0.md",
     "docs/ops/拒答行为夹具.md",
+    # P1-4 Path B:路 2 说明改为「含合法 src 功能分支 skip」,不得扩白名单到 src/。
+    "docs/ops/reproduce-15min.md",
     "tests/eval/fixtures/g2_should_abstain.json",
     "tests/eval/test_g2_should_abstain.py",
 }
@@ -486,8 +488,67 @@ def _git_base_ref() -> str | None:
     return None
 
 
+def _g2_diff_gate_decision(changed: list[str]) -> tuple[str, str]:
+    """相对 base 的路径列表 → G2 do-not-touch 门禁处置(纯函数,供单测)。
+
+    本测契约分两层(见 docs/ops/reproduce-15min.md 路 2):
+    1) 考古禁止面(_DO_NOT_TOUCH / data/eval / data/exp/x1)——任何分支都硬失败。
+    2) 「零 src + leftover 白名单」——仅适用于干净 docs 票;含合法 src 修复的
+       功能分支不得被误杀,在禁止面已确认干净后 skip(不削弱零 src 断言本身)。
+
+    返回 (action, detail):
+      fail           → 触及禁止面
+      skip_product_src → 含 src/ 的功能分支,docs 票契约不适用
+      check_leftover → 无 src,继续白名单 leftover
+    """
+    hit = [p for p in changed if p in _DO_NOT_TOUCH]
+    if hit:
+        return ("fail", f"触及 _DO_NOT_TOUCH: {hit}")
+    if any(p.startswith("data/exp/x1/") for p in changed):
+        return ("fail", "触及 data/exp/x1/")
+    if any(p.startswith("data/eval/") for p in changed):
+        return ("fail", "触及 data/eval/")
+    if any(p.startswith("src/") for p in changed):
+        return (
+            "skip_product_src",
+            "含 src/ 的功能分支:「零 src + leftover 白名单」仅适用于干净 docs 票;"
+            "考古禁止面已确认未触碰(P1-4 Path B,防误杀合法 src 修复)",
+        )
+    return ("check_leftover", "")
+
+
+def test_g2_diff_gate_decision_docs_whitelist_continues():
+    """纯 docs 白名单改动:不 skip、不因 src 误杀,进入 leftover 检查。"""
+    action, _ = _g2_diff_gate_decision(["docs/ops/GOLD-TABLE-v0.md", "README.md"])
+    assert action == "check_leftover"
+
+
+def test_g2_diff_gate_decision_do_not_touch_still_fails():
+    """触及禁止面(含 src 下的 base.py)仍 fail,不被产品分支 skip 吞掉。"""
+    action, detail = _g2_diff_gate_decision(["src/freshlatch/store/base.py"])
+    assert action == "fail"
+    assert "base.py" in detail
+
+
+def test_g2_diff_gate_decision_product_src_skips_not_false_positive():
+    """合法 src 修复(+非禁止面)→ skip,避免相对 main 的产品分支被零 src 硬杀。"""
+    action, detail = _g2_diff_gate_decision(
+        [
+            "src/freshlatch/llm.py",
+            "src/freshlatch/doctor.py",
+            "docs/ops/local-embed.md",
+            "tests/unit/test_weight_precheck_cache_root.py",
+        ]
+    )
+    assert action == "skip_product_src"
+    assert "功能分支" in detail
+
+
 def test_do_not_touch_and_ci_still_collects_eval():
-    """未改 ci.yml / floors / gold / requirements / src。pytest tests/ 已覆盖本文件。"""
+    """未改 ci.yml / floors / gold / requirements;docs 票另要求零 src。
+
+    含合法 src 的功能分支:禁止面仍硬检,零 src/leftover 契约 skip(见 _g2_diff_gate_decision)。
+    """
     ci = (REPO / ".github/workflows/ci.yml").read_text(encoding="utf-8")
     assert "python -m pytest tests/" in ci
     rel = FIXTURE.relative_to(REPO).as_posix()
@@ -506,8 +567,12 @@ def test_do_not_touch_and_ci_still_collects_eval():
     if diff.returncode != 0:
         pytest.skip("无法对 base 做 git diff,跳过 Do-not-touch git 路径检查")
     changed = [part.strip().replace("\\", "/") for part in diff.stdout.split("\0") if part.strip()]
-    for path in _DO_NOT_TOUCH:
-        assert path not in changed
+    action, detail = _g2_diff_gate_decision(changed)
+    if action == "fail":
+        pytest.fail(detail)
+    if action == "skip_product_src":
+        pytest.skip(detail)
+    # 以下仅干净 docs 票:零 src + leftover 白名单(断言未削弱)。
     assert not any(path.startswith("src/") for path in changed)
     assert not any(path.startswith("data/exp/x1/") for path in changed)
     assert not any(path.startswith("data/eval/") for path in changed)

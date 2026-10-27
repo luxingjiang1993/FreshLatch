@@ -230,9 +230,17 @@ class SQLiteStore(RetrievalStore):
         self._forget_vec_if_text_changed(chunks)
         embedder = getattr(self, "chunk_embedder", None)
         if embedder is not None:
-            from freshlatch.store.local_embed import fill_chunk_vecs
+            from freshlatch.store.local_embed import (
+                assert_local_embed_ready_for_ingest,
+                embed_texts_local,
+                fill_chunk_vecs,
+            )
 
             try:
+                # #752:生产本地 embedder 缺快照时跳过补 vec,禁止请求内同步下载。
+                # 注入的测试/评测 embedder 不受此门闩影响(#286 热路径保留)。
+                if embedder is embed_texts_local:
+                    assert_local_embed_ready_for_ingest()
                 fill_chunk_vecs(chunks, embedder)
             except Exception as exc:
                 # 正文已变的块保持 vec 为空，不退回旧向量。失败必须看得见。

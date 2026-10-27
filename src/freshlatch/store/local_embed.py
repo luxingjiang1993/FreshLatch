@@ -7,6 +7,8 @@
 from __future__ import annotations
 
 import os
+import tempfile
+from pathlib import Path
 from typing import Callable
 
 from freshlatch.models import LOCAL_EMBED_MODEL
@@ -43,6 +45,51 @@ def local_embed_unavailable_message(exc: BaseException) -> str:
         f"cache_dir={cache} exc_type={type(exc).__name__}。"
         "请在有网环境运行 python scripts/warmup_local_embed.py，"
         "再用 FASTEMBED_CACHE_PATH 指向该缓存。离线环境不会自动下载。"
+    )
+
+
+def _resolved_embed_cache_root(cache_dir: str | None = None) -> Path:
+    """与 fastembed / weight_precheck 一致的缓存根(env 优先,否则 gettempdir)。"""
+    raw = cache_dir if cache_dir is not None else local_embed_cache_dir()
+    if raw:
+        return Path(raw)
+    return Path(tempfile.gettempdir()) / "fastembed_cache"
+
+
+def local_embed_snapshot_ready(cache_dir: str | None = None) -> bool:
+    """文件层看 embedding 权重是否已在缓存(不 import fastembed、不触网)。
+
+    #752:入库补 vec 前先查此函数;缺快照不得走可下载的 ``TextEmbedding`` 路径。
+    布局口径与 ``ui.weight_precheck.fastembed_weights_present`` 同族,实现留在 store
+    层以免 store→ui 依赖。显式预热仍走 warmup / ``POST /api/retrieval/precheck/download``。
+    """
+    root = _resolved_embed_cache_root(cache_dir)
+    if not root.is_dir():
+        return False
+    short = LOCAL_EMBED_MODEL.split("/")[-1]
+    for cand in root.glob(f"models--*{short}*"):
+        if cand.is_dir() and any(cand.glob("snapshots/**/*.onnx")):
+            return True
+    for cand in root.glob(f"*{short}*"):
+        if cand.is_dir() and not cand.name.startswith("models--"):
+            if any(cand.rglob("*.onnx")):
+                return True
+    return False
+
+
+def assert_local_embed_ready_for_ingest() -> None:
+    """入库门闩:缺快照则抛 ``LocalEmbedUnavailable``(由 ``add_document`` 记 warning 后跳过补 vec)。
+
+    禁止在请求线程里同步下载;不代替显式预热通道。
+    """
+    if local_embed_snapshot_ready():
+        return
+    cache = str(_resolved_embed_cache_root())
+    raise LocalEmbedUnavailable(
+        f"本地 embedding 权重不可用(入库跳过补向量,不下载)。"
+        f"model={LOCAL_EMBED_MODEL} cache_dir={cache}。"
+        "请先 POST /api/retrieval/precheck/download 或运行 "
+        "python scripts/warmup_local_embed.py。"
     )
 
 

@@ -196,3 +196,22 @@ def test_ui_has_collapsible_claim_ledger_bypass():
     assert "exportClaimLedgerMd" in appmod.HTML_PAGE
     # 不与 patch_events 糊缝:台账文案明示分缝
     assert "patch_events" in appmod.HTML_PAGE
+
+
+def test_ui_reset_vs_ledger_copy_and_scope_note(client):
+    """P1-2:页文案说清「重置」≠擦除历史台账;旁路带 scope_note。"""
+    html = appmod.HTML_PAGE
+    assert "不擦除下方历史台账" in html
+    assert "「重置」只清当前复验单" in html or "重置」只清当前复验单" in html
+    assert "可能含跨次条目" in html
+    api, _store = client
+    boot = api.get("/api/boot")
+    assert boot.status_code == 200
+    ledger = boot.json()["claim_ledger"]
+    assert "scope_note" in ledger
+    assert "不擦除" in ledger["scope_note"]
+    assert "重置" in ledger["scope_note"]
+    reset = api.post("/api/session/reset")
+    assert reset.status_code == 200
+    assert "ledger_note" in reset.json()
+    assert "历史台账" in reset.json()["ledger_note"]

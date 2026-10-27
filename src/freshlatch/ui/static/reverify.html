@@ -321,7 +321,7 @@ details.diagnostic summary{cursor:pointer;color:#6e7781}
  <summary>高级/证据</summary>
  <div id="session-reset">
   <button type="button" id="btn-reset" onclick="resetSession()">重置</button>
-  <p class="hint">清空当前这一张复验单上的待拍板和包结论。打开页面或刷新不会自动清空。</p>
+  <p class="hint">只清空当前这张复验单(待拍板与包结论);不擦除下方历史台账。打开或刷新页面不会自动清空。</p>
  </div>
 <aside id="how-to-read">
  <strong>如何读</strong>
@@ -337,7 +337,7 @@ details.diagnostic summary{cursor:pointer;color:#6e7781}
 </div>
 <details id="claim-ledger" aria-live="polite">
  <summary>主张台账(作废 / 续命 / disputed)</summary>
- <p class="hint">只读投影:invalidation_list ∪ latch_log(discard/renew/disputed)。renew 与 disputed 不进作废名单。disputed 可再打开,不写冻结 gold。与 patch_events 分缝。写路径仍唯一经 HumanLatch。</p>
+ <p class="hint" id="claim-ledger-hint">历史人审记录(invalidation_list ∪ latch_log),可能含跨次条目;「重置」只清当前复验单,不擦除本台账。renew/disputed 不进作废名单;与 patch_events 分缝;写路径仍唯一经 HumanLatch。</p>
  <div id="claim-ledger-body">尚无人审作废/续命记录。</div>
  <button type="button" class="export-md" onclick="exportClaimLedgerMd()">导出台账 Markdown</button>
 </details>
@@ -742,7 +742,10 @@ async function resetSession(){
   }
   PENDING_DECISIONS = [];
   await boot();
-  document.getElementById('status').textContent = '已重置当前复验单';
+  // 台账 append-only:重置后仍可能看到历史「人审作废」等条目,属预期
+  const note = (j && j.ledger_note) ? String(j.ledger_note)
+             : '历史台账仍保留';
+  document.getElementById('status').textContent = '已重置当前复验单 · ' + note;
 }
 async function refreshT1Source(){
   T1SRC = await (await fetch('/api/t1-source')).json();
@@ -1170,9 +1173,14 @@ function renderGateResults(){
 }
 function renderClaimLedger(){
   // #228:Run 详情旁路;默认可折叠(<details>);只读展示 discard/renew
+  // P1-2:台账=历史人审;「重置」不清台账——hint/scope_note 明示,避免误以为串单
   const body = document.getElementById('claim-ledger-body');
   if(!body) return;
   const ledger = STATE.claim_ledger || {};
+  const hintEl = document.getElementById('claim-ledger-hint');
+  if(hintEl && ledger.scope_note){
+    hintEl.textContent = String(ledger.scope_note);
+  }
   const entries = ledger.entries || [];
   const discardIds = ledger.discard_claim_ids || [];
   const renewIds = ledger.renew_claim_ids || [];

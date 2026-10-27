@@ -25,11 +25,16 @@ python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -e ".[dev]"
 
+# Required: set FASTEMBED_CACHE_PATH to a persistent directory.
+# If unset, weights land under the temp dir (gettempdir()/fastembed_cache) and are lost on reboot.
+# See docs/ops/local-embed.md.
+$env:FASTEMBED_CACHE_PATH = "D:\cache\freshlatch-embed"
+
 python -m pytest tests/ -q     # same family as CI
 python -m freshlatch.ui.app    # Reverify Sheet → http://127.0.0.1:8000
 ```
 
-Unix: `source .venv/bin/activate`. Primary CTA is **Start reverify**, not "Generate answer."
+Unix: `source .venv/bin/activate`; set `export FASTEMBED_CACHE_PATH=/var/cache/freshlatch-embed` before starting the UI. Primary CTA is **Start reverify**, not "Generate answer."
 
 If embeddings / vectors are unavailable, retrieval may fall back to BM25 and record that degradation — informed fallback, not a silent change of the production switch.
 

@@ -27,9 +27,15 @@ htmlcov/
 .venv/
 .venv-xnli/
 
+# 本地 Agent 技能镜像(用户/工具链拷贝到仓内,不入库;正式产品 skills/ 仍跟踪)
+.agents/
+
 # 密钥与运行日志
 .env
 data/*.log
+data/*.log.err
+# 本地烟测残留(非语料;偶发被进程/Defender 锁住时靠 ignore 保卫生)
+data/_p1_smoke_*
 
 # 课程参考资料(第三方历史项目代码,仅本地参考,不入库)
 历史项目代码供参考/

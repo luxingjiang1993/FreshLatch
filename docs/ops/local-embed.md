@@ -32,9 +32,9 @@ reranker 权重约 1.1GB（inode 去重 1129561896 字节，其中 `onnx/model.o
 
 fastembed 的 `cache_dir` 来自环境变量 `FASTEMBED_CACHE_PATH`。
 
-未设置时，fastembed 用自己的默认缓存（临时目录下的 `fastembed_cache`）。生产环境应设成持久目录，避免重启后权重丢失。
+未设置时，fastembed 用自己的默认缓存（`tempfile.gettempdir()/fastembed_cache`，Windows 即 `%TEMP%\fastembed_cache`）。**不是** `~/.cache/fastembed_cache`。生产环境应设成持久目录，避免重启后权重丢失。
 
-运行中的进程和预热脚本读同一个变量。
+运行中的进程、预热脚本、以及 `weight_precheck` / `doctor` / `GET /api/retrieval/precheck` 在未设 env 时检查同一默认根。
 
 ## 有网预热
 
