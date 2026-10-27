@@ -11,11 +11,15 @@
 
 from __future__ import annotations
 
+import logging
+import sys
 import tempfile
 from pathlib import Path
 
 from freshlatch.models import LOCAL_EMBED_MODEL, NEURAL_RERANK_MODEL
-from freshlatch.store.local_embed import local_embed_cache_dir
+from freshlatch.store.local_embed import EMBED_CACHE_ENV, local_embed_cache_dir
+
+_logger = logging.getLogger(__name__)
 
 
 def fastembed_default_cache_root() -> Path:
@@ -49,6 +53,29 @@ def resolved_cache_dir(cache_dir: str | None = None) -> str:
     不得用 ``null`` 隐瞒默认根。doctor 与 ``GET /api/retrieval/precheck`` 共用。
     """
     return str(_cache_roots(cache_dir)[0].resolve())
+
+
+def warn_if_fastembed_cache_path_unset() -> str | None:
+    """UI 启动:未设 ``FASTEMBED_CACHE_PATH`` 时打中文硬警告;已设则静默。
+
+    口径与 ``docs/ops/local-embed.md`` 一致:未设时权重落临时目录
+    (``resolved_cache_dir()`` = ``gettempdir()/fastembed_cache``),重启易丢。
+    只警告、不阻断启动。返回警告文案便于单测断言;已设返回 None。
+    """
+    if local_embed_cache_dir():
+        return None
+    resolved = resolved_cache_dir()
+    # 与 local-embed.md「缓存目录」节同口径;Windows 给绝对路径示例
+    msg = (
+        f"警告:未设置 {EMBED_CACHE_ENV}。"
+        f"权重将落临时目录(当前解析根={resolved}),重启后易丢失。"
+        f"请设为持久目录,例如 Windows PowerShell:"
+        f' $env:{EMBED_CACHE_ENV}="D:\\cache\\freshlatch-embed" '
+        f"(详见 docs/ops/local-embed.md)。"
+    )
+    print(msg, file=sys.stderr)
+    _logger.warning(msg)
+    return msg
 
 
 def fastembed_weights_present(model_short: str, cache_dir: str | None = None) -> bool:

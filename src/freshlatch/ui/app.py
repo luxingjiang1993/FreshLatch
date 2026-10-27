@@ -466,11 +466,30 @@ def _patch_drafts_payload() -> dict[str, dict]:
     }
 
 
+# P1-2:台账旁路用户面澄清(只投影字段,不截断/不删档)
+_LEDGER_SCOPE_NOTE = (
+    "历史人审记录(invalidation_list ∪ latch_log),可能含跨次条目;"
+    "「重置」只清当前复验单,不擦除本台账。"
+    "renew/disputed 不进作废名单;与 patch_events 分缝;写路径仍唯一经 HumanLatch。"
+)
+_RESET_LEDGER_NOTE = "历史台账仍保留(不擦除 latch_log / 作废名单)"
+
+
+def _claim_ledger_for_ui(
+    store: SQLiteStore, *, run_id: str | None = None
+) -> dict:
+    """主张台账只读投影 + scope_note(文案澄清;零删档)。"""
+    ledger = dict(get_claim_ledger(store, run_id=run_id))
+    ledger["scope_note"] = _LEDGER_SCOPE_NOTE
+    return ledger
+
+
 def _detail_extras(store: SQLiteStore) -> dict:
     """复验单增量包:包结论条 + T1 checksum + 逐条闸结果(#173) + 补丁条带(#200) + 主张台账(#228)。"""
     claims = list(_state["claims"])
     # 台账旁路:全库只读投影(作废名单跨 Run);不按发前 run_id 截断作废名单语义
-    ledger = get_claim_ledger(store, run_id=None)
+    # P1-2:带 scope_note——重置后仍见历史条目属预期,勿当串单
+    ledger = _claim_ledger_for_ui(store, run_id=None)
     return {
         "disposition": disposition_for_claims(claims),
         "run_status": derive_run_status(
@@ -513,7 +532,8 @@ def api_claims() -> dict:
 @app.get("/api/claim-ledger")
 def api_claim_ledger(run_id: str | None = Query(default=None)) -> dict:
     """#228 主张台账只读投影 API:discard ∪ renew;renew∉作废名单。"""
-    return get_claim_ledger(_store(), run_id=run_id or None)
+    # P1-2:旁路同样带 scope_note(文案澄清;可选 run_id 仍只过滤 latch 行)
+    return _claim_ledger_for_ui(_store(), run_id=run_id or None)
 
 
 @app.get("/api/claim-ledger/export.md")
@@ -809,7 +829,12 @@ def api_session_reset() -> JSONResponse:
     clear = getattr(_store(), "clear_run_snapshot", None)
     if clear is not None:
         clear()  # I-01(#678):洗态同时洗 snapshot,否则 boot 会从旧 blob 复活判定面
-    return JSONResponse({"reset": True, "latch": dict(EMPTY_LATCH)})
+    # P1-2:ledger_note 仅澄清——不删 latch_log / invalidation_list
+    return JSONResponse({
+        "reset": True,
+        "latch": dict(EMPTY_LATCH),
+        "ledger_note": _RESET_LEDGER_NOTE,
+    })
 
 
 @app.post("/api/import")
@@ -1621,6 +1646,10 @@ def prepublish_index() -> str:
 if __name__ == "__main__":
     import uvicorn
 
+    # P0 余量:未设 FASTEMBED_CACHE_PATH 时硬警告(不阻断);口径见 weight_precheck / local-embed.md
+    from freshlatch.ui.weight_precheck import warn_if_fastembed_cache_path_unset
+
+    warn_if_fastembed_cache_path_unset()
     # #230:入站 check 默认仅本机回环;可用 FRESHLATCH_BIND_HOST 覆盖,禁止把 0.0.0.0 无鉴权当 Done
     _bind = (os.environ.get(HOOK_BIND_HOST_ENV) or "").strip() or HOOK_DEFAULT_BIND_HOST
     uvicorn.run(app, host=_bind, port=8000)

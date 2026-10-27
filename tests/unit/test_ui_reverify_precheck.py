@@ -19,10 +19,15 @@ import time
 import httpx
 import pytest
 from fastapi.testclient import TestClient
-from openai import APIConnectionError
+from openai import APIConnectionError, APITimeoutError
 
 import freshlatch.ui.app as appmod
 from freshlatch.llm import (
+    DEFAULT_LLM_HTTP_TIMEOUT,
+    LLM_HTTP_CONNECT_TIMEOUT_S,
+    LLM_HTTP_POOL_TIMEOUT_S,
+    LLM_HTTP_READ_TIMEOUT_S,
+    LLM_HTTP_WRITE_TIMEOUT_S,
     PROXY_ERROR_CODE,
     LLMClient,
     DecodingParams,
@@ -384,7 +389,7 @@ def test_reverify_internal_error_is_chinese_not_bare_500(client, monkeypatch):
     assert appmod._state["running"] is False  # finally 收口,不卡 running
 
 
-# -- trust_env=False 默认装配 ------------------------------------------------------------
+# -- trust_env=False + 显式 timeout 默认装配 --------------------------------------------
 
 
 def test_default_http_client_ignores_bad_proxy_env(monkeypatch):
@@ -396,12 +401,27 @@ def test_default_http_client_ignores_bad_proxy_env(monkeypatch):
     assert http.trust_env is False
 
 
+def test_default_http_client_has_explicit_timeout():
+    """P1-1:默认 client 显式 timeout,非 SDK 默认 ~600s read。"""
+    http = default_http_client()
+    assert http.timeout.connect == LLM_HTTP_CONNECT_TIMEOUT_S
+    assert http.timeout.read == LLM_HTTP_READ_TIMEOUT_S
+    assert http.timeout.write == LLM_HTTP_WRITE_TIMEOUT_S
+    assert http.timeout.pool == LLM_HTTP_POOL_TIMEOUT_S
+    # 远低于 OpenAI SDK 未显式 timeout 时约 600s 的 read 默认
+    assert http.timeout.read < 600.0
+    assert http.timeout.read == DEFAULT_LLM_HTTP_TIMEOUT.read
+
+
 def test_llm_client_default_trust_env_false(monkeypatch):
     """LLMClient 默认装配的 OpenAI-compat 底层 httpx client 可外观察证 trust_env=False。"""
     monkeypatch.setenv("NO_PROXY", "::1")
     client = LLMClient()
     raw = client.client  # 首次访问才真构造 SDK client
     assert raw._client.trust_env is False
+    # 经 LLMClient 装配的底层 httpx 同样带显式 timeout
+    assert raw._client.timeout.read == LLM_HTTP_READ_TIMEOUT_S
+    assert raw._client.timeout.connect == LLM_HTTP_CONNECT_TIMEOUT_S
 
 
 def test_describe_llm_transport_error_mapping():
@@ -416,3 +436,29 @@ def test_describe_llm_transport_error_mapping():
     # 非传输层异常不映射,走内部错误路径
     assert describe_llm_transport_error(RuntimeError("boom")) is None
     assert describe_llm_transport_error(ValueError("bad")) is None
+
+
+def test_describe_llm_transport_error_timeout_family():
+    """P1-1:超时族异常走现有中文可操作映射(含 error_code 与怎么办),不静默吞。"""
+    req = httpx.Request("POST", "http://example.test/v1/chat/completions")
+    cases: list[BaseException] = [
+        APITimeoutError(request=req),
+        httpx.ReadTimeout("read timed out", request=req),
+        httpx.ConnectTimeout("connect timed out", request=req),
+        httpx.WriteTimeout("write timed out", request=req),
+        httpx.PoolTimeout("pool timed out", request=req),
+        httpx.TimeoutException("generic timeout", request=req),
+    ]
+    for exc in cases:
+        mapped = describe_llm_transport_error(exc)
+        assert mapped is not None, f"超时异常应映射,got None for {type(exc).__name__}"
+        assert mapped["error_code"] == PROXY_ERROR_CODE
+        assert "怎么办" in mapped["error"]
+        assert "代理/NO_PROXY 配置异常" in mapped["error"]
+    # cause 链上的超时同样命中
+    outer = RuntimeError("wrapper")
+    outer.__cause__ = httpx.ReadTimeout("cause timeout", request=req)
+    chained = describe_llm_transport_error(outer)
+    assert chained is not None
+    assert chained["error_code"] == PROXY_ERROR_CODE
+    assert "怎么办" in chained["error"]

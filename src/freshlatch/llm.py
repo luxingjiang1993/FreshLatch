@@ -28,14 +28,30 @@ DASHSCOPE_BASE_URL = _default_base
 # 未标记 accepts_tools_strict 时是否传 function.strict。结论写在 LLMClient.chat。
 DEFAULT_ENDPOINT_ACCEPTS_TOOLS_STRICT = True
 
+# 默认 HTTP 超时(秒)。为何不是 600:OpenAI SDK 未显式 timeout 时 read 约 600s,
+# 单主张卡住可拖死整轮复验体验;显式上限让超时抛 APITimeoutError/httpx 超时族,
+# 经 describe_llm_transport_error 映射为中文可操作失败,不静默吞。
+LLM_HTTP_CONNECT_TIMEOUT_S = 10.0
+LLM_HTTP_READ_TIMEOUT_S = 120.0
+LLM_HTTP_WRITE_TIMEOUT_S = 120.0
+LLM_HTTP_POOL_TIMEOUT_S = 10.0
+
+DEFAULT_LLM_HTTP_TIMEOUT = httpx.Timeout(
+    connect=LLM_HTTP_CONNECT_TIMEOUT_S,
+    read=LLM_HTTP_READ_TIMEOUT_S,
+    write=LLM_HTTP_WRITE_TIMEOUT_S,
+    pool=LLM_HTTP_POOL_TIMEOUT_S,
+)
+
 
 def default_http_client() -> httpx.Client:
-    """OpenAI-compat 传输默认装配:trust_env=False(#679 I-07)。
+    """OpenAI-compat 传输默认装配:trust_env=False(#679 I-07)+显式 timeout(P1-1)。
 
     不读 HTTP(S)_PROXY / NO_PROXY 环境变量——坏值(如 NO_PROXY 裸写 ``::1``)
     不会污染请求路径;确需走代理的部署显式传 http_client 构造。
+    timeout 见 DEFAULT_LLM_HTTP_TIMEOUT(非 SDK 默认 ~600s read)。
     """
-    return httpx.Client(trust_env=False)
+    return httpx.Client(trust_env=False, timeout=DEFAULT_LLM_HTTP_TIMEOUT)
 
 
 PROXY_ERROR_CODE = "PROXY_NO_PROXY_CONFIG"
