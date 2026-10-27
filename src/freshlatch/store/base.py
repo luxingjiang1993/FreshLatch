@@ -181,7 +181,7 @@ class InMemoryStore(RetrievalStore):
         patch_id: str | None = None,
         valid_at: str | None = None,
     ) -> list[Chunk]:
-        from freshlatch.store.pipeline import filter_patch_metadata, recall_bm25
+        from freshlatch.store.pipeline import filter_patch_metadata
 
         pool = [
             c
@@ -192,52 +192,19 @@ class InMemoryStore(RetrievalStore):
         pool = filter_retrieve_pool(pool, tenant_id=tenant_id)
         # 补丁与有效期先于 BM25 / dense / RRF。三字段皆空则原池不动。
         pool = filter_patch_metadata(pool, patch_id=patch_id, valid_at=valid_at)
-        from freshlatch.store.neural_rerank import RERANK_MODE_NONE, rerank_hybrid_candidates
-        from freshlatch.store.pipeline import RRF_K, rank_dense, rrf_fuse
+        # 臂分派与 bm25_fallback 与 SQLiteStore 共用同一 helper(禁止双份漂移)。
+        from freshlatch.store.retrieval_arm import dispatch_retrieval_arm
 
-        self.last_rerank_mode = RERANK_MODE_NONE
-        requested = self._requested_retrieval_mode()
-        if requested == "dense":
-            query_vec = self._embed_query(query)
-            ranked = rank_dense(query_vec, pool, top_k=top_k) if query_vec else None
-            if ranked is None:
-                self.last_retrieval_mode = "bm25_fallback"
-                return recall_bm25(query, pool, top_k=top_k)
-            self.last_retrieval_mode = "dense"
-            return ranked
-        if requested == "hybrid":
-            depth = max(top_k, len(pool))
-            lexical = recall_bm25(query, pool, top_k=depth)
-            query_vec = self._embed_query(query)
-            dense = rank_dense(query_vec, pool, top_k=depth) if query_vec else None
-            if dense is None:
-                self.last_retrieval_mode = "bm25_fallback"
-                return recall_bm25(query, pool, top_k=top_k)
-            self.last_retrieval_mode = "hybrid"
-            return rrf_fuse(lexical, dense, k=RRF_K, top_k=top_k)
-        if requested in {"hybrid+rerank", "hybrid+rerank_lexical"}:
-            depth = max(top_k, len(pool))
-            lexical = recall_bm25(query, pool, top_k=depth)
-            query_vec = self._embed_query(query)
-            dense = rank_dense(query_vec, pool, top_k=depth) if query_vec else None
-            if dense is None:
-                self.last_retrieval_mode = "bm25_fallback"
-                return recall_bm25(query, pool, top_k=top_k)
-            fused = rrf_fuse(lexical, dense, k=RRF_K, top_k=top_k)
-            hits, rerank_mode = rerank_hybrid_candidates(
-                query,
-                fused,
-                top_k=top_k,
-                lexical_only=requested == "hybrid+rerank_lexical",
-            )
-            self.last_retrieval_mode = requested
-            self.last_rerank_mode = rerank_mode
-            return hits
-        if requested == "bm25_fallback":
-            self.last_retrieval_mode = "bm25_fallback"
-            return recall_bm25(query, pool, top_k=top_k)
-        self.last_retrieval_mode = "bm25"
-        return recall_bm25(query, pool, top_k=top_k)
+        result = dispatch_retrieval_arm(
+            query,
+            pool,
+            top_k=top_k,
+            requested=self._requested_retrieval_mode(),
+            embed_query=self._embed_query,
+        )
+        self.last_retrieval_mode = result.retrieval_mode
+        self.last_rerank_mode = result.rerank_mode
+        return result.hits
 
     def read_source(self, doc_id: str, *, as_of: AsOf) -> str | None:
         doc = self._docs.get((doc_id, as_of))
