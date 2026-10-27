@@ -42,4 +42,4 @@ P3/P5 在此口径上登记时间窗、目标与预算燃烧告警。那些数�
 
 ## 启动
 
-默认监听 `127.0.0.1`，端口 `8001`。`FRESHLATCH_SERVING_BIND_HOST` 与 `FRESHLATCH_SERVING_PORT` 可覆盖监听面。入口是 `python -m freshlatch.serving.app`。复验单 UI 仍在 `freshlatch.ui`，本面不增加聊天路由。
+默认监听 `127.0.0.1`，端口 `8001`。`FRESHLATCH_SERVING_BIND_HOST` 与 `FRESHLATCH_SERVING_PORT` 可覆盖监听面。入口是 `python -m freshlatch.serving.app`。复验单 UI 仍在 `freshlatch.ui`，本面不增加聊天路由。复验单 UI 是本机 demo 面：进程内单会话态，无 cookie/session 分桶，无 Serving API Key 鉴权。UI 无会话分桶 / 多标签串态 = 产品边界（A），**不是**「Serving 未 Done」的证据——**UI 无分桶 ≠ Serving 未 Done**。Serving Done 仍只看本页：服务端凭证映射、401/403、就绪探针；默认口 `127.0.0.1:8001`。
