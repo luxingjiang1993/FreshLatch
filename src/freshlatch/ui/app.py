@@ -1,77 +1,28 @@
-"""复验单 UI:FastAPI 薄壳 + 手写 HTML/JS 双栏(左主张卡片,右原文面板)。
+"""复验单 UI 组装壳(#754/#758):FastAPI() + include_router + 会话助手再导出。
 
-形态红线(§5.1 / #663):主界面是复验单,不是聊天框;主 CTA =「一键样例」(进入复验);界面标注 SYNTHETIC。
-HumanLatch 端点(W3 起,§5.5)为同步 def 端点:FastAPI 线程池执行,同步 SqliteSaver
-不阻塞事件循环(ADR-0006 §8);写路径唯一 = gates/human_latch.py,核心包零 Web 依赖。
+形态红线(§5.1 / #663):主界面是复验单,不是聊天框;主 CTA =「一键样例」。
+HumanLatch 写路径唯一 = gates/human_latch.py;本模块不做 create_app / 多用户分桶。
+业务路由见 routes_*.py;可变容器真相源 = session_state;投影 = projections。
 """
 
 from __future__ import annotations
 
-import html
-import json
 import logging
 import os
-import threading
-import time
-import uuid  # noqa: E402
-from datetime import datetime, timezone
-from pathlib import Path
+import uuid
 
-from fastapi import FastAPI, File, Query, Request, UploadFile
-from fastapi.responses import HTMLResponse, JSONResponse, Response
-from pydantic import BaseModel
+from fastapi import FastAPI
 
-from freshlatch.api_errors import error_body, install_error_handlers  # noqa: E402
-from freshlatch.claim_import import ClaimImportError, parse_claim_import_draft  # noqa: E402
-from freshlatch.claim_ledger import export_claim_ledger_md  # noqa: E402
-from freshlatch.llm import describe_llm_transport_error  # noqa: E402
-from freshlatch.evidence_bound import (  # noqa: E402
-    confirm_patch,
-    discard_patch_draft,
-    propose_patch,
-    single_claim_reverify,
-)
+from freshlatch.api_errors import install_error_handlers  # noqa: E402
 from freshlatch.models import Claim  # noqa: E402
-from freshlatch.latch import HumanLatch, HumanLatchError  # noqa: E402
-from freshlatch.prepublish import (  # noqa: E402
-    derive_run_status,
-    disposition_for_claims,
-    list_archived_t1_evidence_ids,
-    list_t1_checksums,
-)
-from freshlatch.patch_events import record_human_review_events  # noqa: E402
-from freshlatch.publish_hook import (  # noqa: E402
-    HOOK_BIND_HOST_ENV,
-    HOOK_CHECKSUM_DRIFT,
-    HOOK_DEFAULT_BIND_HOST,
-    HOOK_DO_NOT_PUBLISH,
-    HOOK_MISSING_RUN_ID,
-    HOOK_NEEDS_PATCH_NO_ACK,
-    HOOK_TOKEN_ENV,
-    HOOK_TOKEN_HEADER,
-    HOOK_UNAUTHORIZED,
-    HOOK_UNBOUND_RUN,
-    deny_http_status,
-    evaluate_publish_hook,
-)
-from freshlatch.runner import RunContext, Runner, load_docket  # noqa: E402  # RunContext:单测 appmod.RunContext
-from freshlatch.sheet import (  # noqa: E402
-    PATCH_VISIBILITY_FIELDS,
-    export_client_memo_gated,
-    project_claim,
-    render_failure_buckets_html,
-)
+from freshlatch.latch import HumanLatch  # noqa: E402
+from freshlatch.prepublish import derive_run_status  # noqa: E402
+from freshlatch.runner import RunContext  # noqa: E402  # 单测 appmod.RunContext
+from freshlatch.runner import Runner  # noqa: E402  # 单测 monkeypatch appmod.Runner
 from freshlatch.store.checksum import make_checksum_fn  # noqa: E402
-from freshlatch.gates.basis_rot import rot_claims  # noqa: E402
-from freshlatch.claim_span import split_sentences  # noqa: E402
-from freshlatch.store.ingest import parse_document  # noqa: E402
 from freshlatch.store.sqlite_store import SQLiteStore  # noqa: E402
 from freshlatch.t1_source import T1SourceSession  # noqa: E402
 
-# ---------------------------------------------------------------------------
-# #755:会话可变容器真相源 = freshlatch.ui.session_state;投影助手见 projections。
-# 同对象再导出便于过渡期 appmod.X;函数(_store/_latch/warmup)留本模块以吃 monkeypatch。
-# ---------------------------------------------------------------------------
 from freshlatch.ui import session_state as ss  # noqa: E402
 from freshlatch.ui.projections import (  # noqa: E402
     RUN_SNAPSHOT_VERSION,
@@ -99,7 +50,7 @@ from freshlatch.ui.projections import (  # noqa: E402
     _write_run_snapshot,
 )
 
-# 同对象再导出(dict/锁/注册表)
+# 同对象再导出(dict/锁/注册表);单测过渡期仍可 appmod._state
 _PATCH_EVENTS_DIR = ss._PATCH_EVENTS_DIR
 _PATCH_DRAFTS = ss._PATCH_DRAFTS
 _RUN_TASK_LOCK = ss._RUN_TASK_LOCK
@@ -117,17 +68,15 @@ _run_weight_download_job = ss._run_weight_download_job
 _weight_download_status = ss._weight_download_status
 
 BADGE = {
-    # #736 AC0.5:用户面不读颜色字——有效/失效直说(与 reverify.html 的 JS BADGE 同改)
     "fresh": ("有效 · 仍成立", "#1a7f37"),
     "stale": ("失效", "#cf222e"),
     "unknown": ("灰 · 证据不足", "#6e7781"),
     "void": ("void · 已作废", "#8250df"),
 }
-MAIN_BUTTON_TEXT = "一键样例"  # #663 首页主 CTA。复验动作由样例串联进入
-# I-11(#710 / 决议 #704):SYNTHETIC 在职人视图换成短中文;审计视图保留原标签。
+MAIN_BUTTON_TEXT = "一键样例"
 SYN_BADGE_FULL_TEXT = "SYNTHETIC · 合成语料,非真实客户数据"
 SYN_BADGE_SHORT_TEXT = "当前为演示合成包"
-VIEW_MODE_DEFAULT = "craftsman"  # DEM-6:默认职人视图(去角色化成交面)
+VIEW_MODE_DEFAULT = "craftsman"
 _VIEW_MODE_TOKEN = "__VIEW_MODE_DEFAULT__"
 _AUDIT_BODY_TOKEN = "__AUDIT_BODY__"
 
@@ -183,7 +132,6 @@ def _reset_t1_source(store: SQLiteStore | None = None) -> T1SourceSession:
 
 
 def _latch() -> HumanLatch:
-    # Batch 2 档 2:renew 半边真 checksum_fn(语料现算,禁读库列);不升格为 latch 证明
     return HumanLatch(_store(), CHECKPOINTS, mode="online",
                       checksum_fn=make_checksum_fn(CORPUS))
 
@@ -217,205 +165,9 @@ def _sync_prepublish(*, new_run: bool = False) -> dict:
     _state["active_run_id"] = summary.run_id
     return summary.to_dict()
 
-@app.get("/api/claims")
-def api_claims() -> dict:
-    """拉复验单:对可见 fresh∧basis 主张跑与复验入口同一腐烂路径并真写库(ADR-0025)。"""
-    store = _store()
-    # 档 3b UI 触发:禁止只改展示;与 Runner 共用 check_basis/apply_rot
-    rot_claims(store, list(_state["claims"]), make_checksum_fn(CORPUS))
-    extras = _detail_extras(store)
-    return {
-        "question": _state["question"],
-        "claims": _claims_for_ui(store),
-        "trajectory": str(_state["trajectory"]) if _state["trajectory"] else None,
-        "audit": _audit_for_ui(),
-        "running": _state["running"],
-        "latch": _state["latch"],
-        # DEM-5:零命中告警投影;UI 只展示,不得据此改写 status
-        "retrieve_zero_hits": list(_state.get("retrieve_zero_hits") or []),
-        "budget": _current_budget(),  # DEM-4:复验中/完成后可见
-        "pack": _pack_payload(),
-        **extras,
-    }
-
-
-@app.get("/api/claim-ledger")
-def api_claim_ledger(run_id: str | None = Query(default=None)) -> dict:
-    """#228 主张台账只读投影 API:discard ∪ renew;renew∉作废名单。"""
-    # P1-2:旁路同样带 scope_note(文案澄清;可选 run_id 仍只过滤 latch 行)
-    return _claim_ledger_for_ui(_store(), run_id=run_id or None)
-
-
-@app.get("/api/claim-ledger/export.md")
-def api_claim_ledger_export(run_id: str | None = Query(default=None)) -> Response:
-    """#228 主张台账 Markdown 导出(只读;零新写表)。"""
-    md = export_claim_ledger_md(_store(), run_id=run_id or None)
-    return Response(
-        content=md,
-        media_type="text/markdown; charset=utf-8",
-        headers={"Content-Disposition": 'attachment; filename="claim-ledger.md"'},
-    )
-
-
-@app.post("/api/client-memo/export")
-def api_client_memo_export(
-    ack_needs_patch: bool = Query(default=False),
-) -> Response:
-    """#229 导出客户备忘:与 CLI 共用 export_client_memo_gated。
-
-    deny → 403 + JSON(零写 Memo);allow → Markdown 附件。
-    需补丁须显式 ack_needs_patch;页眉强制「需补丁」。
-    """
-    from datetime import datetime, timezone
-
-    store = _store()
-    # 确保有 active Run 绑定(无则新建并钉 checksum)
-    if not _state.get("active_run_id"):
-        _sync_prepublish(new_run=True)
-    else:
-        _sync_prepublish(new_run=False)
-
-    claims = list(_state["claims"])
-    projections = [project_claim(store, c) for c in claims]
-    disposition = disposition_for_claims(claims)
-    hook, md = export_client_memo_gated(
-        run_id=_state.get("active_run_id"),
-        disposition=disposition,
-        projections=projections,
-        generated_at=datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-        ack_needs_patch=bool(ack_needs_patch),
-        checksum_fresh=_run_checksum_fresh(store),
-        question=str(_state.get("question") or ""),
-        synthetic=bool(getattr(ACTIVE_PACK, "synthetic", False)),
-        out_path=None,  # HTTP 响应体交付;服务端不落盘
-    )
-    if not hook.allow:
-        # deny 零写:不返回 Markdown 体;错误载荷走统一契约(决议 #705 I-12)
-        status = 403
-        if hook.code == HOOK_CHECKSUM_DRIFT:
-            status = 409
-        body = hook.to_dict()
-        body.update(hook_error_body(hook.code, hook.message))
-        return JSONResponse(body, status_code=status)
-
-    assert md is not None
-    return Response(
-        content=md,
-        media_type="text/markdown; charset=utf-8",
-        headers={
-            "Content-Disposition": 'attachment; filename="client-memo.md"',
-            # HTTP 头仅 ASCII:中文 disposition 走响应体页眉,不进 header
-            "X-FreshLatch-Hook-Code": hook.code,
-            "X-FreshLatch-Needs-Patch-Banner": (
-                "1" if hook.requires_needs_patch_banner else "0"
-            ),
-        },
-    )
-
-
-@app.get("/api/prepublish/runs")
-def api_prepublish_runs() -> dict:
-    """发前列表:标题/来源、disposition、更新时间、Run 状态(#173)。"""
-    if _state.get("claims") or _state.get("trajectory") or _state.get("active_run_id"):
-        _sync_prepublish(new_run=False)
-    return {"runs": _prepublish.list_runs(), "active_run_id": _state.get("active_run_id")}
-
-
-@app.get("/api/prepublish/runs/{run_id}")
-def api_prepublish_run(run_id: str) -> JSONResponse:
-    """发前 Run 摘要;详情 UI 仍走既有复验单(增量包结论条)。"""
-    row = _prepublish.get(run_id)
-    if row is None:
-        return JSONResponse({"error": f"未找到 Run {run_id}"}, status_code=404)
-    return JSONResponse({"run": row.to_dict(), "detail_path": "/"})
-
-
-class PublishHookCheckRequest(BaseModel):
-    """入站 publish-hook check 请求体(#230):必填 run_id;可选 ack_needs_patch。"""
-
-    run_id: str | None = None
-    ack_needs_patch: bool = False
-
-
-# 决议 #705 I-12:deny 载荷带「怎么办」hint(职人向中文);码不变、状态码语义不变
-HOOK_HINTS: dict[str, str] = {
-    HOOK_MISSING_RUN_ID: "请在请求体里带上本次发前 Run 的 run_id 后重试",
-    HOOK_UNBOUND_RUN: "请确认 run_id 对应一次已生成的发前 Run;无包结论时需先在复验单收口再导出",
-    HOOK_DO_NOT_PUBLISH: "请先在复验单完成人审收口(作废/续命/改账),使包结论变为可发后再导出",
-    HOOK_CHECKSUM_DRIFT: "T1 语料或 Run 状态已变化:请重跑一轮复验后再导出",
-    HOOK_NEEDS_PATCH_NO_ACK: "如接受「需补丁」页眉约束,请带 ack_needs_patch=true 重试",
-    HOOK_UNAUTHORIZED: f"请携带正确的 {HOOK_TOKEN_HEADER} 头(对应 {HOOK_TOKEN_ENV} 配置)",
-}
-
-
-def hook_error_body(result_code: str, message: str) -> dict:
-    """publish-hook deny 的统一错误载荷(决议 #705 I-12)。
-
-    在既有结构化字段之上补 ok/error_code/hint;`code` 为旧键别名,
-    与域内 PublishHookResult.code 同值,三出口(UI/CLI/HTTP)不另造近义词。
-    """
-    return error_body(
-        result_code,
-        message,
-        HOOK_HINTS.get(result_code, "请按提示修正后重试;仍失败请联系运维"),
-    )
-
-
-def _hook_token_denied(request: Request) -> JSONResponse | None:
-    """可选共享密钥头:仅当环境变量已配置时强制校验;缺失配置则本机冒烟可测。"""
-    expected = (os.environ.get(HOOK_TOKEN_ENV) or "").strip()
-    if not expected:
-        return None
-    provided = (request.headers.get(HOOK_TOKEN_HEADER) or "").strip()
-    if provided == expected:
-        return None
-    body = hook_error_body(HOOK_UNAUTHORIZED, "入站 check 共享密钥头校验失败")
-    body.update({
-        "allow": False,
-        "disposition": None,
-        "requires_needs_patch_banner": False,
-    })
-    return JSONResponse(body, status_code=403)
-
-
-@app.post("/api/publish-hook/check")
-def api_publish_hook_check(
-    req: PublishHookCheckRequest, request: Request,
-) -> JSONResponse:
-    """入站 publish-hook check(#230):与 Memo 同闸;deny → 403/409;非插件平台。
-
-    体:必填 run_id、可选 ack_needs_patch。缺 run_id fail-closed。
-    可选头 `X-FreshLatch-Hook-Token`(环境变量 `FRESHLATCH_HOOK_TOKEN` 已设时强制)。
-    """
-    denied = _hook_token_denied(request)
-    if denied is not None:
-        return denied
-
-    rid = req.run_id
-    disposition = None
-    if rid is not None and str(rid).strip():
-        row = _prepublish.get(str(rid).strip())
-        if row is not None:
-            disposition = row.disposition
-
-    # 入站探闸:只读 Registry 包结论 + 当前会话未漂默认;不触发整包再验
-    result = evaluate_publish_hook(
-        run_id=rid,
-        disposition=disposition,
-        ack_needs_patch=bool(req.ack_needs_patch),
-        checksum_fresh=True,
-    )
-    body = result.to_dict()
-    if result.allow:
-        return JSONResponse(body, status_code=200)
-    # deny:统一错误契约(决议 #705 I-12):error_code/hint 补齐,码与状态码语义不变
-    body.update(hook_error_body(result.code, result.message))
-    return JSONResponse(body, status_code=deny_http_status(result.code))
-
-
 
 def _restore_run_snapshot(snap: dict) -> None:
-    """进程重启(F5/新标签落到新进程)后从 snapshot 恢复判定面,不洗成 demo。"""
+    """进程重启后从 snapshot 恢复判定面,不洗成 demo。"""
     _state["claims"] = [Claim(**c) for c in (snap.get("claims") or [])]
     _state["question"] = snap.get("question") or ""
     _state["latch"] = snap.get("latch") or dict(EMPTY_LATCH)
@@ -424,18 +176,15 @@ def _restore_run_snapshot(snap: dict) -> None:
     _state["retrieve_zero_hits"] = list(snap.get("retrieve_zero_hits") or [])
     _state["budget"] = snap.get("budget") or dict(EMPTY_BUDGET)
     _state["bound_t1_checksums"] = dict(snap.get("bound_t1_checksums") or {})
-    _state["token_usage"] = snap.get("token_usage")  # I-14(#713):随判定面恢复
+    _state["token_usage"] = snap.get("token_usage")
     if _state["active_run_id"]:
-        # 进程内注册表随重启丢了,补回当前 Run 行(不覆盖已绑 checksum)
         _sync_prepublish(new_run=False)
 
 
-def _active_run_conflict() -> JSONResponse | None:
-    """I-01(#678):非空 active_run 时 import 硬 409(breaking vs #669 的 200+preserved)。
+def _active_run_conflict():
+    """I-01(#678):非空 active_run 时 import 硬 409。"""
+    from fastapi.responses import JSONResponse
 
-    非空 = 绑定了 active_run_id 且判定面非空(claims 或 latch pending)。
-    洗态只走高级「重置」POST /api/session/reset(页内 advanced-evidence 区)。
-    """
     if not _state.get("active_run_id"):
         return None
     if not _state.get("claims") and not (_state.get("latch") or {}).get("pending"):
@@ -458,844 +207,71 @@ def _clear_live_sheet() -> None:
     _state["retrieve_zero_hits"] = []
     _state["budget"] = dict(EMPTY_BUDGET)
     _state["bound_t1_checksums"] = {}
-    _state["token_usage"] = None  # I-14(#713):洗态同时退役本轮 token 记账
+    _state["token_usage"] = None
     _state["run_ctx"] = None
-    # 解开当前指针,避免下次 upsert 把勿发行改写成空表
     _prepublish.active_run_id = None
-    # I-10(#696):洗态同时退役异步任务记录,避免旧 run_id 轮询面残留
     _reset_run_task()
 
 
-@app.get("/api/boot")
-def api_boot() -> dict:
-    """页面加载/刷新:幂等读取当前会话。不调用 import,不洗勿发与待拍板。
-
-    I-01(#678):内存空(进程重启/F5 落到新进程)且 snapshot 非空时,从同库
-    pack sqlite 的 JSON blob 恢复判定面(判定/理由/voided/active_run_id/包结论)。
-    无 active_run 或 snapshot 为空时不恢复,也不阻挡 demo 导入。
-    """
-    if (not _state.get("running") and not _state.get("claims")
-            and not _state.get("active_run_id")):
-        snap = _read_run_snapshot()
-        if snap and (snap.get("claims") or snap.get("active_run_id")):
-            _restore_run_snapshot(snap)
-    return api_claims()
-
-
-@app.post("/api/session/reset")
-def api_session_reset() -> JSONResponse:
-    """高级「重置」:显式清空当前复验单。不调用 HumanLatch,不改闸。"""
-    if _state.get("running"):
-        return JSONResponse({"error": "复验进行中,不能重置"}, status_code=409)
-    _clear_live_sheet()
-    clear = getattr(_store(), "clear_run_snapshot", None)
-    if clear is not None:
-        clear()  # I-01(#678):洗态同时洗 snapshot,否则 boot 会从旧 blob 复活判定面
-    # P1-2:ledger_note 仅澄清——不删 latch_log / invalidation_list
-    return JSONResponse({
-        "reset": True,
-        "latch": dict(EMPTY_LATCH),
-        "ledger_note": _RESET_LEDGER_NOTE,
-    })
-
-
-@app.post("/api/import")
-def api_import():
-    """JSON docket 高级入口(Workflow):只读 statement 与 t0_evidence_ids,不做新调查。
-
-    #678(I-01):非空 active_run 时硬 409 + 高级重置指引——breaking vs #669 的
-    200+preserved;确认重置后才可导入。成功导入后写 run snapshot(判定面与磁盘一致)。
-    """
-    conflict = _active_run_conflict()
-    if conflict is not None:
-        return conflict
-    docket = load_docket(DEMO_DOCKET)
-    _state["claims"] = docket.claims
-    _state["question"] = docket.question  # 单一真相:当前课题包 docket
-    _state["latch"] = dict(EMPTY_LATCH)
-    _state["trajectory"] = None
-    _state["active_run_id"] = None
-    row = _sync_prepublish(new_run=True)
-    _write_run_snapshot()
-    return {"imported": len(docket.claims), "run": row}
-
-
-class PasteDraftRequest(BaseModel):
-    text: str
-
-
-class ThinUrlRequest(BaseModel):
-    """薄 URL 入库请求:单条白名单 URL(ADR-0027 / #171)。"""
-
-    url: str
-
-
-class DraftImportRequest(BaseModel):
-    text: str
-    question: str | None = None
-
-
-@app.get("/api/t1-source")
-def api_t1_source() -> dict:
-    """T1 来源三卡状态投影(ADR-0016 / DEM-2)。"""
-    return _t1_session().snapshot()
-
-
-@app.post("/api/t1-source/paste")
-def api_t1_paste(req: PasteDraftRequest) -> JSONResponse:
-    """粘贴变更要点 → 仅草稿,未确认不得 retrieve / 续命。"""
-    result = _t1_session().save_paste_draft(req.text)
-    if not result.ok:
-        return JSONResponse({"error": result.error}, status_code=400)
-    return JSONResponse(_t1_session().snapshot())
-
-
-@app.post("/api/t1-source/confirm")
-def api_t1_confirm() -> JSONResponse:
-    """人点「确认入库」后才 ingest。"""
-    result = _t1_session().confirm_paste()
-    if not result.ok:
-        return JSONResponse({"error": result.error}, status_code=400)
-    return JSONResponse(_t1_session().snapshot())
-
-
-@app.post("/api/t1-source/synthetic")
-def api_t1_synthetic() -> JSONResponse:
-    """选用内置合成评测包(界面标明 synthetic)。"""
-    result = _t1_session().select_synthetic(CORPUS)
-    if not result.ok:
-        return JSONResponse({"error": result.error}, status_code=400)
-    return JSONResponse(_t1_session().snapshot())
-
-
-@app.post("/api/t1-source/upload")
-async def api_t1_upload(files: list[UploadFile] = File(...)) -> JSONResponse:
-    """上传 T1 语料包 → ingest 后可检索。"""
-    payload: list[tuple[str, str]] = []
-    for f in files:
-        raw = await f.read()
-        try:
-            payload.append((f.filename or "upload.md", raw.decode("utf-8")))
-        except UnicodeDecodeError:
-            return JSONResponse(
-                {"error": f"{f.filename or 'upload'}:须为 UTF-8 文本 markdown"},
-                status_code=400,
-            )
-    result = _t1_session().ingest_upload_texts(payload)
-    if not result.ok:
-        return JSONResponse({"error": result.error}, status_code=400)
-    return JSONResponse(_t1_session().snapshot())
-
-
-@app.post("/api/t1-source/url")
-def api_t1_url(req: ThinUrlRequest) -> JSONResponse:
-    """薄 URL 入库:仅 www.mckinsey.com;失败四态零写(ADR-0027 / #171)。"""
-    result = _t1_session().ingest_from_url(req.url)
-    if not result.ok:
-        body: dict = {"error": result.error, "error_code": result.error_code}
-        return JSONResponse(body, status_code=400)
-    snap = _t1_session().snapshot()
-    return JSONResponse(snap)
-
-@app.post("/api/import/draft")
-def api_import_draft(req: DraftImportRequest) -> JSONResponse:
-    """主张导入稿(MD/粘贴):按 ## claim_id 切条;缺 id → c-import-N。不做散文抽主张/LLM 切分。"""
-    try:
-        docket, assigned = parse_claim_import_draft(req.text, question=req.question)
-    except ClaimImportError as e:
-        return JSONResponse({"error": str(e)}, status_code=400)
-    # #678(I-01):非空 active_run 时硬 409(breaking vs #665/#669 的 200+preserved)
-    conflict = _active_run_conflict()
-    if conflict is not None:
-        return conflict
-    _state["claims"] = docket.claims
-    _state["question"] = docket.question
-    _state["latch"] = dict(EMPTY_LATCH)
-    _state["trajectory"] = None
-    _state["active_run_id"] = None
-    row = _sync_prepublish(new_run=True)
-    _write_run_snapshot()
-    return JSONResponse({
-        "imported": len(docket.claims),
-        "assigned_ids": assigned,
-        "question": docket.question,
-        "claim_ids": [c.claim_id for c in docket.claims],
-        "run": row,
-    })
-
-
-@app.get("/api/retrieval/precheck")
-def api_retrieval_precheck() -> JSONResponse:
-    """I-02(#679):开始复验前的本地权重预检(纯文件层 stat,毫秒级,不加载模型不触网)。
-
-    缺权重时 UI 出可操作面板:约 1.1GB 说明、下载进度/失败原因,
-    并列「重试下载」与「先用 BM25(精度降级)」。
-    """
-    from freshlatch.store.local_embed import embed_offline_requested
-    from freshlatch.ui.weight_precheck import (
-        local_embed_weights_ready,
-        neural_rerank_weights_ready,
-        resolved_cache_dir,
-    )
-
-    # #753:未设 FASTEMBED_CACHE_PATH 时仍返回解析后的绝对路径,不得为 null
-    cache_dir = resolved_cache_dir()
-    embedding = local_embed_weights_ready()
-    reranker = neural_rerank_weights_ready()
-    return JSONResponse({
-        "ok": embedding and reranker,
-        "embedding": embedding,
-        "reranker": reranker,
-        "offline": embed_offline_requested(),
-        "cache_dir": cache_dir,
-        "reranker_size_hint": "约 1.1GB",
-        "download": _weight_download_status(),
-    })
-
-
-@app.post("/api/retrieval/precheck/download")
-def api_retrieval_precheck_download() -> JSONResponse:
-    """后台下载/预热两份本地权重;进度与失败原因经 GET 预检轮询。离线模式拒绝。"""
-    from freshlatch.store.local_embed import embed_offline_requested
-
-    if embed_offline_requested():
-        return JSONResponse(
-            {"error_code": "EMBED_OFFLINE",
-             "error": ("离线模式已启用(HF_HUB_OFFLINE=1 或 FRESHLATCH_EMBED_OFFLINE=1),"
-                       "不会发起下载。请在有网环境运行 python scripts/warmup_local_embed.py,"
-                       "再用 FASTEMBED_CACHE_PATH 指向该缓存。")},
-            status_code=409,
-        )
-    with _WEIGHT_DOWNLOAD_LOCK:
-        already_running = _WEIGHT_DOWNLOAD_JOB["state"] == "running"
-        if not already_running:
-            _WEIGHT_DOWNLOAD_JOB.update({
-                "state": "running",
-                "error": None,
-                "started_at": datetime.now(timezone.utc).isoformat(),
-                "started_monotonic": time.monotonic(),
-            })
-    if already_running:
-        # 锁外取状态:_weight_download_status 内部自取同一把非可重入锁,
-        # 在锁内调用会自死锁(#679 单测 test_download_rejects_double_start 钉住)。
-        return JSONResponse(
-            {"error": "下载已在进行中", "download": _weight_download_status()},
-            status_code=409,
-        )
-    threading.Thread(target=_run_weight_download_job, daemon=True).start()
-    return JSONResponse({"download": _weight_download_status()})
-
-
-class ReverifyRequest(BaseModel):
-    """I-02(#679):预检面板「先用 BM25(精度降级)」的知情确认。缺省不改变任何行为。"""
-
-    accept_bm25_fallback: bool = False
-
-
-
-def _run_reverify_task(run_id: str) -> None:
-    """I-10(#696)后台主链:异步跑复验,五态收口经 ss._RUN_TASK 供轮询。
-
-    取消语义(决议 #690):已完成主张判定保留(Runner 原地改写);取消整轮
-    不进 latch;清 active_run(无半残 run);快照仍写,部分判定面落盘可恢复。
-    协作点 = 主张边界,单主张内部不打断(MVP);取消若落在全部主张完成后,
-    按完成收口(done),不丢人审入口。
-    """
-    with ss._RUN_TASK_LOCK:
-        task = ss._RUN_TASK
-    if task is None or task["run_id"] != run_id:
-        return
-    accept_bm25 = task["accept_bm25"]
-
-    def _progress(*, current: str | None = None, done: int | None = None) -> None:
-        with ss._RUN_TASK_LOCK:
-            t = ss._RUN_TASK
-            if t is None or t["run_id"] != run_id:
-                return
-            if current is not None:
-                t["current_claim_id"] = current
-            if done is not None:
-                t["done"] = done
-                t["current_claim_id"] = None
-
-    def _should_cancel() -> bool:
-        with ss._RUN_TASK_LOCK:
-            t = ss._RUN_TASK
-        return bool(t is not None and t["run_id"] == run_id
-                    and t["cancel_event"].is_set())
-
-    def _set_status(status: str) -> None:
-        with ss._RUN_TASK_LOCK:
-            t = ss._RUN_TASK
-            if t is not None and t["run_id"] == run_id:
-                t["status"] = status
-
-    try:
-        runner = Runner(_store(), checksum_fn=make_checksum_fn(CORPUS))
-        if accept_bm25:
-            # I-02(#679):预检知情降级——本跑整臂 bm25_fallback(轨迹字段),
-            # 不改 PRODUCTION_RETRIEVAL_MODE,也不写 set_retrieval_switch 运维开关。
-            runner.ctx.bm25_fallback_accepted = True
-        _state["run_ctx"] = runner.ctx
-        _state["budget"] = _budget_from_ctx(runner.ctx)
-        result = runner.run(list(_state["claims"]),
-                            progress=_progress, should_cancel=_should_cancel)
-        _state["trajectory"] = result.trajectory_path
-        _state["budget"] = _budget_from_ctx(runner.ctx)  # 会话内保留用量摘要(DEM-4)
-        # I-14(#713):token 记账——收口瞬间快照 LLMClient 单桶;无桶(假件)则不记账
-        token_bucket = getattr(getattr(runner, "llm", None), "token_usage", None)
-        if token_bucket is not None:
-            _state["token_usage"] = token_bucket.to_dict()
-        # DEM-5:记录零命中清单供 UI 强提示;不改写任何主张 status
-        _state["retrieve_zero_hits"] = list(result.retrieve_zero_hits)
-        with ss._RUN_TASK_LOCK:
-            t = ss._RUN_TASK
-            cancelled = bool(t is not None and t["run_id"] == run_id
-                             and t["cancel_event"].is_set())
-            done = t["done"] if (t is not None and t["run_id"] == run_id) else 0
-        if cancelled and done < len(_state["claims"]):
-            # 整轮取消:收口不进 latch(未完成项不塞人审);清 active_run。
-            _state["latch"] = dict(EMPTY_LATCH)
-            _state["active_run_id"] = None
-            _state["token_usage"] = None  # I-14(#713):随 active_run 一并退役
-            _prepublish.active_run_id = None
-            _write_run_snapshot()  # 部分判定面落盘:已完成主张结果保留
-            _set_status("cancelled")
-        else:
-            rnd = _latch().enter_round(_state["claims"])  # 无红/黄灯则 thread_id=None 直接完成
-            _state["latch"] = {"thread_id": rnd.thread_id, "pending": rnd.pending}
-            run_row = _sync_prepublish(new_run=False)
-            _write_run_snapshot()  # I-01(#678):复验结束,判定面落盘
-            store = _store()
-            extras = _detail_extras(store)
-            with ss._RUN_TASK_LOCK:
-                t = ss._RUN_TASK
-                if t is not None and t["run_id"] == run_id:
-                    t["result"] = {
-                        "claims": _claims_for_ui(store),
-                        "trajectory": str(result.trajectory_path),
-                        "audit": _audit_for_ui(),
-                        "retrieval_used": result.retrieval_used,
-                        "steps_by_claim": result.steps_by_claim,
-                        "decoding": result.decoding.__dict__,
-                        "latch": _state["latch"],
-                        "retrieve_zero_hits": list(_state["retrieve_zero_hits"]),
-                        "budget": dict(_state["budget"]),
-                        "run": run_row,
-                        **extras,
-                    }
-                    t["status"] = "done"
-    except Exception as exc:  # noqa: BLE001 —— 跨线程边界,映射成中文可操作负载
-        mapped = describe_llm_transport_error(exc)
-        if mapped is None:
-            logger.exception(
-                "复验主链未捕获异常 claim_count=%s", len(_state["claims"])
-            )
-            mapped = {
-                "error_code": "REVERIFY_INTERNAL",
-                "error": ("复验执行失败(内部错误已记入服务端日志,界面不回显堆栈)。"
-                          "怎么办:稍后重试;若反复出现,请记录时间与操作步骤后反馈。"),
-            }
-        with ss._RUN_TASK_LOCK:
-            t = ss._RUN_TASK
-            if t is not None and t["run_id"] == run_id:
-                t["error"] = mapped
-                t["status"] = "failed"
-    finally:
-        _state["running"] = False
-        _state["run_ctx"] = None
-
-
-@app.post("/api/reverify")
-def api_reverify(req: ReverifyRequest | None = None) -> JSONResponse:
-    """复验动作(由一键样例进入):异步任务化(I-10/#696),校验后立刻返回 run_id。
-
-    主链在后台线程跑(端到端真主链:Lead 裸循环 + 规则闸),轨迹落盘;
-    进度经 GET /api/reverify/progress 轮询(五态),整轮取消经
-    POST /api/reverify/cancel(协作点=主张边界;单主张跳过 OUT;无 SSE)。
-    run_id 与 Phase 0 active_run_id 同线;同步阻塞双轨已退役。
-    """
-    if _state["running"]:
-        return JSONResponse({"error": "已有复验在进行中"}, status_code=409)
-    if not _t1_session().state.ready:
-        return JSONResponse(
-            {"error": "未选定合法 T1 来源,不得假装已有最新事实(请先完成 T1 来源三卡)"},
-            status_code=400,
-        )
-    if not _state["claims"]:
-        # 内联 docket 加载,不调 api_import()(非空 active_run 时它会硬 409)
-        docket = load_docket(DEMO_DOCKET)
-        _state["claims"] = docket.claims
-        _state["question"] = docket.question
-    _state["running"] = True
-    _state["token_usage"] = None  # I-14(#713):新 Run 起跑即清旧记账,防跨轮残留
-    try:
-        # 新 Run 进发前列表(状态=复验中),active_run_id 定线与 Phase 0 同轨
-        _sync_prepublish(new_run=True)
-    except Exception:
-        _state["running"] = False
-        raise
-    run_id = _state["active_run_id"]
-    _new_run_task(run_id, total=len(_state["claims"]),
-                  accept_bm25=bool(req is not None and req.accept_bm25_fallback))
-    try:
-        threading.Thread(target=_run_reverify_task, args=(run_id,),
-                         daemon=True).start()
-    except Exception:
-        _state["running"] = False
-        _reset_run_task()
-        raise
-    return JSONResponse({"run_id": run_id, "status": "running"})
-
-
-@app.get("/api/reverify/progress")
-def api_reverify_progress(run_id: str = Query(...)) -> JSONResponse:
-    """I-10(#696)轮询面:status ∈ {running, cancelling, cancelled, done, failed}。
-
-    done 附完整结果负载(与原同步响应同形状);failed 附中文错误负载;
-    GET 恒 200(任务存在即资源存在),错误语义走 body 字段,错误码不抬 HTTP 层。
-    """
-    with ss._RUN_TASK_LOCK:
-        task = ss._RUN_TASK
-        if task is None or task["run_id"] != run_id:
-            return JSONResponse({"error": f"未找到复验任务 {run_id}"},
-                                status_code=404)
-        body: dict = {"run_id": task["run_id"], "status": task["status"],
-                      "done": task["done"], "total": task["total"],
-                      "current_claim_id": task["current_claim_id"]}
-        if task["status"] == "done" and task["result"]:
-            body.update(task["result"])
-        elif task["status"] == "failed" and task["error"]:
-            body.update(task["error"])
-    return JSONResponse(body)
-
-
-@app.post("/api/reverify/cancel")
-def api_reverify_cancel() -> JSONResponse:
-    """I-10(#696)整轮取消:置 cancelling + cancel_event;协作点 = 主张边界。
-
-    收口(后台线程):已完成主张结果保留;不进 latch;清 active_run,无半残 run。
-    """
-    with ss._RUN_TASK_LOCK:
-        task = ss._RUN_TASK
-        if task is None or task["status"] in ("done", "failed", "cancelled"):
-            return JSONResponse({"error": "当前没有可取消的复验"}, status_code=409)
-        task["cancel_event"].set()
-        task["status"] = "cancelling"
-        run_id = task["run_id"]
-    return JSONResponse({"run_id": run_id, "status": "cancelling"})
-
-
-class DecideRequest(BaseModel):
-    thread_id: str
-    decisions: list[dict] = []
-
-
-@app.post("/api/latch/decide")
-def api_latch_decide(req: DecideRequest) -> JSONResponse:
-    """人审批量提交(同步 def):Command(resume=整个决定列表)恢复 interrupt,execute 落档。
-
-    成功决定追加 patch_events(ADR-0027 / #174 主缝记账);arm 后台固定,不进发前 UX。
-    """
-    if _state["latch"].get("thread_id") != req.thread_id:
-        return JSONResponse({"error": "该轮人审不存在或已提交(刷新复验单查看最新状态)"}, status_code=409)
-    # 人审前包结论快照(写入 patch_events.before_disp)
-    before_disp = disposition_for_claims(list(_state["claims"]))
-    store = _store()
-    t1_ids = [
-        f"{row['doc_id']}#{row.get('checksum') or ''}@T1"
-        for row in list_t1_checksums(store)
-        if row.get("doc_id")
-    ]
-    try:
-        latch = _latch()
-        results = latch.decide(req.thread_id, req.decisions, claims=list(_state["claims"]))
-        latch.prune_rounds()  # 轮次 checkpoint 留最近 5 个(ADR-0006 §9,业务侧删行)
-    except HumanLatchError as e:
-        return JSONResponse({"error": str(e)}, status_code=400)
-    # 贯通记账:至少一条人审相关事件可读(#174)
-    patch_rows = record_human_review_events(
-        results,
-        before_disp=before_disp,
-        t1_ids=t1_ids,
-        arm="C",
-        actor="human",
-        events_dir=_PATCH_EVENTS_DIR,
-    )
-    _state["latch"] = dict(EMPTY_LATCH)
-    run_row = _sync_prepublish(new_run=False)
-    _write_run_snapshot()  # I-01(#678):人审变更后 snapshot 立刻更新
-    extras = _detail_extras(store)
-    return JSONResponse({
-        "results": results,
-        "claims": _claims_for_ui(store),
-        "latch": _state["latch"],
-        "run": run_row,
-        "patch_events_written": len(patch_rows),
-        **extras,
-    })
-
-
-class RerunRequest(BaseModel):
-    claim_id: str
-
-
-@app.post("/api/latch/rerun")
-def api_latch_rerun(req: RerunRequest) -> JSONResponse:
-    """人点「重跑作废主张」(同步 def,不自动):新 thread 单主张迷你复验,结果挂时间线。"""
-    claim = next((c for c in _state["claims"] if c.claim_id == req.claim_id), None)
-    if claim is None:
-        return JSONResponse({"error": f"未找到主张 {req.claim_id}"}, status_code=404)
-    try:
-        entry = _latch().rerun(claim)
-    except HumanLatchError as e:
-        return JSONResponse({"error": str(e)}, status_code=400)
-    _write_run_snapshot()  # I-01(#678):重跑可能改写判定/续命,snapshot 同步
-    return JSONResponse({"entry": entry, "claim": _one_claim_for_ui(_store(), claim)})
-
-
-@app.get("/api/latch/status")
-def api_latch_status() -> dict:
-    """人审轮状态;进程重启后可用 thread_id 从 checkpoint 恢复待审清单(#11 §5.10)。"""
-    return {"latch": _state["latch"]}
-
-
-@app.get("/api/latch/reopen")
-def api_latch_reopen(claim_id: str = Query(...)) -> dict:
-    """再打开 disputed 结论与审计轨迹。只读,不写冻结 gold / floors。"""
-    return _latch().reopen_disputed(claim_id)
-
-
-class ProposePatchRequest(BaseModel):
-    """#200 改稿暂存:after_text + 可选 t1 草案;不改正文、不写正式账本。"""
-
-    claim_id: str
-    after_text: str
-    t1_ids: list[str] = []
-
-
-class ConfirmPatchRequest(BaseModel):
-    """#200 确认改稿:资格闸+T1硬闸→覆盖正文→T臂账本;职人用语「确认」。"""
-
-    claim_id: str
-    after_text: str | None = None
-    t1_ids: list[str] | None = None
-    minutes: float = 0.0
-    patch_span: str | None = None
-
-
-class DiscardPatchDraftRequest(BaseModel):
-    """#200 丢弃未确认草案。"""
-
-    claim_id: str
-
-
-@app.post("/api/patch/propose")
-def api_patch_propose(req: ProposePatchRequest) -> JSONResponse:
-    """提案暂存(ADR-0029 / #200):走 propose_patch;零改正文、零写正式账本。"""
-    result = propose_patch(
-        claim_id=req.claim_id,
-        after_text=req.after_text,
-        t1_ids=req.t1_ids,
-        claims=list(_state["claims"]),
-        drafts=_PATCH_DRAFTS,
-        run_id=_patch_run_id(),
-    )
-    if not result.ok:
-        return JSONResponse(result.to_dict(), status_code=400)
-    store = _store()
-    extras = _detail_extras(store)
-    return JSONResponse({
-        **result.to_dict(),
-        "claims": _claims_for_ui(store),
-        **extras,
-    })
-
-
-def _confirm_patch_reverify(claim: Claim) -> tuple[str, str]:
-    """产品路径单条再验(#199);测试可 monkeypatch 为确定性 noop 以保持零 LLM。"""
-    return single_claim_reverify(
-        claim,
-        store=_store(),
-        checksum_fn=make_checksum_fn(CORPUS),
-    )
-
-
-@app.post("/api/patch/confirm")
-def api_patch_confirm(req: ConfirmPatchRequest) -> JSONResponse:
-    """确认改稿(#200):confirm_patch 硬闸;产品路径恒 arm=T;发前无 C|T 开关。"""
-    store = _store()
-    archived = list_archived_t1_evidence_ids(store)
-    # #199 后 confirm 须触发单条再验;经可测钩子注入(CI 零 LLM 可 monkeypatch)
-    result = confirm_patch(
-        claim_id=req.claim_id,
-        claims={c.claim_id: c for c in _state["claims"]},
-        claim_list=_state["claims"],
-        archived_t1_ids=archived,
-        minutes=req.minutes,
-        after_text=req.after_text,
-        t1_ids=req.t1_ids,
-        patch_span=req.patch_span,
-        drafts=_PATCH_DRAFTS,
-        run_id=_patch_run_id(),
-        events_dir=_PATCH_EVENTS_DIR,
-        actor="human",
-        reverify_fn=_confirm_patch_reverify,
-    )
-    if not result.ok:
-        return JSONResponse(result.to_dict(), status_code=400)
-    run_row = _sync_prepublish(new_run=False)
-    _write_run_snapshot()  # I-01(#678):确认改稿改写判定面,snapshot 同步
-    extras = _detail_extras(store)
-    return JSONResponse({
-        **result.to_dict(),
-        "claims": _claims_for_ui(store),
-        "run": run_row,
-        **extras,
-    })
-
-
-@app.post("/api/patch/discard-draft")
-def api_patch_discard_draft(req: DiscardPatchDraftRequest) -> JSONResponse:
-    """丢弃未确认改稿草案(#200);不影响主张正文与正式账本。"""
-    discarded = discard_patch_draft(
-        claim_id=req.claim_id,
-        drafts=_PATCH_DRAFTS,
-        run_id=_patch_run_id(),
-    )
-    store = _store()
-    extras = _detail_extras(store)
-    return JSONResponse({
-        "ok": True,
-        "claim_id": req.claim_id,
-        "discarded": discarded,
-        "claims": _claims_for_ui(store),
-        **extras,
-    })
-
-
-@app.get("/api/source/{doc_id}")
-def api_source(doc_id: str, as_of: str = Query("T1", pattern="^(T0|T1)$")) -> dict:
-    """点回原文:返回条款级锚点段落,前端定位 + 高亮。"""
-    path = CORPUS / as_of.lower() / f"{doc_id}.md"
-    if not path.exists():
-        return JSONResponse({"error": f"未找到 {doc_id} 的 {as_of} 快照"}, status_code=404)
-    doc, chunks = parse_document(path)
-    return {
-        "doc_id": doc_id,
-        "as_of": as_of,
-        "title": doc.title,
-        "source_type": doc.source_type,
-        "sections": [
-            {
-                "anchor": c.clause_id,
-                "text": c.text,
-                "sentences": [
-                    {"sentence_id": f"s{index}", "text": sentence}
-                    for index, sentence in enumerate(split_sentences(c.text))
-                ],
-            }
-            for c in chunks
-        ],
-    }
-
-
-_UI_STATIC = Path(__file__).resolve().parent / "static"
-HTML_PAGE = (_UI_STATIC / "reverify.html").read_text(encoding="utf-8")
-
-
-def _format_audit_score(value: float) -> str:
-    """有限数字的短写法。不补小数位,避免把空臂写成 0。"""
-    return format(value, ".12g")
-
-
-def _patch_visibility_html(hit: dict) -> str:
-    """命中行上的 as_of / patch_id / valid_from / valid_to。空值写「无」。"""
-    esc = html.escape
-    parts: list[str] = []
-    for key in PATCH_VISIBILITY_FIELDS:
-        raw = hit.get(key)
-        shown = raw.strip() if isinstance(raw, str) and raw.strip() else ""
-        label = esc(shown) if shown else "无"
-        css = "hit-" + key.replace("_", "-")
-        parts.append(
-            f'<span class="{css}" data-{css}="{esc(shown, quote=True)}">'
-            f"{esc(key)} {label}</span>"
-        )
-    return " · ".join(parts)
-
-
-def _span_link(item: dict, role: str) -> str:
-    """句锚链接。可见文本含 evidence id 与句 id。"""
-    esc = html.escape
-    css = "span-support" if role == "support" else "span-oppose"
-    evidence_id = str(item.get("evidence_id") or "")
-    sentence_id = str(item.get("sentence_id") or "")
-    anchor = str(item.get("anchor") or f"{evidence_id}#{sentence_id}")
-    text = str(item.get("text") or "")
-    return (
-        f'<a class="{css}" data-role="{role}" '
-        f'data-evidence-id="{esc(evidence_id, quote=True)}" '
-        f'data-sentence-id="{esc(sentence_id, quote=True)}" '
-        f'href="#{esc(anchor, quote=True)}" '
-        f'onclick="openClaimSpan(this);return false;">'
-        f"{esc(anchor)}</a> {esc(text)}"
-    )
-
-
-def _render_claim_spans(spans: list) -> str:
-    """主张句分列支撑与反对。无支撑时不画 span-support。"""
-    esc = html.escape
-    if not spans:
-        return '<div id="audit-claim-spans"><b>主张句</b> · 无</div>'
-    items: list[str] = []
-    for row in spans:
-        claim_id = esc(str(row.get("claim_id") or ""), quote=True)
-        claim_text = esc(str(row.get("claim_text") or ""))
-        flag = "true" if row.get("unsupported") else "false"
-        support = row.get("support") or []
-        oppose = row.get("oppose") or []
-        if support:
-            support_html = " ".join(_span_link(item, "support") for item in support)
-        else:
-            support_html = "无"
-        if oppose:
-            oppose_html = " ".join(_span_link(item, "oppose") for item in oppose)
-        else:
-            oppose_html = "无"
-        items.append(
-            f'<li class="claim-span-card" data-claim-id="{claim_id}" '
-            f'data-unsupported="{flag}">'
-            f'<div class="claim-span-text">{claim_text}</div>'
-            f'<div class="claim-span-support"><b>支撑句</b> · {support_html}</div>'
-            f'<div class="claim-span-oppose"><b>反对句</b> · {oppose_html}</div>'
-            "</li>"
-        )
-    return (
-        '<div id="audit-claim-spans"><b>主张句</b><ul>'
-        + "".join(items)
-        + "</ul></div>"
-    )
-
-
-def _render_audit_body(audit: dict) -> str:
-    """审计面 HTML。缺查询、缺分、缺依据、缺 reason、缺主张句都写「无」。"""
-    from freshlatch.store.pipeline import HIT_SCORE_FIELDS
-
-    esc = html.escape
-    path = audit.get("path")
-    parsed = bool(audit.get("parsed"))
-    if not path and not parsed:
-        return "尚无本轮轨迹。完成复验后此处显示查询、命中、判定依据与未知原因。"
-
-    queries = audit.get("query") or []
-    if queries:
-        query_html = "；".join(esc(str(item)) for item in queries)
-    else:
-        query_html = "无"
-
-    hits = audit.get("hits") or []
-    if not hits:
-        hits_html = "无"
-    else:
-        items: list[str] = []
-        for hit in hits:
-            evidence_id = esc(str(hit.get("evidence_id") or ""))
-            scores = hit.get("scores")
-            if not isinstance(scores, dict):
-                score_html = "分 无"
-            else:
-                parts: list[str] = []
-                any_number = False
-                for arm in HIT_SCORE_FIELDS:
-                    value = scores.get(arm)
-                    if isinstance(value, bool) or not isinstance(value, (int, float)):
-                        parts.append(f"{arm} 无")
-                        continue
-                    any_number = True
-                    parts.append(f"{arm} {_format_audit_score(float(value))}")
-                score_html = " · ".join(parts) if any_number else "分 无"
-            items.append(
-                f"<li><code>{evidence_id}</code> · {_patch_visibility_html(hit)}"
-                f" · {score_html}</li>"
-            )
-        hits_html = "<ul>" + "".join(items) + "</ul>"
-
-    attribution = audit.get("attribution_ids") or []
-    if attribution:
-        attribution_html = " ".join(f"<code>{esc(str(item))}</code>" for item in attribution)
-    else:
-        attribution_html = "无"
-
-    reason = audit.get("unknown_reason")
-    if isinstance(reason, str) and reason:
-        reason_html = f"<code>{esc(reason)}</code>"
-    else:
-        reason_html = "无"
-
-    path_html = ""
-    if path:
-        path_html = f'<div id="audit-path">轨迹路径 · <code>{esc(str(path))}</code></div>'
-    return (
-        path_html
-        + f'<div id="audit-query"><b>查询</b> · {query_html}</div>'
-        + f'<div id="audit-hits"><b>命中</b> · {hits_html}</div>'
-        + f'<div id="audit-attribution"><b>判定依据</b> · {attribution_html}</div>'
-        + f'<div id="audit-unknown"><b>未知原因</b> · {reason_html}</div>'
-        + render_failure_buckets_html(audit.get("failure_buckets"))
-        + _render_claim_spans(audit.get("claim_spans") or [])
-    )
-
-
-@app.get("/", response_class=HTMLResponse)
-def index(view: str = Query(default="")) -> str:
-    # 注入单一真相默认视图,避免 Python 常量与 JS 初值漂移。
-    # view=audit / view=interview 只改呈现,不改闸。审计正文来自 project_audit。
-    # #735 AC0.3:interview(面试视图)默认只露 Sheet+HumanLatch,运维/检索面板
-    # 由前端「运维/检索面板」开关打开;默认视图仍是职人(DEM-6 不变)。
-    mode = view if view in ("audit", "interview") else VIEW_MODE_DEFAULT
-    page = HTML_PAGE.replace(_VIEW_MODE_TOKEN, mode)
-    # #664 只同步呈现密度。data-view 决定职人主路径是否折叠协议词,不改判定。
-    page = page.replace(
-        '<html lang="zh" data-view="craftsman">',
-        f'<html lang="zh" data-view="{mode}">',
-        1,
-    )
-    # 「on」按钮态:模板默认带职人 on;先摘再按 mode 挂,避免双 on
-    page = page.replace('id="view-craftsman" class="on"', 'id="view-craftsman"')
-    if mode == "audit":
-        page = page.replace('id="view-audit"', 'id="view-audit" class="on"', 1)
-        page = page.replace('id="audit-panel"', 'id="audit-panel" class="visible"', 1)
-    elif mode == "interview":
-        page = page.replace('id="view-interview"', 'id="view-interview" class="on"', 1)
-    else:
-        page = page.replace('id="view-craftsman"', 'id="view-craftsman" class="on"', 1)
-    if mode != "audit":
-        # I-11(#710):职人/面试 SYNTHETIC 短中文;审计视图保留原标签
-        page = page.replace(SYN_BADGE_FULL_TEXT, SYN_BADGE_SHORT_TEXT, 1)
-    audit = _audit_for_ui()
-    badge_html = _render_craftsman_badges(audit["badges"]) if mode == "craftsman" else ""
-    page = page.replace(_CRAFTSMAN_BADGES_TOKEN, badge_html)
-    return page.replace(_AUDIT_BODY_TOKEN, _render_audit_body(audit))
-
-
-# 发前列表壳:改编 mission_control 列表→详情 IA;字段换 Run/disposition(#173)
-PREPUBLISH_HTML = (_UI_STATIC / "prepublish.html").read_text(encoding="utf-8")
-
-
-@app.get("/prepublish", response_class=HTMLResponse)
-def prepublish_index() -> str:
-    """发前列表页(#173):mission_control 列表壳改编,业务字段换 Run/disposition。"""
-    return PREPUBLISH_HTML
+# ---------------------------------------------------------------------------
+# 路由组装(#756/#757/#758):路径字符串不变;契约零变更
+# ---------------------------------------------------------------------------
+from freshlatch.ui.routes_t1 import (  # noqa: E402
+    DraftImportRequest,
+    PasteDraftRequest,
+    ThinUrlRequest,
+    router as routes_t1,
+)
+from freshlatch.ui.routes_reverify import (  # noqa: E402
+    ReverifyRequest,
+    _run_reverify_task,
+    router as routes_reverify,
+)
+from freshlatch.ui.routes_latch import (  # noqa: E402
+    DecideRequest,
+    RerunRequest,
+    router as routes_latch,
+)
+from freshlatch.ui.routes_patch import (  # noqa: E402
+    ConfirmPatchRequest,
+    DiscardPatchDraftRequest,
+    ProposePatchRequest,
+    _confirm_patch_reverify,
+    router as routes_patch,
+)
+from freshlatch.publish_hook import evaluate_publish_hook  # noqa: E402
+from freshlatch.ui.routes_publish import (  # noqa: E402
+    HOOK_HINTS,
+    PublishHookCheckRequest,
+    _hook_token_denied,
+    hook_error_body,
+    router as routes_publish,
+)
+from freshlatch.ui.routes_sheet import (  # noqa: E402
+    HTML_PAGE,
+    PREPUBLISH_HTML,
+    _format_audit_score,
+    _patch_visibility_html,
+    _render_audit_body,
+    _render_claim_spans,
+    _span_link,
+    router as routes_sheet,
+)
+
+app.include_router(routes_t1)
+app.include_router(routes_reverify)
+app.include_router(routes_latch)
+app.include_router(routes_patch)
+app.include_router(routes_publish)
+app.include_router(routes_sheet)
 
 
 if __name__ == "__main__":
     import uvicorn
 
-    # P0 余量:未设 FASTEMBED_CACHE_PATH 时硬警告(不阻断);口径见 weight_precheck / local-embed.md
+    from freshlatch.publish_hook import HOOK_BIND_HOST_ENV, HOOK_DEFAULT_BIND_HOST
     from freshlatch.ui.weight_precheck import warn_if_fastembed_cache_path_unset
 
     warn_if_fastembed_cache_path_unset()
-    # #230:入站 check 默认仅本机回环;可用 FRESHLATCH_BIND_HOST 覆盖,禁止把 0.0.0.0 无鉴权当 Done
     _bind = (os.environ.get(HOOK_BIND_HOST_ENV) or "").strip() or HOOK_DEFAULT_BIND_HOST
     uvicorn.run(app, host=_bind, port=8000)
