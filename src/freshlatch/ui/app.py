@@ -14,7 +14,6 @@ import os
 import threading
 import time
 import uuid  # noqa: E402
-from dataclasses import asdict
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -24,31 +23,23 @@ from pydantic import BaseModel
 
 from freshlatch.api_errors import error_body, install_error_handlers  # noqa: E402
 from freshlatch.claim_import import ClaimImportError, parse_claim_import_draft  # noqa: E402
-from freshlatch.claim_ledger import (  # noqa: E402
-    export_claim_ledger_md,
-    get_claim_ledger,
-)
+from freshlatch.claim_ledger import export_claim_ledger_md  # noqa: E402
 from freshlatch.llm import describe_llm_transport_error  # noqa: E402
 from freshlatch.evidence_bound import (  # noqa: E402
-    PatchDraftStore,
     confirm_patch,
     discard_patch_draft,
     propose_patch,
     single_claim_reverify,
 )
 from freshlatch.models import Claim  # noqa: E402
-from freshlatch.guardrails import Guardrails  # noqa: E402
-from freshlatch.packs import PackPaths, resolve_pack  # noqa: E402
 from freshlatch.latch import HumanLatch, HumanLatchError  # noqa: E402
 from freshlatch.prepublish import (  # noqa: E402
-    PrepublishRegistry,
     derive_run_status,
     disposition_for_claims,
     list_archived_t1_evidence_ids,
     list_t1_checksums,
-    project_gate_results,
 )
-from freshlatch.patch_events import iter_events, record_human_review_events  # noqa: E402
+from freshlatch.patch_events import record_human_review_events  # noqa: E402
 from freshlatch.publish_hook import (  # noqa: E402
     HOOK_BIND_HOST_ENV,
     HOOK_CHECKSUM_DRIFT,
@@ -63,20 +54,11 @@ from freshlatch.publish_hook import (  # noqa: E402
     deny_http_status,
     evaluate_publish_hook,
 )
-from freshlatch.runner import RunContext, Runner, load_docket  # noqa: E402
-from freshlatch.publish_hook import (  # noqa: E402
-    checksums_fresh,
-)
+from freshlatch.runner import RunContext, Runner, load_docket  # noqa: E402  # RunContext:单测 appmod.RunContext
 from freshlatch.sheet import (  # noqa: E402
     PATCH_VISIBILITY_FIELDS,
-    UI_BADGE_ABSTAIN,
-    UI_BADGE_PARTIAL,
-    UI_BADGE_VERIFIED,
-    annotate_audit_patch_visibility,
     export_client_memo_gated,
-    project_audit,
     project_claim,
-    project_ui_badges,
     render_failure_buckets_html,
 )
 from freshlatch.store.checksum import make_checksum_fn  # noqa: E402
@@ -86,29 +68,53 @@ from freshlatch.store.ingest import parse_document  # noqa: E402
 from freshlatch.store.sqlite_store import SQLiteStore  # noqa: E402
 from freshlatch.t1_source import T1SourceSession  # noqa: E402
 
-# 测试可 monkeypatch 指向 tmp;生产默认 None → data/patch_events/
-_PATCH_EVENTS_DIR = None
-# #200:Evidence-bound 草案暂存(按 Run 隔离;未 confirm 不改正文/不写正式账本)
-_PATCH_DRAFTS = PatchDraftStore()
+# ---------------------------------------------------------------------------
+# #755:会话可变容器真相源 = freshlatch.ui.session_state;投影助手见 projections。
+# 同对象再导出便于过渡期 appmod.X;函数(_store/_latch/warmup)留本模块以吃 monkeypatch。
+# ---------------------------------------------------------------------------
+from freshlatch.ui import session_state as ss  # noqa: E402
+from freshlatch.ui.projections import (  # noqa: E402
+    RUN_SNAPSHOT_VERSION,
+    _RESET_LEDGER_NOTE,
+    _CRAFTSMAN_BADGES_TOKEN,
+    _audit_for_ui,
+    _bind_run_checksums,
+    _budget_from_ctx,
+    _claim_ledger_for_ui,
+    _claim_to_dict,
+    _claims_for_ui,
+    _current_budget,
+    _current_t1_checksum_map,
+    _detail_extras,
+    _one_claim_for_ui,
+    _pack_payload,
+    _patch_drafts_payload,
+    _patch_run_id,
+    _read_run_snapshot,
+    _render_craftsman_badges,
+    _run_checksum_fresh,
+    _run_metrics,
+    _source_label,
+    _ui_badge_rows,
+    _write_run_snapshot,
+)
 
-# I-10(#696):异步复验任务(整轮唯一;MVP 单并发,重入由 _state["running"] 挡)。
-# 五态:running | cancelling | cancelled | done | failed。退役同步阻塞双轨;
-# 无服务端推送通道,进度只靠本记录轮询(#679 红线:不接 WS/SSE 类通道)。
-_RUN_TASK_LOCK = threading.Lock()
-_RUN_TASK: dict | None = None
-
-
-def _reset_run_task() -> None:
-    """测试/洗态入口:退役当前任务记录(不打断已在跑的后台线程本身)。"""
-    global _RUN_TASK
-    with _RUN_TASK_LOCK:
-        _RUN_TASK = None
-
-REPO_ROOT = Path(__file__).resolve().parent.parent.parent.parent
-# 占位与切换前第一课题路径一致;import 末尾 bind_active_pack 按 active_pack 覆盖
-CORPUS = REPO_ROOT / "data" / "corpus"
-DEMO_DOCKET = REPO_ROOT / "data" / "t0_docket.json"
-CHECKPOINTS = REPO_ROOT / "data" / "checkpoints.db"
+# 同对象再导出(dict/锁/注册表)
+_PATCH_EVENTS_DIR = ss._PATCH_EVENTS_DIR
+_PATCH_DRAFTS = ss._PATCH_DRAFTS
+_RUN_TASK_LOCK = ss._RUN_TASK_LOCK
+_reset_run_task = ss._reset_run_task
+_new_run_task = ss._new_run_task
+REPO_ROOT = ss.REPO_ROOT
+EMPTY_LATCH = ss.EMPTY_LATCH
+EMPTY_BUDGET = ss.EMPTY_BUDGET
+_state = ss._state
+_prepublish = ss._prepublish
+_WEIGHT_DOWNLOAD_TIMEOUT_S = ss._WEIGHT_DOWNLOAD_TIMEOUT_S
+_WEIGHT_DOWNLOAD_LOCK = ss._WEIGHT_DOWNLOAD_LOCK
+_WEIGHT_DOWNLOAD_JOB = ss._WEIGHT_DOWNLOAD_JOB
+_run_weight_download_job = ss._run_weight_download_job
+_weight_download_status = ss._weight_download_status
 
 BADGE = {
     # #736 AC0.5:用户面不读颜色字——有效/失效直说(与 reverify.html 的 JS BADGE 同改)
@@ -122,157 +128,37 @@ MAIN_BUTTON_TEXT = "一键样例"  # #663 首页主 CTA。复验动作由样例�
 SYN_BADGE_FULL_TEXT = "SYNTHETIC · 合成语料,非真实客户数据"
 SYN_BADGE_SHORT_TEXT = "当前为演示合成包"
 VIEW_MODE_DEFAULT = "craftsman"  # DEM-6:默认职人视图(去角色化成交面)
-# HTML 模板占位:index() 注入 VIEW_MODE_DEFAULT,避免 Python/JS 默认值漂移
 _VIEW_MODE_TOKEN = "__VIEW_MODE_DEFAULT__"
-# 审计面初值占位。index() 用轨迹投影替换,缺字段写「无」。
 _AUDIT_BODY_TOKEN = "__AUDIT_BODY__"
-EMPTY_LATCH = {"thread_id": None, "pending": []}  # 人审轮状态收口(不各处字面造 dict)
-# DEM-4:步数/检索预算进度;天花板与 Guardrails 默认对齐(α-demo 可见性 ≠ latch 证明)
-_G = Guardrails()
-EMPTY_BUDGET = {
-    "steps_used": 0,
-    "lead_max_steps": _G.lead_max_steps,
-    "retrieval_used": 0,
-    "retrieval_budget": _G.retrieval_budget,
-}
-del _G
 
 app = FastAPI(title="FreshLatch 复验单")
 install_error_handlers(app, log_prefix="ui")
-_state: dict = {"claims": [], "question": "", "trajectory": None, "running": False,
-                "latch": dict(EMPTY_LATCH),
-                "budget": dict(EMPTY_BUDGET),
-                "run_ctx": None,
-                "retrieve_zero_hits": [],  # DEM-5:本轮 retrieve 空命中;仅提示,不改写判定
-                "active_run_id": None,  # 发前列表当前绑定 Run(#173)
-                # #229:Run 绑定瞬间的 T1 checksum 快照;导出时与当前比对机械新鲜度
-                # #712(I-13):checksum 于 T1 来源 snapshot 写入即算,此处只钉对照副本
-                "bound_t1_checksums": {},
-                # I-14(#713 / 决议 #707):本轮 token 记账(LLMClient 桶快照);
-                # None = 本轮尚无记账,审计指标折叠不显示 token 行
-                "token_usage": None}
-_prepublish = PrepublishRegistry()
-_t1: T1SourceSession | None = None
-ACTIVE_PACK: PackPaths
-
 logger = logging.getLogger(__name__)
 
-# I-02(#679):本地权重下载任务(后台线程)。单测 monkeypatch _warmup_local_weights
-# 成确定性 noop/fast-fail,零真实下载。
-_WEIGHT_DOWNLOAD_TIMEOUT_S = 1800.0  # 30 分钟软上限;超限由 GET 预检判超时,不另起看门狗
-_WEIGHT_DOWNLOAD_LOCK = threading.Lock()
-_WEIGHT_DOWNLOAD_JOB: dict = {
-    "state": "idle",  # idle | running | ok | error
-    "error": None,    # 失败原因(中文 + 异常类型);成功/未开始为 None
-    "started_at": None,
-    "started_monotonic": None,
-}
+
+def _sync_pack_aliases() -> None:
+    """把 ss 上的 pack 路径别名同步到本模块,兼容 monkeypatch(appmod.CORPUS)。"""
+    global CORPUS, DEMO_DOCKET, CHECKPOINTS, ACTIVE_PACK, _PATCH_EVENTS_DIR
+    CORPUS = ss.CORPUS
+    DEMO_DOCKET = ss.DEMO_DOCKET
+    CHECKPOINTS = ss.CHECKPOINTS
+    ACTIVE_PACK = ss.ACTIVE_PACK
+    _PATCH_EVENTS_DIR = ss._PATCH_EVENTS_DIR
 
 
-def _warmup_local_weights() -> None:
-    """下载并预热两份本地权重(embedding + reranker,合计约 1.2GB,其中 reranker 约 1.1GB)。"""
-    from freshlatch.store.local_embed import embed_texts_local
-    from freshlatch.store.neural_rerank import warmup_neural_rerank
-
-    embed_texts_local(["预热"])
-    warmup_neural_rerank()
-
-
-def _run_weight_download_job() -> None:
-    try:
-        _warmup_local_weights()
-    except Exception as exc:  # noqa: BLE001 —— 失败原因要给人看,不向上抛穿线程边界
-        message = f"下载/预热失败:{type(exc).__name__}: {exc}"[:500]
-        with _WEIGHT_DOWNLOAD_LOCK:
-            _WEIGHT_DOWNLOAD_JOB["state"] = "error"
-            _WEIGHT_DOWNLOAD_JOB["error"] = message
-    else:
-        with _WEIGHT_DOWNLOAD_LOCK:
-            _WEIGHT_DOWNLOAD_JOB["state"] = "ok"
-            _WEIGHT_DOWNLOAD_JOB["error"] = None
-
-
-def _weight_download_status() -> dict:
-    """下载任务投影;running 超软上限时在本读取点判超时(无后台看门狗线程)。"""
-    with _WEIGHT_DOWNLOAD_LOCK:
-        job = dict(_WEIGHT_DOWNLOAD_JOB)
-    status = {"state": job["state"], "error": job["error"], "started_at": job["started_at"]}
-    if job["state"] == "running":
-        elapsed = time.monotonic() - (job["started_monotonic"] or time.monotonic())
-        status["elapsed_s"] = int(elapsed)
-        if elapsed > _WEIGHT_DOWNLOAD_TIMEOUT_S:
-            status["state"] = "error"
-            status["error"] = "下载超时(已超过 30 分钟)。请检查网络后点「重试下载」。"
-            with _WEIGHT_DOWNLOAD_LOCK:
-                _WEIGHT_DOWNLOAD_JOB["state"] = "error"
-                _WEIGHT_DOWNLOAD_JOB["error"] = status["error"]
-    return status
-
-
-def bind_active_pack(pack_id: str | None = None) -> PackPaths:
+def bind_active_pack(pack_id: str | None = None):
     """把 UI 路径钉到 active_pack 解析结果。显式 pack_id 供测试切换,不改闸。"""
-    global CORPUS, DEMO_DOCKET, CHECKPOINTS, ACTIVE_PACK, _t1
-    pack = resolve_pack(pack_id)
-    ACTIVE_PACK = pack
-    CORPUS = pack.corpus
-    DEMO_DOCKET = pack.docket
-    CHECKPOINTS = pack.checkpoints
-    _t1 = None
+    pack = ss.bind_active_pack(pack_id)
+    _sync_pack_aliases()
     return pack
 
 
-bind_active_pack()
+_sync_pack_aliases()
 
 
-def _budget_from_ctx(ctx: RunContext) -> dict:
-    """从 RunContext 投影预算进度(与 Guardrails 字段对齐)。"""
-    g = ctx.guardrails
-    return {
-        "steps_used": ctx.lead_steps_used,
-        "lead_max_steps": g.lead_max_steps,
-        "retrieval_used": ctx.retrieval_used,
-        "retrieval_budget": g.retrieval_budget,
-    }
-
-
-def _current_budget() -> dict:
-    """复验中读 live RunContext;完成后读会话摘要。"""
-    if _state.get("running") and _state.get("run_ctx") is not None:
-        return _budget_from_ctx(_state["run_ctx"])
-    return dict(_state.get("budget") or EMPTY_BUDGET)
-
-
-def _run_metrics(store) -> dict:
-    """I-14(#713 / 决议 #707):审计「本轮指标 / 记账」只读投影。
-
-    复用 active_run_id(不另造 run id);进行中数字与五态轮询同源(_current_budget),
-    完成后是会话内只读投影。token 仅在本轮已记账(_state["token_usage"])时出现;
-    不含美元成本,不提供 JSON/CSV 导出。
-    patch_events 行按本轮主张 claim_id 过滤(账本行不绑 run_id,这是诚实口径);
-    latch_log 行按 active_run_id 过滤。
-    """
-    run_id = _state.get("active_run_id")
-    budget = _current_budget()
-    claim_ids = {c.claim_id for c in (_state.get("claims") or [])}
-    patch_events_rows = 0
-    if claim_ids:
-        patch_events_rows = sum(
-            1 for e in iter_events(events_dir=_PATCH_EVENTS_DIR)
-            if str(e.get("claim_id") or "") in claim_ids
-        )
-    latch_log_rows = 0
-    if run_id and hasattr(store, "list_latch_rows"):
-        latch_log_rows = sum(
-            1 for row in store.list_latch_rows() if row.get("run_id") == run_id
-        )
-    return {
-        "run_id": run_id,
-        "steps_used": budget["steps_used"],
-        "retrieval_used": budget["retrieval_used"],
-        "token_usage": _state.get("token_usage"),  # None = 未记账,UI 不显示 token 行
-        "patch_events_rows": patch_events_rows,
-        "latch_log_rows": latch_log_rows,
-    }
+def _warmup_local_weights() -> None:
+    """下载并预热两份本地权重;单测 monkeypatch 本函数即可拦住真实下载。"""
+    ss._warmup_local_weights_impl()
 
 
 def _store() -> SQLiteStore:
@@ -283,143 +169,23 @@ def _store() -> SQLiteStore:
     return store
 
 
-def _pack_payload() -> dict:
-    """只读展示当前包。问题句优先用本会话已导入的 docket。"""
-    pack = ACTIVE_PACK
-    question = _state["question"] or pack.question
-    return {
-        "pack_id": pack.pack_id,
-        "label": pack.label,
-        "synthetic": pack.synthetic,
-        "question": question,
-    }
-
-
 def _t1_session() -> T1SourceSession:
     """进程内 T1 来源三卡会话;测试可通过 _reset_t1_source 换店。"""
-    global _t1
-    if _t1 is None:
-        _t1 = T1SourceSession(_store(), corpus_root=CORPUS)
-    return _t1
+    if ss._t1 is None:
+        ss._t1 = T1SourceSession(_store(), corpus_root=CORPUS)
+    return ss._t1
 
 
 def _reset_t1_source(store: SQLiteStore | None = None) -> T1SourceSession:
     """测试/重启入口:清空三卡状态并绑到给定 store。"""
-    global _t1
-    _t1 = T1SourceSession(store or _store(), corpus_root=CORPUS)
-    return _t1
+    ss._t1 = T1SourceSession(store or _store(), corpus_root=CORPUS)
+    return ss._t1
 
 
 def _latch() -> HumanLatch:
     # Batch 2 档 2:renew 半边真 checksum_fn(语料现算,禁读库列);不升格为 latch 证明
     return HumanLatch(_store(), CHECKPOINTS, mode="online",
                       checksum_fn=make_checksum_fn(CORPUS))
-
-
-def _claim_to_dict(store: SQLiteStore, c) -> dict:
-    """薄委托:与导出/对账单测同吃核心包 project_claim(K4)。"""
-    return project_claim(store, c)
-
-
-_UI_BADGE_TOKENS = frozenset({
-    UI_BADGE_VERIFIED,
-    UI_BADGE_PARTIAL,
-    UI_BADGE_ABSTAIN,
-})
-_CRAFTSMAN_BADGES_TOKEN = "__CRAFTSMAN_BADGES__"
-
-
-def _ui_badge_rows() -> list[dict]:
-    """当前会话的只读 UiBadge。不改主张 status。"""
-    return project_ui_badges(
-        _state.get("trajectory"),
-        list(_state.get("claims") or []),
-    )
-
-
-def _audit_for_ui() -> dict:
-    """审计投影。badges 与职人槽同一份只读列表。补丁四列只读,不改检索。"""
-    audit = project_audit(_state.get("trajectory"))
-    annotate_audit_patch_visibility(audit, _store())
-    audit["badges"] = _ui_badge_rows()
-    return audit
-
-
-def _claims_for_ui(store: SQLiteStore) -> list[dict]:
-    """主张投影加只读 badge。不改 _claim_to_dict,导出对账仍与 project_claim 相等。"""
-    rows = [_claim_to_dict(store, claim) for claim in _state["claims"]]
-    by_id = {item["claim_id"]: item["badge"] for item in _ui_badge_rows()}
-    for row in rows:
-        row["badge"] = by_id.get(row["claim_id"])
-    return rows
-
-
-def _one_claim_for_ui(store: SQLiteStore, claim: Claim) -> dict:
-    row = _claim_to_dict(store, claim)
-    by_id = {item["claim_id"]: item["badge"] for item in _ui_badge_rows()}
-    row["badge"] = by_id.get(claim.claim_id)
-    return row
-
-
-def _render_craftsman_badges(rows: list[dict]) -> str:
-    """职人视图服务端徽章槽。只渲染三值;null 不占位。"""
-    parts: list[str] = []
-    for row in rows:
-        badge = row.get("badge")
-        if badge not in _UI_BADGE_TOKENS:
-            continue
-        claim_id = html.escape(str(row.get("claim_id") or ""))
-        parts.append(
-            '<div class="claim ui-badge-card" data-claim-id="'
-            + claim_id
-            + '"><b>'
-            + claim_id
-            + '</b><span class="badge '
-            + badge
-            + '">'
-            + badge
-            + "</span></div>"
-        )
-    return "".join(parts)
-
-
-def _source_label() -> str:
-    """发前来源短标签(包 id + T1 入口;非编排角色名)。"""
-    pack = ACTIVE_PACK
-    bits = [pack.pack_id]
-    if pack.label:
-        bits.append(pack.label)
-    t1 = _t1_session().snapshot()
-    kind = t1.get("kind") or "none"
-    if kind and kind != "none":
-        bits.append(f"T1:{kind}")
-    return " · ".join(bits)
-
-
-def _current_t1_checksum_map(store: SQLiteStore | None = None) -> dict[str, str]:
-    """当前库 T1 doc_id→checksum 映射(供发前钩子机械新鲜度)。"""
-    s = store if store is not None else _store()
-    return {
-        str(row["doc_id"]): str(row.get("checksum") or "")
-        for row in list_t1_checksums(s)
-    }
-
-
-def _bind_run_checksums(store: SQLiteStore | None = None) -> None:
-    """把当前 T1 checksum 钉到 active Run(新 Run / 首次绑定时)。
-
-    I-13(决议 #706 / #712):首次指纹时刻已前移到 T1 来源 snapshot 写入
-    (粘贴确认/上传/合成包/薄 URL 均写入即算);此处仅是发前导出的机械
-    新鲜度对照快照,不再是 checksum 的诞生时刻。
-    """
-    _state["bound_t1_checksums"] = _current_t1_checksum_map(store)
-
-
-def _run_checksum_fresh(store: SQLiteStore | None = None) -> bool:
-    """Run 绑定 checksum 相对当前是否未漂。"""
-    recorded = _state.get("bound_t1_checksums") or {}
-    current = _current_t1_checksum_map(store)
-    return checksums_fresh(recorded, current)
 
 
 def _sync_prepublish(*, new_run: bool = False) -> dict:
@@ -436,7 +202,6 @@ def _sync_prepublish(*, new_run: bool = False) -> dict:
         _bind_run_checksums()
     else:
         run_id = _state.get("active_run_id")
-        # 尚无绑定快照时补钉一次(不覆盖已有,避免把漂移洗成未漂)
         if not (_state.get("bound_t1_checksums") or {}):
             _bind_run_checksums()
     traj = str(_state["trajectory"]) if _state.get("trajectory") else None
@@ -451,61 +216,6 @@ def _sync_prepublish(*, new_run: bool = False) -> dict:
     )
     _state["active_run_id"] = summary.run_id
     return summary.to_dict()
-
-
-def _patch_run_id() -> str:
-    """补丁草案隔离键:优先当前发前 Run,否则 session。"""
-    return str(_state.get("active_run_id") or "session")
-
-
-def _patch_drafts_payload() -> dict[str, dict]:
-    """本 Run 暂存草案投影(claim_id → draft dict)。"""
-    return {
-        cid: d.to_dict()
-        for cid, d in _PATCH_DRAFTS.list_for_run(_patch_run_id()).items()
-    }
-
-
-# P1-2:台账旁路用户面澄清(只投影字段,不截断/不删档)
-_LEDGER_SCOPE_NOTE = (
-    "历史人审记录(invalidation_list ∪ latch_log),可能含跨次条目;"
-    "「重置」只清当前复验单,不擦除本台账。"
-    "renew/disputed 不进作废名单;与 patch_events 分缝;写路径仍唯一经 HumanLatch。"
-)
-_RESET_LEDGER_NOTE = "历史台账仍保留(不擦除 latch_log / 作废名单)"
-
-
-def _claim_ledger_for_ui(
-    store: SQLiteStore, *, run_id: str | None = None
-) -> dict:
-    """主张台账只读投影 + scope_note(文案澄清;零删档)。"""
-    ledger = dict(get_claim_ledger(store, run_id=run_id))
-    ledger["scope_note"] = _LEDGER_SCOPE_NOTE
-    return ledger
-
-
-def _detail_extras(store: SQLiteStore) -> dict:
-    """复验单增量包:包结论条 + T1 checksum + 逐条闸结果(#173) + 补丁条带(#200) + 主张台账(#228)。"""
-    claims = list(_state["claims"])
-    # 台账旁路:全库只读投影(作废名单跨 Run);不按发前 run_id 截断作废名单语义
-    # P1-2:带 scope_note——重置后仍见历史条目属预期,勿当串单
-    ledger = _claim_ledger_for_ui(store, run_id=None)
-    return {
-        "disposition": disposition_for_claims(claims),
-        "run_status": derive_run_status(
-            running=bool(_state["running"]), latch=_state.get("latch")),
-        "active_run_id": _state.get("active_run_id"),
-        "t1_checksums": list_t1_checksums(store),
-        "gate_results": project_gate_results(claims),
-        # #200:本 Run 已入库 evidence_id 多选源 + 暂存草案(无 C|T / 无薄对话)
-        "archived_t1_ids": list_archived_t1_evidence_ids(store),
-        "patch_drafts": _patch_drafts_payload(),
-        # #228:主张台账旁路(invalidation_list ∪ latch_log discard/renew);与 patch_events 分缝
-        "claim_ledger": ledger,
-        # I-14(#713):审计「本轮指标 / 记账」只读投影;复用 active_run_id
-        "run_metrics": _run_metrics(store),
-    }
-
 
 @app.get("/api/claims")
 def api_claims() -> dict:
@@ -702,54 +412,6 @@ def api_publish_hook_check(
     body.update(hook_error_body(result.code, result.message))
     return JSONResponse(body, status_code=deny_http_status(result.code))
 
-
-# I-01 / #678:run snapshot(判定面)schema 版本。同库 pack sqlite JSON blob;
-# LangGraph checkpoint 仍只救人审 interrupt,不冒充判定面 snapshot。
-RUN_SNAPSHOT_VERSION = 1
-
-
-def _write_run_snapshot() -> None:
-    """I-01(#678):复验结束/人审变更时,把判定面写进同库 pack sqlite 的 JSON blob。
-
-    判定面 = 判定(status)/理由(reason)/voided/active_run_id/包结论(disposition)。
-    无 blob 能力的 store(InMemoryStore)静默跳过——与 list_t1_checksums 的
-    getattr 降级同风格,不把 snapshot 变成 RetrievalStore 契约。
-    """
-    save = getattr(_store(), "save_run_snapshot", None)
-    if save is None:
-        return
-    claims = list(_state.get("claims") or [])
-    blob = json.dumps({
-        "version": RUN_SNAPSHOT_VERSION,
-        "active_run_id": _state.get("active_run_id"),
-        "question": _state.get("question") or "",
-        "claims": [asdict(c) for c in claims],
-        "latch": _state.get("latch") or dict(EMPTY_LATCH),
-        "trajectory": str(_state["trajectory"]) if _state.get("trajectory") else None,
-        "retrieve_zero_hits": list(_state.get("retrieve_zero_hits") or []),
-        "budget": dict(_state.get("budget") or EMPTY_BUDGET),
-        "bound_t1_checksums": dict(_state.get("bound_t1_checksums") or {}),
-        # I-14(#713):token 记账随判定面落盘,重启后只读投影仍完整
-        "token_usage": _state.get("token_usage"),
-        "disposition": disposition_for_claims(claims),
-    }, ensure_ascii=False)
-    save(blob)
-
-
-def _read_run_snapshot() -> dict | None:
-    load = getattr(_store(), "load_run_snapshot", None)
-    if load is None:
-        return None
-    raw = load()
-    if not raw:
-        return None
-    try:
-        snap = json.loads(raw)
-    except ValueError:
-        return None  # 坏 blob 不当场炸 boot;按空 snapshot 处理
-    if snap.get("version") != RUN_SNAPSHOT_VERSION:
-        return None
-    return snap
 
 
 def _restore_run_snapshot(snap: dict) -> None:
@@ -1030,40 +692,24 @@ class ReverifyRequest(BaseModel):
     accept_bm25_fallback: bool = False
 
 
-def _new_run_task(run_id: str, *, total: int, accept_bm25: bool) -> None:
-    """登记整轮异步任务;run_id 与 Phase 0 active_run_id 同线(不另开身份)。"""
-    global _RUN_TASK
-    with _RUN_TASK_LOCK:
-        _RUN_TASK = {
-            "run_id": run_id,
-            "status": "running",  # 五态之一;收口只经 _run_reverify_task/cancel 端点改写
-            "done": 0,
-            "total": total,
-            "current_claim_id": None,
-            "cancel_event": threading.Event(),
-            "accept_bm25": accept_bm25,
-            "result": None,   # done 时挂完整结果负载(与原同步响应同形状)
-            "error": None,    # failed 时挂中文错误负载(error_code/error)
-        }
-
 
 def _run_reverify_task(run_id: str) -> None:
-    """I-10(#696)后台主链:异步跑复验,五态收口经 _RUN_TASK 供轮询。
+    """I-10(#696)后台主链:异步跑复验,五态收口经 ss._RUN_TASK 供轮询。
 
     取消语义(决议 #690):已完成主张判定保留(Runner 原地改写);取消整轮
     不进 latch;清 active_run(无半残 run);快照仍写,部分判定面落盘可恢复。
     协作点 = 主张边界,单主张内部不打断(MVP);取消若落在全部主张完成后,
     按完成收口(done),不丢人审入口。
     """
-    with _RUN_TASK_LOCK:
-        task = _RUN_TASK
+    with ss._RUN_TASK_LOCK:
+        task = ss._RUN_TASK
     if task is None or task["run_id"] != run_id:
         return
     accept_bm25 = task["accept_bm25"]
 
     def _progress(*, current: str | None = None, done: int | None = None) -> None:
-        with _RUN_TASK_LOCK:
-            t = _RUN_TASK
+        with ss._RUN_TASK_LOCK:
+            t = ss._RUN_TASK
             if t is None or t["run_id"] != run_id:
                 return
             if current is not None:
@@ -1073,14 +719,14 @@ def _run_reverify_task(run_id: str) -> None:
                 t["current_claim_id"] = None
 
     def _should_cancel() -> bool:
-        with _RUN_TASK_LOCK:
-            t = _RUN_TASK
+        with ss._RUN_TASK_LOCK:
+            t = ss._RUN_TASK
         return bool(t is not None and t["run_id"] == run_id
                     and t["cancel_event"].is_set())
 
     def _set_status(status: str) -> None:
-        with _RUN_TASK_LOCK:
-            t = _RUN_TASK
+        with ss._RUN_TASK_LOCK:
+            t = ss._RUN_TASK
             if t is not None and t["run_id"] == run_id:
                 t["status"] = status
 
@@ -1102,8 +748,8 @@ def _run_reverify_task(run_id: str) -> None:
             _state["token_usage"] = token_bucket.to_dict()
         # DEM-5:记录零命中清单供 UI 强提示;不改写任何主张 status
         _state["retrieve_zero_hits"] = list(result.retrieve_zero_hits)
-        with _RUN_TASK_LOCK:
-            t = _RUN_TASK
+        with ss._RUN_TASK_LOCK:
+            t = ss._RUN_TASK
             cancelled = bool(t is not None and t["run_id"] == run_id
                              and t["cancel_event"].is_set())
             done = t["done"] if (t is not None and t["run_id"] == run_id) else 0
@@ -1122,8 +768,8 @@ def _run_reverify_task(run_id: str) -> None:
             _write_run_snapshot()  # I-01(#678):复验结束,判定面落盘
             store = _store()
             extras = _detail_extras(store)
-            with _RUN_TASK_LOCK:
-                t = _RUN_TASK
+            with ss._RUN_TASK_LOCK:
+                t = ss._RUN_TASK
                 if t is not None and t["run_id"] == run_id:
                     t["result"] = {
                         "claims": _claims_for_ui(store),
@@ -1150,8 +796,8 @@ def _run_reverify_task(run_id: str) -> None:
                 "error": ("复验执行失败(内部错误已记入服务端日志,界面不回显堆栈)。"
                           "怎么办:稍后重试;若反复出现,请记录时间与操作步骤后反馈。"),
             }
-        with _RUN_TASK_LOCK:
-            t = _RUN_TASK
+        with ss._RUN_TASK_LOCK:
+            t = ss._RUN_TASK
             if t is not None and t["run_id"] == run_id:
                 t["error"] = mapped
                 t["status"] = "failed"
@@ -1209,8 +855,8 @@ def api_reverify_progress(run_id: str = Query(...)) -> JSONResponse:
     done 附完整结果负载(与原同步响应同形状);failed 附中文错误负载;
     GET 恒 200(任务存在即资源存在),错误语义走 body 字段,错误码不抬 HTTP 层。
     """
-    with _RUN_TASK_LOCK:
-        task = _RUN_TASK
+    with ss._RUN_TASK_LOCK:
+        task = ss._RUN_TASK
         if task is None or task["run_id"] != run_id:
             return JSONResponse({"error": f"未找到复验任务 {run_id}"},
                                 status_code=404)
@@ -1230,8 +876,8 @@ def api_reverify_cancel() -> JSONResponse:
 
     收口(后台线程):已完成主张结果保留;不进 latch;清 active_run,无半残 run。
     """
-    with _RUN_TASK_LOCK:
-        task = _RUN_TASK
+    with ss._RUN_TASK_LOCK:
+        task = ss._RUN_TASK
         if task is None or task["status"] in ("done", "failed", "cancelled"):
             return JSONResponse({"error": "当前没有可取消的复验"}, status_code=409)
         task["cancel_event"].set()
