@@ -944,16 +944,15 @@ def api_retrieval_precheck() -> JSONResponse:
     缺权重时 UI 出可操作面板:约 1.1GB 说明、下载进度/失败原因,
     并列「重试下载」与「先用 BM25(精度降级)」。
     """
-    from freshlatch.store.local_embed import (
-        embed_offline_requested,
-        local_embed_cache_dir,
-    )
+    from freshlatch.store.local_embed import embed_offline_requested
     from freshlatch.ui.weight_precheck import (
         local_embed_weights_ready,
         neural_rerank_weights_ready,
+        resolved_cache_dir,
     )
 
-    cache_dir = local_embed_cache_dir()
+    # #753:未设 FASTEMBED_CACHE_PATH 时仍返回解析后的绝对路径,不得为 null
+    cache_dir = resolved_cache_dir()
     embedding = local_embed_weights_ready()
     reranker = neural_rerank_weights_ready()
     return JSONResponse({

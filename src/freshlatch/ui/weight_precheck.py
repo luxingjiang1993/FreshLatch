@@ -42,6 +42,15 @@ def _cache_roots(cache_dir: str | None) -> list[Path]:
     return [fastembed_default_cache_root()]
 
 
+def resolved_cache_dir(cache_dir: str | None = None) -> str:
+    """运维可见的解析后缓存根(绝对路径字符串)。
+
+    #753:未设 ``FASTEMBED_CACHE_PATH`` 时仍返回 ``gettempdir()/fastembed_cache``,
+    不得用 ``null`` 隐瞒默认根。doctor 与 ``GET /api/retrieval/precheck`` 共用。
+    """
+    return str(_cache_roots(cache_dir)[0].resolve())
+
+
 def fastembed_weights_present(model_short: str, cache_dir: str | None = None) -> bool:
     """文件层看权重快照在不在:任何 ``*.onnx`` 命中即算有。
 

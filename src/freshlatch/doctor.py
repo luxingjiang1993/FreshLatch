@@ -29,9 +29,9 @@ from urllib.parse import urlsplit
 
 from freshlatch.model_profile import resolve_model
 from freshlatch.ui.weight_precheck import (
-    _cache_roots,
     local_embed_weights_ready,
     neural_rerank_weights_ready,
+    resolved_cache_dir,
 )
 
 # 全部小写比较,别名同义:utf-8 / utf8。
@@ -93,14 +93,15 @@ def check_weights(cache_dir: str | None = None) -> CheckResult:
         missing.append("embedding(bge-small-zh-v1.5)")
     if not rerank_ok:
         missing.append("reranker(bge-reranker-base,约 1.1GB)")
-    roots = "、".join(str(r) for r in _cache_roots(cache_dir))
+    # #753:与 GET /api/retrieval/precheck 的 cache_dir 同一解析根字符串
+    root = resolved_cache_dir(cache_dir)
     if missing:
         return CheckResult(
             "权重路径", False,
-            f"缺权重快照:{'、'.join(missing)};缓存目录 {roots} 未命中。"
+            f"缺权重快照:{'、'.join(missing)};缓存目录 {root} 未命中。"
             "可在 UI 预检面板下载,或先选「先用 BM25(精度降级)」跑通主链。",
         )
-    return CheckResult("权重路径", True, f"embedding 与 reranker 权重缓存就绪({roots})")
+    return CheckResult("权重路径", True, f"embedding 与 reranker 权重缓存就绪({root})")
 
 
 def _redact_proxy_value(value: str) -> str:
