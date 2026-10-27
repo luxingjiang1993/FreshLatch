@@ -4,17 +4,34 @@
 后两者在 RESULT-Y 期 L4 do-not-touch 清单内(#679 硬约束不碰 RESULT-Y/L4)。
 这里只读目录树判断权重快照在不在,不 import fastembed、不加载模型、不触网
 (真加载 reranker 约 8 秒,不满足「点开始后 ≤10s 出面板」)。
+
+#751:未设 ``FASTEMBED_CACHE_PATH`` 时默认根必须与 fastembed 落点一致
+(``tempfile.gettempdir()/fastembed_cache``),不得再扫 ``~/.cache/fastembed_cache``。
 """
 
 from __future__ import annotations
 
+import tempfile
 from pathlib import Path
 
 from freshlatch.models import LOCAL_EMBED_MODEL, NEURAL_RERANK_MODEL
 from freshlatch.store.local_embed import local_embed_cache_dir
 
-# 未设置 FASTEMBED_CACHE_PATH 时 fastembed 的默认缓存根(docs/ops/local-embed.md)。
-FASTEMBED_DEFAULT_CACHE = Path.home() / ".cache" / "fastembed_cache"
+
+def fastembed_default_cache_root() -> Path:
+    """未设 ``FASTEMBED_CACHE_PATH`` 时与 fastembed 一致的默认缓存根。
+
+    fastembed 未传 ``cache_dir`` 时落到临时目录下的 ``fastembed_cache``
+    (见 ``docs/ops/local-embed.md``),Windows 即 ``%TEMP%\\fastembed_cache``。
+    """
+    return Path(tempfile.gettempdir()) / "fastembed_cache"
+
+
+def __getattr__(name: str):
+    """兼容旧名 ``FASTEMBED_DEFAULT_CACHE``:每次解析,避免导入瞬间冻死路径。"""
+    if name == "FASTEMBED_DEFAULT_CACHE":
+        return fastembed_default_cache_root()
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 
 def _cache_roots(cache_dir: str | None) -> list[Path]:
@@ -22,7 +39,7 @@ def _cache_roots(cache_dir: str | None) -> list[Path]:
     raw = cache_dir if cache_dir is not None else local_embed_cache_dir()
     if raw:
         return [Path(raw)]
-    return [FASTEMBED_DEFAULT_CACHE]
+    return [fastembed_default_cache_root()]
 
 
 def fastembed_weights_present(model_short: str, cache_dir: str | None = None) -> bool:
