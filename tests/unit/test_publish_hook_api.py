@@ -213,7 +213,7 @@ def test_malformed_json_body_is_unified_422(client):
     """默认 422 / 请求体解析失败 → 中文统一契约;无英文 detail。"""
     r = client.post(
         "/api/publish-hook/check",
-        data="{not-json",
+        content="{not-json",
         headers={"Content-Type": "application/json"},
     )
     assert r.status_code == 422

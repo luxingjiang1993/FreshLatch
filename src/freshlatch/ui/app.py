@@ -60,13 +60,11 @@ from freshlatch.publish_hook import (  # noqa: E402
     HOOK_TOKEN_HEADER,
     HOOK_UNAUTHORIZED,
     HOOK_UNBOUND_RUN,
+    checksums_fresh,
     deny_http_status,
     evaluate_publish_hook,
 )
 from freshlatch.runner import RunContext, Runner, load_docket  # noqa: E402
-from freshlatch.publish_hook import (  # noqa: E402
-    checksums_fresh,
-)
 from freshlatch.sheet import (  # noqa: E402
     PATCH_VISIBILITY_FIELDS,
     UI_BADGE_ABSTAIN,

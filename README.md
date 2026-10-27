@@ -31,6 +31,8 @@ python -m freshlatch.ui.app    # Reverify Sheet → http://127.0.0.1:8000
 
 Unix: `source .venv/bin/activate`. Primary CTA is **Start reverify**, not "Generate answer."
 
+**UI session boundary:** Reverify Sheet (`python -m freshlatch.ui.app` → `http://127.0.0.1:8000`) is **local, single-process, single-operator** only — one operator on the machine running that process. Multiple browser tabs or multiple users against the same UI process share in-process session state and can clobber each other; that is **unsupported**, not a bug. Cookie / session bucketing is not in this UI. External auth / multi-tenant Done belongs to Serving ([`docs/ops/serving-failure-budget.md`](docs/ops/serving-failure-budget.md)); missing UI session isolation does **not** mean Serving is unfinished.
+
 If embeddings / vectors are unavailable, retrieval may fall back to BM25 and record that degradation — informed fallback, not a silent change of the production switch.
 
 ---

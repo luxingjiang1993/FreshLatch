@@ -28,7 +28,8 @@ Kill-trio status pointers (2026-10-20 · PHASE1-PACK #742): **(a) already in-rep
 - `PRODUCTION_RETRIEVAL_MODE = hybrid+rerank` (local `BAAI/bge-reranker-base`, reranks hybrid top-10)
 - BM25 only via `set_retrieval_switch("bm25")` fallback; **not** the production default
 - Hard-Gold / #259 evidence is citable; **not** a closed statistical product pass
-- Interview/demo UI runs are **合成语料 · 本机 demo** only (#735) — never present them as a customer deployment or live service
+- Interview/demo UI runs are **合成语料 · 本机 demo** only (#735) — never present them as a customer deployment or live service; **本机 demo ≠ 客户部署 / 已部署多用户**
+- P2 UI session scope = **A（仅本机单会话）** (#P2-A-T2): do **not** treat parallel tabs / windows as multiple sessions — same process **串态** (state crosses); no session bucketing. Externally, never hang「已部署 / 多用户」叙事 on the reverify UI; auth'd outward surface = **Serving only** — UI demo 与 Serving **不混** (see ops Serving docs; this page does not redefine Serving)
 - Metrics map (2026-10-20, #737): North Star = **B2 人审有效动作率** (human effective-action rate); cost/latency/pytest are guardrails, never the North Star; **no composite health score** — see [`docs/ops/metrics-map.md`](ops/metrics-map.md)
 
 ---
@@ -41,6 +42,7 @@ Kill-trio status pointers (2026-10-20 · PHASE1-PACK #742): **(a) already in-rep
 4. Production-team L4 / Meta E4 equivalent  
 5. PMF, paying customers, SaaS ready  
 6. Open `web_search` as main path / chat-primary UI already delivered
+7. UI 已会话隔离 / 多租户 / multi-tab = multi-session（P2 UI = 本机单会话 only）
 
 ---
 

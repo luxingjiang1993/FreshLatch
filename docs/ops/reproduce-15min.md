@@ -63,6 +63,10 @@ python -m pytest tests/eval/test_g2_should_abstain.py -q
 硬边界（复述 RESULT-Y 防火墙）：演示可过 ≠ 测量可信；烟测/夹具/本机 demo **不是**
 正式 RESULT；不得把路线 Y 写成成功；不改冻结面让数字变好看。
 
+### 若顺手开 UI demo（非主线）
+
+本页主线仍是零 LLM 双路 pytest + RESULT-Y 指针；UI 只是可选顺手。P2 会话态 = A（单进程 `_state`，不分桶）：**一浏览器、一窗口、一 `freshlatch.ui` 进程**。勿开第二标签「对照」——会覆盖进程内 `_state`。要干净态：走高级重置 `POST /api/session/reset`（与现 UI 行为一致），不要靠新标签。本机 UI demo ≠ 正式 RESULT / 测量可信。
+
 ## 3. 出人 15 min 走查清单
 
 - [ ] 路 1：`ruff check` 绿 + `pytest tests/ -q` 绿（fresh clone，无密钥）。

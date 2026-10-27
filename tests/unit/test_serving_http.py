@@ -81,7 +81,7 @@ def test_validation_error_replaces_default_422(client, monkeypatch):
     monkeypatch.setenv(SERVING_KEYS_ENV, "key-a=tenant-a")
     bad = client.post(
         "/api/session",
-        data="{not-json",
+        content="{not-json",
         headers={"Content-Type": "application/json"},
     )
     assert bad.status_code == 422
