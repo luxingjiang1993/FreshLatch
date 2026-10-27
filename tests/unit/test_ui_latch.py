@@ -489,7 +489,9 @@ def test_no_sse_websocket_or_single_claim_skip_entry():
     assert "EventSource" not in appmod.HTML_PAGE
     assert "WebSocket" not in appmod.HTML_PAGE
     assert "single claim skip" not in appmod.HTML_PAGE
-    paths = [getattr(route, "path", "") for route in appmod.app.routes]
+    # #757:include_router 后顶层 route 可能是 _IncludedRouter(无 path);
+    # OpenAPI 路径表仍是契约真相源。
+    paths = list(appmod.app.openapi()["paths"])
     assert "/api/reverify/cancel" in paths
     assert "/api/reverify/progress" in paths
     assert not any("skip" in p for p in paths)
