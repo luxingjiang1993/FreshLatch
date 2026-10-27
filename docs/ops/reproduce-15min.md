@@ -42,12 +42,21 @@ python -m pytest tests/eval/test_g2_should_abstain.py -q
 ```
 
 `test_do_not_touch_and_ci_still_collects_eval` 把工作区对 `origin/main` 的 diff
-对 do-not-touch 名单（`RESULT-Y.md` / `PREREG*.md` / `data/eval/` / `ci.yml` / 依赖钉 /
-`src/` 全体等）做硬断言：
+分两层：
 
-- 在 **main 或干净工作区**：绿。
-- 在 **动了 `src/` 的功能分支**：按设计报红——那是守卫在工作，**不要**去"修"它；
-  先在分支上确认 `git diff origin/main...HEAD -- docs/evidence/hard-gold-arm/ docs/evidence/patch-events/RESULT-Y.md data/exp/x1/ src/freshlatch/disposition.py` 为空，再判断红是不是预期。
+1. **考古禁止面**（`_DO_NOT_TOUCH`：`RESULT-Y.md` / `PREREG*.md` / `data/eval/` / `ci.yml` /
+   依赖钉 / `src/freshlatch/store/base.py` 等，以及 `data/exp/x1/`、`data/eval/` 前缀）—
+   任何分支硬失败。
+2. **干净 docs 票契约**（相对 base **零 `src/`** + leftover 白名单）—
+   仅适用于不改产品代码的 docs/考古票。
+
+行为：
+
+- 在 **main 或干净 docs 票**：两层都跑；绿才算路 2 过。
+- 在 **动了合法 `src/` 的功能分支**（禁止面未触碰）：pytest **skip**，理由可读
+  （P1-4 Path B：防误杀产品修复；**不要**把 `_ALLOWED_DIFF` 扩到整个 `src/`，
+  **不要**削弱零 `src` 断言）。合入 main 后路 2 再绿。
+- 若功能分支同时改了禁止面：仍 **fail**（skip 不会吞掉真破坏）。
 - 路 2 语义 = 冻结面哨兵；路 1 语义 = 全量回归。两路都绿（路 2 在合入后的 main 上绿）才算整包可指认。
 
 ## 2. 正式结果指针（不重跑）
@@ -66,6 +75,6 @@ python -m pytest tests/eval/test_g2_should_abstain.py -q
 ## 3. 出人 15 min 走查清单
 
 - [ ] 路 1：`ruff check` 绿 + `pytest tests/ -q` 绿（fresh clone，无密钥）。
-- [ ] 路 2：`test_g2_should_abstain.py` 在 main 上绿；在功能分支上理解"按设计报红"。
+- [ ] 路 2：`test_g2_should_abstain.py` 在 main / 干净 docs 票上绿；含合法 `src/` 的功能分支上应为 skip（禁止面仍硬检）。
 - [ ] 打开 `RESULT-Y.md` 能读到：判丙、k=151、T−C 不成立、不得判甲。
 - [ ] 打开 `hard-gold-arm/ACCEPTANCE.md` 能读到：已过线 · 未换臂 · 改臂须走授权闸。
