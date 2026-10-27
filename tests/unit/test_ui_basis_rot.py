@@ -121,7 +121,9 @@ def test_api_claims_skips_fresh_without_basis(client):
 
 def test_api_claims_uses_shared_basis_rot_module():
     """拉单路径必须 import 共享模块,无第二套比对逻辑。"""
-    src = Path(appmod.__file__).read_text(encoding="utf-8")
+    # #758:claims 路由在 routes_sheet;契约仍是共享 rot_claims
+    sheet = Path(appmod.__file__).resolve().parent / "routes_sheet.py"
+    src = sheet.read_text(encoding="utf-8")
     assert "from freshlatch.gates.basis_rot import rot_claims" in src
     assert "rot_claims(store" in src
     # 禁止在 UI 内再写一套 checksum 比对

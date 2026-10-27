@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import ast
 import os
+from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
@@ -269,10 +270,11 @@ def test_default_bind_host_is_loopback():
 
 def test_api_layer_delegates_same_gate_no_parallel_if():
     """HTTP 适配层须调用 evaluate_publish_hook,禁止平行 if/else 出口。"""
-    with open(appmod.__file__, encoding="utf-8") as f:
-        src = f.read()
+    # #758:publish-hook 路由在 routes_publish;app 再导出 evaluate_publish_hook 供 monkeypatch
+    publish = Path(appmod.__file__).resolve().parent / "routes_publish.py"
+    src = publish.read_text(encoding="utf-8")
     assert "evaluate_publish_hook(" in src
-    assert '@app.post("/api/publish-hook/check")' in src
+    assert '@router.post("/api/publish-hook/check")' in src
     # 禁止出站通知 webhook 顶替 check;禁止 OpenManus WS 平台化字面
     assert "outbound" not in src.lower()
     assert "OpenManus" not in src

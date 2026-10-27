@@ -400,6 +400,9 @@ details.diagnostic summary{cursor:pointer;color:#6e7781}
   </div>
 </div></div>
 <script>
+/* ===== #758 前端分段(单文件保留;勿拆 JS 除非另批) =====
+ * 区段: t1 | vernacular | reverify-poll | latch-modals | patch-strip
+ * ================================================================= */
 let STATE = {claims: [], question: "", latch: {thread_id: null, pending: []},
              retrieve_zero_hits: [],
              trajectory: null, audit: null, retrieval_used: null, decoding: null,
@@ -507,6 +510,7 @@ function hideSampleProgress(){
   const bar = document.getElementById("reverify-progress");
   if(bar) bar.classList.remove("visible");
 }
+/* ----- section: reverify-poll (一键样例 → 预检 → 异步复验轮询) ----- */
 async function startSample(){
   // #663 一键样例:选用内置合成评测包,然后进入既有复验。导入仍是次按钮。
   const btn = document.getElementById("btn-run");
@@ -756,6 +760,7 @@ function t1KindLabel(kind){
                  synthetic:'内置合成评测包', url:'薄 URL'};
   return names[kind] || '未选定';
 }
+/* ----- section: t1 (T1 来源三卡 / 状态短文案) ----- */
 function renderT1StatusShort(){
   // I-11(#710 / 决议 #704):职人首屏只露白话 T1 状态(就绪/缺源料);
   // 三卡面板(上传/粘贴/合成/薄 URL)留在审计视图,Activation 主路径走「一键样例」。
@@ -950,6 +955,7 @@ function awaitingConfirm(c){
   if(act === "discard" || act === "renew") return false;
   return true;
 }
+/* ----- section: vernacular (三类清单白话投影) ----- */
 function vernacularBucket(c){
   // 仍可信=fresh;可能过期=stale|unknown;要你确认优先于机器态。不写回 status。
   if(awaitingConfirm(c)) return "confirm";
@@ -1355,6 +1361,7 @@ function renderPatchStrip(c){
   h += '</div>';
   return h;
 }
+/* ----- section: patch-strip (改稿暂存 / 确认 / 丢弃) ----- */
 async function proposePatchDraft(cid){
   const form = readPatchInputs(cid);
   const r = await fetch('/api/patch/propose',{
@@ -1849,6 +1856,7 @@ function confirmRenew(){
   }
   closeRenew(); renderClaims();
 }
+/* ----- section: latch-modals (人审决定 / reopen / 条带外挂) ----- */
 async function submitDecisions(settleAll){
   const decisions = settleAll ? [] : PENDING_DECISIONS;
   const j = await (await fetch('/api/latch/decide',{
